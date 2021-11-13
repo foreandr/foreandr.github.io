@@ -1,0 +1,82 @@
+#textBox{
+    display:flex;
+    flex-direction :column;
+    align-items: center;
+   
+}
+#textArea1 {
+    margin-top: 15px;
+    width: 80%;
+}
+#button {
+    position:center;
+
+}
+#titleBox {
+    margin-top: 15px;
+}
+#Welcome {
+    font-family: 'Courier New', monospace;
+}
+#Welcome2 {
+    font-family: 'Courier New', monospace;
+}
+
+
+
+
+/* ALL THINGS RELATED TO FADING IN 
+    Notes:
+    I can change 10s to anything
+*/
+.fade-in {
+    animation: fadeIn ease 10s;
+    -webkit-animation: fadeIn ease 10s;
+    -moz-animation: fadeIn ease 10s;
+    -o-animation: fadeIn ease 10s;
+    -ms-animation: fadeIn ease 10s;
+}
+@keyframes fadeIn {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+@-moz-keyframes fadeIn {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+@-webkit-keyframes fadeIn {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+@-o-keyframes fadeIn {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+@-ms-keyframes fadeIn {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
