@@ -22,7 +22,10 @@
     font-family: 'Courier New', monospace;
 }
 
-
+footer {
+    position: absolute;
+    bottom: 0;
+}
 
 
 /* ALL THINGS RELATED TO FADING IN 
