@@ -3,10 +3,12 @@
 <head>
     <title>Home</title>
     <meta charset="utf-8" />
-    <link href="./bootstrap.min.css" rel="stylesheet" />
-    <link href="./main.css" rel="stylesheet" />
+    <link href="C:\Users\Andre\Desktop\FOLDER\css\bootstrap.min.css" rel="stylesheet" />
+    <link href="C:\Users\Andre\Desktop\FOLDER\css\xterm.css" rel="stylesheet" /> <!--Terminal-->
+    <link href="C:\Users\Andre\Desktop\FOLDER\css\projects.css" rel="stylesheet" />
     <link rel="icon" href="data:;base64,iVBORw0KGgo=">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+
 
 </head>
 <body>
@@ -44,24 +46,16 @@
             </form>
         </div>
     </nav>
-
-    <div>
-        <h1>Projects</h1>
-        <ul>
-            <li>
-                Thing 1
-            </li>
-            <li>
-                Thing 2
-            </li>
-            <li>
-                Thing 3
-            </li>
-        </ul>
-    </div>
-
+    
+    
+    <div id="terminal"></div>
+    <button onclick="addToTerminal()">Click Me</button>
+    <input type="text" onkeypress="return myKeyPress(event)" />
+    
+    <script src="./xterm.js"></script> <!-- Terminal -->
     <script src="./main.js"></script>
     <script src="./require.js"></script>
+    <script src="C:\Users\Andre\Desktop\FOLDER\foreandr.github.io\projects.js"></script>
 
 </body>
 </html>
