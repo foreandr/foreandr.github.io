@@ -4,10 +4,19 @@ term.write('>');
 
 var stringHolder;
 
+/* coder:
+ * purpose:
+
+ */
 function addToTerminal(stringOfText) {
     term.write(stringOfText);
 }
 
+
+/* coder:
+ * purpose:
+
+ */
 function myKeyPress(e) {
     var keynum;
 
