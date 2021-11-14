@@ -1,9 +1,8 @@
 var term = new Terminal();
 term.open(document.getElementById('terminal'));
-term.write('Hello Again');
-document.addEventListener("keydown", KeyCheck);  //or however you are calling your method
-var stringHolder;
+term.write('>');
 
+var stringHolder;
 
 function addToTerminal(stringOfText) {
     term.write(stringOfText);
@@ -17,24 +16,25 @@ function myKeyPress(e) {
     } else if (e.which) { // Netscape/Firefox/Opera                 
         keynum = e.which;
     }
-
     stringHolder = ((String.fromCharCode(keynum))); // ASCII TO STRING
     addToTerminal(stringHolder);
 }
 
 
-function KeyCheck(event) {
-    var KeyID = event.keyCode;
-    switch (KeyID) {
-        case 8:
-            term.write("Backspace");
-            //console.log("backspace");
-            break;
-        case 46:
-            term.write("delete");
-            //console.log("delete");
-            break;
-        default:
-            break;
+/* coder:
+ * purpose:
+ 
+ */
+document.body.addEventListener("keydown", function (event) {
+    term.write(String.fromCharCode(event.keyCode));
+    if (event.keyCode == 13) {
+        term.write("\n");
     }
-}
+    if (event.keyCode == 8) {
+        term.write("Backspace");
+            //console.log("backspace");
+    }
+    if (event.keyCode == 46) {
+        term.write("delete");
+    }
+});
