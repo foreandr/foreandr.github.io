@@ -1,3 +1,10 @@
 #listText {
     font-family: 'Courier New', monospace;
 }
+#bitcoin {
+
+}
+#monero {
+    margin-left: -100px;
+}
+
