@@ -5,6 +5,7 @@
     <meta charset="utf-8" />
     <link href="C:\Users\Andre\Desktop\FOLDER\css\bootstrap.min.css" rel="stylesheet" />
     <link href="C:\Users\Andre\Desktop\FOLDER\css\main.css" rel="stylesheet" />
+
     <link rel="icon" href="data:;base64,iVBORw0KGgo=">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
@@ -39,19 +40,30 @@
                     <a class="nav-link" href="./crypto.html">Crypto</a>
                 </li>
             </ul>
+
             <form>
                 <input class="form-control" type="search" placeholder="Search" id="search" area-label="Search" style="width:10vw; margin-right:5vw;" />
             </form>
+
         </div>
     </nav>
 
-    <div>
-        <ul>
-            <li>Bitcoin Address: bc1q869t39w8ns2qg66tuwkrpchg58ydpz0lq6wv4x</li>
-            <li>Monero Address: 42RWUWXjLWdS1SKRvLGoYcPy7W1hQZSDVaivQtaxjiXqFwFCmQz5o8C2uL7scBERD5f4Ze9fPCrRdavr3fcHXbD6C6g7tpG</li>
 
-        </ul>
+
+    <div>
+        <input id="titleBox" type="text" value="Title" />
+
+        <input id="DateBox" type="text" value="Date" />
+        <br />
+        <textarea id="textArea1" name="" cols="1" rows="10"></textarea>
     </div>
+
+    <div>
+        <button id="button" onclick="submit()">Submit</button>
+    </div>
+
+    <div id="actualText" style="float:right">thing</div>
+
     <footer><a href="https://www.foreandr.com">&copy;foreandr.com</a></footer>
     <script src="./main.js"></script>
     <script src="./require.js"></script>
