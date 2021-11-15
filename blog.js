@@ -7,7 +7,7 @@ function process(titleOfPost, date, bloghtmlFile) {
 
     document.getElementById("enterBlogPosts").innerHTML +=
         `<div> 
-        <a class="${bloghtmlFile}" onclick="printFunction()">Title: ${titleOfPost}</a>
+        <a class="${bloghtmlFile}" href="./${bloghtmlFile}" onclick="printFunction()">Title: ${titleOfPost}</a>
         </br>
         Date: ${date}
         </br> </br>`;
@@ -29,4 +29,5 @@ process(titleOfPost1, date1, linkToHtml);
 // Second Blog Post test
 var titleOfPost2 = "This is me2";
 var date2 = "Jan 2 2020";
-//process(titleOfPost2, date2);
+var linkToHtml = "./blog2.html";
+process(titleOfPost2, date2, linkToHtml);
