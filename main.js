@@ -6,7 +6,7 @@ let val = "<div> Welcome to my site, <br /> Enjoy your stay. </div>"
 var indexCounter = 0;
 var indexCounter2 = 0;
 let variable = "<br/>";
-let maxTime = 500;
+let maxTime = 200; // SPEED OF TEXT
 let minTime = 1;
 
 function $gel(id) {
