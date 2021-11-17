@@ -1,0 +1,20 @@
+#listText {
+    font-family: 'Courier New', monospace;
+}
+#bitcoin {
+    position: absolute;
+    bottom: 100px;
+}
+#monero {
+    position: absolute;
+    bottom: 125px;
+    left: 27px;
+}
+#mypic {
+    
+}
+#titleOfGraph {
+    margin: auto;
+    width: 50%;
+}
+
