@@ -1,42 +1,23 @@
-#body {
-    overflow-y: scroll
-}
-#listText {
-    font-family: 'Courier New', monospace;
-}
-#bitcoin {
-    position: absolute;
-    bottom: 100px;
-}
-#monero {
-    position: absolute;
-    bottom: 125px;
-    left: 27px;
-}
-#mypic {
-    
-}
-#titleOfGraph {
-    margin: auto;
-    width: 50%;
-}
-
 #footerDiv {
     position: absolute;
     left: 350px;
-    bottom:-1px;
+    bottom: -1px;
 }
-#footer{
+
+#footer {
     position: absolute;
     bottom: 0;
 }
+
 #footerTitle {
     font-family: 'Courier New', monospace;
 }
+
 #footerList1 { /* HORIZONTAL FOOTER LIST */
     font-family: 'Courier New', monospace;
-    list-style-type:none; /* Can change interesting list stuff here */
+    list-style-type: none; /* Can change interesting list stuff here */
 }
+
 #footerList2 {
     list-style-type: none;
     font-family: 'Courier New', monospace;
@@ -44,4 +25,3 @@
     left: 350px;
     bottom: 0px;
 }
-

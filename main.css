@@ -42,6 +42,34 @@ footer {
     color: black;
     font-family: 'Courier New', monospace;
 }
+#footerDiv {
+    position: absolute;
+    left: 350px;
+    bottom: -1px;
+}
+
+#footer {
+    position: absolute;
+    bottom: 0;
+}
+
+#footerTitle {
+    font-family: 'Courier New', monospace;
+}
+
+#footerList1 { /* HORIZONTAL FOOTER LIST */
+    font-family: 'Courier New', monospace;
+    list-style-type: none; /* Can change interesting list stuff here */
+}
+
+#footerList2 {
+    list-style-type: none;
+    font-family: 'Courier New', monospace;
+    position: absolute;
+    left: 350px;
+    bottom: 0px;
+}
+
 
 /* ALL THINGS RELATED TO FADING IN 
     Notes:
