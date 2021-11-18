@@ -1,4 +1,4 @@
-
+// Notes commit
 function $gel(id) {
     return document.getElementById(id);
 }
