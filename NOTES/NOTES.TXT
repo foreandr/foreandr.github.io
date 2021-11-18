@@ -1,0 +1,10 @@
+notes:
+When I run into module errors, remember to open chrome from CMD WITH
+start chrome --allow-file-access-from-files
+
+
+
+socials links
+twit = https://twitter.com/foreandr
+git = https://github.com/foreandre
+email = foreandr@gmail.com
