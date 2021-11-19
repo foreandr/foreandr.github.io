@@ -14,7 +14,11 @@
     left: 27px;
 }
 #mypic {
-    
+}
+#mypic2 {
+    position:absolute;
+    left: 1200px;
+    bottom: 220px
 }
 #titleOfGraph {
     margin: auto;
