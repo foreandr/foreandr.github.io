@@ -1,11 +1,2 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace foreandrGithub
-{
-    public class Notes
-    {
-    }
-}
+﻿1. CONNECTION ISSUES?
+	- May have to go to Startup.cs and add "app.UseStaticFiles()"
