@@ -38,4 +38,16 @@ Title NVARCHAR (50),
 UploadDate DATE,
 Contents NVARCHAR (4000), 
 );
+/* INSERT INTO TABLE dbo.BLOGPOSTS */
+USE [foreandr.github.io.DATABASE];
+GO
+INSERT INTO dbo.BlogPosts
+( WriterID, Title, UploadDate, Contents)
+VALUES
+(   
+1, -- WriterID - int
+'Blog Test', -- Title - nvarchar(50)
+GETDATE(), -- UploadDate - date
+'Here will be a post that can be 4000 characters long. Formatting it will be difficult.'  -- Contents - nvarchar(4000)
+)
 

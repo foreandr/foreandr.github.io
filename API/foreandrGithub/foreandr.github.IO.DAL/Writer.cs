@@ -10,5 +10,7 @@ namespace foreandr.github.IO.DAL
         public string? LastName { get; set; }
         public DateTime? DateOfBIrth { get; set; }
         public string? Country { get; set; }
+
+       
     }
 }
