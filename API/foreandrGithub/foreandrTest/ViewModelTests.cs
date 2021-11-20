@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
-using foreandrViewModes;
+using foreandrViewModels;
 using System.Diagnostics;
 
 namespace foreandrTest

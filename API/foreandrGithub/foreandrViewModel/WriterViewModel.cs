@@ -5,7 +5,7 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Threading.Tasks;
 
-namespace foreandrViewModes
+namespace foreandrViewModels
 {
     public class WriterViewModel
     {
@@ -30,7 +30,7 @@ namespace foreandrViewModes
                 Writer writ = await dao_.GetByFirstName(Firstname);
                 ID = writ.ID;
                 Firstname = writ.FirstName;
-                Lastname = writ.FirstName;
+                Lastname = writ.LastName;
                 DateOfbirth = (DateTime)writ.DateOfBIrth; // Cast needed here?
                 Country = writ.Country;
                 
