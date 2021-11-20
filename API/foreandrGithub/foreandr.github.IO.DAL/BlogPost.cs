@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 
-// DAL COMMENTS
 namespace foreandr.github.IO.DAL
 {
     public partial class BlogPost

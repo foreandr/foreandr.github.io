@@ -10,6 +10,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{EFB6A9B2-9E37-4FAD-9003-226D180222B3}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		ForeandrSql.sql = ForeandrSql.sql
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "foreandrTest", "foreandrTest\foreandrTest.csproj", "{FA8C4456-21BE-4608-83E9-C82FFBB5A42B}"
