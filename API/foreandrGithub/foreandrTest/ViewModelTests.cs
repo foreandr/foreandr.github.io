@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Xunit;
 using foreandrViewModes;
 using System.Diagnostics;
+
 namespace foreandrTest
 {
     public class ViewModelTests
@@ -17,15 +18,23 @@ namespace foreandrTest
             try
             {
                 // SEEMS TO WORK NO MATTER WHAT
-                // don't know hwo to debug
-                vm = new WriterViewModel { Firstname = "Andrea" };
+                // don't know how to debug
+                vm = new WriterViewModel { Firstname = "Andre" };
                 await vm.GetByFirstName();
             }
             catch (Exception ex)
             {
                 Debug.WriteLine("Error - " + ex.Message);
             }
-            Assert.NotNull(vm.Firstname);
+            Assert.NotNull(vm.Lastname);
         }
+
+        // UPDATE
+
+        // DELETE
+
+        // ADD
+
+        // GET ALL
     }
 }

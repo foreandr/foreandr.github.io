@@ -1,0 +1,17 @@
+﻿3.  
+4. blogs need to be stored permanently
+5. NBA prediction algo
+6. Spacing from the topresume 15px
+7. move js into it's own fodler
+8. Make a quality footer
+9. Fix bitcoin on site thing
+9. Terminal is all caps
+10. change learning into a queryable library
+	-Use directory iterator to go through for library
+	- COURSES AND BOOKS? AND LECTURES?
+	- START WITH BOOKS
+11. DIAGNOSTIC TOOLS FOR VARIOUS DATASETS OF ILLNESSES
+	- breast cancer, prostate etc
+MAKE HTML PAGES DEMOING CSS  & UI/UX DESIGN SKILLS
+ <blockquote class="tiktok-embed" cite="https://www.tiktok.com/@mazinosarchive/video/7028579292057488646" data-video-id="7028579292057488646" style="max-width: 605px;min-width: 325px;"> <section> <a target="_blank" title="@mazinosarchive" href="https://www.tiktok.com/@mazinosarchive">@mazinosarchive</a> <p>Peter Thiel - Visions of the Future :) <a title="foryou" target="_blank" href="https://www.tiktok.com/tag/foryou">##foryou</a></p> <a target="_blank" title="♬ original sound - Mazino" href="https://www.tiktok.com/music/original-sound-7028579111006194437">♬ original sound - Mazino</a> </section> </blockquote>
+ <blockquote class="tiktok-embed" cite="https://www.tiktok.com/@mazinosarchive/video/7017809802571074821" data-video-id="7017809802571074821" style="max-width: 605px;min-width: 325px;"> <section> <a target="_blank" title="@mazinosarchive" href="https://www.tiktok.com/@mazinosarchive">@mazinosarchive</a> <p>Laplace&#39;s Demon</p> <a target="_blank" title="♬ original sound - Mazino" href="https://www.tiktok.com/music/original-sound-7017809687928195845">♬ original sound - Mazino</a> </section> </blockquote>

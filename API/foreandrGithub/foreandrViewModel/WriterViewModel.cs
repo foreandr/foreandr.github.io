@@ -10,10 +10,12 @@ namespace foreandrViewModes
     public class WriterViewModel
     {
         readonly private ForeandrDAO dao_;
+        public int ID { get; set; } // NEW ADDITION, MAY NOT BE NECESSARY
         public string Firstname { get; set; }
         public string Lastname { get; set; }
         public DateTime DateOfbirth { get; set; }
         public string Country { get; set; }
+       
 
         public WriterViewModel() // Dunno what this is for
         {
@@ -26,10 +28,12 @@ namespace foreandrViewModes
             try
             {
                 Writer writ = await dao_.GetByFirstName(Firstname);
+                ID = writ.ID;
                 Firstname = writ.FirstName;
                 Lastname = writ.FirstName;
                 DateOfbirth = (DateTime)writ.DateOfBIrth; // Cast needed here?
                 Country = writ.Country;
+                
             }
             catch (NullReferenceException nex)
             {
@@ -45,6 +49,14 @@ namespace foreandrViewModes
             }
 
         }
+        
+        // UPDATE -- lab 5 for reference
+
+        // DELETE
+
+        // ADD
+
+        // GET ALL
 
     }
 }

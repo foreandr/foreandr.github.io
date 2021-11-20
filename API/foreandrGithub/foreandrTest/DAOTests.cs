@@ -14,7 +14,7 @@ namespace foreandrTest
         public async Task Writer_GetByFirstNameTest()
         {
             ForeandrDAO dao = new ForeandrDAO();
-            Writer selectedWriter = await dao.GetByFirstName("Andre");
+            Writer selectedWriter = await dao.GetByFirstName("Andre"); // WORKS PROPERLY
             Assert.NotNull(selectedWriter);
         }
         
