@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\foreandr.github.IO.DAL\foreandr.github.IO.DAL.csproj" />
+    <ProjectReference Include="..\foreandrViewModel\foreandrViewModels.csproj" />
   </ItemGroup>
 
 </Project>

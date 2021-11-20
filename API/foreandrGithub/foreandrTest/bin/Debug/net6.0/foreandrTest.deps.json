@@ -11,6 +11,7 @@
           "Microsoft.NET.Test.Sdk": "16.9.4",
           "coverlet.collector": "3.0.2",
           "foreandr.github.IO.DAL": "1.0.0",
+          "foreandrViewModels": "1.0.0",
           "xunit": "2.4.1",
           "xunit.runner.visualstudio": "2.4.3"
         },
@@ -1606,6 +1607,14 @@
         "runtime": {
           "foreandr.github.IO.DAL.dll": {}
         }
+      },
+      "foreandrViewModels/1.0.0": {
+        "dependencies": {
+          "foreandr.github.IO.DAL": "1.0.0"
+        },
+        "runtime": {
+          "foreandrViewModels.dll": {}
+        }
       }
     }
   },
@@ -2575,6 +2584,11 @@
       "hashPath": "xunit.runner.visualstudio.2.4.3.nupkg.sha512"
     },
     "foreandr.github.IO.DAL/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "foreandrViewModels/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

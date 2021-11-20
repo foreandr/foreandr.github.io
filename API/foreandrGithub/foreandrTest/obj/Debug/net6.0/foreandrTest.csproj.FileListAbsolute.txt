@@ -142,3 +142,5 @@ C:\Users\Andre\Desktop\FOLDER\foreandr.github.io\API\foreandrGithub\foreandrTest
 C:\Users\Andre\Desktop\FOLDER\foreandr.github.io\API\foreandrGithub\foreandrTest\obj\Debug\net6.0\ref\foreandrTest.dll
 C:\Users\Andre\Desktop\FOLDER\foreandr.github.io\API\foreandrGithub\foreandrTest\obj\Debug\net6.0\foreandrTest.pdb
 C:\Users\Andre\Desktop\FOLDER\foreandr.github.io\API\foreandrGithub\foreandrTest\obj\Debug\net6.0\foreandrTest.genruntimeconfig.cache
+C:\Users\Andre\Desktop\FOLDER\foreandr.github.io\API\foreandrGithub\foreandrTest\bin\Debug\net6.0\foreandrViewModels.dll
+C:\Users\Andre\Desktop\FOLDER\foreandr.github.io\API\foreandrGithub\foreandrTest\bin\Debug\net6.0\foreandrViewModels.pdb

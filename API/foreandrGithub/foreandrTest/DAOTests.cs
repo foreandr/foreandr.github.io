@@ -17,6 +17,7 @@ namespace foreandrTest
             Writer selectedWriter = await dao.GetByFirstName("Andre");
             Assert.NotNull(selectedWriter);
         }
+        
         [Fact]
         public async Task Writer_GetAll()
         {
@@ -24,10 +25,12 @@ namespace foreandrTest
             var selectedWriters = await dao.GetAll();
             Assert.NotNull(selectedWriters);
         }
+
         /* HERE I WILL IMPLEMENT THE FOLLOWNG METHODS SOMEDAY
          * ADD
          * UPDATE
          * DELETE
          * ETC..
+         */
     }
 }

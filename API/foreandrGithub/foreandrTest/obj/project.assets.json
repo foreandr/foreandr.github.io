@@ -2365,6 +2365,19 @@
         "runtime": {
           "bin/placeholder/foreandr.github.IO.DAL.dll": {}
         }
+      },
+      "foreandrViewModels/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v6.0",
+        "dependencies": {
+          "foreandr.github.IO.DAL": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/foreandrViewModels.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/foreandrViewModels.dll": {}
+        }
       }
     }
   },
@@ -7992,6 +8005,11 @@
       "type": "project",
       "path": "../foreandr.github.IO.DAL/foreandr.github.IO.DAL.csproj",
       "msbuildProject": "../foreandr.github.IO.DAL/foreandr.github.IO.DAL.csproj"
+    },
+    "foreandrViewModels/1.0.0": {
+      "type": "project",
+      "path": "../foreandrViewModel/foreandrViewModels.csproj",
+      "msbuildProject": "../foreandrViewModel/foreandrViewModels.csproj"
     }
   },
   "projectFileDependencyGroups": {
@@ -7999,6 +8017,7 @@
       "Microsoft.NET.Test.Sdk >= 16.9.4",
       "coverlet.collector >= 3.0.2",
       "foreandr.github.IO.DAL >= 1.0.0",
+      "foreandrViewModels >= 1.0.0",
       "xunit >= 2.4.1",
       "xunit.runner.visualstudio >= 2.4.3"
     ]
@@ -8037,6 +8056,9 @@
           "projectReferences": {
             "C:\\Users\\Andre\\Desktop\\FOLDER\\foreandr.github.io\\API\\foreandrGithub\\foreandr.github.IO.DAL\\foreandr.github.IO.DAL.csproj": {
               "projectPath": "C:\\Users\\Andre\\Desktop\\FOLDER\\foreandr.github.io\\API\\foreandrGithub\\foreandr.github.IO.DAL\\foreandr.github.IO.DAL.csproj"
+            },
+            "C:\\Users\\Andre\\Desktop\\FOLDER\\foreandr.github.io\\API\\foreandrGithub\\foreandrViewModel\\foreandrViewModels.csproj": {
+              "projectPath": "C:\\Users\\Andre\\Desktop\\FOLDER\\foreandr.github.io\\API\\foreandrGithub\\foreandrViewModel\\foreandrViewModels.csproj"
             }
           }
         }
