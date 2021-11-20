@@ -199,9 +199,9 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Andre\\Desktop\\FOLDER\\foreandr.github.io\\API\\foreandrGithub\\foreandrGithub\\foreandrGithub.csproj",
-      "projectName": "foreandrGithub",
-      "projectPath": "C:\\Users\\Andre\\Desktop\\FOLDER\\foreandr.github.io\\API\\foreandrGithub\\foreandrGithub\\foreandrGithub.csproj",
+      "projectUniqueName": "C:\\Users\\Andre\\Desktop\\FOLDER\\foreandr.github.io\\API\\foreandrGithub\\foreandrGithub\\foreandrGithubWebsite.csproj",
+      "projectName": "foreandrGithubWebsite",
+      "projectPath": "C:\\Users\\Andre\\Desktop\\FOLDER\\foreandr.github.io\\API\\foreandrGithub\\foreandrGithub\\foreandrGithubWebsite.csproj",
       "packagesPath": "C:\\Users\\Andre\\.nuget\\packages\\",
       "outputPath": "C:\\Users\\Andre\\Desktop\\FOLDER\\foreandr.github.io\\API\\foreandrGithub\\foreandrGithub\\obj\\",
       "projectStyle": "PackageReference",
