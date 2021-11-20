@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "osRCefQKz+Pw8DCjgGaQ7UyDqGVHFPYGXs1Zq5B98tw=",
+  "Hash": "E4GB+taFLyT0zJ7OWs/Tl84K5JMPg3QXULm+yYZDwKs=",
   "Source": "foreandrGithubWebsite",
   "BasePath": "_content/foreandrGithubWebsite",
   "Mode": "Default",
@@ -83,6 +83,40 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\jquerybootstrap\\lib\\js\\jquery.validate.min.js"
+    },
+    {
+      "Identity": "C:\\Users\\Andre\\Desktop\\FOLDER\\foreandr.github.io\\API\\foreandrGithub\\foreandrGithub\\wwwroot\\js\\studentlookup.js",
+      "SourceId": "foreandrGithubWebsite",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\Andre\\Desktop\\FOLDER\\foreandr.github.io\\API\\foreandrGithub\\foreandrGithub\\wwwroot\\",
+      "BasePath": "_content/foreandrGithubWebsite",
+      "RelativePath": "js/studentlookup.js",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\js\\studentlookup.js"
+    },
+    {
+      "Identity": "C:\\Users\\Andre\\Desktop\\FOLDER\\foreandr.github.io\\API\\foreandrGithub\\foreandrGithub\\wwwroot\\templookup.html",
+      "SourceId": "foreandrGithubWebsite",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\Andre\\Desktop\\FOLDER\\foreandr.github.io\\API\\foreandrGithub\\foreandrGithub\\wwwroot\\",
+      "BasePath": "_content/foreandrGithubWebsite",
+      "RelativePath": "templookup.html",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\templookup.html"
     },
     {
       "Identity": "C:\\Users\\Andre\\Desktop\\FOLDER\\foreandr.github.io\\API\\foreandrGithub\\foreandrGithub\\wwwroot\\test.html",
