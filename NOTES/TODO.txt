@@ -1,4 +1,4 @@
-﻿3.  
+3. FORK MONERO, CONNECT NODE TO API, SHOW VIA HTML
 4. blogs need to be stored permanently
 5. NBA prediction algo
 6. Spacing from the topresume 15px
