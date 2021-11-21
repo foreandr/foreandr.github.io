@@ -1,0 +1,14 @@
+C:\Users\Andre\Desktop\FOLDER\foreandr.github.io\API\foreandrGithub\foreandr.github.IO.DAL\bin\Debug\net6.0\foreandr.github.IO.DAL.deps.json
+C:\Users\Andre\Desktop\FOLDER\foreandr.github.io\API\foreandrGithub\foreandr.github.IO.DAL\bin\Debug\net6.0\foreandr.github.IO.DAL.runtimeconfig.json
+C:\Users\Andre\Desktop\FOLDER\foreandr.github.io\API\foreandrGithub\foreandr.github.IO.DAL\bin\Debug\net6.0\foreandr.github.IO.DAL.dll
+C:\Users\Andre\Desktop\FOLDER\foreandr.github.io\API\foreandrGithub\foreandr.github.IO.DAL\bin\Debug\net6.0\ref\foreandr.github.IO.DAL.dll
+C:\Users\Andre\Desktop\FOLDER\foreandr.github.io\API\foreandrGithub\foreandr.github.IO.DAL\bin\Debug\net6.0\foreandr.github.IO.DAL.pdb
+C:\Users\Andre\Desktop\FOLDER\foreandr.github.io\API\foreandrGithub\foreandr.github.IO.DAL\obj\Debug\net6.0\foreandr.github.IO.DAL.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Andre\Desktop\FOLDER\foreandr.github.io\API\foreandrGithub\foreandr.github.IO.DAL\obj\Debug\net6.0\foreandr.github.IO.DAL.AssemblyInfoInputs.cache
+C:\Users\Andre\Desktop\FOLDER\foreandr.github.io\API\foreandrGithub\foreandr.github.IO.DAL\obj\Debug\net6.0\foreandr.github.IO.DAL.AssemblyInfo.cs
+C:\Users\Andre\Desktop\FOLDER\foreandr.github.io\API\foreandrGithub\foreandr.github.IO.DAL\obj\Debug\net6.0\foreandr.github.IO.DAL.csproj.CoreCompileInputs.cache
+C:\Users\Andre\Desktop\FOLDER\foreandr.github.io\API\foreandrGithub\foreandr.github.IO.DAL\obj\Debug\net6.0\foreandr.github.IO.DAL.dll
+C:\Users\Andre\Desktop\FOLDER\foreandr.github.io\API\foreandrGithub\foreandr.github.IO.DAL\obj\Debug\net6.0\ref\foreandr.github.IO.DAL.dll
+C:\Users\Andre\Desktop\FOLDER\foreandr.github.io\API\foreandrGithub\foreandr.github.IO.DAL\obj\Debug\net6.0\foreandr.github.IO.DAL.pdb
+C:\Users\Andre\Desktop\FOLDER\foreandr.github.io\API\foreandrGithub\foreandr.github.IO.DAL\obj\Debug\net6.0\foreandr.github.IO.DAL.genruntimeconfig.cache
+C:\Users\Andre\Desktop\FOLDER\foreandr.github.io\API\foreandrGithub\foreandr.github.IO.DAL\obj\Debug\net6.0\foreandr.github.IO.DAL.csproj.AssemblyReference.cache

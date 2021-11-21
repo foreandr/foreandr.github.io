@@ -54,6 +54,7 @@ namespace foreandrGithub
             {
                 endpoints.MapControllers();
             });
+            app.UseStaticFiles();
         }
     }
 }

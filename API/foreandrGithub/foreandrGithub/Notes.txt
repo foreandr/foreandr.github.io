@@ -1,2 +1,4 @@
 ﻿1. CONNECTION ISSUES?
 	- May have to go to Startup.cs and add "app.UseStaticFiles()"
+2. HAD to use 6.0 for some reason...not sure why?
+3. DISABLED WARNIGNS FOR NULL RETURN INTESTS
