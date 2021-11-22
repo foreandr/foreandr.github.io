@@ -19,7 +19,17 @@ function printFunction() {
     console.log("skzjhlkjhadsf");
 }
 //<button class="link">Clicky</button>
+
+
 // First Blog Post test
+var titleOfPost1 = "This is me";
+var date1 = "Jan 1 2020";
+var linkToHtml = "./blog1.html";
 
 process(titleOfPost1, date1, linkToHtml);
+
+// Second Blog Post test
+var titleOfPost2 = "This is me2";
+var date2 = "Jan 2 2020";
+var linkToHtml = "./blog2.html";
 process(titleOfPost2, date2, linkToHtml);

@@ -16,4 +16,8 @@
     <ProjectReference Include="..\foreandrViewModel\foreandrViewModels.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\html\" />
+  </ItemGroup>
+
 </Project>

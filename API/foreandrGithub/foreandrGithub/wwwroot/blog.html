@@ -1,22 +1,22 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
 <head>
-    <title>Home</title>
+    <title>Blog</title>
     <meta charset="utf-8" />
-    <link href="./bootstrap.min.css" rel="stylesheet" />
+    <link href="bootstrap/lib/css/bootstrap.min.css" rel="stylesheet" />
     <link href="./main.css" rel="stylesheet" />
 
     <link rel="icon" href="data:;base64,iVBORw0KGgo=">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
 </head>
-<body onload="">
+<body>
     <nav class="navbar navbar-expand-md navbar-light bg-light">
         <a class="navbar-brand mx-3" href="#">Foreandr</a>
         <div class="collapse navbar-collapse" id="navbarContent">
             <ul class="navbar-nav mr-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="./main.html">Home</a>
+                    <a class="nav-link" href="./main.html">LOCAL BLOG</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="./blog.html">Blog</a>
@@ -48,21 +48,46 @@
         </div>
     </nav>
 
-    <div id="articleTitle"></div>
-    <div id="articleContents"></div>
+    <div id="blogTitle">
+        Blog Posts
+        <div id="enterBlogPosts">
+            <div>
+
+            </div>
+        </div>
+    </div>
 
 
+    <div id="footerDiv">
+        <footer id="footer">
+            <div id="footerTitle">
+                &copy;Forandr
+            </div>
+            <div>
+                <ul id="footerList1">
+                    <li>
+                        <a href="https://github.com/foreandre">Github</a>
+                    </li>
+                    <li>
+                        <a href="https://www.foreandr.com">foreandr.com</a>
+                    </li>
+                </ul>
+            </div>
 
-
-
-
-
-    <footer><a href="https://www.foreandr.com">&copy;foreandr.com</a></footer>
+            <div>
+                <ul id="footerList2">
+                    <li>
+                        <a href="https://twitter.com/foreandr">Twitter</a>
+                    </li>
+                    <li>
+                        <a href="mailto:foreandr@gmail.com">Email</a>
+                    </li>
+                </ul>
+            </div>
+        </footer>
+    </div>
     <script src="./main.js"></script>
     <script src="./require.js"></script>
-    <script src="./blogvariables.js"></script>
-    <script src="./blogPages.js"></script>
-
-
+    <script src="./blog.js"></script>
 </body>
 </html>
