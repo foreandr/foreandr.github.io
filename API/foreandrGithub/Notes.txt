@@ -1,7 +1,0 @@
-﻿1. CONNECTION ISSUES?
-	- May have to go to Startup.cs and add "app.UseStaticFiles()"
-2. HAD to use 6.0 for some reason...not sure why?
-
-3. DON'T FORGET TO ADD PROJECT REFERENCES
-4. Under Tools, Options, Environment, Preview Features set Use previews of the .NET SDK to true, restart Visual Studio.
-5. All pieces of the project have to be using the same .NET Framework or it breaks
