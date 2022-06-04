@@ -25,7 +25,8 @@
     font-family: 'Courier New', monospace;
 }
 
-footer {
+footer,
+.push {
     position: absolute;
     bottom: 0;
 }
@@ -136,3 +137,16 @@ footer {
     100% {
         opacity: 1;
     }
+}
+
+#stanza {
+    margin: auto;  
+    width: 40%;
+    border: 3px solid green;
+    padding: 10px;
+}
+#title {
+    margin: auto;
+    width: 40%;
+    padding: 10px;
+}  

@@ -20,8 +20,8 @@ function printFunction() {
 }
 //<button class="link">Clicky</button>
 // First Blog Post test
-var titleOfPost1 = "This is me";
-var date1 = "Jan 1 2020";
+var titleOfPost1 = "Theology";
+var date1 = "June 3 2022";
 var linkToHtml = "blog/blog1.html";
 
 process(titleOfPost1, date1, linkToHtml);
