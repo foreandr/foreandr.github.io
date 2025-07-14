@@ -1,0 +1,125 @@
+# 🔒 Project config and local data
+instructions.txt
+upload_pypi.bat
+upload_github.bat
+update_package_num.bat
+notes.txt
+config.json
+credentials.json
+webweb.exe
+main.exe
+base.exe
+site_graph.html
+
+# 🧪 Data, Models, Logs
+*.png
+*.jpg
+*.pkl
+*.spec
+*.log
+*.jpg
+*.png
+*.logs.txt
+log.txt
+logs/
+geckodriver.log
+webwebdb.sqlite
+files/like_performance.db
+files/digital_ocean.json
+files/credentials.json.txt
+files/credentials.json
+
+# 📁 Virtual environments, build artifacts, and temp files
+venv/
+build/
+dist/
+develop-eggs/
+downloads/
+temp_download/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+executables/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# 🧠 HyperSel specific
+hyperSel/__pycache__/
+hyperSel/logs/
+hyperSel/config.json
+hyperSel/demo_data1.json
+hyperSel/data/phone.csv
+hyperSel/data/names.txt
+hyperSel/data/addresses.csv
+hyperSel/data/email.txt
+hyperSel/SVC.pkl
+hyperSel/RandomForestClassifier.pkl
+hyperSel/LogisticRegression.pkl
+hyperSel/foo_trial.spec
+
+# 🔬 Other folders
+resources/
+tor/
+parsing_papers/
+
+# ⚙️ IDE/editor files
+.vscode/
+.vs/
+.idea/
+*.swp
+
+# 🧪 Testing / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+*.cover
+*.pid
+*.tgz
+*.gz
+
+# 📦 OS-specific junk
+.DS_Store
+Thumbs.db
+
+# 🎥 Video files
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.webm
+
+# 🔊 Audio files
+*.mp3
+*.wav
+*.flac
+*.aac
+*.ogg
+*.m4a
+*.wma
+*.aiff
+*.opus
+
+# 🚫 Python cache
+__pycache__/
+__pycache__
+__pycache__/db.cpython-312.pyc
+
+# 🚀 FFmpeg binaries (ALLOW EXEs ONLY)
+ffmpeg/*
+!ffmpeg/bin/
+ffmpeg/bin/*
+!ffmpeg/bin/ffmpeg.exe
+!ffmpeg/bin/ffplay.exe
+!ffmpeg/bin/ffprobe.exe
+
+
+# 🔧 Installer artifacts
+launcher/webweb_installer.iss
+launcher/Output/
+client_secrets.json
