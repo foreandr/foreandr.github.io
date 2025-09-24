@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Economics Tool - Andre's Portfolio</title>
-  <link rel="stylesheet" href="../../css/style.css">
+  <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
   <div id="navbar"></div>
@@ -14,7 +14,7 @@
   </div>
 
 <script>
-  fetch("../nav.html")
+  fetch("nav.html")
     .then(response => response.text())
     .then(data => {
       document.getElementById("navbar").innerHTML = data;
