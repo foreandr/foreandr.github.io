@@ -3,20 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <title>Andre's Portfolio</title>
-  <link rel="stylesheet" href="css/style.css">
+  <meta http-equiv="refresh" content="0; url=html/home.html">
+  <script>
+    // Fallback in case meta refresh doesn't work
+    window.location.href = "html/home.html";
+  </script>
 </head>
 <body>
-  <div id="navbar"></div>
-
-  <h1>Home Page</h1>
-  <p>Welcome to my portfolio homepage!</p>
-
-<script>
-  fetch("html/nav.html")
-    .then(response => response.text())
-    .then(data => {
-      document.getElementById("navbar").innerHTML = data;
-    });
-</script>
+  <p>If you are not redirected automatically, <a href="html/home.html">click here</a>.</p>
 </body>
 </html>
