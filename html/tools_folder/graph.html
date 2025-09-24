@@ -2,17 +2,19 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Andre's Portfolio</title>
-  <link rel="stylesheet" href="css/style.css">
+  <title>Graph Tool - Andre's Portfolio</title>
+  <link rel="stylesheet" href="../../css/style.css">
 </head>
 <body>
   <div id="navbar"></div>
 
-  <h1>Home Page</h1>
-  <p>Welcome to my portfolio homepage!</p>
+  <div class="container">
+    <h1>Graph Tool</h1>
+    <p>This will visualize data with interactive graphs (coming soon).</p>
+  </div>
 
 <script>
-  fetch("html/nav.html")
+  fetch("../nav.html")
     .then(response => response.text())
     .then(data => {
       document.getElementById("navbar").innerHTML = data;

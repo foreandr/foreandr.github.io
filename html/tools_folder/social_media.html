@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Social Media Feed Tool - Andre's Portfolio</title>
+  <link rel="stylesheet" href="../../css/style.css">
+</head>
+<body>
+  <div id="navbar"></div>
+
+  <div class="container">
+    <h1>Social Media Feed Tool</h1>
+    <p>This will aggregate and display social media feeds in one place (coming soon).</p>
+  </div>
+
+<script>
+  fetch("../nav.html")
+    .then(response => response.text())
+    .then(data => {
+      document.getElementById("navbar").innerHTML = data;
+    });
+</script>
+</body>
+</html>

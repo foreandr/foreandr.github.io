@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Games - Andre's Portfolio</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <div id="navbar"></div>
+
+  <div class="container">
+    <h1>Games Catalogue</h1>
+    <p>Pick from the games below:</p>
+
+    <div class="catalogue">
+      <div class="card">
+        <h3>Game 1</h3>
+        <p>A fun experimental project.</p>
+        <button>Play</button>
+      </div>
+      <div class="card">
+        <h3>Game 2</h3>
+        <p>A puzzle-style challenge.</p>
+        <button>Play</button>
+      </div>
+      <div class="card">
+        <h3>Game 3</h3>
+        <p>Action-packed and exciting.</p>
+        <button>Play</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+  fetch("nav.html")
+    .then(response => response.text())
+    .then(data => {
+      document.getElementById("navbar").innerHTML = data;
+    });
+</script>
+</body>
+</html>

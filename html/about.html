@@ -1,13 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>About Me</title>
-    <link rel="stylesheet" href="../css/style.css">
+  <meta charset="UTF-8">
+  <title>About - Andre's Portfolio</title>
+  <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
+  <div id="navbar"></div>
+
+  <div class="container">
     <h1>About Me</h1>
-    <p>This is a subpage in the <code>html/</code> folder.</p>
-    <a href="../index.html">Back to Home</a>
+    <p>Hello! My name is Andre. This portfolio is a place where I share my projects, ideas, and tools across economics, blog, games, and more.</p>
+    <p>Feel free to explore the different sections above to see what I’m working on.</p>
+  </div>
+
+<script>
+  fetch("nav.html")
+    .then(response => response.text())
+    .then(data => {
+      document.getElementById("navbar").innerHTML = data;
+    });
+</script>
 </body>
 </html>

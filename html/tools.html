@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Tools - Andre's Portfolio</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <div id="navbar"></div>
+
+  <div class="container">
+    <h1>Tools</h1>
+
+    <div class="card">
+      <h3>Graph Tool</h3>
+      <p>Visualize data with interactive graphs.</p>
+      <a href="tools_folder/graph.html"><button>Open Graph Tool</button></a>
+    </div>
+
+    <div class="card">
+      <h3>Social Media Feed Tool</h3>
+      <p>Aggregate and display social media feeds in one place.</p>
+      <a href="tools_folder/social_media.html"><button>Open Social Media Feed Tool</button></a>
+    </div>
+
+    <div class="card">
+      <h3>Economics Tool</h3>
+      <p>Analyze economic data and run basic models.</p>
+      <a href="tools_folder/economy.html"><button>Open Economics Tool</button></a>
+    </div>
+  </div>
+
+<script>
+  fetch("nav.html")
+    .then(response => response.text())
+    .then(data => {
+      document.getElementById("navbar").innerHTML = data;
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Contact - Andre's Portfolio</title>
+ <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <div id="navbar"></div>
+
+  <div class="container">
+    <h1>Contact</h1>
+    <p>If you’d like to get in touch, email me at:</p>
+    <p><a href="mailto:foreandr@gmail.com">foreandr@gmail.com</a></p>
+  </div>
+
+<script>
+  fetch("nav.html")
+    .then(response => response.text())
+    .then(data => {
+      document.getElementById("navbar").innerHTML = data;
+    });
+</script>
+</body>
+</html>
