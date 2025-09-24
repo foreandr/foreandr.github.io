@@ -2,25 +2,44 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Economics Tool - Andre's Portfolio</title>
+  <title>Economy Tool - Andre's Portfolio</title>
   <link rel="stylesheet" href="../css/style.css">
   <link rel="icon" type="image/x-icon" href="../assets/favicon.ico">
-
 </head>
 <body>
   <div id="navbar"></div>
 
-  <div class="container">
-    <h1>Economics Tool</h1>
-    <p>This page will host tools to analyze economic data and run basic models.</p>
+  <div style="display:flex; height:100vh; overflow:hidden;">
+    <!-- Side Panel -->
+    <div style="width:250px; background:#f4f4f4; padding:15px; overflow-y:auto;">
+      <h2>Economy Controls</h2>
+      
+      <label>Globe Color:</label>
+      <input type="color" id="globeColor" value="#0077ff" style="width:100%; margin-bottom:10px;">
+
+      <label>Heatmap Toggle:</label><br>
+      <button id="toggleHeatmap" style="margin-bottom:10px;">Toggle Heatmap</button>
+
+      <label>Economic Density:</label><br>
+      <input type="range" id="densitySlider" min="1" max="100" value="50" style="width:100%;">
+    </div>
+
+    <!-- Globe Canvas -->
+    <div style="flex:1; position:relative;">
+      <canvas id="globeCanvas"></canvas>
+    </div>
   </div>
 
-<script>
-  fetch("nav.html")
-    .then(response => response.text())
-    .then(data => {
-      document.getElementById("navbar").innerHTML = data;
-    });
-</script>
+  <!-- Globe Script -->
+  <script src="../js/globe.js" type="module"></script>
+
+  <script>
+    // Load navbar
+    fetch("nav.html")
+      .then(r => r.text())
+      .then(data => {
+        document.getElementById("navbar").innerHTML = data;
+      });
+  </script>
 </body>
 </html>
