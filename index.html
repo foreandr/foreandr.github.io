@@ -1,19 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Andre's Portfolio</title>
-    <link rel="stylesheet" href="css/style.css">
-</head>
-<body>
-    <h1>Welcome to My Portfolio</h1>
-    <p id="greeting"></p>
+<div id="navbar"></div>
 
-    <div id="projects"></div>
-
-    <!-- Load scripts in the right order -->
-    <script src="data/db.js"></script>
-    <script src="js/utils.js"></script>
-    <script src="js/main.js"></script>
-</body>
-</html>
+<script>
+  fetch("nav.html")
+    .then(response => response.text())
+    .then(data => {
+      document.getElementById("navbar").innerHTML = data;
+    });
+</script>
