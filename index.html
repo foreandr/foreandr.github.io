@@ -13,11 +13,12 @@
 
   <script>
     // Load nav.html into #navbar
-    fetch("nav.html")
-      .then(response => response.text())
-      .then(data => {
-        document.getElementById("navbar").innerHTML = data;
-      });
+fetch("html/nav.html")
+  .then(response => response.text())
+  .then(data => {
+    document.getElementById("navbar").innerHTML = data;
+  });
+
   </script>
 </body>
 </html>
