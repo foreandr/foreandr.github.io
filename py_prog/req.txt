@@ -1,0 +1,17 @@
+flask
+pywebview
+mss
+opencv-python
+numpy
+# Windows-only extras for pywebview
+pywin32
+pythonnet
+psutil
+pygetwindow
+pywin32
+
+# AI / video processing
+imutils
+torch
+torchvision
+ultralytics
