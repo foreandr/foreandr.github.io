@@ -3,20 +3,31 @@
 <head>
   <meta charset="UTF-8">
   <title>Andre's Portfolio</title>
-  <link rel="stylesheet" href="css/style.css">
-  <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="icon" type="image/x-icon" href="../assets/favicon.ico">
 </head>
 <body>
-  <h1>Testing JS Import</h1>
-  <p id="greeting"></p>
+  <div id="app">
+    <h1>Testing JS Import</h1>
+    <p id="greeting"></p>
+  </div>
 
   <!-- Load your utils.js file -->
-  <script src="js/utils.js"></script>
+  <script src="../js/utils.js"></script>
   <script>
     // Call greetUser from utils.js
     const msg = greetUser("Andre");
     document.getElementById("greeting").textContent = msg;
     console.log(msg);
+
+  fetch("html/demo.html")
+    .then(r => r.text())
+    .then(html => {
+      const div = document.createElement("div");
+      div.innerHTML = html;
+      document.body.appendChild(div);
+    });
+
   </script>
 </body>
 </html>

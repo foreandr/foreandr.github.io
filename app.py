@@ -25,3 +25,5 @@ def serve_file(filename):
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8001, debug=True)
+    # https://foreandr.github.io/index.html?nocache=123
+    # http://127.0.0.1:8001/index.html?nocache=123
