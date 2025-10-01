@@ -30,6 +30,7 @@ async function preloadContent(fileName) {
 // --- INITIALIZATION ---
 // Pre-load the Lot Tracker content immediately when utils.js runs
 preloadContent("lot_tracker.html");
+preloadContent("asset_tracker.html");
 
 /**
  * Loads the content of a given page into the main content area (#app).

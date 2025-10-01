@@ -1,38 +1,54 @@
-File tools.html (Final Update):
 <div class="container">
-  <h1>Tools Catalogue</h1>
-  <p>Explore some of the technical utilities and projects I've built.</p>
-  
-  <div class="catalogue">
+  <h1>Tools Catalogue</h1>
+  <p>Explore some of the technical utilities and projects I've built.</p>
+  
+  <div class="catalogue">
+    
+    <div class="card">
+      <h2>Lot Tracker</h2>
+      <p>Real-time vehicle inventory tracking and data analysis.</p>
+      <button 
+        id="lot-tracker-button" 
+        class="tool-button" 
+        onclick="
+          console.log('[INLINE CLICK] Direct HTML replacement triggered.');
+          // Use the global object and the file name as the key
+          document.getElementById('app').innerHTML = PRELOADED_HTML['lot_tracker.html'];
+          console.log('[INLINE CLICK] Replacement complete.');
+        "
+      >
+        View Tool
+      </button>
+    </div>
+
+        <div class="card">
+      <h2>Asset Tracker</h2>
+      <p>Comprehensive fixed-asset lifecycle management system.</p>
+      <button 
+        id="asset-tracker-button" 
+        class="tool-button" 
+        onclick="
+          console.log('[INLINE CLICK] Direct HTML replacement triggered.');
+          // Load the new asset_tracker.html content
+          document.getElementById('app').innerHTML = PRELOADED_HTML['asset_tracker.html'];
+          console.log('[INLINE CLICK] Replacement complete.');
+        "
+      >
+        View Tool
+      </button>
+    </div>
     
-    <div class="card">
-      <h2>Lot Tracker</h2>
-      <p>Real-time vehicle inventory tracking and data analysis.</p>
-      <button 
-        id="lot-tracker-button" 
-        class="tool-button" 
-        onclick="
-          console.log('[INLINE CLICK] Direct HTML replacement triggered.');
-          // Use the global object and the file name as the key
-          document.getElementById('app').innerHTML = PRELOADED_HTML['lot_tracker.html'];
-          console.log('[INLINE CLICK] Replacement complete.');
-        "
-      >
-        View Tool
-      </button>
-    </div>
+        <div class="card">
+      <h2>Stock Predictor</h2>
+      <p>Using Black-Scholes and machine learning for finance.</p>
+      <p>Coming Soon</p>
+    </div>
 
-    <div class="card">
-      <h2>Stock Predictor</h2>
-      <p>Using Black-Scholes and machine learning for finance.</p>
-      <p>Coming Soon</p>
-    </div>
+    <div class="card">
+      <h2>Resource Game</p>
+      <p>A JavaScript-based capital allocation management game.</p>
+      <p>Coming Soon</p>
+    </div>
 
-    <div class="card">
-      <h2>Resource Game</p>
-      <p>A JavaScript-based capital allocation management game.</p>
-      <p>Coming Soon</p>
-    </div>
-
-  </div>
+  </div>
 </div>
