@@ -1,0 +1,38 @@
+<div class="container">
+  <h1>Tools Catalogue</h1>
+  <p>Explore some of the technical utilities and projects I've built.</p>
+  
+  <div class="catalogue">
+    
+    <div class="card">
+      <h2>Lot Tracker</h2>
+      <p>Real-time vehicle inventory tracking and data analysis.</p>
+      <a href="#" data-page="lot_tracker.html" class="tool-link">View Tool</a>
+    </div>
+
+    <div class="card">
+      <h2>Stock Predictor</h2>
+      <p>Using Black-Scholes and machine learning for finance.</p>
+      <a href="#" data-page="stock_predictor.html" class="tool-link">Coming Soon</a>
+    </div>
+
+    <div class="card">
+      <h2>Resource Game</h2>
+      <p>A JavaScript-based capital allocation management game.</p>
+      <a href="#" data-page="resource_game.html" class="tool-link">Coming Soon</a>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // Add click handlers for the dynamically loaded tool links
+  document.querySelectorAll('.catalogue .tool-link').forEach(link => {
+    link.addEventListener('click', e => {
+      e.preventDefault();
+      const page = link.getAttribute('data-page');
+      fetchPage(page); // Now calling the global function from utils.js
+    });
+  });
+  console.log("Tools page loaded and card links attached.");
+</script>
