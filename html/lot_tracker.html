@@ -1,5 +1,56 @@
-<div class="container boxed-container">
+File html/lot_tracker.html:
+<div class='container boxed-container'>
   <h1>Lot Tracker Tool</h1>
   <p>Welcome to the Lot Tracker. This is where the real-time inventory application will be integrated.</p>
-  <p>Use the navigation links above to return to the tools catalogue or other pages.</p>
+  
+  <p>Below are two demonstrations of the system:</p>
+
+  <div class="video-gallery">
+    
+    <div class="video-item">
+      <h2>YouTube Demo</h2>
+      <iframe 
+          width="100%" 
+          height="200" 
+          src="https://www.youtube.com/embed/O5IeKIKHu5U" 
+          frameborder="0" 
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+          allowfullscreen
+      ></iframe>
+    </div>
+
+    <div class="video-item">
+      <h2>Local Demo (video1.mp4)</h2>
+      <video width="100%" height="200" controls muted autoplay loop playsinline>
+          <source src="assets/videos/video1.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+      </video>
+    </div>
+
+  </div>
+  <p style="margin-top: 30px;">Use the navigation links above to return to the tools catalogue or other pages.</p>
 </div>
+
+<style>
+/* CSS specific to this content fragment for the video gallery */
+.video-gallery {
+    display: flex; /* Enables side-by-side layout */
+    gap: 20px; /* Space between videos */
+    justify-content: center;
+    flex-wrap: wrap; /* Allows stacking on smaller screens */
+    margin-top: 20px;
+}
+
+.video-item {
+    flex: 1; /* Makes each video take equal width */
+    min-width: 250px; /* Minimum size before stacking */
+    max-width: 400px; /* Prevents them from getting too wide */
+    text-align: center;
+}
+
+.video-item h2 {
+    font-size: 1em;
+    color: #34495e;
+    margin-bottom: 10px;
+}
+</style>
