@@ -3,46 +3,127 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Three.js Data Globe Switcher (World, Canada, USA)</title>
+    <title>Three.js Data Globe Switcher (Time, Location, Data)</title>
     <style>
         body { margin: 0; overflow: hidden; background: #000000; }
         canvas { display: block; }
         
-        /* Cyberpunk Text Style */
-        #ui-container {
+        /* Define the new aesthetic green color */
+        :root {
+            --cyber-green: #00ff00;
+            --cyber-green-glow: 0 0 5px var(--cyber-green), 0 0 10px var(--cyber-green);
+            --border-width: 2px;
+            --border-color: var(--cyber-green);
+        }
+
+        /* ---------------------------------------------------- */
+        /* LEFT COLUMN (LOCATION) - Full Height */
+        /* ---------------------------------------------------- */
+        #left-column {
             position: absolute;
+            left: 20px;
             top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
+            height: calc(100vh - 40px); /* Full viewport height */
+            
             display: flex;
             flex-direction: column;
-            align-items: center;
+            align-items: flex-start;
+            padding: 20px;
+            background-color: #00000088;
+            border: var(--border-width) solid var(--border-color);
+            box-shadow: var(--cyber-green-glow);
+            border-radius: 5px;
+            width: 220px;
+            box-sizing: border-box;
+            z-index: 10;
         }
 
+
+        /* ---------------------------------------------------- */
+        /* RIGHT PANEL STACK (TIME and DATA TYPE) - Full Height */
+        /* ---------------------------------------------------- */
+        #right-panel-stack {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            height: calc(100vh - 40px);
+            width: 260px; /* Slightly wider to accommodate content and margins */
+            display: flex;
+            flex-direction: column;
+            gap: 20px; /* Gap between the Time and Data Type columns */
+            z-index: 10; 
+        }
+
+        /* Split column base style */
+        .split-column {
+            background-color: #00000088;
+            border: var(--border-width) solid var(--border-color);
+            box-shadow: var(--cyber-green-glow);
+            border-radius: 5px;
+            padding: 20px;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        /* TIME COLUMN (Approx 30% Height) */
+        #time-column {
+            flex: 3; 
+            min-height: 120px; /* Ensure minimum size */
+        }
+        
+        /* DATA TYPE COLUMN (Approx 70% Height) */
+        #data-type-column {
+            flex: 7; 
+            overflow-y: auto; /* Add scroll if data list gets too long */
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Column Title Styling */
+        .column-title {
+            position: absolute;
+            top: -15px; 
+            left: 5px;
+            color: var(--cyber-green); 
+            font-family: 'Consolas', monospace;
+            font-size: 20px;
+            text-shadow: var(--cyber-green-glow);
+            padding: 0 5px;
+            background-color: #000;
+            z-index: 11;
+        }
+
+        /* Info Text Styling (Used in Left Column) */
         #country-info {
-            color: #ff00ff; /* Magenta glow */
+            color: var(--cyber-green); 
             font-family: 'Consolas', monospace;
             font-size: 24px;
-            text-shadow: 0 0 5px #ff00ff, 0 0 10px #ff00ff;
+            text-shadow: var(--cyber-green-glow);
             pointer-events: none;
-            margin-bottom: 10px;
+            margin-bottom: 20px;
         }
 
-        /* Cyberpunk Button Style */
+        /* Button Container (Vertical Stack in Left Column) */
         #button-container {
             display: flex;
-            gap: 10px;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
         }
+        
+        /* Button Styling */
         .switch-button {
             background-color: transparent;
-            border: 2px solid #00ffff; /* Cyan border */
-            color: #00ffff; /* Cyan text */
+            border: 2px solid var(--cyber-green);
+            color: var(--cyber-green);
             font-family: 'Consolas', monospace;
             font-size: 16px;
-            padding: 8px 15px;
+            padding: 10px 20px;
             cursor: pointer;
-            box-shadow: 0 0 5px #00ffff, 0 0 10px #00ffff44;
+            box-shadow: var(--cyber-green-glow), 0 0 10px #00ff0044;
             transition: all 0.2s;
+            text-align: left;
+            box-sizing: border-box;
         }
         .switch-button:disabled {
             border-color: #ff00ff;
@@ -52,13 +133,47 @@
             cursor: wait;
         }
         .switch-button:hover:not(:disabled) {
-            background-color: #00ffff22;
-            box-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff88;
+            background-color: #00ff0022;
+            box-shadow: 0 0 10px var(--cyber-green), 0 0 20px #00ff0088;
+        }
+
+        /* Styling for list items and time selectors */
+        .data-type-item {
+            color: var(--cyber-green);
+            font-family: 'Consolas', monospace;
+            font-size: 16px;
+            margin-bottom: 10px;
+            text-shadow: 0 0 2px var(--cyber-green);
+        }
+
+        .time-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+
+        .time-input-group label {
+            color: var(--cyber-green);
+            font-family: 'Consolas', monospace;
+            font-size: 14px;
+            text-shadow: 0 0 2px var(--cyber-green);
+        }
+
+        .time-input-group input {
+            background-color: #001100;
+            border: 1px solid var(--cyber-green);
+            color: var(--cyber-green);
+            font-family: 'Consolas', monospace;
+            padding: 5px;
+            text-shadow: 0 0 2px var(--cyber-green);
         }
     </style>
 </head>
 <body>
-    <div id="ui-container">
+    
+    <div id="left-column" class="column-container">
+        <div class="column-title">LOCATION</div>
         <div id="country-info">SYSTEM INIT: LOADING GLOBAL DATA...</div>
         <div id="button-container">
             <button class="switch-button" id="world-button" onclick="loadView('world')">Full World Map</button>
@@ -66,6 +181,34 @@
             <button class="switch-button" id="usa-button" onclick="loadView('usa')">USA States</button>
         </div>
     </div>
+
+    <div id="right-panel-stack">
+        
+        <div id="time-column" class="split-column">
+            <div class="column-title">TIME RANGE</div>
+            <div class="time-input-group">
+                <label for="date-before">Before Data:</label>
+                <input type="number" id="date-before" value="1500">
+            </div>
+             <div class="time-input-group">
+                <label for="date-after">After Data:</label>
+                <input type="number" id="date-after" value="2500">
+            </div>
+        </div>
+
+        <div id="data-type-column" class="split-column">
+            <div class="column-title">DATA TYPE</div>
+            <div class="data-type-item">Population Density</div>
+            <div class="data-type-item">Economic Output</div>
+            <div class="data-type-item">Environmental Impact</div>
+            <div class="data-type-item">Resource Distribution</div>
+            <div class="data-type-item">Network Activity</div>
+            <div class="data-type-item">Historical Trends</div>
+            <div class="data-type-item">Security Alerts</div>
+            <div class="data-type-item">Infrastructure Status</div>
+        </div>
+    </div>
+
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
     <script src="https://unpkg.com/three@0.134.0/examples/js/controls/OrbitControls.js"></script>
@@ -78,7 +221,7 @@
         const mouse = new THREE.Vector2();
         const raycaster = new THREE.Raycaster();
         
-        // **CYBERPUNK MATERIALS**
+        // **MAP MATERIALS (Keep as blue/white for contrast)**
         const defaultMaterial = new THREE.MeshPhongMaterial({ 
             color: 0x002244, transparent: true, opacity: 0.5, 
             side: THREE.DoubleSide, specular: 0x004488, shininess: 10 
@@ -108,7 +251,6 @@
         // --- DATA URLs ---
         const worldGeojsonUrl = 'https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json';
         const canadaGeojsonUrl = 'https://gist.githubusercontent.com/M1r1k/d5731bf39e1dfda5b53b4e4c560d968d/raw/canada_provinces.geo.json';
-        // FIXED USA URL (Source: PublicaMundi MappingAPI)
         const usaGeojsonUrl = 'https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/us-states.json'; 
 
         // --- CAMERA CONFIGS for each view ---
@@ -119,29 +261,29 @@
                 cameraPos: [0, 0, 200], 
                 targetPos: [0, 0, 0],
                 zoom: 200,
-                info: 'GLOBAL VIEW ONLINE. Select a target or location.',
+                info: 'GLOBAL VIEW: Displaying all nations.',
                 rotate: true
             },
             'canada': {
                 url: canadaGeojsonUrl,
                 cacheKey: 'canadaDataCache',
-                coords: { lat: 55, lng: -100 }, // Center of Canada
+                coords: { lat: 55, lng: -100 }, 
                 zoom: 120,
-                info: 'CANADIAN GRID ONLINE. Scanning provinces.',
+                info: 'FOCUSED VIEW: Canadian provinces/territories.',
                 rotate: false 
             },
             'usa': {
                 url: usaGeojsonUrl,
                 cacheKey: 'usaDataCache',
-                coords: { lat: 39, lng: -98 }, // Center of USA
+                coords: { lat: 39, lng: -98 },
                 zoom: 120,
-                info: 'UNITED STATES GRID ONLINE. Scanning states.',
+                info: 'FOCUSED VIEW: United States states.',
                 rotate: false
             }
         };
 
 
-        // --- SETUP SCENE, CAMERA, RENDERER ---
+        // --- THREE.JS SETUP (Standard) ---
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -211,7 +353,6 @@
             const shape = new THREE.Shape();
             
             exterior.forEach((coord, index) => {
-                // Ensure coordinates are [longitude, latitude]
                 const lng = coord[0];
                 const lat = coord[1];
 
@@ -233,11 +374,9 @@
             const positionAttribute = geometry.attributes.position;
             const positions = positionAttribute.array;
 
-            // Property name logic updated to handle World ('name'), Canada ('NAMA'), and US ('name_1')
             const name = properties.name || properties.NAMA || properties.name_1 || 'Unknown Territory';
             
             for (let i = 0; i < positions.length; i += 3) {
-                // positions[i] is longitude, positions[i+1] is latitude
                 const spherical = toSphericalCoords(positions[i], positions[i+1], globeRadius + 0.1); 
                 positions[i] = spherical.x;
                 positions[i+1] = spherical.y;
@@ -250,7 +389,6 @@
             mesh.userData = { name: name, material: mesh.material.clone() };
             featureGroup.add(mesh);
             
-            // Draw border line
             const points = [];
             exterior.forEach(coord => points.push(toSphericalCoords(coord[0], coord[1], globeRadius + 0.2)));
             const borderGeometry = new THREE.BufferGeometry().setFromPoints(points);
@@ -298,7 +436,6 @@
         function setCameraFocus(viewKey) {
             const config = viewConfigs[viewKey];
 
-            // 1. Set the rotation speed based on the config
             rotationSpeed = config.rotate ? 0.0005 : 0; 
 
             let cameraPosition;
@@ -308,7 +445,6 @@
                 cameraPosition = new THREE.Vector3(...config.cameraPos);
                 targetPosition = new THREE.Vector3(...config.targetPos);
             } else {
-                // Focused view (Canada/USA)
                 const focusPoint = toSphericalCoords(config.coords.lng, config.coords.lat, globeRadius);
                 
                 targetPosition = focusPoint.clone(); 
@@ -317,11 +453,9 @@
                 cameraPosition = direction.multiplyScalar(globeRadius + config.zoom); 
             }
 
-            // Apply positions
             camera.position.copy(cameraPosition);
             controls.target.copy(targetPosition);
             
-            // CRITICAL FIX: Ensure controls update immediately on camera change
             controls.update(); 
         }
 
@@ -331,7 +465,6 @@
         window.loadView = function(viewKey) {
             const config = viewConfigs[viewKey];
             
-            // Get the current cache variable dynamically
             let dataCache;
             switch(viewKey) {
                 case 'world': dataCache = worldDataCache; break;
@@ -339,30 +472,25 @@
                 case 'usa': dataCache = usaDataCache; break;
             }
 
-            // Prevent re-loading the same view if data is already cached
             if (currentView === viewKey && dataCache) return;
             currentView = viewKey;
             
-            infoElement.textContent = `SYSTEM ALERT: ACTIVATING ${viewKey.toUpperCase()} VIEW...`;
+            infoElement.textContent = `SYSTEM ALERT: Loading ${viewKey.toUpperCase()} data...`;
             buttons.forEach(btn => btn.disabled = true);
 
-            // 1. Handle Caching and Fetching
             const url = config.url;
 
             const finalRender = (data) => {
                 processGeoJSON(data);
                 
-                // Update the correct cache variable
                 switch(viewKey) {
                     case 'world': worldDataCache = data; break;
                     case 'canada': canadaDataCache = data; break;
                     case 'usa': usaDataCache = data; break;
                 }
 
-                // 2. Set Focus (Camera Position/Target)
                 setCameraFocus(viewKey);
                 
-                // 3. Update UI
                 infoElement.textContent = config.info;
                 buttons.forEach(btn => btn.disabled = false);
             };
@@ -385,10 +513,7 @@
         }
 
         // --- IMMEDIATE INITIAL SETUP ---
-        // 1. Set initial camera focus BEFORE data starts loading
         setCameraFocus('world');
-
-        // 2. Start data loading
         loadView('world');
 
 
@@ -418,7 +543,8 @@
                     currentIntersected = intersectedObject;
                     currentIntersected.material = highlightedMaterial;
                     
-                    infoElement.textContent = `TARGET ACQUIRED: ${currentIntersected.userData.name} [STATUS: RED]`;
+                    // Update location info with target name
+                    infoElement.textContent = `TARGET: ${currentIntersected.userData.name}`;
                 }
             } else {
                 if (currentIntersected) {
