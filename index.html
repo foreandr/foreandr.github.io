@@ -7,28 +7,42 @@
   <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
 </head>
 <body>
-  <!-- Nav will be loaded here -->
+  <!-- Navbar will be loaded here -->
   <div id="navbar"></div>
 
+  <!-- Main content area -->
   <div id="app">
-    <h1>Testing JS Import</h1>
-    <p id="greeting"></p>
+    <h1>Welcome</h1>
+    <p>Select a page from the nav bar above.</p>
   </div>
 
   <!-- Load utils.js -->
   <script src="js/utils.js"></script>
 
   <script>
-    // Load nav.html dynamically
+    // Load navbar dynamically
     fetch("html/nav.html")
       .then(r => r.text())
       .then(html => {
         document.getElementById("navbar").innerHTML = html;
+
+        // Attach nav click handlers AFTER nav is loaded
+        document.querySelectorAll("#navbar .site-nav a[data-page]").forEach(link => {
+          link.addEventListener("click", e => {
+            e.preventDefault();
+            const page = link.getAttribute("data-page");
+
+            fetch("html/" + page)
+              .then(r => r.text())
+              .then(html => {
+                document.getElementById("app").innerHTML = html;
+              });
+          });
+        });
       });
 
-    // Call greetUser from utils.js
+    // Call greetUser from utils.js (demo)
     const msg = greetUser("Andre");
-    document.getElementById("greeting").textContent = msg;
     console.log(msg);
   </script>
 </body>
