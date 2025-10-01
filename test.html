@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Three.js Data Globe (World + Canada Highlight - Cyberpunk Aesthetic)</title>
+    <title>Three.js Data Globe (Cyberpunk Aesthetic)</title>
     <style>
         body { margin: 0; overflow: hidden; background: #000000; }
         canvas { display: block; }
@@ -22,7 +22,7 @@
     </style>
 </head>
 <body>
-    <div id="country-info">SYSTEM INITIALIZING...</div>
+    <div id="country-info">Loading classified data...</div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
     <script src="https://unpkg.com/three@0.134.0/examples/js/controls/OrbitControls.js"></script>
@@ -35,17 +35,17 @@
         const raycaster = new THREE.Raycaster();
         
         // **CYBERPUNK MATERIALS**
-        // World/Base Country Fill: Very deep blue, low opacity
+        // Base country fill: Dark/deep blue, low opacity, using MeshPhongMaterial for lighting response
         const defaultMaterial = new THREE.MeshPhongMaterial({ 
-            color: 0x002244, 
+            color: 0x002244, // Deep Blue/Navy
             transparent: true, 
             opacity: 0.5, 
             side: THREE.DoubleSide,
-            specular: 0x004488, 
+            specular: 0x004488, // Subtle sheen
             shininess: 10 
         }); 
 
-        // Highlight material: Bright magenta for "classified breach" feel
+        // Highlight material: Bright red/magenta for "classified breach" feel
         const highlightedMaterial = new THREE.MeshBasicMaterial({ 
             color: 0xff00ff, 
             transparent: true, 
@@ -53,22 +53,14 @@
             side: THREE.DoubleSide 
         });
 
-        // Border and Grid lines: Sharp white/cyan for high contrast digital display
-        const lineMaterial = new THREE.LineBasicMaterial({ color: 0x00ffff, linewidth: 2 });
-        const worldLineMaterial = new THREE.LineBasicMaterial({ color: 0x0099ff, linewidth: 1 }); // Duller for background countries
+        // Border and Grid lines: Sharp white for high contrast digital display
+        const lineMaterial = new THREE.LineBasicMaterial({ color: 0xffffff, linewidth: 2 });
         
         let countriesGroup = new THREE.Group();
-        let countryMeshes = []; // Array of meshes for raycasting
+        let countryMeshes = [];
         let currentIntersected = null;
         let isUserInteracting = false;
         let rotationSpeed = 0.005;
-
-        // --- DATA URLs ---
-        // 1. Full World Map (for background countries)
-        const worldGeojsonUrl = 'https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json';
-
-        // 2. Canada Provinces/Territories (for detail and interactivity)
-        const canadaGeojsonUrl = 'https://gist.githubusercontent.com/M1r1k/d5731bf39e1dfda5b53b4e4c560d968d/raw/canada_provinces.geo.json';
 
 
         // --- SETUP SCENE, CAMERA, RENDERER ---
@@ -77,18 +69,7 @@
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
-        
-        function latLonToCartesian(lat, lon, radius) {
-            const phi = (90 - lat) * Math.PI / 180;
-            const theta = (lon + 180) * Math.PI / 180;
-            return new THREE.Vector3().setFromSphericalCoords(radius, phi, theta);
-        }
-        
-        // Center camera over Canada (Lat 55, Lng -100)
-        const initialLat = 55;
-        const initialLng = -100;
-        camera.position.copy(latLonToCartesian(initialLat, initialLng, 300));
-        camera.lookAt(0, 0, 0); 
+        camera.position.z = 200;
         
         // OrbitControls setup
         const controls = new THREE.OrbitControls(camera, renderer.domElement);
@@ -96,30 +77,20 @@
         controls.dampingFactor = 0.05;
         controls.rotateSpeed = 0.5;
 
-        // ADD LIGHTING
-        const ambientLight = new THREE.AmbientLight(0x444444); 
+        // **NEW: ADD LIGHTING FOR PHONG MATERIAL (CYBERPUNK GLOW/SHADOW)**
+        const ambientLight = new THREE.AmbientLight(0x444444); // Soft ambient light
         scene.add(ambientLight);
 
+        // Targeted light for a military/classified feel
         const pointLight = new THREE.PointLight(0xffffff, 1.5, 500);
         pointLight.position.set(200, 100, 300);
         scene.add(pointLight);
         
         scene.add(countriesGroup);
 
+        // --- NEW: FUNCTION TO DRAW MINIMAL GRID LINES ---
 
-        // --- ADD BASE GLOBE SPHERE ---
-        const sphereGeometry = new THREE.SphereGeometry(globeRadius - 0.5, 64, 64);
-        const sphereMaterial = new THREE.MeshPhongMaterial({
-            color: 0x000000, 
-            transparent: true,
-            opacity: 0.1, // Very subtle, dark presence
-            shininess: 0
-        });
-        const baseSphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
-        scene.add(baseSphere);
-
-
-        // --- GRID LINES ---
+        // Draw a single line of longitude or latitude
         function drawGeoLine(points, material) {
             const geometry = new THREE.BufferGeometry().setFromPoints(points);
             const line = new THREE.Line(geometry, material);
@@ -127,11 +98,11 @@
         }
 
         function createMinimalGrid() {
-            const divisions = 24;
-            const material = new THREE.LineBasicMaterial({ color: 0x444444, linewidth: 1 });
+            const divisions = 24; // Number of segments for smooth curves
+            const material = new THREE.LineBasicMaterial({ color: 0x444444, linewidth: 1 }); // Dim grey for subtle grid
 
-            // Parallels (Latitudes)
-            for (let lat of [40, 50, 60]) {
+            // 1. **Parallels (Latitudes)** - Equator and one North/South
+            for (let lat of [0, 30, -30]) { // Equator (0), 30°N, 30°S
                 const points = [];
                 for (let i = 0; i <= divisions; i++) {
                     const lng = (i / divisions) * 360 - 180;
@@ -140,37 +111,34 @@
                 drawGeoLine(points, material);
             }
 
-            // Meridians (Longitudes)
-            for (let lng of [-140, -100, -60, -20]) {
+            // 2. **Meridians (Longitudes)** - Prime Meridian and three others
+            for (let lng of [0, 90, 180, -90]) { // 0°, 90°E, 180°, 90°W
                 const points = [];
                 for (let i = 0; i <= divisions; i++) {
+                    // Go from South Pole (-90) to North Pole (90)
                     const lat = (i / divisions) * 180 - 90; 
                     points.push(toSphericalCoords(lng, lat, globeRadius + 0.05));
                 }
                 drawGeoLine(points, material);
             }
         }
-        createMinimalGrid();
+        createMinimalGrid(); // Call the new function to add the subtle grid
 
 
         // --- GEOSPATIAL HELPER FUNCTIONS ---
 
+        // Convert GeoJSON coordinates (Lng/Lat) to 3D Cartesian (X/Y/Z)
         function toSphericalCoords(lng, lat, radius) {
             const phi = (90 - lat) * Math.PI / 180;
             const theta = (lng + 180) * Math.PI / 180;
             return new THREE.Vector3().setFromSphericalCoords(radius, phi, theta);
         }
 
-        /**
-         * Creates a 3D mesh and border line from GeoJSON polygon coordinates.
-         * @param {Array} polygonCoordinates - Array of [exterior, hole1, hole2, ...]
-         * @param {Object} properties - GeoJSON properties object
-         * @param {boolean} isInteractive - If true, adds mesh to the raycasting array.
-         */
-        function createFeaturePolygon(polygonCoordinates, properties, isInteractive) {
-            const featureGroup = new THREE.Group();
+        // Creates a 3D mesh AND a border line from a single GeoJSON Polygon coordinate structure
+        function createCountryPolygon(polygonCoordinates, properties) {
+            const countryGroup = new THREE.Group();
 
-            if (!polygonCoordinates || polygonCoordinates.length === 0) return featureGroup;
+            if (!polygonCoordinates || polygonCoordinates.length === 0) return countryGroup;
             
             const exterior = polygonCoordinates[0];
             const holes = polygonCoordinates.slice(1);
@@ -180,21 +148,27 @@
             exterior.forEach((coord, index) => {
                 const x = coord[0];
                 const y = coord[1];
-                if (index === 0) shape.moveTo(x, y);
-                else shape.lineTo(x, y);
+                if (index === 0) {
+                    shape.moveTo(x, y);
+                } else {
+                    shape.lineTo(x, y);
+                }
             });
             holes.forEach(hole => {
                 const holePath = new THREE.Path();
                 hole.forEach((coord, index) => {
                     const x = coord[0];
                     const y = coord[1];
-                    if (index === 0) holePath.moveTo(x, y);
-                    else holePath.lineTo(x, y);
+                    if (index === 0) {
+                        holePath.moveTo(x, y);
+                    } else {
+                        holePath.lineTo(x, y);
+                    }
                 });
                 shape.holes.push(holePath);
             });
 
-            // 2. Triangulate and get geometry (FILL)
+            // 2. Triangulate and get geometry (Country FILL)
             const geometry = new THREE.ShapeGeometry(shape);
             
             // 3. Project the triangulated vertices back to the sphere
@@ -214,42 +188,34 @@
 
             // Set up the FILL mesh
             const mesh = new THREE.Mesh(geometry, defaultMaterial.clone());
-            
-            // Determine feature name (using 'name' for Canada, 'name' for World file)
-            const featureName = properties.name || properties.NAMA || 'Unknown Region';
-
-            if (isInteractive) {
-                mesh.userData = { 
-                    name: featureName, 
-                    material: mesh.material.clone()
-                };
-            }
-            featureGroup.add(mesh);
+            mesh.userData = { 
+                name: properties.name, 
+                material: mesh.material.clone()
+            };
+            countryGroup.add(mesh);
             
             
-            // Feature BORDER 
-            const borderPoints = [];
-            // Use lineMaterial for interactive borders (Canada), worldLineMaterial for others
-            const borderMat = isInteractive ? lineMaterial : worldLineMaterial;
-
+            // **Country BORDER (Using the white lineMaterial)**
+            const points = [];
             exterior.forEach(coord => {
-                borderPoints.push(toSphericalCoords(coord[0], coord[1], globeRadius + 0.2));
+                points.push(toSphericalCoords(coord[0], coord[1], globeRadius + 0.2));
             });
-            const borderGeometry = new THREE.BufferGeometry().setFromPoints(borderPoints);
-            const borderLine = new THREE.Line(borderGeometry, borderMat);
-            featureGroup.add(borderLine);
+            holes.forEach(hole => {
+                 hole.forEach(coord => {
+                    points.push(toSphericalCoords(coord[0], coord[1], globeRadius + 0.2)); 
+                });
+            });
+
+            const borderGeometry = new THREE.BufferGeometry().setFromPoints(points);
+            const borderLine = new THREE.Line(borderGeometry, lineMaterial);
+            countryGroup.add(borderLine);
             
-            return featureGroup;
+            return countryGroup;
         }
 
-        /**
-         * Processes GeoJSON data and adds features to the globe.
-         * @param {Object} geojson - The loaded GeoJSON object.
-         * @param {boolean} isInteractive - If true, features are added to the raycasting array.
-         * @returns {number} - The number of meshes created.
-         */
-        function processGeoJSON(geojson, isInteractive) {
-            let count = 0;
+        // Process GeoJSON data (unchanged)
+        function processGeoJSON(geojson) {
+            const meshes = [];
             geojson.features.forEach(feature => {
                 const geom = feature.geometry;
                 const properties = feature.properties;
@@ -266,49 +232,37 @@
                 }
 
                 polygonsToProcess.forEach(polygonCoordinates => {
-                    const featureMeshGroup = createFeaturePolygon(polygonCoordinates, properties, isInteractive);
-                    countriesGroup.add(featureMeshGroup);
+                    const countryMeshGroup = createCountryPolygon(polygonCoordinates, properties);
+                    countriesGroup.add(countryMeshGroup);
                     
-                    if (isInteractive) {
-                        // Add only the Mesh (not the Line) to the raycasting array
-                        featureMeshGroup.children.forEach(child => {
-                            if (child.isMesh) {
-                                countryMeshes.push(child);
-                            }
-                        });
-                        count++;
-                    }
+                    countryMeshGroup.children.forEach(child => {
+                        if (child.isMesh) {
+                             meshes.push(child);
+                        }
+                    });
                 });
             });
-            return count;
+            console.log(`Loaded ${meshes.length} country meshes.`);
+            return meshes;
         }
 
 
         // --- DATA LOADING ---
-        
-        // Load both files concurrently
-        Promise.all([
-            fetch(worldGeojsonUrl).then(res => res.json()),
-            fetch(canadaGeojsonUrl).then(res => res.json())
-        ])
-        .then(([worldData, canadaData]) => {
-            // 1. Process World Data (Non-interactive background)
-            const worldCount = processGeoJSON(worldData, false);
-            console.log(`Loaded ${worldCount} world country boundaries.`);
-            
-            // 2. Process Canada Data (Interactive foreground)
-            const canadaCount = processGeoJSON(canadaData, true);
-            console.log(`Loaded ${canadaCount} Canadian province/territory meshes (Interactive).`);
+        const geojsonUrl = 'https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json';
 
-            infoElement.textContent = 'GLOBAL GRID ONLINE: AWAITING TARGET ACQUISITION...';
-        })
-        .catch(err => {
-            console.error('Error loading GeoJSON:', err);
-            infoElement.textContent = 'DATA LOAD FAILURE. CHECK CONSOLE.';
-        });
+        fetch(geojsonUrl)
+            .then(response => response.json())
+            .then(data => {
+                countryMeshes = processGeoJSON(data);
+                infoElement.textContent = 'SYSTEM ACTIVE: AWAITING TARGET ACQUISITION...';
+            })
+            .catch(err => {
+                console.error('Error loading GeoJSON:', err);
+                infoElement.textContent = 'DATA CORRUPTED. CHECK CONSOLE.';
+            });
 
         
-        // --- EVENT HANDLERS AND ANIMATION LOOP ---
+        // --- EVENT HANDLERS AND ANIMATION LOOP (mostly unchanged) ---
         
         function onMouseMove(event) {
             mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
@@ -340,7 +294,7 @@
                     currentIntersected = intersectedObject;
                     currentIntersected.material = highlightedMaterial;
                     
-                    // Display province/territory name
+                    // Display name with a classified/military prefix
                     infoElement.textContent = `TARGET ACQUIRED: ${currentIntersected.userData.name} [STATUS: RED]`;
                 }
             } else {
@@ -348,7 +302,7 @@
                     currentIntersected.material = currentIntersected.userData.material;
                 }
                 currentIntersected = null;
-                infoElement.textContent = 'GLOBAL GRID ONLINE: AWAITING TARGET ACQUISITION...';
+                infoElement.textContent = 'SYSTEM ACTIVE: AWAITING TARGET ACQUISITION...';
             }
         }
 
