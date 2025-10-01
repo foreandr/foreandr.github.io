@@ -3,13 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <title>Andre's Portfolio</title>
-  <meta http-equiv="refresh" content="0; url=html/home.html">
-  <script>
-    // Fallback in case meta refresh doesn't work
-    window.location.href = "html/home.html";
-  </script>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
 </head>
 <body>
-  <p>If you are not redirected automatically, <a href="html/home.html">click here</a>.</p>
+  <h1>Testing JS Import</h1>
+  <p id="greeting"></p>
+
+  <!-- Load your utils.js file -->
+  <script src="js/utils.js"></script>
+  <script>
+    // Call greetUser from utils.js
+    const msg = greetUser("Andre");
+    document.getElementById("greeting").textContent = msg;
+    console.log(msg);
+  </script>
 </body>
 </html>

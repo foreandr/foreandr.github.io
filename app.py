@@ -1,38 +1,27 @@
-# app.py
-# Simple HTTP server for local testing of your portfolio
-# Usage:
-#   python app.py
-#
-# Then open http://localhost:8000/index.html in your browser.
-# Stop the server with CTRL+C.
-
-import http.server
-import socketserver
+from flask import Flask, send_from_directory, make_response
 import os
-import signal
-import sys
 
-PORT = 8000
+app = Flask(__name__, static_folder='.', static_url_path='')
 
-# Serve files from the current directory (Portfolio)
-web_dir = os.path.join(os.path.dirname(__file__))
-os.chdir(web_dir)
+# Disable caching globally
+@app.after_request
+def add_no_cache_headers(response):
+    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    return response
 
-Handler = http.server.SimpleHTTPRequestHandler
+# Serve index.html at /
+@app.route('/')
+def serve_index():
+    return send_from_directory('.', 'index.html')
 
-# Create the server
-httpd = socketserver.TCPServer(("", PORT), Handler)
+# Serve any file in the project folder
+@app.route('/<path:filename>')
+def serve_file(filename):
+    if os.path.exists(filename):
+        return send_from_directory('.', filename)
+    return ("File not found", 404)
 
-def shutdown_server(sig, frame):
-    print("\nShutting down server gracefully...")
-    httpd.server_close()
-    sys.exit(0)
-
-# Catch CTRL+C (SIGINT)
-signal.signal(signal.SIGINT, shutdown_server)
-
-print(f"Serving at http://localhost:{PORT}")
-print("Press CTRL+C to stop the server.")
-
-# Serve forever until CTRL+C
-httpd.serve_forever()
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=8001, debug=True)
