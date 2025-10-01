@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Three.js Data Globe Switcher (Cyberpunk Zoom)</title>
+    <title>Three.js Data Globe Switcher (Focused Zoom)</title>
     <style>
         body { margin: 0; overflow: hidden; background: #000000; }
         canvas { display: block; }
         
         /* Cyberpunk Text Style */
-        #info-container {
+        #ui-container {
             position: absolute;
             top: 20px;
             left: 50%;
@@ -29,7 +29,11 @@
         }
 
         /* Cyberpunk Button Style */
-        #switch-button {
+        #button-container {
+            display: flex;
+            gap: 10px;
+        }
+        .switch-button {
             background-color: transparent;
             border: 2px solid #00ffff; /* Cyan border */
             color: #00ffff; /* Cyan text */
@@ -40,16 +44,26 @@
             box-shadow: 0 0 5px #00ffff, 0 0 10px #00ffff44;
             transition: all 0.2s;
         }
-        #switch-button:hover {
+        .switch-button:disabled {
+            border-color: #ff00ff;
+            color: #ff00ff;
+            box-shadow: 0 0 5px #ff00ff;
+            opacity: 0.5;
+            cursor: wait;
+        }
+        .switch-button:hover:not(:disabled) {
             background-color: #00ffff22;
             box-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff88;
         }
     </style>
 </head>
 <body>
-    <div id="info-container">
-        <div id="country-info">SYSTEM INIT: LOADING DATA...</div>
-        <button id="switch-button" onclick="toggleView()">Switch to Canada Provinces</button>
+    <div id="ui-container">
+        <div id="country-info">SYSTEM INIT: LOADING GLOBAL DATA...</div>
+        <div id="button-container">
+            <button class="switch-button" id="world-button" onclick="loadView('world')">Full World Map</button>
+            <button class="switch-button" id="canada-button" onclick="loadView('canada')">Canada Provinces</button>
+        </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
@@ -59,11 +73,11 @@
         // --- CONSTANTS AND GLOBAL VARIABLES ---
         const globeRadius = 100;
         const infoElement = document.getElementById('country-info');
-        const switchButton = document.getElementById('switch-button');
+        const buttons = document.querySelectorAll('.switch-button');
         const mouse = new THREE.Vector2();
         const raycaster = new THREE.Raycaster();
         
-        // **CYBERPUNK MATERIALS**
+        // **CYBERPUNK MATERIALS** (Defined as before)
         const defaultMaterial = new THREE.MeshPhongMaterial({ 
             color: 0x002244, 
             transparent: true, 
@@ -83,19 +97,46 @@
         const lineMaterial = new THREE.LineBasicMaterial({ color: 0xffffff, linewidth: 2 });
         const gridMaterial = new THREE.LineBasicMaterial({ color: 0x444444, linewidth: 1 });
         
-        let dataGroup = new THREE.Group(); // Dynamic group for countries/provinces
-        let gridGroup = new THREE.Group(); // Static group for grid lines
+        let dataGroup = new THREE.Group();
+        let gridGroup = new THREE.Group();
         let countryMeshes = [];
         let currentIntersected = null;
         let isUserInteracting = false;
-        let rotationSpeed = 0.005;
-        let currentView = 'world'; // 'world' or 'canada'
+        
+        // **SLOWER ROTATION SPEED** (Way down, as requested)
+        let rotationSpeed = 0.0005; 
+        
+        let currentView = 'world'; 
         let canadaDataCache = null;
         let worldDataCache = null;
 
         // --- DATA URLs ---
         const worldGeojsonUrl = 'https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json';
         const canadaGeojsonUrl = 'https://gist.githubusercontent.com/M1r1k/d5731bf39e1dfda5b53b4e4c560d968d/raw/canada_provinces.geo.json';
+
+        // --- CAMERA CONFIGS for each view ---
+        const viewConfigs = {
+            'world': {
+                url: worldGeojsonUrl,
+                cache: worldDataCache,
+                // Default view: camera far out, looking at 0,0
+                cameraPos: new THREE.Vector3(0, 0, 200),
+                targetPos: new THREE.Vector3(0, 0, 0),
+                zoom: 200,
+                info: 'GLOBAL VIEW ONLINE. Select a target or location.',
+                rotate: true
+            },
+            'canada': {
+                url: canadaGeojsonUrl,
+                cache: canadaDataCache,
+                // Focused view: centered over Canada (Lat 55N, Lng 100W)
+                // We use toSphericalCoords to calculate the required camera position
+                coords: { lat: 55, lng: -100 }, 
+                zoom: 120,
+                info: 'CANADIAN GRID ONLINE. Scanning provinces.',
+                rotate: false // Disable rotation when zoomed in
+            }
+        };
 
 
         // --- SETUP SCENE, CAMERA, RENDERER ---
@@ -104,7 +145,6 @@
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
-        camera.position.z = 200;
         
         const controls = new THREE.OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
@@ -122,7 +162,8 @@
         scene.add(dataGroup);
         scene.add(gridGroup); 
 
-        // --- GRID LINES ---
+        // --- GEOSPATIAL HELPER FUNCTIONS ---
+
         function toSphericalCoords(lng, lat, radius) {
             const phi = (90 - lat) * Math.PI / 180;
             const theta = (lng + 180) * Math.PI / 180;
@@ -136,8 +177,9 @@
         }
 
         function createMinimalGrid() {
-            gridGroup.clear(); // Clear existing grid before redrawing if needed
+            gridGroup.clear();
             const divisions = 24;
+            const material = gridMaterial; 
 
             for (let lat of [0, 30, -30]) {
                 const points = [];
@@ -145,7 +187,7 @@
                     const lng = (i / divisions) * 360 - 180;
                     points.push(toSphericalCoords(lng, lat, globeRadius + 0.05));
                 }
-                drawGeoLine(points, gridMaterial);
+                drawGeoLine(points, material);
             }
 
             for (let lng of [0, 90, 180, -90]) {
@@ -154,15 +196,13 @@
                     const lat = (i / divisions) * 180 - 90; 
                     points.push(toSphericalCoords(lng, lat, globeRadius + 0.05));
                 }
-                drawGeoLine(points, gridMaterial);
+                drawGeoLine(points, material);
             }
         }
         createMinimalGrid(); 
 
-
-        // --- GEOSPATIAL FUNCTIONS ---
-
         function createFeaturePolygon(polygonCoordinates, properties) {
+            // ... (rest of the polygon creation logic remains the same) ...
             const featureGroup = new THREE.Group();
             if (!polygonCoordinates || polygonCoordinates.length === 0) return featureGroup;
             
@@ -187,7 +227,6 @@
             const positionAttribute = geometry.attributes.position;
             const positions = positionAttribute.array;
 
-            // Use 'name' for world, 'NAMA' or 'name' for Canada
             const name = properties.name || properties.NAMA || 'Unknown Territory';
             
             for (let i = 0; i < positions.length; i += 3) {
@@ -213,8 +252,8 @@
         }
 
         function processGeoJSON(geojson) {
-            dataGroup.clear(); // Clear existing geometry (countries or provinces)
-            countryMeshes = []; // Clear meshes array
+            dataGroup.clear(); 
+            countryMeshes = []; 
             
             geojson.features.forEach(feature => {
                 const geom = feature.geometry;
@@ -242,43 +281,77 @@
                     });
                 });
             });
-            console.log(`Loaded ${countryMeshes.length} features for ${currentView}.`);
         }
 
 
-        // --- VIEW STATE MANAGEMENT ---
+        // --- NEW FOCUS/ZOOM FUNCTION ---
 
-        function loadAndRenderData(view) {
-            infoElement.textContent = `SYSTEM ALERT: LOADING ${view.toUpperCase()} DATA...`;
-            switchButton.disabled = true;
+        function setCameraFocus(viewKey) {
+            const config = viewConfigs[viewKey];
 
-            const url = view === 'world' ? worldGeojsonUrl : canadaGeojsonUrl;
-            const cache = view === 'world' ? worldDataCache : canadaDataCache;
+            // 1. Set the rotation speed based on the config
+            rotationSpeed = config.rotate ? 0.0005 : 0; 
+
+            // 2. Set Camera Position and Target
+            let cameraPosition;
+            let targetPosition;
+
+            if (viewKey === 'world') {
+                // World view: center target at origin, place camera far away on Z-axis
+                cameraPosition = config.cameraPos;
+                targetPosition = config.targetPos;
+            } else {
+                // Focused view (e.g., Canada): Calculate point on globe and place camera far from it
+                const focusPoint = toSphericalCoords(config.coords.lng, config.coords.lat, globeRadius);
+                
+                // Set the controls target to the point on the globe
+                targetPosition = focusPoint.clone(); 
+                
+                // Calculate the camera position: target point + an offset along the vector from origin to target
+                const direction = focusPoint.clone().normalize();
+                // config.zoom is the distance from the origin. We use distance (config.zoom + globeRadius) from the target 
+                // to place the camera right above it.
+                cameraPosition = direction.multiplyScalar(globeRadius + config.zoom); 
+            }
+
+            // Apply positions instantly (OrbitControls will handle the smooth transition in animate loop)
+            camera.position.copy(cameraPosition);
+            controls.target.copy(targetPosition);
+            controls.update(); // Update controls immediately to apply target changes
+        }
+
+
+        // --- VIEW SWITCHER FUNCTION ---
+
+        window.loadView = function(viewKey) {
+            if (currentView === viewKey) return;
+            currentView = viewKey;
+            
+            const config = viewConfigs[viewKey];
+            infoElement.textContent = `SYSTEM ALERT: ACTIVATING ${viewKey.toUpperCase()} VIEW...`;
+            buttons.forEach(btn => btn.disabled = true);
+
+            // 1. Handle Caching and Fetching
+            const url = config.url;
+            let dataCache = viewKey === 'world' ? worldDataCache : canadaDataCache;
 
             const finalRender = (data) => {
                 processGeoJSON(data);
-                switchButton.disabled = false;
                 
-                // Adjust camera and rotation
-                if (view === 'world') {
-                    worldDataCache = data;
-                    camera.position.z = 200;
-                    controls.target.set(0, 0, 0);
-                    rotationSpeed = 0.005;
-                    switchButton.textContent = 'Switch to Canada Provinces';
-                    infoElement.textContent = 'SYSTEM ACTIVE: GLOBAL VIEW ONLINE.';
-                } else {
-                    canadaDataCache = data;
-                    camera.position.z = 120; // Zoomed in
-                    controls.target.set(0, 0, 0);
-                    rotationSpeed = 0.002; // Slower rotation when zoomed
-                    switchButton.textContent = 'Switch to Full World Map';
-                    infoElement.textContent = 'SYSTEM ACTIVE: CANADIAN GRID ONLINE.';
-                }
+                // Update cache
+                if (viewKey === 'world') worldDataCache = data;
+                else canadaDataCache = data;
+
+                // 2. Set Focus (Camera Position/Target)
+                setCameraFocus(viewKey);
+                
+                // 3. Update UI
+                infoElement.textContent = config.info;
+                buttons.forEach(btn => btn.disabled = false);
             };
 
-            if (cache) {
-                finalRender(cache);
+            if (dataCache) {
+                finalRender(dataCache);
             } else {
                 fetch(url)
                     .then(response => {
@@ -287,20 +360,15 @@
                     })
                     .then(finalRender)
                     .catch(err => {
-                        console.error(`Error loading ${view} GeoJSON:`, err);
-                        infoElement.textContent = `CRITICAL ERROR: ${view.toUpperCase()} DATA LOAD FAILED.`;
-                        switchButton.disabled = false;
+                        console.error(`Error loading ${viewKey} GeoJSON:`, err);
+                        infoElement.textContent = `CRITICAL ERROR: ${viewKey.toUpperCase()} DATA LOAD FAILED.`;
+                        buttons.forEach(btn => btn.disabled = false);
                     });
             }
         }
 
-        window.toggleView = function() {
-            currentView = currentView === 'world' ? 'canada' : 'world';
-            loadAndRenderData(currentView);
-        }
-
         // --- INITIAL DATA LOADING ---
-        loadAndRenderData(currentView);
+        loadView('world');
 
 
         // --- ANIMATION AND INTERACTION ---
@@ -320,6 +388,7 @@
             const intersects = raycaster.intersectObjects(countryMeshes, false);
 
             if (intersects.length > 0) {
+                // ... (highlighting logic remains the same) ...
                 const intersectedObject = intersects[0].object;
 
                 if (currentIntersected !== intersectedObject) {
@@ -332,18 +401,15 @@
                     infoElement.textContent = `TARGET ACQUIRED: ${currentIntersected.userData.name} [STATUS: RED]`;
                 }
             } else {
+                // ... (un-highlighting logic remains the same) ...
                 if (currentIntersected) {
                     currentIntersected.material = currentIntersected.userData.material;
                 }
                 currentIntersected = null;
 
-                const baseText = currentView === 'world' 
-                    ? 'SYSTEM ACTIVE: GLOBAL VIEW ONLINE.'
-                    : 'SYSTEM ACTIVE: CANADIAN GRID ONLINE.';
-                
-                // Only update if the button is not disabled (i.e., not loading)
-                if (!switchButton.disabled) {
-                    infoElement.textContent = baseText;
+                // Only restore base text if no interaction is happening and the globe isn't loading
+                if (!buttons[0].disabled) {
+                    infoElement.textContent = viewConfigs[currentView].info;
                 }
             }
         }
@@ -352,7 +418,8 @@
         function animate() {
             requestAnimationFrame(animate);
             
-            if (!isUserInteracting) {
+            // Apply rotation only if allowed by config AND user isn't interacting
+            if (!isUserInteracting && viewConfigs[currentView].rotate) {
                 dataGroup.rotation.y += rotationSpeed; 
                 gridGroup.rotation.y += rotationSpeed;
             }
