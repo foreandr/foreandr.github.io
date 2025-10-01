@@ -40,8 +40,7 @@ eggs/
 .eggs/
 lib/
 lib64/
-parts/
-executables/
+parts/executables/
 sdist/
 var/
 wheels/
@@ -88,11 +87,12 @@ htmlcov/
 Thumbs.db
 
 # 🎥 Video files
-*.mp4
 *.avi
 *.mov
 *.mkv
 *.webm
+# **NEW RULE:** Ignore all MP4 files everywhere
+*.mp4
 
 # 🔊 Audio files
 *.mp3
@@ -123,3 +123,11 @@ ffmpeg/bin/*
 launcher/webweb_installer.iss
 launcher/Output/
 client_secrets.json
+
+# ----------------------------------------------------
+# 📌 EXCEPTION: ALLOW PROJECT ASSETS IN 'assets/videos/'
+# ----------------------------------------------------
+# Un-ignore the specific folder containing the MP4 files
+!/assets/videos/
+# Un-ignore the MP4 files inside that specific folder
+!/assets/videos/*.mp4
