@@ -5,7 +5,22 @@
   <title>Social Media Tool - Andre's Portfolio</title>
   <link rel="stylesheet" href="../css/style.css">
   <link rel="icon" type="image/x-icon" href="../assets/favicon.ico">
-
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+    }
+    button {
+      margin: 5px;
+      padding: 6px 12px;
+    }
+    pre {
+      background: #f5f5f5;
+      border: 1px solid #ddd;
+      padding: 10px;
+      margin-top: 10px;
+    }
+  </style>
 </head>
 <body>
   <div id="navbar"></div>
@@ -13,14 +28,81 @@
   <div class="container">
     <h1>Social Media Feed Tool</h1>
     <p>This will aggregate and display social media feeds in one place (coming soon).</p>
+
+    <h2>SQL.js Test Area</h2>
+    <button id="show-all">Show All Users</button>
+    <button id="over-28">Show Users Age > 28</button>
+    <button id="insert">Insert Random User</button>
+
+    <pre id="output">Click a button to run a query...</pre>
   </div>
 
-<script>
-  fetch("nav.html")
-    .then(response => response.text())
-    .then(data => {
-      document.getElementById("navbar").innerHTML = data;
+  <!-- Load sql.js from CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.js"></script>
+
+  <script>
+    // Load navbar
+    fetch("nav.html")
+      .then(response => response.text())
+      .then(data => {
+        document.getElementById("navbar").innerHTML = data;
+      });
+
+    // Initialize SQL.js
+    initSqlJs({
+      locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/${file}`
+    }).then(SQL => {
+      const db = new SQL.Database();
+
+      // Create table with sensible schema
+      db.run(`
+        CREATE TABLE users (
+          id INTEGER PRIMARY KEY,
+          name TEXT NOT NULL,
+          age INTEGER NOT NULL
+        );
+      `);
+
+      // Add some useful indexes
+      db.run(`
+        CREATE INDEX idx_users_age ON users(age);
+        CREATE INDEX idx_users_name ON users(name);
+      `);
+
+      // Insert initial data
+      db.run(`
+        INSERT INTO users (name, age) VALUES ('Alice', 25);
+        INSERT INTO users (name, age) VALUES ('Bob', 30);
+        INSERT INTO users (name, age) VALUES ('Charlie', 35);
+      `);
+
+      const out = document.getElementById("output");
+
+      function runQuery(sql, params=[]) {
+        const result = db.exec(sql, params);
+        if (result.length > 0) {
+          out.textContent = JSON.stringify(result[0], null, 2);
+        } else {
+          out.textContent = "No results";
+        }
+      }
+
+      // Button handlers
+      document.getElementById("show-all").addEventListener("click", () => {
+        runQuery("SELECT * FROM users;");
+      });
+
+      document.getElementById("over-28").addEventListener("click", () => {
+        runQuery("SELECT * FROM users WHERE age > 28;");
+      });
+
+      document.getElementById("insert").addEventListener("click", () => {
+        const randomAge = Math.floor(Math.random() * 50) + 18;
+        const name = "User" + Math.floor(Math.random() * 1000);
+        db.run("INSERT INTO users (name, age) VALUES (?, ?);", [name, randomAge]);
+        runQuery("SELECT * FROM users ORDER BY id DESC LIMIT 5;");
+      });
     });
-</script>
+  </script>
 </body>
 </html>

@@ -1,1 +1,12 @@
 # this is for getting stuff so i CAN MAKE my owns ocial media feed
+
+#1. GET NEW DATA
+    # START WITH YOUTUBE, APPLE, VERY SIMPLE, 
+    # NAME, CHANNEL, DATE, CRAWL_TIME, METADATA_JSON whatever else
+    # POSSIBLE TO DEFINE FOREIGN KEY RELATIONSHIPS?
+''' NEED SOME WAY TO QUICKLY ACCESS INFROMATION IN JAVAXCRIPT
+    
+'''
+
+#2. STORE IN LOCAL.JS FILE, not db, has to be js file
+#3. NEED SOME PYTHON CODE FOR PULLING OUT THE DATA IN THE.JS file and puting it in pyth objects

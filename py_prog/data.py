@@ -1,1 +1,1 @@
-youtube_live_link = "https://www.youtube.com/live/Muyswhmq4C0"
+youtube_live_link = "https://youtube.com/live/erjqYSV3GWA?feature=share"

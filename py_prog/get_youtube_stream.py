@@ -12,7 +12,7 @@ import data
 # === Config ===
 OUTPUT_DIR = "videos"
 CHUNK_SECONDS = 30   # record length per segment
-MAX_FILES = 5        # keep last 5 files
+MAX_FILES = 15        # keep last 5 files
 WINDOW_TITLE = "Live Stream Viewer"
 
 # === Graceful Ctrl+C handler ===
@@ -23,9 +23,19 @@ def signal_handler(sig, frame):
 signal.signal(signal.SIGINT, signal_handler)
 
 def ensure_output_dir():
+    """Create or clean the output directory before each run."""
     if not os.path.exists(OUTPUT_DIR):
         os.makedirs(OUTPUT_DIR)
         print(f"[Setup] Created folder: {OUTPUT_DIR}")
+    else:
+        # Clear all old videos
+        for f in os.listdir(OUTPUT_DIR):
+            path = os.path.join(OUTPUT_DIR, f)
+            try:
+                os.remove(path)
+                print(f"[Setup] Deleted old file from previous run: {path}")
+            except Exception as e:
+                print(f"[Setup] Failed to delete {path}: {e}")
 
 def wait_for_window(title, timeout=30):
     """Wait until the target window exists and has nonzero size"""
@@ -62,9 +72,14 @@ def record_loop():
                 "-video_size", f"{win.width}x{win.height}",
                 "-t", str(CHUNK_SECONDS),
                 "-i", "desktop",
+                "-vf", "format=yuv420p",        # ✅ explicit conversion
                 "-c:v", "libx264",
-                "-preset", "fast",
+                "-preset", "veryfast",
                 "-crf", "23",
+                "-pix_fmt", "yuv420p",          # ✅ enforce standard format
+                "-profile:v", "high",           # ✅ force High profile, not 4:4:4
+                "-g", "40",                     # ✅ keyframe every ~2s at 20fps
+                "-tune", "zerolatency",         # ✅ helps with live capture
                 filename
             ], check=True)
 

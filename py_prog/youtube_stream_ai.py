@@ -3,30 +3,34 @@ import glob
 import cv2
 from ultralytics import YOLO
 
-INPUT_DIR = "videos"
+# === CONFIGURABLE SETTINGS ===
+INPUT_DIR = "example_videos"
 OUTPUT_DIR = "processed"
+PROCESS_ALL = True
+ALERT_SECONDS = 2  # how long before alert triggers
+# =============================
 
 def ensure_output_dir():
     if not os.path.exists(OUTPUT_DIR):
         os.makedirs(OUTPUT_DIR)
 
-def get_latest_video():
-    """Return the path to the most recent .mp4 in videos/"""
+def get_videos():
     files = glob.glob(os.path.join(INPUT_DIR, "*.mp4"))
     if not files:
-        raise FileNotFoundError("No video files found in 'videos/'")
-    return max(files, key=os.path.getmtime)
+        raise FileNotFoundError(f"No video files found in '{INPUT_DIR}'")
+    return sorted(files, key=os.path.getmtime)
 
 def boxes_overlap(boxA, boxB):
-    """Check if two boxes overlap (x1,y1,x2,y2 format)"""
     xA = max(boxA[0], boxB[0])
     yA = max(boxA[1], boxB[1])
     xB = min(boxA[2], boxB[2])
     yB = min(boxA[3], boxB[3])
     return xA < xB and yA < yB
 
+def alert_function():
+    print("🚨 ALERT: Someone is close to the car for a long time! 🚨")
+
 def process_video(input_path):
-    """Detect people and cars with YOLOv8, mark people overlapping cars as blue"""
     cap = cv2.VideoCapture(input_path)
     if not cap.isOpened():
         raise RuntimeError(f"Failed to open video: {input_path}")
@@ -37,12 +41,16 @@ def process_video(input_path):
 
     fourcc = cv2.VideoWriter_fourcc(*"XVID")
     fps = cap.get(cv2.CAP_PROP_FPS) or 20
+    frame_limit = int(ALERT_SECONDS * fps)  # frames required for alert
     w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     out = cv2.VideoWriter(out_path, fourcc, fps, (w, h))
 
-    # Load pretrained YOLOv8 model
+    # Load pretrained YOLOv8
     model = YOLO("yolov8n.pt")
+
+    # Track how many consecutive frames a person stays blue
+    overlap_counter = 0
 
     frame_count = 0
     while True:
@@ -67,27 +75,38 @@ def process_video(input_path):
                     cv2.putText(frame, "Car", (x1, y1 - 5),
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
 
-                elif cls == 0:  # person
+                # Treat more than just "person" as human-like (lenient definition)
+                elif cls in {0, 1, 3}:  # 0=person, 1=bicycle, 3=motorcycle (example)
                     person_boxes.append((x1, y1, x2, y2))
 
-        # Now check overlap person vs car
+        person_is_blue = False
         for (x1, y1, x2, y2) in person_boxes:
-            color = (0, 255, 0)  # default green
+            color = (0, 255, 0)
             label = "Person"
 
             for car_box in car_boxes:
                 if boxes_overlap((x1, y1, x2, y2), car_box):
-                    color = (255, 0, 0)  # blue if overlapping a car
+                    color = (255, 0, 0)  # blue
                     label = "Person-Car"
+                    person_is_blue = True
                     break
 
             cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
             cv2.putText(frame, label, (x1, y1 - 5),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
 
+        # Update counter for alert logic
+        if person_is_blue:
+            overlap_counter += 1
+        else:
+            overlap_counter = 0
+
+        if overlap_counter >= frame_limit:
+            alert_function()
+            overlap_counter = 0  # reset after alert
+
         out.write(frame)
 
-        # Live preview
         cv2.imshow("YOLO Detections", frame)
         if cv2.waitKey(1) & 0xFF == ord("q"):
             print("[AI] Stopped early by user.")
@@ -99,6 +118,13 @@ def process_video(input_path):
     print(f"[AI] Processed {frame_count} frames -> {out_path}")
 
 if __name__ == "__main__":
-    latest = get_latest_video()
-    print(f"[AI] Processing latest video: {latest}")
-    process_video(latest)
+    videos = get_videos()
+    if PROCESS_ALL:
+        print(f"[AI] Processing ALL {len(videos)} videos in {INPUT_DIR}")
+        for vid in videos:
+            print(f"[AI] Processing: {vid}")
+            process_video(vid)
+    else:
+        latest = videos[-1]
+        print(f"[AI] Processing latest video: {latest}")
+        process_video(latest)
