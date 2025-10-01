@@ -1,17 +1,41 @@
-File html/lot_tracker.html:
-<div class='container boxed-container'>
-  <h1>Lot Tracker Tool</h1>
-  <p>Welcome to the Lot Tracker. This is where the real-time inventory application will be integrated.</p>
-  
-  <p>Below are two demonstrations of the system:</p>
+<div class='container full-width-container'>
+  <h1>Lot Tracker Tool - Video Showcase</h1>
+  <p>Explore the live stream and local video assets related to the Lot Tracker system.</p>
 
-  <div class="video-gallery">
+  <div class="video-showcase">
     
-    <div class="video-item">
-      <h2>YouTube Demo</h2>
+    <div class="video-list-panel">
+      <h2>Local Video Assets (MP4)</h2>
+      <p>All local assets are provided in the highly-compatible MP4 format.</p>
+      
+      <div class="local-videos-catalogue">
+        
+        <div class="video-card">
+          <h3>Video 1 (MP4)</h3>
+          <p>Real-time vehicle inventory data capture.</p>
+          <video width="100%" height="auto" controls muted playsinline>
+            <source src="assets/videos/video1.mp4" type="video/mp4">
+            Your browser does not support MP4.
+          </video>
+        </div>
+        
+        <div class="video-card">
+          <h3>Video 2 (MP4)</h3>
+          <p>Deployment and setup instructions for the Lot Tracker.</p>
+          <video width="100%" height="auto" controls muted playsinline>
+            <source src="assets/videos/video2.mp4" type="video/mp4">
+            Your browser does not support MP4.
+          </video>
+        </div>
+        
+      </div>
+      </div>
+
+    <div class="main-stream-panel">
+      <h2>Live Stream / Main Demo</h2>
       <iframe 
           width="100%" 
-          height="200" 
+          height="400" 
           src="https://www.youtube.com/embed/O5IeKIKHu5U" 
           frameborder="0" 
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
@@ -19,38 +43,70 @@ File html/lot_tracker.html:
       ></iframe>
     </div>
 
-    <div class="video-item">
-      <h2>Local Demo (video1.mp4)</h2>
-      <video width="100%" height="200" controls muted autoplay loop playsinline>
-          <source src="assets/videos/video1.mp4" type="video/mp4">
-          Your browser does not support the video tag.
-      </video>
-    </div>
-
   </div>
   <p style="margin-top: 30px;">Use the navigation links above to return to the tools catalogue or other pages.</p>
 </div>
 
 <style>
-/* CSS specific to this content fragment for the video gallery */
-.video-gallery {
-    display: flex; /* Enables side-by-side layout */
-    gap: 20px; /* Space between videos */
-    justify-content: center;
-    flex-wrap: wrap; /* Allows stacking on smaller screens */
-    margin-top: 20px;
+/* 1. NEW FULL-WIDTH CONTAINER STYLING */
+.full-width-container {
+    /* Removes the width constraint that was previously boxing the content */
+    max-width: 100%; 
+    padding: 20px;
+    margin: 0 auto; /* Keeps it centered, though max-width: 100% makes it full width */
 }
 
-.video-item {
-    flex: 1; /* Makes each video take equal width */
-    min-width: 250px; /* Minimum size before stacking */
-    max-width: 400px; /* Prevents them from getting too wide */
+/* --- Video Showcase Layout --- */
+.video-showcase {
+    display: flex; 
+    gap: 30px; 
+    margin-top: 20px;
+    align-items: flex-start; /* CRITICAL FIX: Ensures columns align perfectly at the top */
+}
+
+/* Panel Sizing */
+.video-list-panel {
+    flex: 1; 
+    min-width: 300px; 
+    padding: 10px;
+    border-right: 1px solid #bdc3c7; 
+}
+
+.main-stream-panel {
+    flex: 2; 
+    min-width: 400px;
+}
+
+/* Stacking for small screens */
+@media (max-width: 800px) {
+    .video-showcase {
+        flex-direction: column; 
+        align-items: stretch; 
+    }
+    .video-list-panel {
+        border-right: none;
+        border-bottom: 1px solid #bdc3c7; 
+    }
+}
+
+/* --- Local Catalogue Styling --- */
+.local-videos-catalogue {
+    display: grid;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.video-card {
+    border: 1px solid #ecf0f1;
+    border-radius: 6px;
+    padding: 10px;
+    background: #ffffff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     text-align: center;
 }
 
-.video-item h2 {
-    font-size: 1em;
-    color: #34495e;
-    margin-bottom: 10px;
+.video-card h3 {
+    font-size: 1.1em;
+    margin: 5px 0;
 }
 </style>
