@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Three.js Data Globe Switcher (Focused Zoom)</title>
+    <title>Three.js Data Globe Switcher (World, Canada, USA)</title>
     <style>
         body { margin: 0; overflow: hidden; background: #000000; }
         canvas { display: block; }
@@ -63,6 +63,7 @@
         <div id="button-container">
             <button class="switch-button" id="world-button" onclick="loadView('world')">Full World Map</button>
             <button class="switch-button" id="canada-button" onclick="loadView('canada')">Canada Provinces</button>
+            <button class="switch-button" id="usa-button" onclick="loadView('usa')">USA States</button>
         </div>
     </div>
 
@@ -77,21 +78,14 @@
         const mouse = new THREE.Vector2();
         const raycaster = new THREE.Raycaster();
         
-        // **CYBERPUNK MATERIALS** (Defined as before)
+        // **CYBERPUNK MATERIALS**
         const defaultMaterial = new THREE.MeshPhongMaterial({ 
-            color: 0x002244, 
-            transparent: true, 
-            opacity: 0.5, 
-            side: THREE.DoubleSide,
-            specular: 0x004488, 
-            shininess: 10 
+            color: 0x002244, transparent: true, opacity: 0.5, 
+            side: THREE.DoubleSide, specular: 0x004488, shininess: 10 
         }); 
 
         const highlightedMaterial = new THREE.MeshBasicMaterial({ 
-            color: 0xff00ff, 
-            transparent: true, 
-            opacity: 0.9, 
-            side: THREE.DoubleSide 
+            color: 0xff00ff, transparent: true, opacity: 0.9, side: THREE.DoubleSide 
         });
 
         const lineMaterial = new THREE.LineBasicMaterial({ color: 0xffffff, linewidth: 2 });
@@ -103,38 +97,46 @@
         let currentIntersected = null;
         let isUserInteracting = false;
         
-        // **SLOWER ROTATION SPEED** (Way down, as requested)
+        // SLOW ROTATION SPEED
         let rotationSpeed = 0.0005; 
         
         let currentView = 'world'; 
         let canadaDataCache = null;
         let worldDataCache = null;
+        let usaDataCache = null;
 
         // --- DATA URLs ---
         const worldGeojsonUrl = 'https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json';
         const canadaGeojsonUrl = 'https://gist.githubusercontent.com/M1r1k/d5731bf39e1dfda5b53b4e4c560d968d/raw/canada_provinces.geo.json';
+        // FIXED USA URL (Source: PublicaMundi MappingAPI)
+        const usaGeojsonUrl = 'https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/us-states.json'; 
 
         // --- CAMERA CONFIGS for each view ---
         const viewConfigs = {
             'world': {
                 url: worldGeojsonUrl,
-                cache: worldDataCache,
-                // Default view: camera far out, looking at 0,0
-                cameraPos: new THREE.Vector3(0, 0, 200),
-                targetPos: new THREE.Vector3(0, 0, 0),
+                cacheKey: 'worldDataCache',
+                cameraPos: [0, 0, 200], 
+                targetPos: [0, 0, 0],
                 zoom: 200,
                 info: 'GLOBAL VIEW ONLINE. Select a target or location.',
                 rotate: true
             },
             'canada': {
                 url: canadaGeojsonUrl,
-                cache: canadaDataCache,
-                // Focused view: centered over Canada (Lat 55N, Lng 100W)
-                // We use toSphericalCoords to calculate the required camera position
-                coords: { lat: 55, lng: -100 }, 
+                cacheKey: 'canadaDataCache',
+                coords: { lat: 55, lng: -100 }, // Center of Canada
                 zoom: 120,
                 info: 'CANADIAN GRID ONLINE. Scanning provinces.',
-                rotate: false // Disable rotation when zoomed in
+                rotate: false 
+            },
+            'usa': {
+                url: usaGeojsonUrl,
+                cacheKey: 'usaDataCache',
+                coords: { lat: 39, lng: -98 }, // Center of USA
+                zoom: 120,
+                info: 'UNITED STATES GRID ONLINE. Scanning states.',
+                rotate: false
             }
         };
 
@@ -179,7 +181,6 @@
         function createMinimalGrid() {
             gridGroup.clear();
             const divisions = 24;
-            const material = gridMaterial; 
 
             for (let lat of [0, 30, -30]) {
                 const points = [];
@@ -187,7 +188,7 @@
                     const lng = (i / divisions) * 360 - 180;
                     points.push(toSphericalCoords(lng, lat, globeRadius + 0.05));
                 }
-                drawGeoLine(points, material);
+                drawGeoLine(points, gridMaterial);
             }
 
             for (let lng of [0, 90, 180, -90]) {
@@ -196,13 +197,12 @@
                     const lat = (i / divisions) * 180 - 90; 
                     points.push(toSphericalCoords(lng, lat, globeRadius + 0.05));
                 }
-                drawGeoLine(points, material);
+                drawGeoLine(points, gridMaterial);
             }
         }
         createMinimalGrid(); 
 
         function createFeaturePolygon(polygonCoordinates, properties) {
-            // ... (rest of the polygon creation logic remains the same) ...
             const featureGroup = new THREE.Group();
             if (!polygonCoordinates || polygonCoordinates.length === 0) return featureGroup;
             
@@ -211,14 +211,20 @@
             const shape = new THREE.Shape();
             
             exterior.forEach((coord, index) => {
-                if (index === 0) shape.moveTo(coord[0], coord[1]);
-                else shape.lineTo(coord[0], coord[1]);
+                // Ensure coordinates are [longitude, latitude]
+                const lng = coord[0];
+                const lat = coord[1];
+
+                if (index === 0) shape.moveTo(lng, lat);
+                else shape.lineTo(lng, lat);
             });
             holes.forEach(hole => {
                 const holePath = new THREE.Path();
                 hole.forEach((coord, index) => {
-                    if (index === 0) holePath.moveTo(coord[0], coord[1]);
-                    else holePath.lineTo(coord[0], coord[1]);
+                    const lng = coord[0];
+                    const lat = coord[1];
+                    if (index === 0) holePath.moveTo(lng, lat);
+                    else holePath.lineTo(lng, lat);
                 });
                 shape.holes.push(holePath);
             });
@@ -227,9 +233,11 @@
             const positionAttribute = geometry.attributes.position;
             const positions = positionAttribute.array;
 
-            const name = properties.name || properties.NAMA || 'Unknown Territory';
+            // Property name logic updated to handle World ('name'), Canada ('NAMA'), and US ('name_1')
+            const name = properties.name || properties.NAMA || properties.name_1 || 'Unknown Territory';
             
             for (let i = 0; i < positions.length; i += 3) {
+                // positions[i] is longitude, positions[i+1] is latitude
                 const spherical = toSphericalCoords(positions[i], positions[i+1], globeRadius + 0.1); 
                 positions[i] = spherical.x;
                 positions[i+1] = spherical.y;
@@ -242,6 +250,7 @@
             mesh.userData = { name: name, material: mesh.material.clone() };
             featureGroup.add(mesh);
             
+            // Draw border line
             const points = [];
             exterior.forEach(coord => points.push(toSphericalCoords(coord[0], coord[1], globeRadius + 0.2)));
             const borderGeometry = new THREE.BufferGeometry().setFromPoints(points);
@@ -284,7 +293,7 @@
         }
 
 
-        // --- NEW FOCUS/ZOOM FUNCTION ---
+        // --- FOCUS/ZOOM FUNCTION ---
 
         function setCameraFocus(viewKey) {
             const config = viewConfigs[viewKey];
@@ -292,55 +301,63 @@
             // 1. Set the rotation speed based on the config
             rotationSpeed = config.rotate ? 0.0005 : 0; 
 
-            // 2. Set Camera Position and Target
             let cameraPosition;
             let targetPosition;
 
             if (viewKey === 'world') {
-                // World view: center target at origin, place camera far away on Z-axis
-                cameraPosition = config.cameraPos;
-                targetPosition = config.targetPos;
+                cameraPosition = new THREE.Vector3(...config.cameraPos);
+                targetPosition = new THREE.Vector3(...config.targetPos);
             } else {
-                // Focused view (e.g., Canada): Calculate point on globe and place camera far from it
+                // Focused view (Canada/USA)
                 const focusPoint = toSphericalCoords(config.coords.lng, config.coords.lat, globeRadius);
                 
-                // Set the controls target to the point on the globe
                 targetPosition = focusPoint.clone(); 
                 
-                // Calculate the camera position: target point + an offset along the vector from origin to target
                 const direction = focusPoint.clone().normalize();
-                // config.zoom is the distance from the origin. We use distance (config.zoom + globeRadius) from the target 
-                // to place the camera right above it.
                 cameraPosition = direction.multiplyScalar(globeRadius + config.zoom); 
             }
 
-            // Apply positions instantly (OrbitControls will handle the smooth transition in animate loop)
+            // Apply positions
             camera.position.copy(cameraPosition);
             controls.target.copy(targetPosition);
-            controls.update(); // Update controls immediately to apply target changes
+            
+            // CRITICAL FIX: Ensure controls update immediately on camera change
+            controls.update(); 
         }
 
 
         // --- VIEW SWITCHER FUNCTION ---
 
         window.loadView = function(viewKey) {
-            if (currentView === viewKey) return;
+            const config = viewConfigs[viewKey];
+            
+            // Get the current cache variable dynamically
+            let dataCache;
+            switch(viewKey) {
+                case 'world': dataCache = worldDataCache; break;
+                case 'canada': dataCache = canadaDataCache; break;
+                case 'usa': dataCache = usaDataCache; break;
+            }
+
+            // Prevent re-loading the same view if data is already cached
+            if (currentView === viewKey && dataCache) return;
             currentView = viewKey;
             
-            const config = viewConfigs[viewKey];
             infoElement.textContent = `SYSTEM ALERT: ACTIVATING ${viewKey.toUpperCase()} VIEW...`;
             buttons.forEach(btn => btn.disabled = true);
 
             // 1. Handle Caching and Fetching
             const url = config.url;
-            let dataCache = viewKey === 'world' ? worldDataCache : canadaDataCache;
 
             const finalRender = (data) => {
                 processGeoJSON(data);
                 
-                // Update cache
-                if (viewKey === 'world') worldDataCache = data;
-                else canadaDataCache = data;
+                // Update the correct cache variable
+                switch(viewKey) {
+                    case 'world': worldDataCache = data; break;
+                    case 'canada': canadaDataCache = data; break;
+                    case 'usa': usaDataCache = data; break;
+                }
 
                 // 2. Set Focus (Camera Position/Target)
                 setCameraFocus(viewKey);
@@ -361,13 +378,17 @@
                     .then(finalRender)
                     .catch(err => {
                         console.error(`Error loading ${viewKey} GeoJSON:`, err);
-                        infoElement.textContent = `CRITICAL ERROR: ${viewKey.toUpperCase()} DATA LOAD FAILED.`;
+                        infoElement.textContent = `CRITICAL ERROR: ${viewKey.toUpperCase()} DATA LOAD FAILED. CHECK CONSOLE.`;
                         buttons.forEach(btn => btn.disabled = false);
                     });
             }
         }
 
-        // --- INITIAL DATA LOADING ---
+        // --- IMMEDIATE INITIAL SETUP ---
+        // 1. Set initial camera focus BEFORE data starts loading
+        setCameraFocus('world');
+
+        // 2. Start data loading
         loadView('world');
 
 
@@ -388,7 +409,6 @@
             const intersects = raycaster.intersectObjects(countryMeshes, false);
 
             if (intersects.length > 0) {
-                // ... (highlighting logic remains the same) ...
                 const intersectedObject = intersects[0].object;
 
                 if (currentIntersected !== intersectedObject) {
@@ -401,13 +421,11 @@
                     infoElement.textContent = `TARGET ACQUIRED: ${currentIntersected.userData.name} [STATUS: RED]`;
                 }
             } else {
-                // ... (un-highlighting logic remains the same) ...
                 if (currentIntersected) {
                     currentIntersected.material = currentIntersected.userData.material;
                 }
                 currentIntersected = null;
 
-                // Only restore base text if no interaction is happening and the globe isn't loading
                 if (!buttons[0].disabled) {
                     infoElement.textContent = viewConfigs[currentView].info;
                 }
@@ -418,13 +436,12 @@
         function animate() {
             requestAnimationFrame(animate);
             
-            // Apply rotation only if allowed by config AND user isn't interacting
             if (!isUserInteracting && viewConfigs[currentView].rotate) {
                 dataGroup.rotation.y += rotationSpeed; 
                 gridGroup.rotation.y += rotationSpeed;
             }
             
-            controls.update();
+            controls.update(); 
             handleRaycasting();
             renderer.render(scene, camera);
         }
