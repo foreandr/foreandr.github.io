@@ -3,54 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Three.js Data Globe Switcher (Cyberpunk Zoom)</title>
+    <title>Three.js Globe - Canada Provinces Map</title>
     <style>
         body { margin: 0; overflow: hidden; background: #000000; }
         canvas { display: block; }
-        
-        /* Cyberpunk Text Style */
-        #info-container {
+        #country-info {
             position: absolute;
             top: 20px;
             left: 50%;
             transform: translateX(-50%);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        #country-info {
             color: #ff00ff; /* Magenta glow */
             font-family: 'Consolas', monospace;
             font-size: 24px;
             text-shadow: 0 0 5px #ff00ff, 0 0 10px #ff00ff;
             pointer-events: none;
-            margin-bottom: 10px;
-        }
-
-        /* Cyberpunk Button Style */
-        #switch-button {
-            background-color: transparent;
-            border: 2px solid #00ffff; /* Cyan border */
-            color: #00ffff; /* Cyan text */
-            font-family: 'Consolas', monospace;
-            font-size: 16px;
-            padding: 8px 15px;
-            cursor: pointer;
-            box-shadow: 0 0 5px #00ffff, 0 0 10px #00ffff44;
-            transition: all 0.2s;
-        }
-        #switch-button:hover {
-            background-color: #00ffff22;
-            box-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff88;
         }
     </style>
 </head>
 <body>
-    <div id="info-container">
-        <div id="country-info">SYSTEM INIT: LOADING DATA...</div>
-        <button id="switch-button" onclick="toggleView()">Switch to Canada Provinces</button>
-    </div>
+    <div id="country-info">Loading classified data: Canada Provinces...</div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
     <script src="https://unpkg.com/three@0.134.0/examples/js/controls/OrbitControls.js"></script>
@@ -59,7 +30,6 @@
         // --- CONSTANTS AND GLOBAL VARIABLES ---
         const globeRadius = 100;
         const infoElement = document.getElementById('country-info');
-        const switchButton = document.getElementById('switch-button');
         const mouse = new THREE.Vector2();
         const raycaster = new THREE.Raycaster();
         
@@ -81,21 +51,12 @@
         });
 
         const lineMaterial = new THREE.LineBasicMaterial({ color: 0xffffff, linewidth: 2 });
-        const gridMaterial = new THREE.LineBasicMaterial({ color: 0x444444, linewidth: 1 });
         
-        let dataGroup = new THREE.Group(); // Dynamic group for countries/provinces
-        let gridGroup = new THREE.Group(); // Static group for grid lines
+        let countriesGroup = new THREE.Group();
         let countryMeshes = [];
         let currentIntersected = null;
         let isUserInteracting = false;
         let rotationSpeed = 0.005;
-        let currentView = 'world'; // 'world' or 'canada'
-        let canadaDataCache = null;
-        let worldDataCache = null;
-
-        // --- DATA URLs ---
-        const worldGeojsonUrl = 'https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json';
-        const canadaGeojsonUrl = 'https://gist.githubusercontent.com/M1r1k/d5731bf39e1dfda5b53b4e4c560d968d/raw/canada_provinces.geo.json';
 
 
         // --- SETUP SCENE, CAMERA, RENDERER ---
@@ -104,14 +65,16 @@
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
-        camera.position.z = 200;
+        
+        // Initial view centered on Canada (Lat 55, Lng -100)
+        camera.position.set(0, 0, 150); // Zoomed in slightly
         
         const controls = new THREE.OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
         controls.dampingFactor = 0.05;
         controls.rotateSpeed = 0.5;
 
-        // Lighting
+        // LIGHTING
         const ambientLight = new THREE.AmbientLight(0x444444);
         scene.add(ambientLight);
 
@@ -119,8 +82,7 @@
         pointLight.position.set(200, 100, 300);
         scene.add(pointLight);
         
-        scene.add(dataGroup);
-        scene.add(gridGroup); 
+        scene.add(countriesGroup);
 
         // --- GRID LINES ---
         function toSphericalCoords(lng, lat, radius) {
@@ -132,44 +94,35 @@
         function drawGeoLine(points, material) {
             const geometry = new THREE.BufferGeometry().setFromPoints(points);
             const line = new THREE.Line(geometry, material);
-            gridGroup.add(line);
+            countriesGroup.add(line);
         }
 
         function createMinimalGrid() {
-            gridGroup.clear(); // Clear existing grid before redrawing if needed
             const divisions = 24;
+            const material = new THREE.LineBasicMaterial({ color: 0x444444, linewidth: 1 });
 
-            for (let lat of [0, 30, -30]) {
+            // Only draw a few lines near Canada for context
+            for (let lat of [40, 55, 70]) { 
                 const points = [];
                 for (let i = 0; i <= divisions; i++) {
                     const lng = (i / divisions) * 360 - 180;
                     points.push(toSphericalCoords(lng, lat, globeRadius + 0.05));
                 }
-                drawGeoLine(points, gridMaterial);
-            }
-
-            for (let lng of [0, 90, 180, -90]) {
-                const points = [];
-                for (let i = 0; i <= divisions; i++) {
-                    const lat = (i / divisions) * 180 - 90; 
-                    points.push(toSphericalCoords(lng, lat, globeRadius + 0.05));
-                }
-                drawGeoLine(points, gridMaterial);
+                drawGeoLine(points, material);
             }
         }
-        createMinimalGrid(); 
+        createMinimalGrid();
 
 
-        // --- GEOSPATIAL FUNCTIONS ---
-
-        function createFeaturePolygon(polygonCoordinates, properties) {
-            const featureGroup = new THREE.Group();
-            if (!polygonCoordinates || polygonCoordinates.length === 0) return featureGroup;
+        // --- GEOSPATIAL HELPER FUNCTIONS ---
+        function createCountryPolygon(polygonCoordinates, properties) {
+            const countryGroup = new THREE.Group();
+            if (!polygonCoordinates || polygonCoordinates.length === 0) return countryGroup;
             
             const exterior = polygonCoordinates[0];
             const holes = polygonCoordinates.slice(1);
             const shape = new THREE.Shape();
-            
+
             exterior.forEach((coord, index) => {
                 if (index === 0) shape.moveTo(coord[0], coord[1]);
                 else shape.lineTo(coord[0], coord[1]);
@@ -187,10 +140,11 @@
             const positionAttribute = geometry.attributes.position;
             const positions = positionAttribute.array;
 
-            // Use 'name' for world, 'NAMA' or 'name' for Canada
-            const name = properties.name || properties.NAMA || 'Unknown Territory';
-            
+            // Use 'NAMA' or 'name' for the province/territory name
+            const name = properties.name || properties.NAMA || 'Unknown Province';
+
             for (let i = 0; i < positions.length; i += 3) {
+                // Since this is Canada only, we can use a slightly larger radius for visual emphasis
                 const spherical = toSphericalCoords(positions[i], positions[i+1], globeRadius + 0.1); 
                 positions[i] = spherical.x;
                 positions[i+1] = spherical.y;
@@ -201,21 +155,19 @@
 
             const mesh = new THREE.Mesh(geometry, defaultMaterial.clone());
             mesh.userData = { name: name, material: mesh.material.clone() };
-            featureGroup.add(mesh);
+            countryGroup.add(mesh);
             
             const points = [];
             exterior.forEach(coord => points.push(toSphericalCoords(coord[0], coord[1], globeRadius + 0.2)));
             const borderGeometry = new THREE.BufferGeometry().setFromPoints(points);
             const borderLine = new THREE.Line(borderGeometry, lineMaterial);
-            featureGroup.add(borderLine);
+            countryGroup.add(borderLine);
             
-            return featureGroup;
+            return countryGroup;
         }
 
         function processGeoJSON(geojson) {
-            dataGroup.clear(); // Clear existing geometry (countries or provinces)
-            countryMeshes = []; // Clear meshes array
-            
+            const meshes = [];
             geojson.features.forEach(feature => {
                 const geom = feature.geometry;
                 const properties = feature.properties;
@@ -232,77 +184,36 @@
                 }
 
                 polygonsToProcess.forEach(polygonCoordinates => {
-                    const featureMeshGroup = createFeaturePolygon(polygonCoordinates, properties);
-                    dataGroup.add(featureMeshGroup);
+                    const countryMeshGroup = createCountryPolygon(polygonCoordinates, properties);
+                    countriesGroup.add(countryMeshGroup);
                     
-                    featureMeshGroup.children.forEach(child => {
+                    countryMeshGroup.children.forEach(child => {
                         if (child.isMesh) {
-                            countryMeshes.push(child);
+                            meshes.push(child);
                         }
                     });
                 });
             });
-            console.log(`Loaded ${countryMeshes.length} features for ${currentView}.`);
+            console.log(`Loaded ${meshes.length} province/territory meshes.`);
+            return meshes;
         }
 
 
-        // --- VIEW STATE MANAGEMENT ---
+        // --- DATA LOADING ---
+        const geojsonUrl = 'https://gist.githubusercontent.com/M1r1k/d5731bf39e1dfda5b53b4e4c560d968d/raw/canada_provinces.geo.json';
 
-        function loadAndRenderData(view) {
-            infoElement.textContent = `SYSTEM ALERT: LOADING ${view.toUpperCase()} DATA...`;
-            switchButton.disabled = true;
+        fetch(geojsonUrl)
+            .then(response => response.json())
+            .then(data => {
+                countryMeshes = processGeoJSON(data);
+                infoElement.textContent = 'SYSTEM ACTIVE: CANADIAN GRID ONLINE...';
+            })
+            .catch(err => {
+                console.error('Error loading GeoJSON:', err);
+                infoElement.textContent = 'DATA CORRUPTED. CHECK CONSOLE.';
+            });
 
-            const url = view === 'world' ? worldGeojsonUrl : canadaGeojsonUrl;
-            const cache = view === 'world' ? worldDataCache : canadaDataCache;
-
-            const finalRender = (data) => {
-                processGeoJSON(data);
-                switchButton.disabled = false;
-                
-                // Adjust camera and rotation
-                if (view === 'world') {
-                    worldDataCache = data;
-                    camera.position.z = 200;
-                    controls.target.set(0, 0, 0);
-                    rotationSpeed = 0.005;
-                    switchButton.textContent = 'Switch to Canada Provinces';
-                    infoElement.textContent = 'SYSTEM ACTIVE: GLOBAL VIEW ONLINE.';
-                } else {
-                    canadaDataCache = data;
-                    camera.position.z = 120; // Zoomed in
-                    controls.target.set(0, 0, 0);
-                    rotationSpeed = 0.002; // Slower rotation when zoomed
-                    switchButton.textContent = 'Switch to Full World Map';
-                    infoElement.textContent = 'SYSTEM ACTIVE: CANADIAN GRID ONLINE.';
-                }
-            };
-
-            if (cache) {
-                finalRender(cache);
-            } else {
-                fetch(url)
-                    .then(response => {
-                        if (!response.ok) throw new Error(`HTTP status ${response.status}`);
-                        return response.json();
-                    })
-                    .then(finalRender)
-                    .catch(err => {
-                        console.error(`Error loading ${view} GeoJSON:`, err);
-                        infoElement.textContent = `CRITICAL ERROR: ${view.toUpperCase()} DATA LOAD FAILED.`;
-                        switchButton.disabled = false;
-                    });
-            }
-        }
-
-        window.toggleView = function() {
-            currentView = currentView === 'world' ? 'canada' : 'world';
-            loadAndRenderData(currentView);
-        }
-
-        // --- INITIAL DATA LOADING ---
-        loadAndRenderData(currentView);
-
-
+        
         // --- ANIMATION AND INTERACTION ---
         function onMouseMove(event) {
             mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
@@ -336,15 +247,7 @@
                     currentIntersected.material = currentIntersected.userData.material;
                 }
                 currentIntersected = null;
-
-                const baseText = currentView === 'world' 
-                    ? 'SYSTEM ACTIVE: GLOBAL VIEW ONLINE.'
-                    : 'SYSTEM ACTIVE: CANADIAN GRID ONLINE.';
-                
-                // Only update if the button is not disabled (i.e., not loading)
-                if (!switchButton.disabled) {
-                    infoElement.textContent = baseText;
-                }
+                infoElement.textContent = 'SYSTEM ACTIVE: CANADIAN GRID ONLINE...';
             }
         }
 
@@ -353,8 +256,7 @@
             requestAnimationFrame(animate);
             
             if (!isUserInteracting) {
-                dataGroup.rotation.y += rotationSpeed; 
-                gridGroup.rotation.y += rotationSpeed;
+                countriesGroup.rotation.y += rotationSpeed; 
             }
             
             controls.update();
