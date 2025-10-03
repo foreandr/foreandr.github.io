@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Algebraic Structures Network (Ring, Module, Vector Space)</title>
+  <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+  <style type="text/css">
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+    
+    #mynetwork {
+      width: 100vw;
+      height: 100vh;
+      border: none;
+      box-sizing: border-box;
+    }
+  </style>
+</head>
+<body>
+
+<div id="mynetwork"></div>
+
+<script type="text/javascript">
+  // --- NODE DEFINITIONS ---
+  var nodesArray = [
+    // Level 0: Starting Set
+    {id: 0, label: 'Set', level: 0, color: {background: '#97C2FC'}},
+
+    // Level 1: Axiom Nodes (Shortened)
+    
+    // Additive Group Axioms (Required by all three structures)
+    {id: 1, label: 'Add. Closure (A1)', level: 1},
+    {id: 2, label: 'Add. Commutativity (A2)', level: 1},
+    {id: 3, label: 'Add. Associativity (A3)', level: 1},
+    {id: 4, label: 'Add. Identity (A4)', level: 1},
+    {id: 5, label: 'Add. Inverse (A5)', level: 1},
+
+    // Ring Multiplication Axioms
+    {id: 6, label: 'Mult. Closure (R1)', level: 1, group: 'ring'},
+    {id: 7, label: 'Mult. Associativity (R2)', level: 1, group: 'ring'},
+    {id: 8, label: 'Distributivity (R3)', level: 1, group: 'ring'}, // R3 combines A9 & A10 for the ring itself
+
+    // Scalar/Field Axioms (Specific to Modules/Vector Spaces)
+    {id: 9, label: 'Scalar Mult. Closure (A6)', level: 1, group: 'module'},
+    {id: 10, label: 'Scalar Mult. Associativity (A7)', level: 1, group: 'module'},
+    {id: 11, label: 'Mult. Identity (A8)', level: 1, group: 'field'},
+    {id: 12, label: 'Dist. (Scalar over Vector) (A9)', level: 1, group: 'module'},
+    {id: 13, label: 'Dist. (Vector over Scalar) (A10)', level: 1, group: 'module'},
+    
+    // Axioms for more specialized rings/fields
+    {id: 14, label: 'Mult. Commutativity', level: 1, group: 'ring_extras'}, // For Commutative Ring
+    {id: 15, label: 'Mult. Inverse', level: 1, group: 'field_extras'}, // For Field (Vector Space)
+
+    // Level 2: Algebraic Structures
+    {id: 16, label: 'Ring', level: 2, color: {background: '#ADD8E6'}}, // Light Blue
+    {id: 17, label: 'Module', level: 2, color: {background: '#90EE90'}}, // Light Green
+    {id: 18, label: 'Vector Space', level: 2, color: {background: '#FFC0CB'}} // Pink
+  ];
+
+  var nodes = new vis.DataSet(nodesArray);
+
+  // --- EDGE DEFINITIONS ---
+  var edgesArray = [];
+  
+  // 1. Edges from "Set" (id 0) to all Axioms (id 1 through 15)
+  for (let i = 1; i <= 15; i++) {
+    edgesArray.push({from: 0, to: i, arrows: 'to', color: {color: '#888888'}});
+  }
+
+  // 2. Edges from Axioms to Structures
+
+  // A. Ring: Requires Additive Group (A1-A5) + Mult. Closure, Assoc., and Dist. (R1, R2, R3)
+  [1, 2, 3, 4, 5, 6, 7, 8].forEach(id => {
+    edgesArray.push({from: id, to: 16, arrows: 'to', color: {color: '#ADD8E6'}});
+  });
+  
+  // B. Module: Requires Additive Group (A1-A5) + Scalar Mult. Axioms (A6, A7, A9, A10)
+  // Note: Modules are defined over a Ring, which has its own underlying structure, but we connect the core axioms here.
+  [1, 2, 3, 4, 5, 9, 10, 12, 13].forEach(id => {
+    edgesArray.push({from: id, to: 17, arrows: 'to', color: {color: '#90EE90'}});
+  });
+
+  // C. Vector Space: Requires ALL 10 original Axioms + Mult. Inverse (Axioms 1-5, 9, 10, 6, 7, 11, 15)
+  // We use the core set: Additive Group (1-5) + Scalar/Field (9, 10, 11, 12, 13, 15)
+  [1, 2, 3, 4, 5, 9, 10, 11, 12, 13, 15].forEach(id => {
+    edgesArray.push({from: id, to: 18, arrows: 'to', color: {color: '#FFC0CB'}});
+  });
+  
+  var edges = new vis.DataSet(edgesArray);
+
+  // 3. Get the container element
+  var container = document.getElementById('mynetwork');
+
+  // 4. Combine the data
+  var data = {
+    nodes: nodes,
+    edges: edges
+  };
+
+  // 5. Define options
+  var options = {
+    layout: {
+      hierarchical: {
+        enabled: true,
+        direction: 'DU', // Draw from Down to Up
+        sortMethod: 'directed',
+        nodeSpacing: 180, // Increased spacing for wide screen
+        levelSeparation: 250 // Separate the levels more
+      }
+    },
+    edges: {
+      smooth: {
+        enabled: true,
+        type: "continuous"
+      }
+    },
+    physics: {
+        enabled: false
+    }
+  };
+
+  // 6. Initialize the Network
+  var network = new vis.Network(container, data, options);
+</script>
+
+</body>
+</html>
