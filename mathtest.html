@@ -1,15 +1,16 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Algebraic Structures Network (Ring, Module, Vector Space)</title>
+  <title>Hierarchy of Functional Analysis Spaces (All Levels Hardcoded)</title>
   <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
   <style type="text/css">
     html, body {
       margin: 0;
       padding: 0;
       width: 100%;
-      height: 100%;
-      overflow: hidden;
+      height: 100vh;
+      border: none;
+      box-sizing: border-box;
     }
     
     #mynetwork {
@@ -26,90 +27,213 @@
 
 <script type="text/javascript">
   // --- NODE DEFINITIONS ---
+  // All nodes now have a hardcoded 'level' property to satisfy the vis.js hierarchical layout requirement.
   var nodesArray = [
-    // Level 0: Starting Set
-    {id: 0, label: 'Set', level: 0, color: {background: '#97C2FC'}},
+    // LEVEL 0
+    {id: 0, label: 'Set (V)', level: 0, color: {background: '#97C2FC'}},
 
-    // Level 1: Axiom Nodes (Shortened)
-    
-    // Additive Group Axioms (Required by all three structures)
-    {id: 1, label: 'Add. Closure (A1)', level: 1},
-    {id: 2, label: 'Add. Commutativity (A2)', level: 1},
-    {id: 3, label: 'Add. Associativity (A3)', level: 1},
-    {id: 4, label: 'Add. Identity (A4)', level: 1},
-    {id: 5, label: 'Add. Inverse (A5)', level: 1},
+    // LEVEL 1: Axioms (Consolidated)
+    {id: 1, label: 'Add. Closure (A1)', level: 1, color: {background: '#ADD8E6'}},
+    {id: 2, label: 'Add. Commutativity (A2)', level: 1, color: {background: '#ADD8E6'}},
+    {id: 3, label: 'Add. Associativity (A3)', level: 1, color: {background: '#ADD8E6'}},
+    {id: 4, label: 'Add. Identity (A4)', level: 1, color: {background: '#ADD8E6'}},
+    {id: 5, label: 'Add. Inverse (A5)', level: 1, color: {background: '#ADD8E6'}},
+    {id: 6, label: 'Mult. Closure (R1)', level: 1, color: {background: '#ADD8E6'}},
+    {id: 7, label: 'Mult. Associativity (R2)', level: 1, color: {background: '#ADD8E6'}},
+    {id: 8, label: 'Distributivity (R3)', level: 1, color: {background: '#ADD8E6'}},
+    {id: 9, label: 'Scalar Mult. Closure (A6)', level: 1, color: {background: '#ADD8E6'}},
+    {id: 10, label: 'Scalar Mult. Assoc. (A7)', level: 1, color: {background: '#ADD8E6'}},
+    {id: 11, label: 'Scalar Mult. Identity (A8)', level: 1, color: {background: '#ADD8E6'}},
+    {id: 12, label: 'Dist. (S over V) (A9)', level: 1, color: {background: '#ADD8E6'}},
+    {id: 13, label: 'Dist. (V over S) (A10)', level: 1, color: {background: '#ADD8E6'}},
+    {id: 14, label: 'Mult. Commutativity (Field)', level: 1, color: {background: '#ADD8E6'}},
+    {id: 15, label: 'Mult. Inverse (Field)', level: 1, color: {background: '#ADD8E6'}}, 
+    {id: 16, label: 'M1: Non-negativity (Metric)', level: 1, color: {background: '#ffefd5'}},
+    {id: 17, label: 'M2: Identity (d(x,y)=0 ⇔ x=y)', level: 1, color: {background: '#ffefd5'}},
+    {id: 18, label: 'M3: Symmetry', level: 1, color: {background: '#ffefd5'}},
+    {id: 19, label: 'M4: Triangle Inequality (Metric)', level: 1, color: {background: '#ffefd5'}},
+    {id: 20, label: 'N1a: Non-negativity (Norm)', level: 1, color: {background: '#FFFACD'}},
+    {id: 200, label: 'N1b: Identity (Zero Vector Only Has Zero Norm)', level: 1, color: {background: '#FFFACD'}}, 
+    {id: 21, label: 'N2: Absolute Homogeneity', level: 1, color: {background: '#FFFACD'}},
+    {id: 22, label: 'N3: Triangle Inequality (Norm)', level: 1, color: {background: '#FFFACD'}},
+    {id: 23, label: 'IP1: Positive Definite', level: 1, color: {background: '#FFE4B5'}},
+    {id: 24, label: 'IP2: Conjugate Symmetry', level: 1, color: {background: '#FFE4B5'}},
+    {id: 25, label: 'IP3: Linearity (in 1st argument)', level: 1, color: {background: '#FFE4B5'}},
+    {id: 26, label: 'Completeness (Cauchy Seq.)', level: 1, color: {background: '#ffefd5'}},
+    {id: 27, label: 'Separability (Dense Countable Subset)', level: 1, color: {background: '#DDA0DD'}},
+    {id: 28, label: 'Reflexivity (X = X**)', level: 1, color: {background: '#DDA0DD'}},
+    {id: 29, label: 'Parallelogram Law (Extra Norm Condition)', level: 1, color: {background: '#DAA520'}},
+    {id: 50, label: 'Topological Structure (Continuous Operations)', level: 1, color: {background: '#8FBC8F'}},
+    {id: 51, label: 'Local Convexity (Base of Convex Sets)', level: 1, color: {background: '#8FBC8F'}},
 
-    // Ring Multiplication Axioms
-    {id: 6, label: 'Mult. Closure (R1)', level: 1, group: 'ring'},
-    {id: 7, label: 'Mult. Associativity (R2)', level: 1, group: 'ring'},
-    {id: 8, label: 'Distributivity (R3)', level: 1, group: 'ring'}, // R3 combines A9 & A10 for the ring itself
 
-    // Scalar/Field Axioms (Specific to Modules/Vector Spaces)
-    {id: 9, label: 'Scalar Mult. Closure (A6)', level: 1, group: 'module'},
-    {id: 10, label: 'Scalar Mult. Associativity (A7)', level: 1, group: 'module'},
-    {id: 11, label: 'Mult. Identity (A8)', level: 1, group: 'field'},
-    {id: 12, label: 'Dist. (Scalar over Vector) (A9)', level: 1, group: 'module'},
-    {id: 13, label: 'Dist. (Vector over Scalar) (A10)', level: 1, group: 'module'},
-    
-    // Axioms for more specialized rings/fields
-    {id: 14, label: 'Mult. Commutativity', level: 1, group: 'ring_extras'}, // For Commutative Ring
-    {id: 15, label: 'Mult. Inverse', level: 1, group: 'field_extras'}, // For Field (Vector Space)
+    // LEVEL 2: Simple Structures
+    {id: 30, label: 'Group', level: 2, color: {background: '#FFFFCC'}},
+    {id: 34, label: 'Metric Space', level: 2, color: {background: '#FFA07A'}}, 
 
-    // Level 2: Algebraic Structures
-    {id: 16, label: 'Ring', level: 2, color: {background: '#ADD8E6'}}, // Light Blue
-    {id: 17, label: 'Module', level: 2, color: {background: '#90EE90'}}, // Light Green
-    {id: 18, label: 'Vector Space', level: 2, color: {background: '#FFC0CB'}} // Pink
+    // LEVEL 3
+    {id: 300, label: 'Abelian Group', level: 3, color: {background: '#FFFFCC'}}, 
+
+    // LEVEL 4
+    {id: 31, label: 'Ring', level: 4, color: {background: '#ADD8E6'}},
+    {id: 32, label: 'Module (over a Ring)', level: 4, color: {background: '#90EE90'}},
+
+    // LEVEL 5
+    {id: 310, label: 'Field', level: 5, color: {background: '#ADD8E6'}}, 
+
+    // LEVEL 6: Vector Space
+    {id: 33, label: 'Vector Space (over a Field)', level: 6, color: {background: '#FFC0CB'}},
+
+    // LEVEL 7: Vector Spaces with Topology
+    {id: 52, label: 'Topological Vector Space (TVS)', level: 7, color: {background: '#6B8E23'}}, 
+    {id: 39, label: 'Seminormed Vector Space (SNVS)', level: 7, color: {background: '#DAA520'}},
+
+    // LEVEL 8: Normed Spaces
+    {id: 35, label: 'Normed Vector Space (NVS)', level: 8, color: {background: '#FFA07A'}},
+    {id: 53, label: 'Locally Convex TVS (LCTVS)', level: 8, color: {background: '#6B8E23'}}, 
+
+    // LEVEL 9: Spaces with Inner Product/Completeness
+    {id: 36, label: 'Inner Product Space (IPS)', level: 9, color: {background: '#F08080'}}, 
+    {id: 37, label: 'Banach Space (Complete NVS)', level: 9, color: {background: '#CD5C5C'}}, 
+
+    // LEVEL 10: Specialized Banach
+    {id: 40, label: 'Separable Banach Space', level: 10, color: {background: '#778899'}}, 
+    {id: 41, label: 'Reflexive Banach Space', level: 10, color: {background: '#778899'}}, 
+
+    // LEVEL 11: Hilbert Space (Most complex core structure)
+    {id: 38, label: 'Hilbert Space (Complete IPS)', level: 11, color: {background: '#CD5C5C'}},
+
+    // LEVEL 12: Specialized Hilbert
+    {id: 42, label: 'Separable Hilbert Space', level: 12, color: {background: '#778899'}}, 
   ];
 
   var nodes = new vis.DataSet(nodesArray);
 
   // --- EDGE DEFINITIONS ---
   var edgesArray = [];
-  
-  // 1. Edges from "Set" (id 0) to all Axioms (id 1 through 15)
-  for (let i = 1; i <= 15; i++) {
-    edgesArray.push({from: 0, to: i, arrows: 'to', color: {color: '#888888'}});
+
+  // A. Edges from "Set" (id 0) to all Axioms (1-29, 50, 51)
+  for (let i = 1; i <= 29; i++) {
+    edgesArray.push({from: 0, to: i, arrows: 'to', dashes: true, color: {color: '#888888'}});
   }
+  edgesArray.push({from: 0, to: 200, arrows: 'to', dashes: true, color: {color: '#888888'}}); 
+  edgesArray.push({from: 0, to: 50, arrows: 'to', dashes: true, color: {color: '#888888'}});
+  edgesArray.push({from: 0, to: 51, arrows: 'to', dashes: true, color: {color: '#888888'}});
 
-  // 2. Edges from Axioms to Structures
+  // B. Algebraic Structures (Parent -> Child and Axioms -> Child)
 
-  // A. Ring: Requires Additive Group (A1-A5) + Mult. Closure, Assoc., and Dist. (R1, R2, R3)
-  [1, 2, 3, 4, 5, 6, 7, 8].forEach(id => {
-    edgesArray.push({from: id, to: 16, arrows: 'to', color: {color: '#ADD8E6'}});
-  });
+  // Group
+  [1, 3, 4, 5].forEach(id => edgesArray.push({from: id, to: 30, arrows: 'to', color: {color: nodes.get(30).color.background}}));
   
-  // B. Module: Requires Additive Group (A1-A5) + Scalar Mult. Axioms (A6, A7, A9, A10)
-  // Note: Modules are defined over a Ring, which has its own underlying structure, but we connect the core axioms here.
-  [1, 2, 3, 4, 5, 9, 10, 12, 13].forEach(id => {
-    edgesArray.push({from: id, to: 17, arrows: 'to', color: {color: '#90EE90'}});
-  });
+  // Abelian Group
+  edgesArray.push({from: 30, to: 300, arrows: 'to', color: {color: nodes.get(300).color.background, width: 2}});
+  edgesArray.push({from: 2, to: 300, arrows: 'to', color: {color: nodes.get(300).color.background}});
 
-  // C. Vector Space: Requires ALL 10 original Axioms + Mult. Inverse (Axioms 1-5, 9, 10, 6, 7, 11, 15)
-  // We use the core set: Additive Group (1-5) + Scalar/Field (9, 10, 11, 12, 13, 15)
-  [1, 2, 3, 4, 5, 9, 10, 11, 12, 13, 15].forEach(id => {
-    edgesArray.push({from: id, to: 18, arrows: 'to', color: {color: '#FFC0CB'}});
-  });
+  // Ring
+  edgesArray.push({from: 300, to: 31, arrows: 'to', color: {color: nodes.get(31).color.background, width: 1.5, dashes: true, label: 'Required Group Type'}});
+  [6, 7, 8].forEach(id => edgesArray.push({from: id, to: 31, arrows: 'to', color: {color: nodes.get(31).color.background}}));
+
+  // Field
+  edgesArray.push({from: 31, to: 310, arrows: 'to', color: {color: nodes.get(310).color.background, width: 2}});
+  [14, 15].forEach(id => edgesArray.push({from: id, to: 310, arrows: 'to', color: {color: nodes.get(310).color.background}})); 
+
+  // Module
+  edgesArray.push({from: 300, to: 32, arrows: 'to', color: {color: nodes.get(32).color.background}}); 
+  [9, 10, 12, 13].forEach(id => edgesArray.push({from: id, to: 32, arrows: 'to', color: {color: nodes.get(32).color.background}}));
+
+  // Vector Space
+  edgesArray.push({from: 32, to: 33, arrows: 'to', color: {color: nodes.get(33).color.background, width: 3}});
+  edgesArray.push({from: 310, to: 33, arrows: 'to', color: {color: nodes.get(33).color.background, width: 2, label: 'Must be Field'}});
+  edgesArray.push({from: 11, to: 33, arrows: 'to', color: {color: nodes.get(33).color.background}});
+
+  // C. Topological Spaces (Construction)
   
+  // Metric Space (Base)
+  [16, 17, 18, 19].forEach(id => edgesArray.push({from: id, to: 34, arrows: 'to', color: {color: nodes.get(34).color.background}}));
+
+  // TVS, LCTVS
+  edgesArray.push({from: 33, to: 52, arrows: 'to', color: {color: nodes.get(52).color.background, width: 3}});
+  edgesArray.push({from: 50, to: 52, arrows: 'to', color: {color: nodes.get(52).color.background}});
+  edgesArray.push({from: 52, to: 53, arrows: 'to', color: {color: nodes.get(53).color.background, width: 3}});
+  edgesArray.push({from: 51, to: 53, arrows: 'to', color: {color: nodes.get(53).color.background}});
+
+  // Seminormed Vector Space (SNVS)
+  edgesArray.push({from: 33, to: 39, arrows: 'to', color: {color: nodes.get(39).color.background}});
+  [20, 21, 22].forEach(id => edgesArray.push({from: id, to: 39, arrows: 'to', color: {color: nodes.get(39).color.background}}));
+  
+  // D. Core Functional Analysis Spaces (Dependencies)
+
+  // Normed Vector Space (NVS): Built from SNVS + N1b. Prereq: Metric Space.
+  edgesArray.push({from: 39, to: 35, arrows: 'to', color: {color: nodes.get(35).color.background, width: 3}});
+  edgesArray.push({from: 200, to: 35, arrows: 'to', color: {color: nodes.get(35).color.background}});
+  edgesArray.push({from: 34, to: 35, arrows: 'to', dashes: true, color: {color: '#FFA07A', label: 'Topology Prerequisite'}});
+
+
+  // Inner Product Space (IPS): Prereq: NVS.
+  edgesArray.push({from: 33, to: 36, arrows: 'to', color: {color: nodes.get(36).color.background, width: 1.5, dashes: true, label: 'Base Vector Space'}});
+  [23, 24, 25].forEach(id => edgesArray.push({from: id, to: 36, arrows: 'to', color: {color: nodes.get(36).color.background}}));
+  
+  // NVS (35) is a structural PREREQUISITE/Parent for IPS (36).
+  edgesArray.push({from: 35, to: 36, arrows: 'to', dashes: true, color: {color: '#F08080', label: 'Parent NVS'}});
+  
+  // Equivalence: An NVS is an IPS IFF the Parallelogram Law holds (Axiom 29 makes NVS -> IPS possible)
+  edgesArray.push({from: 29, to: 36, arrows: 'to', color: {color: nodes.get(36).color.background, width: 2, label: 'Iff Parallelogram Law'}});
+
+  // E. Complete Spaces and Specialized Properties
+
+  // Banach Space: NVS + Completeness. NVS (35) is the prerequisite.
+  edgesArray.push({from: 35, to: 37, arrows: 'to', color: {color: nodes.get(37).color.background, width: 3}});
+  edgesArray.push({from: 26, to: 37, arrows: 'to', color: {color: nodes.get(37).color.background}});
+
+  // Hilbert Space: IPS + Completeness. IPS (36) is the prerequisite.
+  edgesArray.push({from: 36, to: 38, arrows: 'to', color: {color: nodes.get(38).color.background, width: 3}});
+  edgesArray.push({from: 26, to: 38, arrows: 'to', color: {color: nodes.get(38).color.background}});
+  
+  // Banach Space (37) is the Parent/Prerequisite of Hilbert Space (38)
+  edgesArray.push({from: 37, to: 38, arrows: 'to', dashes: true, color: {color: '#FF0000', label: 'Parent Banach'}});
+
+  // F. Specialized Spaces
+
+  // Separable Banach Space (37 -> 40)
+  edgesArray.push({from: 37, to: 40, arrows: 'to', color: {color: nodes.get(40).color.background, width: 3}});
+  edgesArray.push({from: 27, to: 40, arrows: 'to', color: {color: nodes.get(40).color.background}});
+
+  // Reflexive Banach Space (37 -> 41)
+  edgesArray.push({from: 37, to: 41, arrows: 'to', color: {color: nodes.get(41).color.background, width: 3}});
+  edgesArray.push({from: 28, to: 41, arrows: 'to', color: {color: nodes.get(41).color.background}});
+
+  // Reflexive Banach Space (41) is the Parent/Prerequisite of Hilbert Space (38).
+  edgesArray.push({from: 41, to: 38, arrows: 'to', dashes: true, color: {color: '#8B0000', width: 2, label: 'Implicitly Reflexive'}});
+  
+  // Separable Hilbert Space (38 -> 42)
+  edgesArray.push({from: 38, to: 42, arrows: 'to', color: {color: nodes.get(42).color.background, width: 3}});
+  edgesArray.push({from: 27, to: 42, arrows: 'to', color: {color: nodes.get(42).color.background}});
+  
+  // Implication: SNVS is always an LCTVS
+  edgesArray.push({from: 39, to: 53, arrows: 'to', dashes: true, color: {color: '#DAA520', label: 'Implied: Is LCTVS'}});
+
+
   var edges = new vis.DataSet(edgesArray);
 
-  // 3. Get the container element
+  // 4. Get the container element
   var container = document.getElementById('mynetwork');
 
-  // 4. Combine the data
+  // 5. Combine the data
   var data = {
     nodes: nodes,
     edges: edges
   };
 
-  // 5. Define options
+  // 6. Define options
   var options = {
     layout: {
       hierarchical: {
         enabled: true,
         direction: 'DU', // Draw from Down to Up
         sortMethod: 'directed',
-        nodeSpacing: 180, // Increased spacing for wide screen
-        levelSeparation: 250 // Separate the levels more
+        // Now all levels are hardcoded, solving the error and enforcing our desired layout.
+        nodeSpacing: 180,
+        levelSeparation: 150
       }
     },
     edges: {
@@ -123,7 +247,7 @@
     }
   };
 
-  // 6. Initialize the Network
+  // 7. Initialize the Network
   var network = new vis.Network(container, data, options);
 </script>
 
