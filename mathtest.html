@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Hierarchy of Functional Analysis Spaces (All Levels Hardcoded)</title>
+  <title>Hierarchy of Functional Analysis Spaces (Structural Dependencies Refined)</title>
   <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
   <style type="text/css">
     html, body {
@@ -27,7 +27,7 @@
 
 <script type="text/javascript">
   // --- NODE DEFINITIONS ---
-  // All nodes now have a hardcoded 'level' property to satisfy the vis.js hierarchical layout requirement.
+  // LEVELS 4 and 5 have been adjusted to reflect co-equal dependency paths for Vector Space.
   var nodesArray = [
     // LEVEL 0
     {id: 0, label: 'Set (V)', level: 0, color: {background: '#97C2FC'}},
@@ -76,9 +76,9 @@
 
     // LEVEL 4
     {id: 31, label: 'Ring', level: 4, color: {background: '#ADD8E6'}},
-    {id: 32, label: 'Module (over a Ring)', level: 4, color: {background: '#90EE90'}},
 
-    // LEVEL 5
+    // LEVEL 5: Co-equal Prerequisites for Vector Space
+    {id: 32, label: 'Module (over a Ring)', level: 5, color: {background: '#90EE90'}}, // Adjusted to L5
     {id: 310, label: 'Field', level: 5, color: {background: '#ADD8E6'}}, 
 
     // LEVEL 6: Vector Space
@@ -112,7 +112,7 @@
   // --- EDGE DEFINITIONS ---
   var edgesArray = [];
 
-  // A. Edges from "Set" (id 0) to all Axioms (1-29, 50, 51)
+  // A. Edges from "Set" (id 0) to all Axioms
   for (let i = 1; i <= 29; i++) {
     edgesArray.push({from: 0, to: i, arrows: 'to', dashes: true, color: {color: '#888888'}});
   }
@@ -120,30 +120,26 @@
   edgesArray.push({from: 0, to: 50, arrows: 'to', dashes: true, color: {color: '#888888'}});
   edgesArray.push({from: 0, to: 51, arrows: 'to', dashes: true, color: {color: '#888888'}});
 
-  // B. Algebraic Structures (Parent -> Child and Axioms -> Child)
+  // B. Algebraic Structures
 
-  // Group
+  // Group, Abelian Group, Ring, Field (No change)
   [1, 3, 4, 5].forEach(id => edgesArray.push({from: id, to: 30, arrows: 'to', color: {color: nodes.get(30).color.background}}));
-  
-  // Abelian Group
   edgesArray.push({from: 30, to: 300, arrows: 'to', color: {color: nodes.get(300).color.background, width: 2}});
   edgesArray.push({from: 2, to: 300, arrows: 'to', color: {color: nodes.get(300).color.background}});
-
-  // Ring
   edgesArray.push({from: 300, to: 31, arrows: 'to', color: {color: nodes.get(31).color.background, width: 1.5, dashes: true, label: 'Required Group Type'}});
   [6, 7, 8].forEach(id => edgesArray.push({from: id, to: 31, arrows: 'to', color: {color: nodes.get(31).color.background}}));
-
-  // Field
   edgesArray.push({from: 31, to: 310, arrows: 'to', color: {color: nodes.get(310).color.background, width: 2}});
   [14, 15].forEach(id => edgesArray.push({from: id, to: 310, arrows: 'to', color: {color: nodes.get(310).color.background}})); 
 
-  // Module
+  // Module (NEW: Dependency on Ring added)
   edgesArray.push({from: 300, to: 32, arrows: 'to', color: {color: nodes.get(32).color.background}}); 
+  // ADDED: Module depends on Ring (31) for its scalar field
+  edgesArray.push({from: 31, to: 32, arrows: 'to', color: {color: nodes.get(32).color.background, width: 2, label: 'Over a Ring'}}); 
   [9, 10, 12, 13].forEach(id => edgesArray.push({from: id, to: 32, arrows: 'to', color: {color: nodes.get(32).color.background}}));
 
-  // Vector Space
-  edgesArray.push({from: 32, to: 33, arrows: 'to', color: {color: nodes.get(33).color.background, width: 3}});
-  edgesArray.push({from: 310, to: 33, arrows: 'to', color: {color: nodes.get(33).color.background, width: 2, label: 'Must be Field'}});
+  // Vector Space (Uses Module and Field as co-equal inputs)
+  edgesArray.push({from: 32, to: 33, arrows: 'to', color: {color: nodes.get(33).color.background, width: 3, label: 'Module Laws'}});
+  edgesArray.push({from: 310, to: 33, arrows: 'to', color: {color: nodes.get(33).color.background, width: 3, label: 'Must be Field'}});
   edgesArray.push({from: 11, to: 33, arrows: 'to', color: {color: nodes.get(33).color.background}});
 
   // C. Topological Spaces (Construction)
@@ -163,53 +159,47 @@
   
   // D. Core Functional Analysis Spaces (Dependencies)
 
-  // Normed Vector Space (NVS): Built from SNVS + N1b. Prereq: Metric Space.
+  // Normed Vector Space (NVS)
   edgesArray.push({from: 39, to: 35, arrows: 'to', color: {color: nodes.get(35).color.background, width: 3}});
   edgesArray.push({from: 200, to: 35, arrows: 'to', color: {color: nodes.get(35).color.background}});
   edgesArray.push({from: 34, to: 35, arrows: 'to', dashes: true, color: {color: '#FFA07A', label: 'Topology Prerequisite'}});
 
 
-  // Inner Product Space (IPS): Prereq: NVS.
+  // Inner Product Space (IPS)
   edgesArray.push({from: 33, to: 36, arrows: 'to', color: {color: nodes.get(36).color.background, width: 1.5, dashes: true, label: 'Base Vector Space'}});
   [23, 24, 25].forEach(id => edgesArray.push({from: id, to: 36, arrows: 'to', color: {color: nodes.get(36).color.background}}));
-  
-  // NVS (35) is a structural PREREQUISITE/Parent for IPS (36).
   edgesArray.push({from: 35, to: 36, arrows: 'to', dashes: true, color: {color: '#F08080', label: 'Parent NVS'}});
-  
-  // Equivalence: An NVS is an IPS IFF the Parallelogram Law holds (Axiom 29 makes NVS -> IPS possible)
   edgesArray.push({from: 29, to: 36, arrows: 'to', color: {color: nodes.get(36).color.background, width: 2, label: 'Iff Parallelogram Law'}});
 
   // E. Complete Spaces and Specialized Properties
 
-  // Banach Space: NVS + Completeness. NVS (35) is the prerequisite.
+  // Banach Space
   edgesArray.push({from: 35, to: 37, arrows: 'to', color: {color: nodes.get(37).color.background, width: 3}});
   edgesArray.push({from: 26, to: 37, arrows: 'to', color: {color: nodes.get(37).color.background}});
 
-  // Hilbert Space: IPS + Completeness. IPS (36) is the prerequisite.
+  // Hilbert Space
   edgesArray.push({from: 36, to: 38, arrows: 'to', color: {color: nodes.get(38).color.background, width: 3}});
   edgesArray.push({from: 26, to: 38, arrows: 'to', color: {color: nodes.get(38).color.background}});
-  
-  // Banach Space (37) is the Parent/Prerequisite of Hilbert Space (38)
   edgesArray.push({from: 37, to: 38, arrows: 'to', dashes: true, color: {color: '#FF0000', label: 'Parent Banach'}});
 
   // F. Specialized Spaces
 
-  // Separable Banach Space (37 -> 40)
+  // Separable Banach Space
   edgesArray.push({from: 37, to: 40, arrows: 'to', color: {color: nodes.get(40).color.background, width: 3}});
   edgesArray.push({from: 27, to: 40, arrows: 'to', color: {color: nodes.get(40).color.background}});
 
-  // Reflexive Banach Space (37 -> 41)
+  // Reflexive Banach Space
   edgesArray.push({from: 37, to: 41, arrows: 'to', color: {color: nodes.get(41).color.background, width: 3}});
   edgesArray.push({from: 28, to: 41, arrows: 'to', color: {color: nodes.get(41).color.background}});
 
-  // Reflexive Banach Space (41) is the Parent/Prerequisite of Hilbert Space (38).
+  // Hilbert is Reflexive (Theorem)
   edgesArray.push({from: 41, to: 38, arrows: 'to', dashes: true, color: {color: '#8B0000', width: 2, label: 'Implicitly Reflexive'}});
   
-  // Separable Hilbert Space (38 -> 42)
+  // Separable Hilbert Space
   edgesArray.push({from: 38, to: 42, arrows: 'to', color: {color: nodes.get(42).color.background, width: 3}});
   edgesArray.push({from: 27, to: 42, arrows: 'to', color: {color: nodes.get(42).color.background}});
   
-  // Implication: SNVS is always an LCTVS
+  // SNVS -> LCTVS
   edgesArray.push({from: 39, to: 53, arrows: 'to', dashes: true, color: {color: '#DAA520', label: 'Implied: Is LCTVS'}});
 
 
@@ -231,7 +221,6 @@
         enabled: true,
         direction: 'DU', // Draw from Down to Up
         sortMethod: 'directed',
-        // Now all levels are hardcoded, solving the error and enforcing our desired layout.
         nodeSpacing: 180,
         levelSeparation: 150
       }
