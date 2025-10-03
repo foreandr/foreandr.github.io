@@ -1,69 +1,84 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Hierarchy of Functional Analysis Spaces</title>
-  <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
-  <script type="text/javascript" src="graphData.js"></script>
-  <style type="text/css">
-    html, body {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100vh;
-      border: none;
-      box-sizing: border-box;
-    }
-    
-    #mynetwork {
-      width: 100vw;
-      height: 100vh;
-      border: none;
-      box-sizing: border-box;
-    }
-  </style>
+    <title>Modular Math Dependency Graph</title>
+    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <style type="text/css">
+        #network {
+            width: 100vw;
+            height: 100vh;
+            border: 1px solid lightgray;
+        }
+    </style>
 </head>
 <body>
 
-<div id="mynetwork"></div>
+<div id="network"></div>
+
+<script type="text/javascript" src="algebra.js"></script>
+<script type="text/javascript" src="analysis.js"></script>
+<script type="text/javascript" src="topology-geometry.js"></script>
+
+<script type="text/javascript" src="graphData.js"></script>
 
 <script type="text/javascript">
-  // 1. DATA IS NOW LOADED FROM graphData.js (variables: nodesArray, edgesArray)
-  
-  // 2. Combine the data and create the DataSets
-  var nodes = new vis.DataSet(nodesArray);
-  var edges = new vis.DataSet(edgesArray);
-  
-  var data = {
-    nodes: nodes,
-    edges: edges
-  };
+    // This script uses the 'graphData' variable defined in graphData.js
 
-  // 3. Define options
-  var options = {
-    layout: {
-      hierarchical: {
-        enabled: true,
-        direction: 'DU', // Draw from Down to Up
-        sortMethod: 'directed',
-        // All levels are hardcoded in nodesArray
-        nodeSpacing: 180,
-        levelSeparation: 150
-      }
-    },
-    edges: {
-      smooth: {
-        enabled: true,
-        type: "continuous"
-      }
-    },
-    physics: {
-        enabled: false
-    }
-  };
+    var container = document.getElementById('network');
 
-  // 4. Initialize the Network
-  var container = document.getElementById('mynetwork');
-  var network = new vis.Network(container, data, options);
+    // The vis.js options for a hierarchical layout
+    var options = {
+        layout: {
+            hierarchical: {
+                enabled: true,
+                levelSeparation: 150, 
+                // *** 1. CHANGE MADE HERE: Increased horizontal spacing to 300 ***
+                nodeSpacing: 300, 
+                // ***************************************************************
+                treeSpacing: 200,
+                direction: 'UD', // Up to Down
+                sortMethod: 'directed',
+                shakeTowards: 'roots'
+            }
+        },
+        nodes: {
+            shape: 'box',
+            font: {
+                size: 14,
+                color: '#343434'
+            },
+            margin: 10,
+            color: {
+                border: '#2B7CE9',
+                highlight: {
+                    border: '#2B7CE9'
+                }
+            }
+        },
+        edges: {
+            arrows: 'to',
+            color: {
+                color: '#848484',
+                highlight: '#848484',
+                hover: '#848484'
+            },
+            smooth: {
+                enabled: true,
+                type: "continuous"
+            }
+        },
+        physics: {
+            enabled: false // Disable dynamic physics to rely purely on hierarchical layout
+        },
+        // Enable drag/zoom/fit
+        interaction: {
+            navigationButtons: true,
+            keyboard: true
+        }
+    };
+
+    // Initialize your network
+    var network = new vis.Network(container, graphData, options);
 </script>
 
 </body>
