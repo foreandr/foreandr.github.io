@@ -1,112 +1,123 @@
 <div class='container full-width-container'>
-  <h1>Lot Tracker Tool - Video Showcase</h1>
-  <p>Explore the live stream and local video assets related to the Lot Tracker system.</p>
+  <h1>Peterborough Charlotte Apartments Live Stream</h1>
 
   <div class="video-showcase">
     
-    <div class="video-list-panel">
-      <h2>Local Video Assets (MP4)</h2>
-      <p>All local assets are provided in the highly-compatible MP4 format.</p>
-      
-      <div class="local-videos-catalogue">
-        
-        <div class="video-card">
-          <h3>Video 1 (MP4)</h3>
-          <p>Real-time vehicle inventory data capture.</p>
-          <video width="100%" height="auto" controls muted playsinline>
-            <source src="assets/videos/video1.mp4" type="video/mp4">
-            Your browser does not support MP4.
-          </video>
-        </div>
-        
-        <div class="video-card">
-          <h3>Video 2 (MP4)</h3>
-          <p>Deployment and setup instructions for the Lot Tracker.</p>
-          <video width="100%" height="auto" controls muted playsinline>
-            <source src="assets/videos/video2.mp4" type="video/mp4">
-            Your browser does not support MP4.
-          </video>
-        </div>
-        
-      </div>
-      </div>
-
     <div class="main-stream-panel">
-      <h2>Live Stream / Main Demo</h2>
       <iframe 
           width="100%" 
-          height="400" 
-          src="https://www.youtube.com/embed/O5IeKIKHu5U" 
+          height="550" 
+          src="https://www.youtube.com/embed/Hduid93Tag4" 
+          title="Lot Tracker Live Stream Demo"
           frameborder="0" 
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
           allowfullscreen
       ></iframe>
+      <p class="live-status">Currently displaying the main simulated live feed of the Lot Tracker system.</p>
     </div>
 
   </div>
-  <p style="margin-top: 30px;">Use the navigation links above to return to the tools catalogue or other pages.</p>
 </div>
 
 <style>
-/* 1. NEW FULL-WIDTH CONTAINER STYLING */
-.full-width-container {
-    /* Removes the width constraint that was previously boxing the content */
-    max-width: 100%; 
+/* --- General Page & Container Styling (Nice UI) --- */
+.container {
+    max-width: 1200px; /* Standardizing max width for main content */
+    margin: 0 auto;
     padding: 20px;
-    margin: 0 auto; /* Keeps it centered, though max-width: 100% makes it full width */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #333;
+}
+
+.full-width-container {
+    /* Ensures content is full-width with padding on the sides */
+    max-width: 100%;
+    padding: 20px 40px; 
+}
+
+h1 {
+    color: #2c3e50; 
+    border-bottom: 2px solid #3498db; /* Blue underline for emphasis */
+    padding-bottom: 10px;
+    margin-bottom: 5px;
+}
+
+p {
+    line-height: 1.6;
 }
 
 /* --- Video Showcase Layout --- */
 .video-showcase {
-    display: flex; 
-    gap: 30px; 
-    margin-top: 20px;
-    align-items: flex-start; /* CRITICAL FIX: Ensures columns align perfectly at the top */
+    /* Since the side panel is commented out, this centers the main stream panel */
+    display: flex;
+    justify-content: center; 
+    margin-top: 30px;
 }
 
-/* Panel Sizing */
+/* Panel Sizing and Aesthetics for the Live Stream */
+.main-stream-panel {
+    flex-grow: 1; 
+    max-width: 1000px; /* Limits the max size of the player for very wide screens */
+    padding: 25px;
+    background-color: #f7f9fc; /* Light background for the card */
+    border: 1px solid #dcdcdc; /* Subtle border */
+    border-radius: 12px; /* Nice rounded corners */
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1); /* Professional shadow */
+    overflow: hidden; 
+}
+
+/* Style for the iframe/video container */
+.main-stream-panel iframe {
+    display: block;
+    border-radius: 8px; /* Rounded corners for the video itself */
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2); /* Shadow on the video element */
+    margin-bottom: 15px;
+}
+
+.main-stream-panel h2 {
+    color: #34495e;
+    font-size: 1.5em;
+    margin-top: 0;
+    text-align: center;
+}
+
+.live-status {
+    text-align: center;
+    font-style: italic;
+    color: #7f8c8d;
+    padding: 10px 0;
+    border-top: 1px dashed #ecf0f1;
+}
+
+/* --- CSS for Commented-Out Local Video Panel (Retained for future use) --- */
+/*
 .video-list-panel {
     flex: 1; 
     min-width: 300px; 
     padding: 10px;
     border-right: 1px solid #bdc3c7; 
 }
-
-.main-stream-panel {
-    flex: 2; 
-    min-width: 400px;
-}
-
-/* Stacking for small screens */
-@media (max-width: 800px) {
-    .video-showcase {
-        flex-direction: column; 
-        align-items: stretch; 
-    }
-    .video-list-panel {
-        border-right: none;
-        border-bottom: 1px solid #bdc3c7; 
-    }
-}
-
-/* --- Local Catalogue Styling --- */
 .local-videos-catalogue {
     display: grid;
     gap: 15px;
     margin-top: 15px;
 }
-
 .video-card {
-    border: 1px solid #ecf0f1;
+    border: 1px solid #c0c0c0;
     border-radius: 6px;
     padding: 10px;
     background: #ffffff;
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     text-align: center;
 }
-
 .video-card h3 {
     font-size: 1.1em;
     margin: 5px 0;
+}
+*/
+@media (max-width: 768px) {
+    .full-width-container {
+        padding: 15px;
+    }
 }
 </style>
