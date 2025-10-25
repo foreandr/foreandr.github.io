@@ -42,5 +42,43 @@
     const msg = greetUser("Andre");
     console.log(msg);
   </script>
+<script>
+  /**
+   * Loads project HTML content into the main 'app' container using a standard fetch request.
+   * This matches the loading pattern used for your main navigation, eliminating the need
+   * for a global PRELOADED_HTML object.
+   * * @param {string} fileName - The HTML file to load (e.g., 'lot_tracker.html').
+   */
+  function loadProject(fileName) {
+    console.log(`[CLICK] Loading project: ${fileName}`);
+    
+    // 1. Get the target container
+    const appContainer = document.getElementById('app');
+    
+    // 2. Use fetch to retrieve the content, assuming the file is in the 'html/' folder
+    fetch("html/" + fileName)
+      .then(response => {
+        // Check if the file was found (status 200)
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.text();
+      })
+      .then(html => {
+        // 3. Replace the content in the 'app' div
+        if (appContainer) {
+          appContainer.innerHTML = html;
+          console.log('[CLICK] Replacement complete.');
+        } else {
+          console.error("The 'app' element was not found.");
+        }
+      })
+      .catch(error => {
+        // Handle errors like 404 (file not found)
+        console.error(`Could not load content for ${fileName}:`, error);
+      });
+  }
+</script>
+
 </body>
 </html>
