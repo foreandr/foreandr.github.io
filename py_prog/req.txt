@@ -15,3 +15,7 @@ imutils
 torch
 torchvision
 ultralytics
+
+secure-smtplib
+email-validator
+hypersel
