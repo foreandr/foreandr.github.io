@@ -1,0 +1,49 @@
+Al-Jabr
+Each round, a player (or AI) secretly chooses a mathematical structure — something like a group, a ring, a field, a vector space, a manifold, etc.
+You, the guesser, don’t know what it is.
+
+You can only ask yes/no questions about its axioms and properties.
+
+Examples:
+
+“Do I have an identity element?”
+
+“Is multiplication associative?”
+
+“Do I have additive inverses?”
+
+“Is my multiplication commutative?”
+
+“Do I have distributivity over addition?”
+
+“Do I have a topology?”
+
+Each question splits the search space — like moving down a decision tree of algebraic structures.
+You eliminate impossibilities until you narrow it down to one.
+
+Your goal:
+
+Deduce exactly which structure you are, using pure logical inference.
+
+🧠 What Makes It Fun
+
+It feels like a logic puzzle and a game of 20 Questions at once.
+
+Every yes/no answer builds a taxonomy of structures — a live mental map of algebra.
+
+It scales: you can play simple (group vs. ring) or advanced (Lie algebra vs. manifold with connection).
+
+Each question deepens your grasp of why structures differ — by what axioms define them.
+
+💡 Core Idea
+
+It’s not trivia — it’s axiom deduction.
+You’re not recalling definitions, you’re reasoning through them interactively.
+
+Essentially:
+
+A game where you rediscover the structure of mathematics by asking the universe about its laws.
+
+Would you like me to write out a short version of that (like a store/game blurb — 100 words max, catchy but serious)?
+
+with drone shows, we can tell a new kind of story, in the sky, a new medium should demand of us new art!
