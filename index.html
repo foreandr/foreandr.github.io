@@ -23,7 +23,7 @@
       .then(html => {
         document.getElementById("navbar").innerHTML = html;
 
-        // Attach nav click handlers AFTER nav is loaded
+        // attach nav click handlers
         document.querySelectorAll("#navbar .site-nav a[data-page]").forEach(link => {
           link.addEventListener("click", e => {
             e.preventDefault();
@@ -38,14 +38,14 @@
         });
       });
 
-    // demo from utils.js
+    // demo util
     const msg = greetUser("Andre");
     console.log(msg);
   </script>
 
   <script>
     /**
-     * Loads project HTML content into the main 'app' container using a standard fetch request.
+     * loadProject(fileName)
      */
     function loadProject(fileName) {
       console.log(`[CLICK] Loading project: ${fileName}`);
@@ -71,19 +71,19 @@
         });
     }
 
-    // stub (kept just in case older code calls it)
-    function generateProjection(){
-      console.log("generateProjection stub (will be replaced by LOP script)");
+    // stub
+    function generateProjection() {
+      console.log("generateProjection stub");
     }
   </script>
 
   <script>
   // ==============================
   //  LANDLORD OPTIMIZATION GLOBALS
-  //  (put in index.html so injected HTML can call it)
+  //  (all logic here)
   // ==============================
 
-  // ---- 0. ensure Chart.js is present ----
+  // ensure chart
   function LOP_ensureChartJs(cb) {
     if (window.Chart) {
       cb && cb();
@@ -99,7 +99,7 @@
     document.head.appendChild(s);
   }
 
-  // ---- 1. spider background (shared) ----
+  // spider bg
   function LOP_initSpiderBackground() {
     var c = document.getElementById('spiderweb');
     if (!c) return;
@@ -149,163 +149,149 @@
     animate();
   }
 
-  // ---- 2. compute projection (NO oasis anymore, ALL YEARS math) ----
+  // compute projection (1 alt income + 1 alt expense)
   function LOP_computeProjection() {
-    // dom presence
     var rentEl = document.getElementById('lop-rent');
     if (!rentEl) return null;
 
-    // inputs
-    var rentMonthly     = Number(rentEl.value) || 0;
-    var expensesMonthly = Number(document.getElementById('lop-expenses').value) || 0;
-    var mortgageMonthly = Number(document.getElementById('lop-mortgage').value) || 0;
-    var personalMonthly = Number(document.getElementById('lop-personal').value) || 0;
+    // building composition (we keep it, even if currently not used in formula)
+    var numStores   = Number(document.getElementById('lop-stores').value) || 0;
+    var numApts     = Number(document.getElementById('lop-apartments').value) || 0;
 
-    var rentGrowth      = (Number(document.getElementById('lop-rent-growth').value) || 0) / 100;
-    var expInflation    = (Number(document.getElementById('lop-exp-inflation').value) || 0) / 100;
-    var appreciation    = (Number(document.getElementById('lop-appreciation').value) || 0) / 100;
-    var years           = Number(document.getElementById('lop-years').value) || 1;
+    // money inputs
+    var totalRentMonthly = Number(rentEl.value) || 0;
+    var expensesMonthly  = Number(document.getElementById('lop-expenses').value) || 0;
+    var mortgageMonthly  = Number(document.getElementById('lop-mortgage').value) || 0;
+    var personalMonthly  = Number(document.getElementById('lop-personal').value) || 0;
 
-    var personalTaxRate = (Number(document.getElementById('lop-personal-tax').value) || 0) / 100;
-    var corpTaxRate     = (Number(document.getElementById('lop-corp-tax').value) || 0) / 100;
-    var useCorp         = Number(document.getElementById('lop-use-corp').value) === 1;
-    var rebatePct       = (Number(document.getElementById('lop-rebate').value) || 0) / 100;
+    // growth
+    var rentGrowth       = (Number(document.getElementById('lop-rent-growth').value) || 0) / 100;
+    var expInflation     = (Number(document.getElementById('lop-exp-inflation').value) || 0) / 100;
+    var appreciation     = (Number(document.getElementById('lop-appreciation').value) || 0) / 100;
+    var years            = Number(document.getElementById('lop-years').value) || 1;
+    var personalGrowth   = (Number(document.getElementById('lop-personal-growth').value) || 0) / 100;
 
-    var roofMonthly     = Number(document.getElementById('lop-roof').value) || 0;
-    var billboardMonthly= Number(document.getElementById('lop-billboard').value) || 0;
-    var airbnbMonthly   = Number(document.getElementById('lop-airbnb').value) || 0;
-    var grantsAnnual    = Number(document.getElementById('lop-grants').value) || 0;
+    // tax/structure
+    var personalTaxRate  = (Number(document.getElementById('lop-personal-tax').value) || 0) / 100;
+    var corpTaxRate      = (Number(document.getElementById('lop-corp-tax').value) || 0) / 100;
+    var useCorp          = Number(document.getElementById('lop-use-corp').value) === 1;
+    var citySharePct     = (Number(document.getElementById('lop-city-share').value) || 0) / 100;
+    var rebatePct        = (Number(document.getElementById('lop-rebate').value) || 0) / 100;
 
-    // annualize base values
-    var annualRent      = rentMonthly * 12;
-    var annualExpenses  = expensesMonthly * 12;
-    var annualMortgage  = mortgageMonthly * 12;
-    var annualPersonal  = personalMonthly * 12;
-    var annualRoof      = roofMonthly * 12;
-    var annualBillboard = billboardMonthly * 12;
-    var annualAirbnb    = airbnbMonthly * 12;
+    // alt income / alt expense
+    var altIncomeMonthly = Number(document.getElementById('lop-alt-income').value) || 0;
+    var altExpenseMonthly= Number(document.getElementById('lop-alt-expense').value) || 0;
 
-    // assume 40% of operating expenses is property tax → can be rebated
-    var propertyTaxShare = 0.4;
+    // annualize
+    var annualRent       = totalRentMonthly * 12;
+    var annualExpenses   = expensesMonthly * 12;
+    var annualMortgage   = mortgageMonthly * 12;
+    var annualPersonal   = personalMonthly * 12;
+    var annualAltIncome  = altIncomeMonthly * 12;
+    var annualAltExpense = altExpenseMonthly * 12;
 
-    var labels = [];
-    var incomeSeries = [];
-    var expenseSeries = [];
-    var netSeries = [];
-    var valueSeries = [];
-    var personalTargetSeries = [];
-    var altRevenueSeries = [];
-    var preTaxSeries = [];
-    var taxSeries = [];
+    // arrays
+    var labels             = [];
+    var incomeSeries       = [];
+    var expenseSeries      = [];
+    var netSeries          = [];
+    var valueSeries        = [];
+    var personalSeries     = [];
+    var altIncomeSeries    = [];
+    var altExpenseSeries   = [];
+    var preTaxSeries       = [];
+    var taxSeries          = [];
+    var mathBlocks         = [];
 
-    var currentValue = 1000000;
-
-    // we will build full HTML for all 15 years
-    var mathBlocks = [];
+    var currentValue       = 1000000;
+    var firstProfitYear    = null;
+    var bestYearIndex      = 1;
+    var bestAfterTax       = -Infinity;
 
     for (var year = 1; year <= years; year++) {
       labels.push("Year " + year);
 
-      // grow rents and expenses
-      annualRent     *= (1 + rentGrowth);
-      annualExpenses *= (1 + expInflation);
-      annualRoof      *= (1 + 0.01);
-      annualBillboard *= (1 + 0.01);
-      annualAirbnb    *= (1 + 0.01);
-      currentValue    *= (1 + appreciation);
+      // grow
+      annualRent       *= (1 + rentGrowth);
+      annualExpenses   *= (1 + expInflation);
+      annualPersonal   *= (1 + personalGrowth);
+      currentValue     *= (1 + appreciation);
+      // alt income / expense we leave flat (0% growth) to match “I’d pay you monthly…”
+      // but we could grow them too if we want
 
-      // split expenses → property-tax part + other
-      var propertyTaxPart = annualExpenses * propertyTaxShare;
-      var nonPropertyPart = annualExpenses * (1 - propertyTaxShare);
-
-      // apply rebate
+      // city tax logic
+      var propertyTaxPart    = annualExpenses * citySharePct;
+      var nonPropertyPart    = annualExpenses * (1 - citySharePct);
       var rebatedPropertyTax = propertyTaxPart * (1 - rebatePct);
+      var finalBaseExpenses  = nonPropertyPart + rebatedPropertyTax + annualMortgage;
+      // ADD alt expense to expenses:
+      var finalExpensesWithAlt = finalBaseExpenses + annualAltExpense;
 
-      // final expenses incl. mortgage
-      var finalAnnualExpenses = nonPropertyPart + rebatedPropertyTax + annualMortgage;
-
-      // alt rev
-      var altRevenueAnnual = annualRoof + annualBillboard + annualAirbnb + grantsAnnual;
+      // incomes
+      var totalIncomeAnnual  = annualRent + annualAltIncome;
 
       // pre-tax
-      var preTax = annualRent + altRevenueAnnual - finalAnnualExpenses;
-      var taxRateToUse = useCorp ? corpTaxRate : personalTaxRate;
-      var taxApplied = Math.max(preTax, 0) * taxRateToUse;
-      var afterTax = preTax - taxApplied;
+      var preTax             = totalIncomeAnnual - finalExpensesWithAlt;
 
-      incomeSeries.push(annualRent + altRevenueAnnual);
-      expenseSeries.push(finalAnnualExpenses);
+      // tax
+      var taxRateToUse       = useCorp ? corpTaxRate : personalTaxRate;
+      var taxApplied         = Math.max(preTax, 0) * taxRateToUse;
+      var afterTax           = preTax - taxApplied;
+
+      incomeSeries.push(totalIncomeAnnual);
+      expenseSeries.push(finalExpensesWithAlt);
       netSeries.push(afterTax);
       valueSeries.push(currentValue);
-      personalTargetSeries.push(annualPersonal);
-      altRevenueSeries.push(altRevenueAnnual);
+      personalSeries.push(annualPersonal);
+      altIncomeSeries.push(annualAltIncome);
+      altExpenseSeries.push(annualAltExpense);
       preTaxSeries.push(preTax);
       taxSeries.push(taxApplied);
 
-      // display-ish deltas
-      var deltaIncome = "+" + (annualRent + altRevenueAnnual).toFixed(2);
-      var deltaExpenses = "-" + finalAnnualExpenses.toFixed(2);
-      var deltaAfterTax = (afterTax >= 0 ? "+" : "") + afterTax.toFixed(2);
+      if (firstProfitYear === null && afterTax >= annualPersonal) {
+        firstProfitYear = year;
+      }
+      if (afterTax > bestAfterTax) {
+        bestAfterTax  = afterTax;
+        bestYearIndex = year;
+      }
 
-      var yearHtml = "<div class='lop-year-block'>" +
-        "<div class='lop-year-title'>===== YEAR " + year + " =====</div>" +
-        "<table class='lop-math-table'>" +
-        "<tr><td class='lop-math-label'>Base rent (annual, grown)</td><td class='lop-math-value'>$" + annualRent.toFixed(2) + "</td><td class='lop-math-delta lop-pos'>+" + annualRent.toFixed(2) + "</td></tr>" +
-        "<tr><td class='lop-math-label'>Alt revenue (roof + billboard + airbnb + grants)</td><td class='lop-math-value'>$" + altRevenueAnnual.toFixed(2) + "</td><td class='lop-math-delta lop-pos'>+" + altRevenueAnnual.toFixed(2) + "</td></tr>" +
-        "<tr><td class='lop-math-label'>Operating expenses (annual, grown)</td><td class='lop-math-value'>$" + annualExpenses.toFixed(2) + "</td><td class='lop-math-delta lop-neg'>-" + annualExpenses.toFixed(2) + "</td></tr>" +
-        "<tr><td class='lop-math-label'> → property-tax portion (40%)</td><td class='lop-math-value'>$" + propertyTaxPart.toFixed(2) + "</td><td class='lop-math-delta lop-neg'>-" + propertyTaxPart.toFixed(2) + "</td></tr>" +
-        "<tr><td class='lop-math-label'> → rebate applied (" + (rebatePct*100).toFixed(0) + "%)</td><td class='lop-math-value'>$" + rebatedPropertyTax.toFixed(2) + "</td><td class='lop-math-delta lop-pos'>+" + (propertyTaxPart - rebatedPropertyTax).toFixed(2) + "</td></tr>" +
-        "<tr><td class='lop-math-label'> → non-property portion (60%)</td><td class='lop-math-value'>$" + nonPropertyPart.toFixed(2) + "</td><td class='lop-math-delta lop-neg'>-" + nonPropertyPart.toFixed(2) + "</td></tr>" +
-        "<tr><td class='lop-math-label'>Mortgage (annual)</td><td class='lop-math-value'>$" + annualMortgage.toFixed(2) + "</td><td class='lop-math-delta lop-neg'>-" + annualMortgage.toFixed(2) + "</td></tr>" +
-        "<tr><td class='lop-math-label'>Final expenses (with rebate + mortgage)</td><td class='lop-math-value'>$" + finalAnnualExpenses.toFixed(2) + "</td><td class='lop-math-delta lop-neg'>" + deltaExpenses + "</td></tr>" +
-        "<tr><td class='lop-math-label'><strong>Pre-Tax = income - expenses</strong></td><td class='lop-math-value'><strong>$" + preTax.toFixed(2) + "</strong></td><td class='lop-math-delta " + (preTax >= 0 ? "lop-pos" : "lop-neg") + "'>" + (preTax >= 0 ? "+" : "") + preTax.toFixed(2) + "</td></tr>" +
-        "<tr><td class='lop-math-label'>Tax rate used</td><td class='lop-math-value'>" + (taxRateToUse*100).toFixed(1) + "%</td><td class='lop-math-delta lop-neg'>-" + taxApplied.toFixed(2) + "</td></tr>" +
-        "<tr><td class='lop-math-label'><strong>After-Tax Net</strong></td><td class='lop-math-value'><strong>$" + afterTax.toFixed(2) + "</strong></td><td class='lop-math-delta " + (afterTax >= 0 ? "lop-pos" : "lop-neg") + "'>" + deltaAfterTax + "</td></tr>" +
-        "<tr><td class='lop-math-label'>Owner personal target (annual)</td><td class='lop-math-value'>$" + annualPersonal.toFixed(2) + "</td><td class='lop-math-delta " + (afterTax >= annualPersonal ? "lop-pos" : "lop-neg") + "'>" + (afterTax - annualPersonal >= 0 ? "+" : "") + (afterTax - annualPersonal).toFixed(2) + "</td></tr>" +
-        "</table></div>";
+      var formulaText =
+        "Formulas used:\n" +
+        "annual_rent = annual_rent × (1 + rentGrowth)\n" +
+        "annual_expenses = annual_expenses × (1 + expInflation)\n" +
+        "annual_personal = annual_personal × (1 + personalGrowth)\n" +
+        "city_tax_part = annual_expenses × " + (citySharePct*100).toFixed(0) + "%\n" +
+        "rebated_city_tax = city_tax_part × (1 - rebatePct[" + (rebatePct*100).toFixed(0) + "%])\n" +
+        "base_final_expenses = non_city + rebated_city + mortgage\n" +
+        "final_expenses = base_final_expenses + alt_expense\n" +
+        "total_income = rent + alt_income\n" +
+        "pre_tax = total_income - final_expenses\n" +
+        "tax = max(pre_tax,0) × " + (taxRateToUse*100).toFixed(1) + "%\n" +
+        "after_tax = pre_tax - tax";
+
+      var yearHtml =
+        "<div class='lop-year-block'>" +
+          "<div class='lop-year-title'>===== YEAR " + year + " =====</div>" +
+          "<table class='lop-math-table'>" +
+            "<tr><td class='lop-math-label'>Base rent (annual, grown)</td><td class='lop-math-value'>$" + annualRent.toFixed(2) + "</td><td class='lop-math-delta lop-pos'>+" + annualRent.toFixed(2) + "</td></tr>" +
+            "<tr><td class='lop-math-label'>Alt income (annual)</td><td class='lop-math-value'>$" + annualAltIncome.toFixed(2) + "</td><td class='lop-math-delta " + (annualAltIncome>=0?"lop-pos":"lop-neg") + "'>" + (annualAltIncome>=0?"+":"") + annualAltIncome.toFixed(2) + "</td></tr>" +
+            "<tr><td class='lop-math-label'>Operating expenses (annual, grown)</td><td class='lop-math-value'>$" + annualExpenses.toFixed(2) + "</td><td class='lop-math-delta lop-neg'>-" + annualExpenses.toFixed(2) + "</td></tr>" +
+            "<tr><td class='lop-math-label'> → city-tax portion (" + (citySharePct*100).toFixed(0) + "%)</td><td class='lop-math-value'>$" + propertyTaxPart.toFixed(2) + "</td><td class='lop-math-delta lop-neg'>-" + propertyTaxPart.toFixed(2) + "</td></tr>" +
+            "<tr><td class='lop-math-label'> → rebate applied (" + (rebatePct*100).toFixed(0) + "%)</td><td class='lop-math-value'>$" + rebatedPropertyTax.toFixed(2) + "</td><td class='lop-math-delta " + (rebatePct>0?"lop-pos":"lop-neg") + "'>" + (rebatePct>0?"+":"") + (propertyTaxPart - rebatedPropertyTax).toFixed(2) + "</td></tr>" +
+            "<tr><td class='lop-math-label'> → non-city portion (" + (100 - (citySharePct*100)) + "%)</td><td class='lop-math-value'>$" + nonPropertyPart.toFixed(2) + "</td><td class='lop-math-delta lop-neg'>-" + nonPropertyPart.toFixed(2) + "</td></tr>" +
+            "<tr><td class='lop-math-label'>Mortgage (annual)</td><td class='lop-math-value'>$" + annualMortgage.toFixed(2) + "</td><td class='lop-math-delta lop-neg'>-" + annualMortgage.toFixed(2) + "</td></tr>" +
+            "<tr><td class='lop-math-label'>Alt expense (annual)</td><td class='lop-math-value'>$" + annualAltExpense.toFixed(2) + "</td><td class='lop-math-delta lop-neg'>-" + annualAltExpense.toFixed(2) + "</td></tr>" +
+            "<tr><td class='lop-math-label'><strong>Final expenses (with rebate + mortgage + alt)</strong></td><td class='lop-math-value'><strong>$" + finalExpensesWithAlt.toFixed(2) + "</strong></td><td class='lop-math-delta lop-neg'>-" + finalExpensesWithAlt.toFixed(2) + "</td></tr>" +
+            "<tr><td class='lop-math-label'><strong>Pre-Tax = income - expenses</strong></td><td class='lop-math-value'><strong>$" + preTax.toFixed(2) + "</strong></td><td class='lop-math-delta " + (preTax>=0?"lop-pos":"lop-neg") + "'>" + (preTax>=0?"+":"") + preTax.toFixed(2) + "</td></tr>" +
+            "<tr><td class='lop-math-label'>Tax rate used</td><td class='lop-math-value'>" + (taxRateToUse*100).toFixed(1) + "%</td><td class='lop-math-delta lop-neg'>-" + taxApplied.toFixed(2) + "</td></tr>" +
+            "<tr><td class='lop-math-label'><strong>After-Tax Net</strong></td><td class='lop-math-value'><strong>$" + afterTax.toFixed(2) + "</strong></td><td class='lop-math-delta " + (afterTax>=0?"lop-pos":"lop-neg") + "'>" + (afterTax>=0?"+":"") + afterTax.toFixed(2) + "</td></tr>" +
+            "<tr><td class='lop-math-label'>Owner personal target (annual)</td><td class='lop-math-value'>$" + annualPersonal.toFixed(2) + "</td><td class='lop-math-delta " + (afterTax - annualPersonal >= 0 ? "lop-pos" : "lop-neg") + "'>" + (afterTax - annualPersonal >= 0 ? "+" : "") + (afterTax - annualPersonal).toFixed(2) + "</td></tr>" +
+          "</table>" +
+          "<pre class='lop-math-formula'>" + formulaText + "</pre>" +
+        "</div>";
 
       mathBlocks.push(yearHtml);
-    }
-
-    // --- PASS / WARN / FAIL LOGIC ---
-    // Test 1: does net ever go negative?
-    var everNegative = netSeries.some(function(v){ return v < 0; });
-
-    // Test 2: does final year meet personal needs?
-    var finalNet = netSeries[netSeries.length - 1];
-    var finalTarget = personalTargetSeries[personalTargetSeries.length - 1];
-    var finalMeets = finalNet >= finalTarget;
-
-    // Test 3: structural trend
-    var structureOK = rentGrowth >= expInflation;
-
-    var passCount = 0;
-    if (!everNegative) passCount++;
-    if (finalMeets) passCount++;
-    if (structureOK) passCount++;
-
-    var grade = "warn";
-    var headline = "";
-    var reason = [];
-
-    if (passCount === 3) {
-      grade = "pass";
-      headline = "✅ Sustainable (Strong margin)";
-      reason.push("Net never goes negative.");
-      reason.push("Final-year income meets your living cost.");
-      reason.push("Rent growth keeps up with expense inflation.");
-    } else if (passCount === 2) {
-      grade = "warn";
-      headline = "⚠️ Marginal (Watch taxes / insurance)";
-      if (everNegative) reason.push("Net goes negative in at least one year.");
-      if (!finalMeets) reason.push("Final-year income does not fully cover your personal target.");
-      if (!structureOK) reason.push("Expense inflation is higher than rent growth.");
-    } else {
-      grade = "fail";
-      headline = "❌ Unsustainable (Will be cashflow negative)";
-      if (everNegative) reason.push("Net goes negative early because expenses + mortgage outgrow income.");
-      if (!finalMeets) reason.push("By the end of the horizon, building can’t pay your life costs.");
-      if (!structureOK) reason.push("Expenses rise faster than rent; PTBO taxes + insurance are the main culprits.");
     }
 
     return {
@@ -314,24 +300,25 @@
       expenseSeries: expenseSeries,
       netSeries: netSeries,
       valueSeries: valueSeries,
-      personalTargetSeries: personalTargetSeries,
-      altRevenueSeries: altRevenueSeries,
+      personalTargetSeries: personalSeries,
+      altIncomeSeries: altIncomeSeries,
+      altExpenseSeries: altExpenseSeries,
       preTaxSeries: preTaxSeries,
       taxSeries: taxSeries,
-      summaryGrade: grade,
-      summaryHeadline: headline,
-      summaryReason: reason.join(" "),
-      mathHTML: mathBlocks.join("")
+      mathHTML: mathBlocks.join(""),
+      firstProfitYear: firstProfitYear,
+      bestYearIndex: bestYearIndex,
+      bestAfterTax: bestAfterTax
     };
   }
 
-  // ---- 3. render charts (now 6 of them) ----
+  // chart refs
   var LOP_incomeChart = null;
-  var LOP_netChart = null;
+  var LOP_netChart    = null;
   var LOP_spiderChart = null;
-  var LOP_valueChart = null;
-  var LOP_altRevChart = null;
-  var LOP_taxChart = null;
+  var LOP_valueChart  = null;
+  var LOP_altChart    = null;
+  var LOP_taxChart    = null;
 
   function LOP_renderCharts(data) {
     if (!data) return;
@@ -340,30 +327,36 @@
     var netCtx    = document.getElementById('lop-net-chart');
     var spiderCtx = document.getElementById('lop-spider-chart');
     var valueCtx  = document.getElementById('lop-value-chart');
-    var altCtx    = document.getElementById('lop-altrev-chart');
+    var altCtx    = document.getElementById('lop-alt-chart');
     var taxCtx    = document.getElementById('lop-tax-chart');
-
-    // also render summary + math
     var summaryEl = document.getElementById('lop-summary');
     var mathTextEl = document.getElementById('lop-math-text');
 
+    // summary
     if (summaryEl) {
-      summaryEl.className = ""; // reset
-      if (data.summaryGrade === "pass") {
-        summaryEl.className = "lop-summary--pass";
-      } else if (data.summaryGrade === "warn") {
-        summaryEl.className = "lop-summary--warn";
+      if (data.firstProfitYear !== null) {
+        var targetForThatYear = data.personalTargetSeries[data.firstProfitYear - 1] || 0;
+        summaryEl.className = "lop-summary--profit";
+        summaryEl.innerHTML =
+          "<h3>✅ Profitable starting in Year " + data.firstProfitYear + "</h3>" +
+          "<p>After-tax net in Year " + data.firstProfitYear + " is $" +
+          data.netSeries[data.firstProfitYear - 1].toFixed(2) +
+          " which is ≥ your annual target $" + targetForThatYear.toFixed(2) + ".</p>";
       } else {
-        summaryEl.className = "lop-summary--fail";
+        summaryEl.className = "lop-summary--noprofit";
+        summaryEl.innerHTML =
+          "<h3>❌ Not profitable in " + data.labels.length + " years</h3>" +
+          "<p>Best year is Year " + data.bestYearIndex +
+          " with after-tax $" + data.bestAfterTax.toFixed(2) + ".</p>";
       }
-      summaryEl.innerHTML = "<h3>" + data.summaryHeadline + "</h3><p>" + data.summaryReason + "</p>";
     }
+
+    // math
     if (mathTextEl) {
       mathTextEl.innerHTML = data.mathHTML;
     }
 
     if (!incomeCtx || !netCtx || !spiderCtx || !valueCtx || !altCtx || !taxCtx) {
-      // HTML not loaded yet, skip charts
       return;
     }
 
@@ -374,70 +367,40 @@
       data: {
         labels: data.labels,
         datasets: [
-          {
-            label: 'Total Income (Rent + Alt)',
-            data: data.incomeSeries,
-            borderColor: '#27ae60',
-            borderWidth: 2,
-            fill: false
-          },
-          {
-            label: 'Total Expenses (after rebate + mortgage)',
-            data: data.expenseSeries,
-            borderColor: '#e74c3c',
-            borderWidth: 2,
-            fill: false
-          }
+          { label: 'Total Income (Rent + Alt)', data: data.incomeSeries, borderColor: '#27ae60', borderWidth: 2, fill: false },
+          { label: 'Total Expenses (incl. alt expense)', data: data.expenseSeries, borderColor: '#e74c3c', borderWidth: 2, fill: false }
         ]
       },
-      options: {
-        responsive: true,
-        plugins: {
-          title: { display: true, text: 'Income vs Expenses (Annual)' }
-        }
-      }
+      options: { responsive: true, plugins: { title: { display: true, text: 'Income vs Expenses (Annual)' } } }
     });
 
-    // 2) net after tax
+    // 2) net vs target
     if (LOP_netChart) LOP_netChart.destroy();
     LOP_netChart = new Chart(netCtx.getContext('2d'), {
       type: 'bar',
       data: {
         labels: data.labels,
         datasets: [
-          {
-            label: 'Net After Tax (CA$ / yr)',
-            data: data.netSeries,
-            backgroundColor: '#3498db'
-          },
-          {
-            label: 'Your Target (to live)',
-            data: data.personalTargetSeries,
-            backgroundColor: 'rgba(231, 76, 60, 0.35)'
-          }
+          { label: 'Net After Tax (CA$ / yr)', data: data.netSeries, backgroundColor: '#3498db' },
+          { label: 'Your Target (to live)', data: data.personalTargetSeries, backgroundColor: 'rgba(231, 76, 60, 0.35)' }
         ]
       },
-      options: {
-        responsive: true,
-        plugins: {
-          title: { display: true, text: 'Owner Spendable vs Target' }
-        }
-      }
+      options: { responsive: true, plugins: { title: { display: true, text: 'Owner Spendable vs Target' } } }
     });
 
-    // 3) spider / radar
+    // 3) spider
     if (LOP_spiderChart) LOP_spiderChart.destroy();
     LOP_spiderChart = new Chart(spiderCtx.getContext('2d'), {
       type: 'radar',
       data: {
-        labels: ['Rent', 'Alt Revenue', 'Expenses', 'After-Tax'],
+        labels: ['Rent', 'Alt Income', 'Alt Expense', 'After-Tax'],
         datasets: [
           {
             label: 'Year 1',
             data: [
-              data.incomeSeries[0] - data.altRevenueSeries[0],
-              data.altRevenueSeries[0],
-              data.expenseSeries[0],
+              data.incomeSeries[0] - data.altIncomeSeries[0],
+              data.altIncomeSeries[0],
+              data.altExpenseSeries[0],
               data.netSeries[0]
             ],
             backgroundColor: 'rgba(52, 152, 219, 0.2)',
@@ -446,9 +409,9 @@
           {
             label: 'Year ' + data.labels[data.labels.length - 1],
             data: [
-              data.incomeSeries[data.incomeSeries.length - 1] - data.altRevenueSeries[data.altRevenueSeries.length - 1],
-              data.altRevenueSeries[data.altRevenueSeries.length - 1],
-              data.expenseSeries[data.expenseSeries.length - 1],
+              data.incomeSeries[data.incomeSeries.length - 1] - data.altIncomeSeries[data.altIncomeSeries.length - 1],
+              data.altIncomeSeries[data.altIncomeSeries.length - 1],
+              data.altExpenseSeries[data.altExpenseSeries.length - 1],
               data.netSeries[data.netSeries.length - 1]
             ],
             backgroundColor: 'rgba(39, 174, 96, 0.2)',
@@ -458,12 +421,8 @@
       },
       options: {
         responsive: true,
-        plugins: {
-          title: { display: true, text: 'Revenue Composition (Start vs End)' }
-        },
-        scales: {
-          r: { beginAtZero: true }
-        }
+        plugins: { title: { display: true, text: 'Composition (Start vs End)' } },
+        scales: { r: { beginAtZero: true } }
       }
     });
 
@@ -474,52 +433,25 @@
       data: {
         labels: data.labels,
         datasets: [
-          {
-            label: 'Property Value (paper)',
-            data: data.valueSeries,
-            borderColor: '#8e44ad',
-            borderWidth: 2,
-            fill: false
-          },
-          {
-            label: 'Expenses',
-            data: data.expenseSeries,
-            borderColor: '#e67e22',
-            borderWidth: 2,
-            fill: false
-          }
+          { label: 'Property Value (paper)', data: data.valueSeries, borderColor: '#8e44ad', borderWidth: 2, fill: false },
+          { label: 'Expenses (incl. alt)', data: data.expenseSeries, borderColor: '#e67e22', borderWidth: 2, fill: false }
         ]
       },
-      options: {
-        responsive: true,
-        plugins: {
-          title: { display: true, text: 'Paper Growth vs Real Cost Growth' }
-        }
-      }
+      options: { responsive: true, plugins: { title: { display: true, text: 'Paper Growth vs Real Cost Growth' } } }
     });
 
-    // 5) alt revenue over time
-    if (LOP_altRevChart) LOP_altRevChart.destroy();
-    LOP_altRevChart = new Chart(altCtx.getContext('2d'), {
+    // 5) alt income vs alt expense
+    if (LOP_altChart) LOP_altChart.destroy();
+    LOP_altChart = new Chart(altCtx.getContext('2d'), {
       type: 'line',
       data: {
         labels: data.labels,
         datasets: [
-          {
-            label: 'Alt Revenue (CA$ / yr)',
-            data: data.altRevenueSeries,
-            borderColor: '#16a085',
-            borderWidth: 2,
-            fill: false
-          }
+          { label: 'Alt Income', data: data.altIncomeSeries, borderColor: '#16a085', borderWidth: 2, fill: false },
+          { label: 'Alt Expense', data: data.altExpenseSeries, borderColor: '#c0392b', borderWidth: 2, fill: false }
         ]
       },
-      options: {
-        responsive: true,
-        plugins: {
-          title: { display: true, text: 'Alt Revenue Over Time (roof, billboard, Airbnb, grants)' }
-        }
-      }
+      options: { responsive: true, plugins: { title: { display: true, text: 'Alt Income vs Alt Expense' } } }
     });
 
     // 6) pre-tax vs tax paid
@@ -529,32 +461,15 @@
       data: {
         labels: data.labels,
         datasets: [
-          {
-            label: 'Pre-Tax Income',
-            data: data.preTaxSeries,
-            borderColor: '#2c3e50',
-            borderWidth: 2,
-            fill: false
-          },
-          {
-            label: 'Tax Paid',
-            data: data.taxSeries,
-            borderColor: '#c0392b',
-            borderWidth: 2,
-            fill: false
-          }
+          { label: 'Pre-Tax', data: data.preTaxSeries, borderColor: '#2c3e50', borderWidth: 2, fill: false },
+          { label: 'Tax Paid', data: data.taxSeries, borderColor: '#c0392b', borderWidth: 2, fill: false }
         ]
       },
-      options: {
-        responsive: true,
-        plugins: {
-          title: { display: true, text: 'Pre-Tax vs Tax Paid' }
-        }
-      }
+      options: { responsive: true, plugins: { title: { display: true, text: 'Pre-Tax vs Tax Paid' } } }
     });
   }
 
-  // ---- 4. GLOBAL ENTRY POINT (what your buttons call) ----
+  // global entry
   window.generateProjection = function() {
     var data = LOP_computeProjection();
     if (!data) return;
@@ -565,7 +480,7 @@
     LOP_renderCharts(data);
   };
 
-  // ---- 5. AUTO-MOUNT after AJAX load ----
+  // hook into loadProject
   if (window.loadProject) {
     var _origLoadProject = window.loadProject;
     window.loadProject = function(page) {
@@ -580,7 +495,6 @@
       }, 100);
     };
   } else {
-    // fallback: if page already has LOP on first load
     document.addEventListener('DOMContentLoaded', function() {
       if (document.getElementById('landlord-optimizer')) {
         LOP_initSpiderBackground();

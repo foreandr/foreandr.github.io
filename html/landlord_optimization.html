@@ -1,6 +1,6 @@
 <!-- =========================
      LANDLORD OPTIMIZATION UI
-     (Partial, no function defs)
+     (Scoped ONLY to the PTBO letter)
      ========================= -->
 
 <style>
@@ -37,7 +37,7 @@ body {
   text-align: center;
 }
 
-/* BUTTONS (now at top) */
+/* BUTTONS (top) */
 .button-row {
   display: flex;
   justify-content: center;
@@ -59,7 +59,7 @@ body {
   background-color: #2980b9;
 }
 
-/* SUMMARY / PUNCHLINES (very clear pass/fail area) */
+/* SUMMARY / PUNCHLINES */
 #lop-summary {
   margin-bottom: 26px;
   border-radius: 10px;
@@ -68,17 +68,12 @@ body {
   line-height: 1.5;
   text-align: left;
 }
-.lop-summary--pass {
+.lop-summary--profit {
   background: #e8f8f5;
   color: #16613a;
   border: 1px solid #1abc9c;
 }
-.lop-summary--warn {
-  background: #fef9e7;
-  color: #9a7d0a;
-  border: 1px solid #f1c40f;
-}
-.lop-summary--fail {
+.lop-summary--noprofit {
   background: #fdecea;
   color: #922b21;
   border: 1px solid #e74c3c;
@@ -116,8 +111,7 @@ body {
   font-size: 0.85em;
 }
 
-.input-card input,
-.input-card select {
+.input-card input {
   width: 100%;
   padding: 8px 6px;
   border: 1px solid #bdc3c7;
@@ -179,14 +173,19 @@ body {
   text-align: right;
   font-weight: 600;
 }
-.lop-pos {
-  color: #1e8449;
-}
-.lop-neg {
-  color: #922b21;
+.lop-pos { color: #1e8449; }
+.lop-neg { color: #922b21; }
+.lop-math-formula {
+  background: #f5f5f5;
+  border-radius: 4px;
+  padding: 7px 8px 4px 8px;
+  margin-top: 6px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.78rem;
+  white-space: pre-wrap;
 }
 
-/* CHART AREA (now 6 cards) */
+/* CHART AREA (6 cards) */
 .charts-row {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
@@ -245,33 +244,47 @@ body {
 <div id="landlord-optimizer">
   <h1>Landlord Optimization Platform</h1>
   <p class="subtitle">
-    Model PTBO taxes, rising insurance, charity rebates, alt revenue (roof, billboard, Airbnb), and your own life money in one place.
+    Exactly what was in the PTBO message: rents, city taxes, insurance inside expenses, charity rebate, his own mortgage/food, plus one extra income and one extra expense.
   </p>
 
-  <!-- BUTTON (now above fields, no oasis) -->
+  <!-- BUTTON (top) -->
   <div class="button-row">
     <button class="lop-btn" onclick="window.generateProjection && window.generateProjection()">Generate Analysis</button>
   </div>
 
   <!-- SUMMARY / PUNCHLINES -->
-  <div id="lop-summary" class="lop-summary--pass">
-    <h3>✅ Sustainable (Starter scenario)</h3>
-    <p>This starter set of numbers is chosen to be realistic and positive, so he doesn’t open the page to a red failure.</p>
+  <div id="lop-summary" class="lop-summary--profit">
+    <h3>✅ Profitable starting in Year 1</h3>
+    <p>After-tax cashflow in Year 1 meets or exceeds your personal target.</p>
   </div>
 
-  <!-- PROPERTY & CASHFLOW -->
-  <div class="input-section" id="section-property">
+  <!-- SECTION: BUILDING COMPOSITION + CORE MONEY -->
+  <div class="input-section" id="section-composition">
     <div class="input-card">
-      <h3>Base Monthly Rent (all units)</h3>
+      <h3>Number of Stores (street level)</h3>
+      <label for="lop-stores">count</label>
+      <input type="number" id="lop-stores" value="4" min="0">
+    </div>
+    <div class="input-card">
+      <h3>Number of Apartments (upper)</h3>
+      <label for="lop-apartments">count</label>
+      <input type="number" id="lop-apartments" value="5" min="0">
+    </div>
+    <div class="input-card">
+      <h3>Total Monthly Rent (all 4 stores + 5 apts)</h3>
       <label for="lop-rent">CA$ / month</label>
-      <!-- start sustainable -->
-      <input type="number" id="lop-rent" value="6500">
+      <!-- start optimistic -->
+      <input type="number" id="lop-rent" value="9200">
     </div>
     <div class="input-card">
       <h3>Monthly Operating Expenses</h3>
       <label for="lop-expenses">tax + insurance + maintenance</label>
-      <input type="number" id="lop-expenses" value="3200">
+      <input type="number" id="lop-expenses" value="3000">
     </div>
+  </div>
+
+  <!-- SECTION: OWNER + DEBT -->
+  <div class="input-section" id="section-owner">
     <div class="input-card">
       <h3>Mortgage / Debt Service</h3>
       <label for="lop-mortgage">CA$ / month</label>
@@ -282,14 +295,18 @@ body {
       <label for="lop-personal">CA$ / month you need to live</label>
       <input type="number" id="lop-personal" value="3500">
     </div>
+    <div class="input-card">
+      <h3>Personal Cost Growth / Yr</h3>
+      <label for="lop-personal-growth">%</label>
+      <input type="number" id="lop-personal-growth" value="2">
+    </div>
   </div>
 
-  <!-- INFLATION, APPRECIATION, YEARS -->
+  <!-- SECTION: GROWTH + HORIZON -->
   <div class="input-section" id="section-growth">
     <div class="input-card">
       <h3>Rent Growth / Yr</h3>
       <label for="lop-rent-growth">%</label>
-      <!-- give him a fighting chance -->
       <input type="number" id="lop-rent-growth" value="4">
     </div>
     <div class="input-card">
@@ -309,7 +326,7 @@ body {
     </div>
   </div>
 
-  <!-- TAX / STRUCTURE -->
+  <!-- SECTION: TAX / STRUCTURE -->
   <div class="input-section" id="section-tax">
     <div class="input-card">
       <h3>Personal Tax Rate</h3>
@@ -327,43 +344,38 @@ body {
       <input type="number" id="lop-use-corp" value="0" min="0" max="1" step="1">
     </div>
     <div class="input-card">
+      <h3>City-tax share of expenses</h3>
+      <label for="lop-city-share">% of total expenses that is city/municipal tax</label>
+      <input type="number" id="lop-city-share" value="40">
+    </div>
+    <div class="input-card">
       <h3>Charity / Non-profit Rebate</h3>
       <label for="lop-rebate">property-tax rebate % (0–40)</label>
       <input type="number" id="lop-rebate" value="0">
     </div>
   </div>
 
-  <!-- ALTERNATIVE REVENUE -->
-  <div class="input-section" id="section-alt-rev">
+  <!-- SECTION: ALT (1 income + 1 expense) -->
+  <div class="input-section" id="section-alt">
     <div class="input-card">
-      <h3>Rooftop / Telecom Lease</h3>
-      <label for="lop-roof">CA$ / month</label>
-      <input type="number" id="lop-roof" value="800">
+      <h3>Alt income (e.g. livestream)</h3>
+      <label for="lop-alt-income">CA$ / month</label>
+      <input type="number" id="lop-alt-income" value="0">
     </div>
     <div class="input-card">
-      <h3>Billboard / Mural Sponsorship</h3>
-      <label for="lop-billboard">CA$ / month</label>
-      <input type="number" id="lop-billboard" value="500">
-    </div>
-    <div class="input-card">
-      <h3>Short-term / Airbnb Premium</h3>
-      <label for="lop-airbnb">CA$ / month</label>
-      <input type="number" id="lop-airbnb" value="600">
-    </div>
-    <div class="input-card">
-      <h3>Annual Grants / Credits</h3>
-      <label for="lop-grants">CA$ / year</label>
-      <input type="number" id="lop-grants" value="2000">
+      <h3>Alt expense (e.g. lights / camera)</h3>
+      <label for="lop-alt-expense">CA$ / month</label>
+      <input type="number" id="lop-alt-expense" value="0">
     </div>
   </div>
 
-  <!-- DETAILED MATH (expandable, ALL 15 YEARS) -->
-  <details id="lop-math-details">
+  <!-- DETAILED MATH (open by default) -->
+  <details id="lop-math-details" open>
     <summary>Show detailed math (all years)</summary>
     <div id="lop-math-text">Click "Generate Analysis" to see the step-by-step calculations.</div>
   </details>
 
-  <!-- CHARTS (6 of them) -->
+  <!-- CHARTS (6) -->
   <div class="charts-row">
     <div class="chart-card">
       <h4>Income vs Expenses (Annual)</h4>
@@ -382,8 +394,8 @@ body {
       <canvas id="lop-value-chart"></canvas>
     </div>
     <div class="chart-card">
-      <h4>Alt Revenue Over Time</h4>
-      <canvas id="lop-altrev-chart"></canvas>
+      <h4>Alt Income vs Alt Expense</h4>
+      <canvas id="lop-alt-chart"></canvas>
     </div>
     <div class="chart-card">
       <h4>Pre-Tax vs Tax Paid</h4>
