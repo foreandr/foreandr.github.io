@@ -1,56 +1,227 @@
-<div class="container">
-    <h1>Project Portfolio 🛠️</h1>
-    <p>Explore a selection of the technical utilities and applications I've developed.</p>
+<div class="container" id="portfolio-container">
+  <h1 id="portfolio-title">Project Portfolio 🛠️</h1>
+  <p id="portfolio-subtitle">Explore a selection of the technical utilities and applications I've developed.</p>
 
-    <div class="catalogue">
+  <div class="catalogue" id="portfolio-catalogue">
 
-        <div class="card">
-            <h2>Lot Tracker</h2>
-            <p>Real-time **vehicle inventory tracking** and data analysis dashboard.</p>
-            <button
-                id="lot-tracker-button"
-                class="tool-button"
-                onclick="loadProject('lot_tracker.html')"
-            >
-                View Tool
-            </button>
-        </div>
-
-        <div class="card">
-            <h2>Landlord Optimization</h2>
-            <p>A platform for **rental analysis** and **tenant management** optimization.</p>
-            <button
-                id="landlord-optimization-button"
-                class="tool-button"
-                onclick="loadProject('landlord_optimization.html')"
-            >
-                View Tool
-            </button>
-        </div>
-
-        <div class="card">
-            <h2>Asset Tracker</h2>
-            <p>Comprehensive **fixed-asset lifecycle management** system.</p>
-            <button
-                id="asset-tracker-button"
-                class="tool-button"
-                onclick="loadProject('asset_tracker.html')"
-            >
-                View Tool
-            </button>
-        </div>
-
-        <div class="card disabled">
-            <h2>Stock Predictor</h2>
-            <p>Utilizing **Black-Scholes** and **machine learning** for financial forecasting.</p>
-            <span class="status-badge">Coming Soon</span>
-        </div>
-
-        <div class="card disabled">
-            <h2>Resource Game</h2>
-            <p>A JavaScript-based **capital allocation management** simulation.</p>
-            <span class="status-badge">Coming Soon</span>
-        </div>
-
+    <!-- Lot Tracker -->
+    <div class="card" id="card-lot-tracker">
+      <div class="card-header">
+        <h2 class="card-title">Lot Tracker</h2>
+        <span class="card-tag">Live</span>
+      </div>
+      <p class="card-text">
+        Real-time <strong>vehicle inventory tracking</strong> and data analysis dashboard.
+      </p>
+      <button
+        id="lot-tracker-button"
+        class="tool-button"
+        onclick="loadProject('lot_tracker.html')"
+      >
+        Open Lot Tracker
+      </button>
     </div>
+
+    <!-- Landlord Optimization -->
+    <div class="card" id="card-landlord">
+      <div class="card-header">
+        <h2 class="card-title">Landlord Optimization</h2>
+        <span class="card-tag secondary">Stable</span>
+      </div>
+      <p class="card-text">
+        A platform for <strong>rental analysis</strong> and <strong>tenant management</strong> optimization.
+      </p>
+      <button
+        id="landlord-optimization-button"
+        class="tool-button"
+        onclick="loadProject('landlord_optimization.html')"
+      >
+        Open Landlord Tool
+      </button>
+    </div>
+
+    <!--
+    <div class="card disabled">
+      <div class="card-header">
+        <h2 class="card-title">Asset Tracker</h2>
+        <span class="status-badge">Coming Soon</span>
+      </div>
+      <p class="card-text">
+        Comprehensive <strong>fixed-asset lifecycle management</strong> system.
+      </p>
+    </div>
+
+    <div class="card disabled">
+      <div class="card-header">
+        <h2 class="card-title">Stock Predictor</h2>
+        <span class="status-badge">Coming Soon</span>
+      </div>
+      <p class="card-text">
+        Utilizing <strong>Black-Scholes</strong> and <strong>machine learning</strong> for financial forecasting.
+      </p>
+    </div>
+
+    <div class="card disabled">
+      <div class="card-header">
+        <h2 class="card-title">Resource Game</h2>
+        <span class="status-badge">Coming Soon</span>
+      </div>
+      <p class="card-text">
+        A JavaScript-based <strong>capital allocation management</strong> simulation.
+      </p>
+    </div>
+    -->
+
+  </div>
 </div>
+
+<style>
+#portfolio-container {
+  max-width: 1100px;
+  margin: 32px auto;
+  padding: 0 20px 40px 20px;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #1f2937;
+}
+
+#portfolio-title {
+  font-size: 2.2rem;
+  margin-bottom: 6px;
+  color: #0f172a;
+  letter-spacing: -0.03em;
+}
+
+#portfolio-subtitle {
+  margin-bottom: 26px;
+  color: #4b5563;
+}
+
+#portfolio-catalogue {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 18px;
+}
+
+/* cards */
+.card {
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.05);
+  border-radius: 14px;
+  box-shadow: 0 10px 40px rgba(15, 23, 42, 0.06);
+  padding: 20px 20px 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: transform 0.12s ease-out, box-shadow 0.12s ease-out;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 48px rgba(15, 23, 42, 0.08);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.card-title {
+  font-size: 1.05rem;
+  font-weight: 650;
+  margin: 0;
+}
+
+.card-text {
+  margin: 0;
+  color: #475569;
+  line-height: 1.5;
+}
+
+/* tags */
+.card-tag {
+  background: rgba(34, 197, 94, 0.12);
+  color: #166534;
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 3px 10px 4px;
+  border-radius: 999px;
+  border: 1px solid rgba(22, 101, 52, 0.35);
+  white-space: nowrap;
+}
+
+.card-tag.secondary {
+  background: rgba(59, 130, 246, 0.08);
+  border-color: rgba(59, 130, 246, 0.28);
+  color: #1d4ed8;
+}
+
+/* buttons */
+.tool-button {
+  appearance: none;
+  border: none;
+  outline: none;
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  color: #ffffff;
+  border-radius: 10px;
+  padding: 9px 14px 9px 14px;
+  font-weight: 600;
+  font-size: 0.75rem;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: transform 0.08s ease-out, box-shadow 0.08s ease-out;
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35);
+  width: fit-content;
+}
+
+.tool-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 26px rgba(37, 99, 235, 0.4);
+}
+
+.tool-button:active {
+  transform: translateY(0);
+  box-shadow: 0 5px 16px rgba(37, 99, 235, 0.3);
+}
+
+.card.disabled {
+  opacity: 0.45;
+  pointer-events: none;
+  filter: grayscale(0.3);
+}
+
+.status-badge {
+  background: rgba(248, 113, 113, 0.1);
+  border: 1px solid rgba(248, 113, 113, 0.25);
+  color: #b91c1c;
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 3px 10px 4px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  #portfolio-title {
+    font-size: 1.8rem;
+  }
+  #portfolio-catalogue {
+    grid-template-columns: 1fr;
+  }
+  .card {
+    padding: 18px 16px 16px 16px;
+  }
+}
+</style>
+
+<script>
+function loadProject(filename) {
+  // simple client-side loader — adjust to your current setup
+  window.location.href = filename;
+}
+</script>
