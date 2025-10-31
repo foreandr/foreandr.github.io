@@ -1,4 +1,5 @@
 import time
+from datetime import datetime
 from obsws_python import ReqClient
 from obsws_python.error import OBSSDKRequestError
 
@@ -9,92 +10,189 @@ OBS_PORT = 4455
 OBS_PASSWORD = "3zqvBCtapxZz4xwK"
 
 # --- Cycle Durations ---
-# Stream ON time: 5 minutes (300 seconds)
-STREAM_DURATION_SECONDS = 5 * 60  
-# Stream OFF time: 30 seconds
-DOWN_TIME_SECONDS = 300          
+# Recording segment length: 15 seconds
+RECORD_SEGMENT_SECONDS = 15  
+# Delay after stopping a recording to ensure the file is closed and released.
+RECORD_STOP_DELAY = 5.0 
+# How often to check the stream status (e.g., check every 10 recording cycles)
+STREAM_CHECK_CYCLES = 10
+STREAM_CHECK_INTERVAL_SECONDS = RECORD_SEGMENT_SECONDS * STREAM_CHECK_CYCLES
+
+# --- OBS Clients ---
+client = None
+
+# --- Stream Info Update Function (FINAL FIX for positional arguments) ---
+def update_stream_info(client: ReqClient, title: str):
+    """Updates the stream title/game via the streaming service."""
+    current_time = datetime.now().strftime('%H:%M:%S')
+    current_title = f"{title} | Started at {current_time}"
+    print(f"🔄 Setting stream title: '{current_title}'")
+    try:
+        # FIX: The set_stream_service_settings function in your library requires 
+        # the stream service type as the first positional argument. We retrieve the 
+        # current type to satisfy the function call.
+        current_settings = client.get_stream_service_settings()
+        stream_service_type = current_settings.streamServiceType # Get the active service type
+        
+        client.set_stream_service_settings(
+            stream_service_type, # 1. Positional arg 1 (ss_type)
+            ss_settings={        # 2. Keyword arg (ss_settings)
+                "StreamTitle": current_title,
+                "Game": "Just Chatting" 
+            }
+        )
+        print("✅ Stream title updated.")
+    except Exception as e:
+        print(f"❌ Failed to update stream title/info. Error: {e}")
 
 # Connect to OBS
 try:
-    # Use a short timeout for the initial connection attempt
     client = ReqClient(host=OBS_HOST, port=OBS_PORT, password=OBS_PASSWORD, timeout=5)
     print("✅ Successfully connected to OBS.")
 except Exception as e:
     print(f"❌ Connection Error: {e}")
-    print("FATAL: Please ensure OBS is running and the WebSocket settings (Host, Port, Password) are correct.")
+    print("FATAL: Ensure OBS is running and WebSocket settings are correct.")
     exit()
 
-# --- Initial Failsafe: Ensure Stream is OFF (Default State) ---
-print("\n--- Failsafe Check: Setting Stream to Default OFF State ---")
+# --- Initial Failsafe: Ensure everything is OFF ---
+print("\n--- Failsafe Check: Ensuring all outputs are OFF ---")
 try:
-    status = client.get_stream_status()
-    if status.output_active:
-        print("⚠️ Stream is currently ON. Stopping stream to begin cycle.")
+    # Check and Stop Stream
+    stream_status = client.get_stream_status()
+    if stream_status.output_active:
+        print("⚠️ Stream is ON. Stopping stream.")
         client.stop_stream()
-        # Give OBS a moment to process the stop command
-        time.sleep(1) 
-    else:
-        print("✅ Stream is currently OFF. Ready to begin cycle.")
+        time.sleep(1)
+    
+    # Check and Stop Recording
+    record_status = client.get_record_status()
+    if record_status.output_active:
+        print("⚠️ Recording is ON. Stopping recording.")
+        client.stop_record()
+        time.sleep(1)
+        
+    print("✅ Initial state is clean.")
 
 except Exception as e:
     print(f"❌ Failsafe Check Error: {e}")
-    print("FATAL: Could not verify/stop stream status. Exiting.")
+    print("FATAL: Could not verify/stop output status. Exiting.")
     exit()
 
-# --- Main Infinite Loop ---
+# --- Initial Stream Start (ROBUST) ---
+print("\n--- Starting Continuous Stream ---")
+try:
+    update_stream_info(client, "Indefinite Stream with Segmented Recording")
+    
+    # ROBUST CHECK: Only start if stream is currently reported as inactive
+    status_check = client.get_stream_status()
+    if not status_check.output_active:
+        client.start_stream()
+        print("✅ Stream started. Entering continuous loop.")
+    else:
+        print("⚠️ Stream was reported active immediately after failsafe. Proceeding to loop.")
+
+except OBSSDKRequestError as e:
+    print(f"❌ FATAL Error starting stream: {e}")
+    print("ACTION REQUIRED: Check your OBS Stream Settings (Stream Key, Service, Encoder) for a Code 500 error.")
+    exit()
+except Exception as e:
+    print(f"❌ FATAL Error: {e}")
+    exit()
+
+
+# --- Main Infinite Loop for Recording and Health Check (ROBUST) ---
 print("\n=======================================================")
-print(f"Starting the ON/OFF stream cycle (5 min ON / 30 sec OFF).")
+print(f"Starting segmented recording cycle ({RECORD_SEGMENT_SECONDS}s segments).")
+print(f"Stream health will be checked every {STREAM_CHECK_INTERVAL_SECONDS} seconds.")
 print("Press Ctrl+C to stop the program at any time.")
 print("=======================================================\n")
 
+cycle_count = 0
 try:
     while True:
-        # 1. Start the stream
+        cycle_count += 1
+        print(f"\n--- Cycle #{cycle_count} ---")
+        
+        # 1. Start Recording Segment
         try:
-            print(f"--- STARTING STREAM | ON for {STREAM_DURATION_SECONDS} seconds ---")
-            client.start_stream()
-        except OBSSDKRequestError as e:
-            # This handles the case where the stream might immediately become active again 
-            # (e.g., if OBS auto-reconnects quickly). We just print a warning and continue.
-            if "stream already active" in str(e):
-                print("⚠️ Start request failed: Stream is already active. Proceeding with ON cycle.")
+            # ROBUST CHECK: Only start if recording is currently reported as inactive
+            record_status_check = client.get_record_status()
+            if not record_status_check.output_active:
+                print(f"▶️ Starting Recording Segment (Duration: {RECORD_SEGMENT_SECONDS}s)")
+                client.start_record()
             else:
-                # Re-raise any other critical error
-                raise e 
+                print("⚠️ Recording already active. Skipping StartRecord command.")
 
-        # 2. Wait for the stream duration (5 minutes)
-        print(f"Stream is ON. Waiting for {STREAM_DURATION_SECONDS} seconds...")
-        time.sleep(STREAM_DURATION_SECONDS)
+        except OBSSDKRequestError as e:
+            if "recording already active" in str(e):
+                print("⚠️ Start Record failed: Recording already active. Skipping.")
+            else:
+                print(f"❌ Recording start error ({e}). Attempting recovery by stopping...")
+                client.stop_record()
+                time.sleep(RECORD_STOP_DELAY)
+        
 
-        # 3. Stop the stream
+        # 2. Wait for the segment duration
+        time.sleep(RECORD_SEGMENT_SECONDS)
+
+        # 3. Stop Recording Segment
         try:
-            print(f"--- STOPPING STREAM | OFF for {DOWN_TIME_SECONDS} seconds ---")
-            client.stop_stream()
-        except OBSSDKRequestError as e:
-             # This handles the case where the stream might have stopped unexpectedly.
-            if "stream not active" in str(e):
-                print("⚠️ Stop request failed: Stream is already inactive. Proceeding with OFF cycle.")
+            # ROBUST CHECK: Only stop if recording is currently reported as active
+            record_status_check = client.get_record_status()
+            if record_status_check.output_active:
+                print(f"⏹️ Stopping Recording Segment. (File saved)")
+                client.stop_record()
+                # Wait 5 seconds to ensure the file is closed and saved by OBS
+                print(f"⏳ Waiting for {RECORD_STOP_DELAY} seconds for file finalization...")
+                time.sleep(RECORD_STOP_DELAY)
             else:
-                # Re-raise any other critical error
-                raise e 
+                print("⚠️ Recording was inactive. Skipping StopRecord command.")
+                time.sleep(RECORD_STOP_DELAY)
 
-        # 4. Wait for the down time (30 seconds)
-        print(f"Stream is OFF. Waiting for {DOWN_TIME_SECONDS} seconds.")
-        time.sleep(DOWN_TIME_SECONDS)
+        except OBSSDKRequestError as e:
+            if "recording not active" in str(e):
+                print("⚠️ Stop Record failed: Recording was already inactive.")
+            else:
+                raise e
+        
+        # 4. Stream Health Check (Run every N cycles)
+        if cycle_count % STREAM_CHECK_CYCLES == 0:
+            print(f"\n🩺 STREAM HEALTH CHECK (Every {STREAM_CHECK_CYCLES} cycles)...")
+            try:
+                status = client.get_stream_status()
+                if not status.output_active:
+                    print("🚨 Stream is DOWN! Attempting to restart stream...")
+                    update_stream_info(client, "Indefinite Stream - RESTARTING")
+                    client.start_stream()
+                    print("✅ Stream restart command sent.")
+                else:
+                    print("💚 Stream is UP and running.")
+            except Exception as e:
+                print(f"❌ Health Check Error: {e}")
+
 
 # --- Clean Exit Procedure ---
 except KeyboardInterrupt:
     print("\n\nProgram interrupted by user (Ctrl+C). Initiating clean shutdown...")
 
-# Ensure the stream is stopped when the script is manually stopped
+# Ensure stream and recording are stopped when the script is manually stopped
 finally:
+    print("\n--- Final Cleanup ---")
     try:
-        current_status = client.get_stream_status()
-        if current_status.output_active:
-             print("Final step: Stopping the active stream before exiting.")
+        # Stop Recording first
+        record_status = client.get_record_status()
+        if record_status.output_active:
+             print("Final step: Stopping active recording.")
+             client.stop_record()
+             time.sleep(RECORD_STOP_DELAY) 
+        
+        # Stop Stream last
+        stream_status = client.get_stream_status()
+        if stream_status.output_active:
+             print("Final step: Stopping the continuous stream.")
              client.stop_stream()
-        else:
-             print("Stream is already stopped. Exiting cleanly.")
+             
+        print("Exiting cleanly.")
+        
     except Exception as e:
-        # Ignore errors if the connection was already lost or OBS closed
         print(f"Finished. (Cleanup error ignored: {e})")

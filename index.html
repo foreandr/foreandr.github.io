@@ -23,7 +23,6 @@
       .then(html => {
         document.getElementById("navbar").innerHTML = html;
 
-        // attach nav click handlers
         document.querySelectorAll("#navbar .site-nav a[data-page]").forEach(link => {
           link.addEventListener("click", e => {
             e.preventDefault();
@@ -38,15 +37,11 @@
         });
       });
 
-    // demo util
     const msg = greetUser("Andre");
     console.log(msg);
   </script>
 
   <script>
-    /**
-     * loadProject(fileName)
-     */
     function loadProject(fileName) {
       console.log(`[CLICK] Loading project: ${fileName}`);
       const appContainer = document.getElementById('app');
@@ -71,7 +66,6 @@
         });
     }
 
-    // stub
     function generateProjection() {
       console.log("generateProjection stub");
     }
@@ -80,10 +74,8 @@
   <script>
   // ==============================
   //  LANDLORD OPTIMIZATION GLOBALS
-  //  (all logic here)
   // ==============================
 
-  // ensure chart
   function LOP_ensureChartJs(cb) {
     if (window.Chart) {
       cb && cb();
@@ -99,7 +91,6 @@
     document.head.appendChild(s);
   }
 
-  // spider bg
   function LOP_initSpiderBackground() {
     var c = document.getElementById('spiderweb');
     if (!c) return;
@@ -149,54 +140,83 @@
     animate();
   }
 
-  // compute projection (1 alt income + 1 alt expense)
+  function LOP_readInputs() {
+    var storeCount     = Number(document.getElementById('lop-store-count')?.value) || 0;
+    var storeRent      = Number(document.getElementById('lop-store-rent')?.value) || 0;
+    var aptCount       = Number(document.getElementById('lop-apt-count')?.value) || 0;
+    var aptRent        = Number(document.getElementById('lop-apt-rent')?.value) || 0;
+
+    var fixedExpenses  = Number(document.getElementById('lop-fixed-expenses')?.value) || 0;
+    var expPerStore    = Number(document.getElementById('lop-exp-per-store')?.value) || 0;
+    var expPerApt      = Number(document.getElementById('lop-exp-per-apt')?.value) || 0;
+    var mortgageMonthly= Number(document.getElementById('lop-mortgage')?.value) || 0;
+
+    var personalMonthly= Number(document.getElementById('lop-personal')?.value) || 0;
+    var personalGrowth = (Number(document.getElementById('lop-personal-growth')?.value) || 0) / 100;
+
+    var rentGrowth     = (Number(document.getElementById('lop-rent-growth')?.value) || 0) / 100;
+    var expInflation   = (Number(document.getElementById('lop-exp-inflation')?.value) || 0) / 100;
+    var appreciation   = (Number(document.getElementById('lop-appreciation')?.value) || 0) / 100;
+    var years          = Number(document.getElementById('lop-years')?.value) || 1;
+
+    var personalTax    = (Number(document.getElementById('lop-personal-tax')?.value) || 0) / 100;
+    var corpTax        = (Number(document.getElementById('lop-corp-tax')?.value) || 0) / 100;
+    var useCorp        = Number(document.getElementById('lop-use-corp')?.value) === 1;
+    var cityShare      = (Number(document.getElementById('lop-city-share')?.value) || 0) / 100;
+    var rebatePct      = (Number(document.getElementById('lop-rebate')?.value) || 0) / 100;
+
+    var altIncomeMonthly = Number(document.getElementById('lop-alt-income')?.value) || 0;
+    var altExpenseMonthly= Number(document.getElementById('lop-alt-expense')?.value) || 0;
+
+    var totalRentMonthly = storeCount * storeRent + aptCount * aptRent;
+    var totalOpsMonthly  = fixedExpenses + storeCount * expPerStore + aptCount * expPerApt;
+
+    return {
+      storeCount,
+      storeRent,
+      aptCount,
+      aptRent,
+      fixedExpenses,
+      expPerStore,
+      expPerApt,
+      mortgageMonthly,
+      personalMonthly,
+      personalGrowth,
+      rentGrowth,
+      expInflation,
+      appreciation,
+      years,
+      personalTax,
+      corpTax,
+      useCorp,
+      cityShare,
+      rebatePct,
+      altIncomeMonthly,
+      altExpenseMonthly,
+      totalRentMonthly,
+      totalOpsMonthly
+    };
+  }
+
   function LOP_computeProjection() {
-    var rentEl = document.getElementById('lop-rent');
+    var rentEl = document.getElementById('lop-store-count');
     if (!rentEl) return null;
 
-    // building composition (we keep it, even if currently not used in formula)
-    var numStores   = Number(document.getElementById('lop-stores').value) || 0;
-    var numApts     = Number(document.getElementById('lop-apartments').value) || 0;
+    var inp = LOP_readInputs();
 
-    // money inputs
-    var totalRentMonthly = Number(rentEl.value) || 0;
-    var expensesMonthly  = Number(document.getElementById('lop-expenses').value) || 0;
-    var mortgageMonthly  = Number(document.getElementById('lop-mortgage').value) || 0;
-    var personalMonthly  = Number(document.getElementById('lop-personal').value) || 0;
+    var annualRent       = inp.totalRentMonthly * 12;
+    var annualExpenses   = inp.totalOpsMonthly * 12;
+    var annualMortgage   = inp.mortgageMonthly * 12;
+    var annualPersonal   = inp.personalMonthly * 12;
+    var annualAltIncome  = inp.altIncomeMonthly * 12;
+    var annualAltExpense = inp.altExpenseMonthly * 12;
 
-    // growth
-    var rentGrowth       = (Number(document.getElementById('lop-rent-growth').value) || 0) / 100;
-    var expInflation     = (Number(document.getElementById('lop-exp-inflation').value) || 0) / 100;
-    var appreciation     = (Number(document.getElementById('lop-appreciation').value) || 0) / 100;
-    var years            = Number(document.getElementById('lop-years').value) || 1;
-    var personalGrowth   = (Number(document.getElementById('lop-personal-growth').value) || 0) / 100;
-
-    // tax/structure
-    var personalTaxRate  = (Number(document.getElementById('lop-personal-tax').value) || 0) / 100;
-    var corpTaxRate      = (Number(document.getElementById('lop-corp-tax').value) || 0) / 100;
-    var useCorp          = Number(document.getElementById('lop-use-corp').value) === 1;
-    var citySharePct     = (Number(document.getElementById('lop-city-share').value) || 0) / 100;
-    var rebatePct        = (Number(document.getElementById('lop-rebate').value) || 0) / 100;
-
-    // alt income / alt expense
-    var altIncomeMonthly = Number(document.getElementById('lop-alt-income').value) || 0;
-    var altExpenseMonthly= Number(document.getElementById('lop-alt-expense').value) || 0;
-
-    // annualize
-    var annualRent       = totalRentMonthly * 12;
-    var annualExpenses   = expensesMonthly * 12;
-    var annualMortgage   = mortgageMonthly * 12;
-    var annualPersonal   = personalMonthly * 12;
-    var annualAltIncome  = altIncomeMonthly * 12;
-    var annualAltExpense = altExpenseMonthly * 12;
-
-    // arrays
     var labels             = [];
     var incomeSeries       = [];
     var expenseSeries      = [];
     var netSeries          = [];
     var valueSeries        = [];
-    var personalSeries     = [];
+    var personalTargetSeries = [];
     var altIncomeSeries    = [];
     var altExpenseSeries   = [];
     var preTaxSeries       = [];
@@ -208,33 +228,26 @@
     var bestYearIndex      = 1;
     var bestAfterTax       = -Infinity;
 
-    for (var year = 1; year <= years; year++) {
+    for (var year = 1; year <= inp.years; year++) {
       labels.push("Year " + year);
 
-      // grow
-      annualRent       *= (1 + rentGrowth);
-      annualExpenses   *= (1 + expInflation);
-      annualPersonal   *= (1 + personalGrowth);
-      currentValue     *= (1 + appreciation);
-      // alt income / expense we leave flat (0% growth) to match “I’d pay you monthly…”
-      // but we could grow them too if we want
+      annualRent     *= (1 + inp.rentGrowth);
+      annualExpenses *= (1 + inp.expInflation);
+      annualPersonal *= (1 + inp.personalGrowth);
+      currentValue   *= (1 + inp.appreciation);
 
-      // city tax logic
-      var propertyTaxPart    = annualExpenses * citySharePct;
-      var nonPropertyPart    = annualExpenses * (1 - citySharePct);
-      var rebatedPropertyTax = propertyTaxPart * (1 - rebatePct);
+      var propertyTaxPart    = annualExpenses * inp.cityShare;
+      var nonPropertyPart    = annualExpenses * (1 - inp.cityShare);
+      var rebatedPropertyTax = propertyTaxPart * (1 - inp.rebatePct);
+
       var finalBaseExpenses  = nonPropertyPart + rebatedPropertyTax + annualMortgage;
-      // ADD alt expense to expenses:
       var finalExpensesWithAlt = finalBaseExpenses + annualAltExpense;
 
-      // incomes
       var totalIncomeAnnual  = annualRent + annualAltIncome;
 
-      // pre-tax
       var preTax             = totalIncomeAnnual - finalExpensesWithAlt;
 
-      // tax
-      var taxRateToUse       = useCorp ? corpTaxRate : personalTaxRate;
+      var taxRateToUse       = inp.useCorp ? inp.corpTax : inp.personalTax;
       var taxApplied         = Math.max(preTax, 0) * taxRateToUse;
       var afterTax           = preTax - taxApplied;
 
@@ -242,7 +255,7 @@
       expenseSeries.push(finalExpensesWithAlt);
       netSeries.push(afterTax);
       valueSeries.push(currentValue);
-      personalSeries.push(annualPersonal);
+      personalTargetSeries.push(annualPersonal);
       altIncomeSeries.push(annualAltIncome);
       altExpenseSeries.push(annualAltExpense);
       preTaxSeries.push(preTax);
@@ -258,15 +271,14 @@
 
       var formulaText =
         "Formulas used:\n" +
+        "total_rent_monthly = stores × income_per_store(month) + apts × rent_per_apt(month)\n" +
+        "total_ops_monthly  = fixed(month) + stores × exp_per_store(month) + apts × exp_per_apt(month)\n" +
         "annual_rent = annual_rent × (1 + rentGrowth)\n" +
         "annual_expenses = annual_expenses × (1 + expInflation)\n" +
-        "annual_personal = annual_personal × (1 + personalGrowth)\n" +
-        "city_tax_part = annual_expenses × " + (citySharePct*100).toFixed(0) + "%\n" +
-        "rebated_city_tax = city_tax_part × (1 - rebatePct[" + (rebatePct*100).toFixed(0) + "%])\n" +
-        "base_final_expenses = non_city + rebated_city + mortgage\n" +
-        "final_expenses = base_final_expenses + alt_expense\n" +
-        "total_income = rent + alt_income\n" +
-        "pre_tax = total_income - final_expenses\n" +
+        "city_part = annual_expenses × " + (inp.cityShare*100).toFixed(0) + "%\n" +
+        "rebated_city = city_part × (1 - rebatePct[" + (inp.rebatePct*100).toFixed(0) + "%])\n" +
+        "final_expenses = non_city + rebated_city + mortgage(annual) + alt_expense(annual)\n" +
+        "pre_tax = (rent + alt_income) - final_expenses\n" +
         "tax = max(pre_tax,0) × " + (taxRateToUse*100).toFixed(1) + "%\n" +
         "after_tax = pre_tax - tax";
 
@@ -277,9 +289,9 @@
             "<tr><td class='lop-math-label'>Base rent (annual, grown)</td><td class='lop-math-value'>$" + annualRent.toFixed(2) + "</td><td class='lop-math-delta lop-pos'>+" + annualRent.toFixed(2) + "</td></tr>" +
             "<tr><td class='lop-math-label'>Alt income (annual)</td><td class='lop-math-value'>$" + annualAltIncome.toFixed(2) + "</td><td class='lop-math-delta " + (annualAltIncome>=0?"lop-pos":"lop-neg") + "'>" + (annualAltIncome>=0?"+":"") + annualAltIncome.toFixed(2) + "</td></tr>" +
             "<tr><td class='lop-math-label'>Operating expenses (annual, grown)</td><td class='lop-math-value'>$" + annualExpenses.toFixed(2) + "</td><td class='lop-math-delta lop-neg'>-" + annualExpenses.toFixed(2) + "</td></tr>" +
-            "<tr><td class='lop-math-label'> → city-tax portion (" + (citySharePct*100).toFixed(0) + "%)</td><td class='lop-math-value'>$" + propertyTaxPart.toFixed(2) + "</td><td class='lop-math-delta lop-neg'>-" + propertyTaxPart.toFixed(2) + "</td></tr>" +
-            "<tr><td class='lop-math-label'> → rebate applied (" + (rebatePct*100).toFixed(0) + "%)</td><td class='lop-math-value'>$" + rebatedPropertyTax.toFixed(2) + "</td><td class='lop-math-delta " + (rebatePct>0?"lop-pos":"lop-neg") + "'>" + (rebatePct>0?"+":"") + (propertyTaxPart - rebatedPropertyTax).toFixed(2) + "</td></tr>" +
-            "<tr><td class='lop-math-label'> → non-city portion (" + (100 - (citySharePct*100)) + "%)</td><td class='lop-math-value'>$" + nonPropertyPart.toFixed(2) + "</td><td class='lop-math-delta lop-neg'>-" + nonPropertyPart.toFixed(2) + "</td></tr>" +
+            "<tr><td class='lop-math-label'> → city-tax portion (" + (inp.cityShare*100).toFixed(0) + "%)</td><td class='lop-math-value'>$" + propertyTaxPart.toFixed(2) + "</td><td class='lop-math-delta lop-neg'>-" + propertyTaxPart.toFixed(2) + "</td></tr>" +
+            "<tr><td class='lop-math-label'> → rebate applied (" + (inp.rebatePct*100).toFixed(0) + "%)</td><td class='lop-math-value'>$" + rebatedPropertyTax.toFixed(2) + "</td><td class='lop-math-delta " + (inp.rebatePct>0?"lop-pos":"lop-neg") + "'>" + (inp.rebatePct>0?"+":"") + (propertyTaxPart - rebatedPropertyTax).toFixed(2) + "</td></tr>" +
+            "<tr><td class='lop-math-label'> → non-city portion (" + (100 - (inp.cityShare*100)) + "%)</td><td class='lop-math-value'>$" + nonPropertyPart.toFixed(2) + "</td><td class='lop-math-delta lop-neg'>-" + nonPropertyPart.toFixed(2) + "</td></tr>" +
             "<tr><td class='lop-math-label'>Mortgage (annual)</td><td class='lop-math-value'>$" + annualMortgage.toFixed(2) + "</td><td class='lop-math-delta lop-neg'>-" + annualMortgage.toFixed(2) + "</td></tr>" +
             "<tr><td class='lop-math-label'>Alt expense (annual)</td><td class='lop-math-value'>$" + annualAltExpense.toFixed(2) + "</td><td class='lop-math-delta lop-neg'>-" + annualAltExpense.toFixed(2) + "</td></tr>" +
             "<tr><td class='lop-math-label'><strong>Final expenses (with rebate + mortgage + alt)</strong></td><td class='lop-math-value'><strong>$" + finalExpensesWithAlt.toFixed(2) + "</strong></td><td class='lop-math-delta lop-neg'>-" + finalExpensesWithAlt.toFixed(2) + "</td></tr>" +
@@ -295,24 +307,23 @@
     }
 
     return {
-      labels: labels,
-      incomeSeries: incomeSeries,
-      expenseSeries: expenseSeries,
-      netSeries: netSeries,
-      valueSeries: valueSeries,
-      personalTargetSeries: personalSeries,
-      altIncomeSeries: altIncomeSeries,
-      altExpenseSeries: altExpenseSeries,
-      preTaxSeries: preTaxSeries,
-      taxSeries: taxSeries,
+      labels,
+      incomeSeries,
+      expenseSeries,
+      netSeries,
+      valueSeries,
+      personalTargetSeries,
+      altIncomeSeries,
+      altExpenseSeries,
+      preTaxSeries,
+      taxSeries,
       mathHTML: mathBlocks.join(""),
-      firstProfitYear: firstProfitYear,
-      bestYearIndex: bestYearIndex,
-      bestAfterTax: bestAfterTax
+      firstProfitYear,
+      bestYearIndex,
+      bestAfterTax
     };
   }
 
-  // chart refs
   var LOP_incomeChart = null;
   var LOP_netChart    = null;
   var LOP_spiderChart = null;
@@ -332,7 +343,6 @@
     var summaryEl = document.getElementById('lop-summary');
     var mathTextEl = document.getElementById('lop-math-text');
 
-    // summary
     if (summaryEl) {
       if (data.firstProfitYear !== null) {
         var targetForThatYear = data.personalTargetSeries[data.firstProfitYear - 1] || 0;
@@ -351,7 +361,6 @@
       }
     }
 
-    // math
     if (mathTextEl) {
       mathTextEl.innerHTML = data.mathHTML;
     }
@@ -360,7 +369,6 @@
       return;
     }
 
-    // 1) income vs expenses
     if (LOP_incomeChart) LOP_incomeChart.destroy();
     LOP_incomeChart = new Chart(incomeCtx.getContext('2d'), {
       type: 'line',
@@ -368,13 +376,12 @@
         labels: data.labels,
         datasets: [
           { label: 'Total Income (Rent + Alt)', data: data.incomeSeries, borderColor: '#27ae60', borderWidth: 2, fill: false },
-          { label: 'Total Expenses (incl. alt expense)', data: data.expenseSeries, borderColor: '#e74c3c', borderWidth: 2, fill: false }
+          { label: 'Total Expenses (incl. alt)', data: data.expenseSeries, borderColor: '#e74c3c', borderWidth: 2, fill: false }
         ]
       },
       options: { responsive: true, plugins: { title: { display: true, text: 'Income vs Expenses (Annual)' } } }
     });
 
-    // 2) net vs target
     if (LOP_netChart) LOP_netChart.destroy();
     LOP_netChart = new Chart(netCtx.getContext('2d'), {
       type: 'bar',
@@ -388,7 +395,6 @@
       options: { responsive: true, plugins: { title: { display: true, text: 'Owner Spendable vs Target' } } }
     });
 
-    // 3) spider
     if (LOP_spiderChart) LOP_spiderChart.destroy();
     LOP_spiderChart = new Chart(spiderCtx.getContext('2d'), {
       type: 'radar',
@@ -426,7 +432,6 @@
       }
     });
 
-    // 4) property value vs costs
     if (LOP_valueChart) LOP_valueChart.destroy();
     LOP_valueChart = new Chart(valueCtx.getContext('2d'), {
       type: 'line',
@@ -440,7 +445,6 @@
       options: { responsive: true, plugins: { title: { display: true, text: 'Paper Growth vs Real Cost Growth' } } }
     });
 
-    // 5) alt income vs alt expense
     if (LOP_altChart) LOP_altChart.destroy();
     LOP_altChart = new Chart(altCtx.getContext('2d'), {
       type: 'line',
@@ -454,7 +458,6 @@
       options: { responsive: true, plugins: { title: { display: true, text: 'Alt Income vs Alt Expense' } } }
     });
 
-    // 6) pre-tax vs tax paid
     if (LOP_taxChart) LOP_taxChart.destroy();
     LOP_taxChart = new Chart(taxCtx.getContext('2d'), {
       type: 'line',
@@ -469,7 +472,6 @@
     });
   }
 
-  // global entry
   window.generateProjection = function() {
     var data = LOP_computeProjection();
     if (!data) return;
@@ -480,7 +482,6 @@
     LOP_renderCharts(data);
   };
 
-  // hook into loadProject
   if (window.loadProject) {
     var _origLoadProject = window.loadProject;
     window.loadProject = function(page) {
@@ -504,6 +505,7 @@
       }
     });
   }
+
   </script>
 
 </body>
