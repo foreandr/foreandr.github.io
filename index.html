@@ -46,9 +46,6 @@
   <script>
     /**
      * Loads project HTML content into the main 'app' container using a standard fetch request.
-     * This matches the loading pattern used for your main navigation, eliminating the need
-     * for a global PRELOADED_HTML object.
-     * @param {string} fileName - The HTML file to load (e.g. 'lot_tracker.html').
      */
     function loadProject(fileName) {
       console.log(`[CLICK] Loading project: ${fileName}`);
@@ -152,7 +149,7 @@
     animate();
   }
 
-  // ---- 2. compute projection (NO oasis anymore) ----
+  // ---- 2. compute projection (NO oasis anymore, ALL YEARS math) ----
   function LOP_computeProjection() {
     // dom presence
     var rentEl = document.getElementById('lop-rent');
@@ -188,7 +185,7 @@
     var annualBillboard = billboardMonthly * 12;
     var annualAirbnb    = airbnbMonthly * 12;
 
-    // we assume 40% of "monthly operating expenses" is actually property tax, to apply rebate
+    // assume 40% of operating expenses is property tax → can be rebated
     var propertyTaxShare = 0.4;
 
     var labels = [];
@@ -198,9 +195,13 @@
     var valueSeries = [];
     var personalTargetSeries = [];
     var altRevenueSeries = [];
+    var preTaxSeries = [];
+    var taxSeries = [];
 
-    var mathLines = [];
     var currentValue = 1000000;
+
+    // we will build full HTML for all 15 years
+    var mathBlocks = [];
 
     for (var year = 1; year <= years; year++) {
       labels.push("Year " + year);
@@ -208,7 +209,6 @@
       // grow rents and expenses
       annualRent     *= (1 + rentGrowth);
       annualExpenses *= (1 + expInflation);
-      // mortgage stays flat
       annualRoof      *= (1 + 0.01);
       annualBillboard *= (1 + 0.01);
       annualAirbnb    *= (1 + 0.01);
@@ -230,7 +230,8 @@
       // pre-tax
       var preTax = annualRent + altRevenueAnnual - finalAnnualExpenses;
       var taxRateToUse = useCorp ? corpTaxRate : personalTaxRate;
-      var afterTax = preTax - Math.max(preTax, 0) * taxRateToUse;
+      var taxApplied = Math.max(preTax, 0) * taxRateToUse;
+      var afterTax = preTax - taxApplied;
 
       incomeSeries.push(annualRent + altRevenueAnnual);
       expenseSeries.push(finalAnnualExpenses);
@@ -238,39 +239,46 @@
       valueSeries.push(currentValue);
       personalTargetSeries.push(annualPersonal);
       altRevenueSeries.push(altRevenueAnnual);
+      preTaxSeries.push(preTax);
+      taxSeries.push(taxApplied);
 
-      // math trace (only year 1 and final year to keep it readable)
-      if (year === 1 || year === years) {
-        mathLines.push("===== YEAR " + year + " =====");
-        mathLines.push("Base rent (annual, grown): " + annualRent.toFixed(2));
-        mathLines.push("Alt revenue (annual): roof " + annualRoof.toFixed(2) + " + billboard " + annualBillboard.toFixed(2) + " + airbnb " + annualAirbnb.toFixed(2) + " + grants " + grantsAnnual.toFixed(2) + " = " + altRevenueAnnual.toFixed(2));
-        mathLines.push("Operating expenses (annual, grown): " + annualExpenses.toFixed(2));
-        mathLines.push("  -> property-tax portion (40%): " + propertyTaxPart.toFixed(2));
-        mathLines.push("  -> rebate applied (" + (rebatePct*100).toFixed(0) + "%): " + rebatedPropertyTax.toFixed(2));
-        mathLines.push("  -> non-property portion (60%): " + nonPropertyPart.toFixed(2));
-        mathLines.push("  -> mortgage (annual): " + annualMortgage.toFixed(2));
-        mathLines.push("Final expenses (with rebate + mortgage): " + finalAnnualExpenses.toFixed(2));
-        mathLines.push("Pre-Tax = income - expenses = (" + (annualRent + altRevenueAnnual).toFixed(2) + ") - (" + finalAnnualExpenses.toFixed(2) + ") = " + preTax.toFixed(2));
-        mathLines.push("Tax rate used: " + (taxRateToUse*100).toFixed(1) + "%  → tax = " + (Math.max(preTax,0)*taxRateToUse).toFixed(2));
-        mathLines.push("After-Tax Net: " + afterTax.toFixed(2));
-        mathLines.push("Owner personal target (annual): " + annualPersonal.toFixed(2));
-        mathLines.push("");
-      }
+      // display-ish deltas
+      var deltaIncome = "+" + (annualRent + altRevenueAnnual).toFixed(2);
+      var deltaExpenses = "-" + finalAnnualExpenses.toFixed(2);
+      var deltaAfterTax = (afterTax >= 0 ? "+" : "") + afterTax.toFixed(2);
+
+      var yearHtml = "<div class='lop-year-block'>" +
+        "<div class='lop-year-title'>===== YEAR " + year + " =====</div>" +
+        "<table class='lop-math-table'>" +
+        "<tr><td class='lop-math-label'>Base rent (annual, grown)</td><td class='lop-math-value'>$" + annualRent.toFixed(2) + "</td><td class='lop-math-delta lop-pos'>+" + annualRent.toFixed(2) + "</td></tr>" +
+        "<tr><td class='lop-math-label'>Alt revenue (roof + billboard + airbnb + grants)</td><td class='lop-math-value'>$" + altRevenueAnnual.toFixed(2) + "</td><td class='lop-math-delta lop-pos'>+" + altRevenueAnnual.toFixed(2) + "</td></tr>" +
+        "<tr><td class='lop-math-label'>Operating expenses (annual, grown)</td><td class='lop-math-value'>$" + annualExpenses.toFixed(2) + "</td><td class='lop-math-delta lop-neg'>-" + annualExpenses.toFixed(2) + "</td></tr>" +
+        "<tr><td class='lop-math-label'> → property-tax portion (40%)</td><td class='lop-math-value'>$" + propertyTaxPart.toFixed(2) + "</td><td class='lop-math-delta lop-neg'>-" + propertyTaxPart.toFixed(2) + "</td></tr>" +
+        "<tr><td class='lop-math-label'> → rebate applied (" + (rebatePct*100).toFixed(0) + "%)</td><td class='lop-math-value'>$" + rebatedPropertyTax.toFixed(2) + "</td><td class='lop-math-delta lop-pos'>+" + (propertyTaxPart - rebatedPropertyTax).toFixed(2) + "</td></tr>" +
+        "<tr><td class='lop-math-label'> → non-property portion (60%)</td><td class='lop-math-value'>$" + nonPropertyPart.toFixed(2) + "</td><td class='lop-math-delta lop-neg'>-" + nonPropertyPart.toFixed(2) + "</td></tr>" +
+        "<tr><td class='lop-math-label'>Mortgage (annual)</td><td class='lop-math-value'>$" + annualMortgage.toFixed(2) + "</td><td class='lop-math-delta lop-neg'>-" + annualMortgage.toFixed(2) + "</td></tr>" +
+        "<tr><td class='lop-math-label'>Final expenses (with rebate + mortgage)</td><td class='lop-math-value'>$" + finalAnnualExpenses.toFixed(2) + "</td><td class='lop-math-delta lop-neg'>" + deltaExpenses + "</td></tr>" +
+        "<tr><td class='lop-math-label'><strong>Pre-Tax = income - expenses</strong></td><td class='lop-math-value'><strong>$" + preTax.toFixed(2) + "</strong></td><td class='lop-math-delta " + (preTax >= 0 ? "lop-pos" : "lop-neg") + "'>" + (preTax >= 0 ? "+" : "") + preTax.toFixed(2) + "</td></tr>" +
+        "<tr><td class='lop-math-label'>Tax rate used</td><td class='lop-math-value'>" + (taxRateToUse*100).toFixed(1) + "%</td><td class='lop-math-delta lop-neg'>-" + taxApplied.toFixed(2) + "</td></tr>" +
+        "<tr><td class='lop-math-label'><strong>After-Tax Net</strong></td><td class='lop-math-value'><strong>$" + afterTax.toFixed(2) + "</strong></td><td class='lop-math-delta " + (afterTax >= 0 ? "lop-pos" : "lop-neg") + "'>" + deltaAfterTax + "</td></tr>" +
+        "<tr><td class='lop-math-label'>Owner personal target (annual)</td><td class='lop-math-value'>$" + annualPersonal.toFixed(2) + "</td><td class='lop-math-delta " + (afterTax >= annualPersonal ? "lop-pos" : "lop-neg") + "'>" + (afterTax - annualPersonal >= 0 ? "+" : "") + (afterTax - annualPersonal).toFixed(2) + "</td></tr>" +
+        "</table></div>";
+
+      mathBlocks.push(yearHtml);
     }
 
     // --- PASS / WARN / FAIL LOGIC ---
     // Test 1: does net ever go negative?
     var everNegative = netSeries.some(function(v){ return v < 0; });
 
-    // Test 2: does net at final year meet personal needs?
+    // Test 2: does final year meet personal needs?
     var finalNet = netSeries[netSeries.length - 1];
     var finalTarget = personalTargetSeries[personalTargetSeries.length - 1];
     var finalMeets = finalNet >= finalTarget;
 
-    // Test 3: structural trend → rent growth vs expense inflation
+    // Test 3: structural trend
     var structureOK = rentGrowth >= expInflation;
 
-    // Score
     var passCount = 0;
     if (!everNegative) passCount++;
     if (finalMeets) passCount++;
@@ -308,18 +316,22 @@
       valueSeries: valueSeries,
       personalTargetSeries: personalTargetSeries,
       altRevenueSeries: altRevenueSeries,
+      preTaxSeries: preTaxSeries,
+      taxSeries: taxSeries,
       summaryGrade: grade,
       summaryHeadline: headline,
       summaryReason: reason.join(" "),
-      mathTrace: mathLines.join("\n")
+      mathHTML: mathBlocks.join("")
     };
   }
 
-  // ---- 3. render charts (4 of them) ----
+  // ---- 3. render charts (now 6 of them) ----
   var LOP_incomeChart = null;
   var LOP_netChart = null;
   var LOP_spiderChart = null;
   var LOP_valueChart = null;
+  var LOP_altRevChart = null;
+  var LOP_taxChart = null;
 
   function LOP_renderCharts(data) {
     if (!data) return;
@@ -328,6 +340,8 @@
     var netCtx    = document.getElementById('lop-net-chart');
     var spiderCtx = document.getElementById('lop-spider-chart');
     var valueCtx  = document.getElementById('lop-value-chart');
+    var altCtx    = document.getElementById('lop-altrev-chart');
+    var taxCtx    = document.getElementById('lop-tax-chart');
 
     // also render summary + math
     var summaryEl = document.getElementById('lop-summary');
@@ -345,10 +359,10 @@
       summaryEl.innerHTML = "<h3>" + data.summaryHeadline + "</h3><p>" + data.summaryReason + "</p>";
     }
     if (mathTextEl) {
-      mathTextEl.textContent = data.mathTrace;
+      mathTextEl.innerHTML = data.mathHTML;
     }
 
-    if (!incomeCtx || !netCtx || !spiderCtx || !valueCtx) {
+    if (!incomeCtx || !netCtx || !spiderCtx || !valueCtx || !altCtx || !taxCtx) {
       // HTML not loaded yet, skip charts
       return;
     }
@@ -480,6 +494,61 @@
         responsive: true,
         plugins: {
           title: { display: true, text: 'Paper Growth vs Real Cost Growth' }
+        }
+      }
+    });
+
+    // 5) alt revenue over time
+    if (LOP_altRevChart) LOP_altRevChart.destroy();
+    LOP_altRevChart = new Chart(altCtx.getContext('2d'), {
+      type: 'line',
+      data: {
+        labels: data.labels,
+        datasets: [
+          {
+            label: 'Alt Revenue (CA$ / yr)',
+            data: data.altRevenueSeries,
+            borderColor: '#16a085',
+            borderWidth: 2,
+            fill: false
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          title: { display: true, text: 'Alt Revenue Over Time (roof, billboard, Airbnb, grants)' }
+        }
+      }
+    });
+
+    // 6) pre-tax vs tax paid
+    if (LOP_taxChart) LOP_taxChart.destroy();
+    LOP_taxChart = new Chart(taxCtx.getContext('2d'), {
+      type: 'line',
+      data: {
+        labels: data.labels,
+        datasets: [
+          {
+            label: 'Pre-Tax Income',
+            data: data.preTaxSeries,
+            borderColor: '#2c3e50',
+            borderWidth: 2,
+            fill: false
+          },
+          {
+            label: 'Tax Paid',
+            data: data.taxSeries,
+            borderColor: '#c0392b',
+            borderWidth: 2,
+            fill: false
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          title: { display: true, text: 'Pre-Tax vs Tax Paid' }
         }
       }
     });

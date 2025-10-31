@@ -126,7 +126,67 @@ body {
   background: #fff;
 }
 
-/* CHART AREA */
+/* DETAILS (math trace) */
+#lop-math-details {
+  margin-top: 12px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  padding: 10px 14px;
+  text-align: left;
+}
+#lop-math-details summary {
+  font-weight: 600;
+  cursor: pointer;
+}
+#lop-math-text {
+  margin-top: 8px;
+}
+.lop-year-block {
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 10px 12px 8px 12px;
+  margin-bottom: 10px;
+}
+.lop-year-title {
+  font-weight: 700;
+  font-size: 1.05rem;
+  text-decoration: underline;
+  margin-bottom: 6px;
+}
+.lop-math-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+.lop-math-table tr td {
+  padding: 3px 4px;
+  border-bottom: 1px solid #f1f1f1;
+}
+.lop-math-table tr:last-child td {
+  border-bottom: none;
+}
+.lop-math-label {
+  width: 46%;
+}
+.lop-math-value {
+  width: 32%;
+  text-align: right;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+.lop-math-delta {
+  width: 22%;
+  text-align: right;
+  font-weight: 600;
+}
+.lop-pos {
+  color: #1e8449;
+}
+.lop-neg {
+  color: #922b21;
+}
+
+/* CHART AREA (now 6 cards) */
 .charts-row {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
@@ -153,25 +213,6 @@ body {
 .chart-card canvas {
   width: 100% !important;
   height: 300px !important;
-}
-
-/* DETAILS (math trace) */
-#lop-math-details {
-  margin-top: 12px;
-  background: #f9f9f9;
-  border-radius: 8px;
-  padding: 10px 14px;
-  text-align: left;
-}
-#lop-math-details summary {
-  font-weight: 600;
-  cursor: pointer;
-}
-#lop-math-text {
-  white-space: pre-wrap;
-  font-family: ui-monospace, SFMono-Regular, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  font-size: 0.83rem;
-  margin-top: 8px;
 }
 
 /* SPIDER BACKGROUND */
@@ -213,9 +254,9 @@ body {
   </div>
 
   <!-- SUMMARY / PUNCHLINES -->
-  <div id="lop-summary" class="lop-summary--warn">
-    <h3>Waiting for input...</h3>
-    <p>Click “Generate Analysis” to see if this setup is sustainable, marginal, or failing.</p>
+  <div id="lop-summary" class="lop-summary--pass">
+    <h3>✅ Sustainable (Starter scenario)</h3>
+    <p>This starter set of numbers is chosen to be realistic and positive, so he doesn’t open the page to a red failure.</p>
   </div>
 
   <!-- PROPERTY & CASHFLOW -->
@@ -223,22 +264,23 @@ body {
     <div class="input-card">
       <h3>Base Monthly Rent (all units)</h3>
       <label for="lop-rent">CA$ / month</label>
-      <input type="number" id="lop-rent" value="5200">
+      <!-- start sustainable -->
+      <input type="number" id="lop-rent" value="6500">
     </div>
     <div class="input-card">
       <h3>Monthly Operating Expenses</h3>
       <label for="lop-expenses">tax + insurance + maintenance</label>
-      <input type="number" id="lop-expenses" value="3500">
+      <input type="number" id="lop-expenses" value="3200">
     </div>
     <div class="input-card">
       <h3>Mortgage / Debt Service</h3>
       <label for="lop-mortgage">CA$ / month</label>
-      <input type="number" id="lop-mortgage" value="900">
+      <input type="number" id="lop-mortgage" value="700">
     </div>
     <div class="input-card">
       <h3>Your Own Living Costs</h3>
       <label for="lop-personal">CA$ / month you need to live</label>
-      <input type="number" id="lop-personal" value="4000">
+      <input type="number" id="lop-personal" value="3500">
     </div>
   </div>
 
@@ -247,12 +289,13 @@ body {
     <div class="input-card">
       <h3>Rent Growth / Yr</h3>
       <label for="lop-rent-growth">%</label>
-      <input type="number" id="lop-rent-growth" value="3">
+      <!-- give him a fighting chance -->
+      <input type="number" id="lop-rent-growth" value="4">
     </div>
     <div class="input-card">
       <h3>Expense Inflation / Yr</h3>
       <label for="lop-exp-inflation">%</label>
-      <input type="number" id="lop-exp-inflation" value="5">
+      <input type="number" id="lop-exp-inflation" value="3">
     </div>
     <div class="input-card">
       <h3>Property Appreciation / Yr</h3>
@@ -314,13 +357,13 @@ body {
     </div>
   </div>
 
-  <!-- DETAILED MATH (expandable) -->
+  <!-- DETAILED MATH (expandable, ALL 15 YEARS) -->
   <details id="lop-math-details">
-    <summary>Show detailed math (Year 1 & final year)</summary>
-    <pre id="lop-math-text">Click "Generate Analysis" to see the step-by-step calculations.</pre>
+    <summary>Show detailed math (all years)</summary>
+    <div id="lop-math-text">Click "Generate Analysis" to see the step-by-step calculations.</div>
   </details>
 
-  <!-- CHARTS (markers) -->
+  <!-- CHARTS (6 of them) -->
   <div class="charts-row">
     <div class="chart-card">
       <h4>Income vs Expenses (Annual)</h4>
@@ -337,6 +380,14 @@ body {
     <div class="chart-card">
       <h4>Property Value vs Costs</h4>
       <canvas id="lop-value-chart"></canvas>
+    </div>
+    <div class="chart-card">
+      <h4>Alt Revenue Over Time</h4>
+      <canvas id="lop-altrev-chart"></canvas>
+    </div>
+    <div class="chart-card">
+      <h4>Pre-Tax vs Tax Paid</h4>
+      <canvas id="lop-tax-chart"></canvas>
     </div>
   </div>
 </div>
