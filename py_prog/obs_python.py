@@ -12,7 +12,7 @@ OBS_PASSWORD = "3zqvBCtapxZz4xwK"
 # Stream ON time: 5 minutes (300 seconds)
 STREAM_DURATION_SECONDS = 5 * 60  
 # Stream OFF time: 30 seconds
-DOWN_TIME_SECONDS = 45           
+DOWN_TIME_SECONDS = 120           
 
 # Connect to OBS
 try:

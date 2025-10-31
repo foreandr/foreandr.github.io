@@ -21,3 +21,4 @@ email-validator
 hypersel
 
 # obs
+obsws_python
