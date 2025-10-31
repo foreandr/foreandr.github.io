@@ -28,6 +28,7 @@ FFMPEG_PATH = os.path.abspath('../ffmpeg/bin/ffmpeg')
 
 def get_authenticated_service():
     """Authenticates with Google and returns an authenticated YouTube service object."""
+    print("Attempting to get authenticated service...")
     creds = None
     if os.path.exists('token.json'):
         creds = Credentials.from_authorized_user_file('token.json', SCOPES)
@@ -40,7 +41,6 @@ def get_authenticated_service():
                     client_config = json.load(f)
             except FileNotFoundError:
                 print("Error: google_credentials.json not found.")
-                print("Please ensure 'google_credentials.json' is in the same directory.")
                 return None
             
             flow = InstalledAppFlow.from_client_config(client_config, SCOPES)
@@ -56,6 +56,7 @@ def set_video_thumbnail(service, video_id: str, thumbnail_bytes: bytes):
     if not thumbnail_bytes:
         return
 
+    # NOTE: Thumbnail setting logic remains unchanged, but is optional in the upload call.
     print(f"Attempting to set thumbnail for video ID '{video_id}'...")
     
     thumbnail_stream = io.BytesIO(thumbnail_bytes)
@@ -80,7 +81,7 @@ def set_video_thumbnail(service, video_id: str, thumbnail_bytes: bytes):
             time.sleep(60)
 
 def upload_video(service, mp4_raw, title, description, privacy_status, thumbnail_bytes=None):
-    """Uploads a video to YouTube from raw bytes and optionally sets a thumbnail."""
+    """Uploads a video to YouTube from raw bytes."""
     if not mp4_raw:
         print("Error: 'mp4_raw' bytes cannot be empty.")
         return False
@@ -125,11 +126,7 @@ def upload_video(service, mp4_raw, title, description, privacy_status, thumbnail
         return True
     except Exception as e:
         print(f"An error occurred during video upload: {e}...")
-        print("Upload failed, waiting long before exit.")
-        time.sleep(600)
         return False
-
-# --- FFmpeg Conversion Function ---
 
 def convert_mkv_to_mp4(mkv_filepath):
     """
@@ -139,7 +136,6 @@ def convert_mkv_to_mp4(mkv_filepath):
     temp_mp4_filepath = mkv_filepath.replace('.mkv', '.temp.mp4')
     print(f"Starting MKV conversion to: {os.path.basename(temp_mp4_filepath)}")
 
-    # FFmpeg command: -i <input> -c copy <output> (fast stream copy)
     command = [
         FFMPEG_PATH,
         '-i', mkv_filepath,
@@ -148,8 +144,7 @@ def convert_mkv_to_mp4(mkv_filepath):
     ]
 
     try:
-        # Use subprocess to run the FFmpeg command
-        result = subprocess.run(command, check=True, capture_output=True, text=True, timeout=300) # 5-minute timeout
+        result = subprocess.run(command, check=True, capture_output=True, text=True, timeout=300)
 
         if result.returncode == 0:
             print("Conversion successful.")
@@ -170,106 +165,105 @@ def convert_mkv_to_mp4(mkv_filepath):
         print("FFmpeg conversion timed out after 5 minutes.")
         return None
 
-# --- Main Execution Logic ---
+def get_newest_mkv_or_mp4_file(directory):
+    """Finds the newest MKV or MP4 file in the given directory, skipping temp files."""
+    if not os.path.isdir(directory):
+        print(f"\nError: Video directory '{directory}' not found.")
+        return None
+        
+    files = [
+        os.path.join(directory, f)
+        for f in os.listdir(directory)
+        if os.path.isfile(os.path.join(directory, f)) and 
+           f.lower().endswith(('.mkv', '.mp4', '.mov', '.avi', '.webm')) and 
+           '.temp.mp4' not in f.lower() # Skip temporary files
+    ]
+    
+    if not files:
+        return None
+    
+    # Sort files by modification time (newest first)
+    files.sort(key=os.path.getmtime, reverse=True)
+    return files[0]
+
+def process_and_upload_latest_file(service):
+    """
+    Finds the latest recorded segment, converts it if necessary, uploads it,
+    and then deletes the local files. This function runs in a separate thread.
+    """
+    if not service:
+        print("Upload process skipped: YouTube service is not authenticated.")
+        return
+
+    print("\n--- Starting File Uploader Process ---")
+    filepath = get_newest_mkv_or_mp4_file(VIDEO_DIRECTORY)
+    
+    if not filepath:
+        print("⚠️ No new video files found to upload in the Video directory.")
+        return
+
+    filename = os.path.basename(filepath)
+    original_filepath = filepath
+    temp_mp4_path = None
+    upload_success = False
+
+    print(f"Found latest file: {filename}")
+
+    try:
+        # 1. Handle Conversion if it's an MKV file
+        if filename.lower().endswith('.mkv'):
+            temp_mp4_path = convert_mkv_to_mp4(filepath)
+            if temp_mp4_path is None:
+                print(f"Skipping '{filename}' due to conversion failure.")
+                return
+            filepath = temp_mp4_path
+        
+        # 2. Prepare Metadata
+        mod_timestamp = os.path.getmtime(original_filepath) # Use the original file time
+        mod_datetime = datetime.fromtimestamp(mod_timestamp)
+        video_title = f"PARKING LOT {mod_datetime.strftime('%Y-%m-%d %H:%M:%S')}"
+        
+        # 3. Read the video file into bytes
+        with open(filepath, 'rb') as f:
+            mp4_raw_data = f.read()
+
+        # 4. Upload the video
+        upload_success = upload_video(
+            service=service,
+            mp4_raw=mp4_raw_data,
+            title=video_title,
+            description=f"Automated upload of parking lot footage from {mod_datetime.strftime('%Y-%m-%d at %H:%M:%S')}.",
+            privacy_status='public'
+        )
+
+    except Exception as e:
+        print(f"Critical error during upload or file read: {e}")
+        upload_success = False
+    
+    finally:
+        # 5. Delete Files on successful upload
+        if upload_success:
+            # Delete the temporary MP4 file if it exists
+            if temp_mp4_path and os.path.exists(temp_mp4_path):
+                try:
+                    os.remove(temp_mp4_path)
+                    print(f"Successfully deleted temporary file: {os.path.basename(temp_mp4_path)}")
+                except OSError as e:
+                    print(f"Error deleting temporary MP4 file {os.path.basename(temp_mp4_path)}: {e}")
+            
+            # Delete the original file (MKV or MP4)
+            if os.path.exists(original_filepath):
+                try:
+                    os.remove(original_filepath)
+                    print(f"Successfully deleted original file: {os.path.basename(original_filepath)}")
+                except OSError as e:
+                    print(f"Error deleting original file {os.path.basename(original_filepath)}: {e}")
+        else:
+            print("❌ Upload failed. Local files were preserved for manual inspection.")
 
 if __name__ == '__main__':
-    print("Attempting to get authenticated service...")
+    # This section is for standalone testing of the uploader, but is not used
+    # by obs_python.py. Keeping it for completeness as in your original file.
     service = get_authenticated_service()
-
-    if not service:
-        print("Authentication failed. Cannot proceed with upload.")
-    else:
-        print("Authentication successful! Starting video scanning and upload.")
-        print(f"Looking for videos in: {VIDEO_DIRECTORY}")
-        
-        if not os.path.isdir(VIDEO_DIRECTORY):
-            print(f"\nError: Video directory '{VIDEO_DIRECTORY}' not found.")
-            print("Please ensure this standard 'Videos' folder exists or update the script.")
-            exit()
-
-        files_to_process = os.listdir(VIDEO_DIRECTORY)
-        uploaded_count = 0
-        
-        if not files_to_process:
-            print(f"\nNo files found in the '{VIDEO_DIRECTORY}' directory. Nothing to upload.")
-
-        for filename in files_to_process:
-            filepath = os.path.join(VIDEO_DIRECTORY, filename)
-            
-            # Skip folders and desktop.ini
-            if not os.path.isfile(filepath) or filename.lower() == 'desktop.ini':
-                continue
-            
-            original_filepath = filepath
-            temp_mp4_path = None
-            
-            # 1. Handle Conversion if it's an MKV file
-            if filename.lower().endswith('.mkv'):
-                temp_mp4_path = convert_mkv_to_mp4(filepath)
-                if temp_mp4_path is None:
-                    print(f"Skipping '{filename}' due to conversion failure.")
-                    continue
-                # Update the path to the new MP4 file for reading
-                filepath = temp_mp4_path
-                print(f"Successfully converted. Preparing to upload {os.path.basename(filepath)}.")
-
-            # 2. Check for supported video extensions (MP4 is now the target)
-            elif not filename.lower().endswith(('.mp4', '.mov', '.avi', '.webm')):
-                print(f"Skipping '{filename}': Not a supported video file format for direct upload.")
-                continue
-
-            print(f"\n--- Preparing to process: {os.path.basename(filepath)} ---")
-
-            try:
-                # 3. Get the modification time and format the title
-                mod_timestamp = os.path.getmtime(original_filepath) # Use the original file time
-                mod_datetime = datetime.fromtimestamp(mod_timestamp)
-                
-                video_title = f"PARKING LOT {mod_datetime.strftime('%Y-%m-%d %H:%M:%S')}"
-                
-                # 4. Read the video file into bytes (either original MP4 or temporary MP4)
-                with open(filepath, 'rb') as f:
-                    mp4_raw_data = f.read()
-
-                # 5. Upload the video
-                upload_success = upload_video(
-                    service=service,
-                    mp4_raw=mp4_raw_data,
-                    title=video_title,
-                    description=f"Automated upload of parking lot footage from {mod_datetime.strftime('%Y-%m-%d at %H:%M:%S')}.",
-                    privacy_status='public', # <--- CHANGED TO 'public'
-                    thumbnail_bytes=None
-                )
-
-                if upload_success:
-                    uploaded_count += 1
-                    
-                    # 6. DELETE BOTH FILES if conversion occurred, or just the original otherwise
-                    if temp_mp4_path:
-                        # Delete the temporary MP4 file
-                        try:
-                            os.remove(temp_mp4_path)
-                            print(f"Successfully deleted temporary file: {os.path.basename(temp_mp4_path)}")
-                        except OSError as e:
-                            print(f"Error deleting temporary MP4 file {os.path.basename(temp_mp4_path)}: {e}")
-                        
-                        # Delete the original MKV file
-                        try:
-                            os.remove(original_filepath)
-                            print(f"Successfully deleted original file: {os.path.basename(original_filepath)}")
-                        except OSError as e:
-                            print(f"Error deleting original MKV file {os.path.basename(original_filepath)}: {e}")
-                    else:
-                        # Delete the original MP4/MOV/etc. file
-                        try:
-                            os.remove(original_filepath)
-                            print(f"Successfully deleted local file: {os.path.basename(original_filepath)}")
-                        except OSError as e:
-                            print(f"Error deleting file {os.path.basename(original_filepath)}: {e}")
-                
-            except Exception as e:
-                print(f"Critical error processing file {os.path.basename(original_filepath)}: {e}")
-
-        print(f"\n--- Script Finished ---")
-        print(f"Total files scanned: {len(files_to_process)}")
-        print(f"Total successful uploads: {uploaded_count}")
+    if service:
+        process_and_upload_latest_file(service)
