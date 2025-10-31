@@ -131,3 +131,6 @@ client_secrets.json
 !/assets/videos/
 # Un-ignore the MP4 files inside that specific folder
 !/assets/videos/*.mp4
+google_credentials.JSON
+token.JSON
+token.json

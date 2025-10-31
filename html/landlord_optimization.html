@@ -1,6 +1,6 @@
 <!-- =========================
      LANDLORD OPTIMIZATION UI
-     (Scoped ONLY to the PTBO letter)
+     (Strictly scoped to PTBO letter)
      ========================= -->
 
 <style>
@@ -37,12 +37,12 @@ body {
   text-align: center;
 }
 
-/* BUTTONS (top) */
+/* TOP BUTTONS */
 .button-row {
   display: flex;
   justify-content: center;
   gap: 18px;
-  margin: 16px 0 24px 0;
+  margin: 16px 0 14px 0;
   flex-wrap: wrap;
 }
 .lop-btn {
@@ -243,9 +243,6 @@ body {
 <!-- ======= CONTENT ======= -->
 <div id="landlord-optimizer">
   <h1>Landlord Optimization Platform</h1>
-  <p class="subtitle">
-    Exactly what was in the PTBO message: rents, city taxes, insurance inside expenses, charity rebate, his own mortgage/food, plus one extra income and one extra expense.
-  </p>
 
   <!-- BUTTON (top) -->
   <div class="button-row">
@@ -258,40 +255,58 @@ body {
     <p>After-tax cashflow in Year 1 meets or exceeds your personal target.</p>
   </div>
 
-  <!-- SECTION: BUILDING COMPOSITION + CORE MONEY -->
-  <div class="input-section" id="section-composition">
+  <!-- SECTION: BUILDING SETUP -->
+  <div class="input-section" id="section-building">
     <div class="input-card">
       <h3>Number of Stores (street level)</h3>
-      <label for="lop-stores">count</label>
-      <input type="number" id="lop-stores" value="4" min="0">
+      <label for="lop-store-count">count</label>
+      <input type="number" id="lop-store-count" value="4" min="0">
+    </div>
+    <div class="input-card">
+      <h3>Income per Store (monthly)</h3>
+      <label for="lop-store-rent">CA$ / month</label>
+      <input type="number" id="lop-store-rent" value="1500">
     </div>
     <div class="input-card">
       <h3>Number of Apartments (upper)</h3>
-      <label for="lop-apartments">count</label>
-      <input type="number" id="lop-apartments" value="5" min="0">
+      <label for="lop-apt-count">count</label>
+      <input type="number" id="lop-apt-count" value="5" min="0">
     </div>
     <div class="input-card">
-      <h3>Total Monthly Rent (all 4 stores + 5 apts)</h3>
-      <label for="lop-rent">CA$ / month</label>
-      <!-- start optimistic -->
-      <input type="number" id="lop-rent" value="9200">
-    </div>
-    <div class="input-card">
-      <h3>Monthly Operating Expenses</h3>
-      <label for="lop-expenses">tax + insurance + maintenance</label>
-      <input type="number" id="lop-expenses" value="3000">
+      <h3>Rent per Apartment (monthly)</h3>
+      <label for="lop-apt-rent">CA$ / month</label>
+      <input type="number" id="lop-apt-rent" value="650">
     </div>
   </div>
 
-  <!-- SECTION: OWNER + DEBT -->
-  <div class="input-section" id="section-owner">
+  <!-- SECTION: OPERATING COSTS -->
+  <div class="input-section" id="section-costs">
     <div class="input-card">
-      <h3>Mortgage / Debt Service</h3>
+      <h3>Fixed Building Expenses (monthly)</h3>
+      <label for="lop-fixed-expenses">city tax + insurance + base maintenance (CA$ / month)</label>
+      <input type="number" id="lop-fixed-expenses" value="1600">
+    </div>
+    <div class="input-card">
+      <h3>Expense per Store (monthly)</h3>
+      <label for="lop-exp-per-store">CA$ / month</label>
+      <input type="number" id="lop-exp-per-store" value="150">
+    </div>
+    <div class="input-card">
+      <h3>Expense per Apartment (monthly)</h3>
+      <label for="lop-exp-per-apt">CA$ / month</label>
+      <input type="number" id="lop-exp-per-apt" value="120">
+    </div>
+    <div class="input-card">
+      <h3>Mortgage / Debt Service (monthly)</h3>
       <label for="lop-mortgage">CA$ / month</label>
       <input type="number" id="lop-mortgage" value="700">
     </div>
+  </div>
+
+  <!-- SECTION: OWNER -->
+  <div class="input-section" id="section-owner">
     <div class="input-card">
-      <h3>Your Own Living Costs</h3>
+      <h3>Your Own Living Costs (monthly)</h3>
       <label for="lop-personal">CA$ / month you need to live</label>
       <input type="number" id="lop-personal" value="3500">
     </div>
@@ -358,13 +373,13 @@ body {
   <!-- SECTION: ALT (1 income + 1 expense) -->
   <div class="input-section" id="section-alt">
     <div class="input-card">
-      <h3>Alt income (e.g. livestream)</h3>
-      <label for="lop-alt-income">CA$ / month</label>
+      <h3>Alt income (monthly)</h3>
+      <label for="lop-alt-income">livestream / camera feed / back-lot CA$ / month</label>
       <input type="number" id="lop-alt-income" value="0">
     </div>
     <div class="input-card">
-      <h3>Alt expense (e.g. lights / camera)</h3>
-      <label for="lop-alt-expense">CA$ / month</label>
+      <h3>Alt expense (monthly)</h3>
+      <label for="lop-alt-expense">lights / camera / guard CA$ / month</label>
       <input type="number" id="lop-alt-expense" value="0">
     </div>
   </div>
@@ -386,7 +401,7 @@ body {
       <canvas id="lop-net-chart"></canvas>
     </div>
     <div class="chart-card">
-      <h4>Revenue Mix (Spider)</h4>
+      <h4>Revenue / Cost Mix (Spider)</h4>
       <canvas id="lop-spider-chart"></canvas>
     </div>
     <div class="chart-card">
