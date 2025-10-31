@@ -1,4 +1,5 @@
 import time
+from datetime import datetime
 from obsws_python import ReqClient
 from obsws_python.error import OBSSDKRequestError
 
@@ -10,15 +11,39 @@ OBS_PASSWORD = "3zqvBCtapxZz4xwK"
 
 # --- Cycle Durations ---
 # Recording segment length: 15 seconds
-RECORD_SEGMENT_SECONDS = 15
+RECORD_SEGMENT_SECONDS = 15  
 # Delay after stopping a recording to ensure the file is closed and released.
-RECORD_STOP_DELAY = 5.0
+RECORD_STOP_DELAY = 5.0 
 # How often to check the stream status (e.g., check every 10 recording cycles)
 STREAM_CHECK_CYCLES = 10
 STREAM_CHECK_INTERVAL_SECONDS = RECORD_SEGMENT_SECONDS * STREAM_CHECK_CYCLES
 
-# --- OBS Client ---
+# --- OBS Clients ---
 client = None
+
+# --- Stream Info Update Function (FINAL FIX for positional arguments) ---
+def update_stream_info(client: ReqClient, title: str):
+    """Updates the stream title/game via the streaming service."""
+    current_time = datetime.now().strftime('%H:%M:%S')
+    current_title = f"{title} | Started at {current_time}"
+    print(f"🔄 Setting stream title: '{current_title}'")
+    try:
+        # FIX: The set_stream_service_settings function in your library requires 
+        # the stream service type as the first positional argument. We retrieve the 
+        # current type to satisfy the function call.
+        current_settings = client.get_stream_service_settings()
+        stream_service_type = current_settings.streamServiceType # Get the active service type
+        
+        client.set_stream_service_settings(
+            stream_service_type, # 1. Positional arg 1 (ss_type)
+            ss_settings={        # 2. Keyword arg (ss_settings)
+                "StreamTitle": current_title,
+                "Game": "Just Chatting" 
+            }
+        )
+        print("✅ Stream title updated.")
+    except Exception as e:
+        print(f"❌ Failed to update stream title/info. Error: {e}")
 
 # Connect to OBS
 try:
@@ -38,14 +63,14 @@ try:
         print("⚠️ Stream is ON. Stopping stream.")
         client.stop_stream()
         time.sleep(1)
-
+    
     # Check and Stop Recording
     record_status = client.get_record_status()
     if record_status.output_active:
         print("⚠️ Recording is ON. Stopping recording.")
         client.stop_record()
         time.sleep(1)
-
+        
     print("✅ Initial state is clean.")
 
 except Exception as e:
@@ -53,9 +78,12 @@ except Exception as e:
     print("FATAL: Could not verify/stop output status. Exiting.")
     exit()
 
-# --- Optional: Start Continuous Stream (kept, but no title logic) ---
+# --- Initial Stream Start (ROBUST) ---
 print("\n--- Starting Continuous Stream ---")
 try:
+    update_stream_info(client, "Indefinite Stream with Segmented Recording")
+    
+    # ROBUST CHECK: Only start if stream is currently reported as inactive
     status_check = client.get_stream_status()
     if not status_check.output_active:
         client.start_stream()
@@ -71,6 +99,7 @@ except Exception as e:
     print(f"❌ FATAL Error: {e}")
     exit()
 
+
 # --- Main Infinite Loop for Recording and Health Check (ROBUST) ---
 print("\n=======================================================")
 print(f"Starting segmented recording cycle ({RECORD_SEGMENT_SECONDS}s segments).")
@@ -83,7 +112,7 @@ try:
     while True:
         cycle_count += 1
         print(f"\n--- Cycle #{cycle_count} ---")
-
+        
         # 1. Start Recording Segment
         try:
             # ROBUST CHECK: Only start if recording is currently reported as inactive
@@ -101,6 +130,7 @@ try:
                 print(f"❌ Recording start error ({e}). Attempting recovery by stopping...")
                 client.stop_record()
                 time.sleep(RECORD_STOP_DELAY)
+        
 
         # 2. Wait for the segment duration
         time.sleep(RECORD_SEGMENT_SECONDS)
@@ -110,7 +140,7 @@ try:
             # ROBUST CHECK: Only stop if recording is currently reported as active
             record_status_check = client.get_record_status()
             if record_status_check.output_active:
-                print("⏹️ Stopping Recording Segment. (File saved)")
+                print(f"⏹️ Stopping Recording Segment. (File saved)")
                 client.stop_record()
                 # Wait 5 seconds to ensure the file is closed and saved by OBS
                 print(f"⏳ Waiting for {RECORD_STOP_DELAY} seconds for file finalization...")
@@ -124,7 +154,7 @@ try:
                 print("⚠️ Stop Record failed: Recording was already inactive.")
             else:
                 raise e
-
+        
         # 4. Stream Health Check (Run every N cycles)
         if cycle_count % STREAM_CHECK_CYCLES == 0:
             print(f"\n🩺 STREAM HEALTH CHECK (Every {STREAM_CHECK_CYCLES} cycles)...")
@@ -132,13 +162,14 @@ try:
                 status = client.get_stream_status()
                 if not status.output_active:
                     print("🚨 Stream is DOWN! Attempting to restart stream...")
-                    # NOTE: title logic removed — just restart the stream
+                    update_stream_info(client, "Indefinite Stream - RESTARTING")
                     client.start_stream()
                     print("✅ Stream restart command sent.")
                 else:
                     print("💚 Stream is UP and running.")
             except Exception as e:
                 print(f"❌ Health Check Error: {e}")
+
 
 # --- Clean Exit Procedure ---
 except KeyboardInterrupt:
@@ -151,17 +182,17 @@ finally:
         # Stop Recording first
         record_status = client.get_record_status()
         if record_status.output_active:
-            print("Final step: Stopping active recording.")
-            client.stop_record()
-            time.sleep(RECORD_STOP_DELAY)
-
+             print("Final step: Stopping active recording.")
+             client.stop_record()
+             time.sleep(RECORD_STOP_DELAY) 
+        
         # Stop Stream last
         stream_status = client.get_stream_status()
         if stream_status.output_active:
-            print("Final step: Stopping the continuous stream.")
-            client.stop_stream()
-
+             print("Final step: Stopping the continuous stream.")
+             client.stop_stream()
+             
         print("Exiting cleanly.")
-
+        
     except Exception as e:
         print(f"Finished. (Cleanup error ignored: {e})")
