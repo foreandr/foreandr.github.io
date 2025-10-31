@@ -38,428 +38,490 @@
         });
       });
 
-    // Call greetUser from utils.js (demo)
+    // demo from utils.js
     const msg = greetUser("Andre");
     console.log(msg);
   </script>
-<script>
-  /**
-   * Loads project HTML content into the main 'app' container using a standard fetch request.
-   * This matches the loading pattern used for your main navigation, eliminating the need
-   * for a global PRELOADED_HTML object.
-   * * @param {string} fileName - The HTML file to load (e.g., 'lot_tracker.html').
-   */
-  function loadProject(fileName) {
-    console.log(`[CLICK] Loading project: ${fileName}`);
-    
-    // 1. Get the target container
-    const appContainer = document.getElementById('app');
-    
-    // 2. Use fetch to retrieve the content, assuming the file is in the 'html/' folder
-    fetch("html/" + fileName)
-      .then(response => {
-        // Check if the file was found (status 200)
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        return response.text();
-      })
-      .then(html => {
-        // 3. Replace the content in the 'app' div
-        if (appContainer) {
-          appContainer.innerHTML = html;
-          console.log('[CLICK] Replacement complete.');
-        } else {
-          console.error("The 'app' element was not found.");
-        }
-      })
-      .catch(error => {
-        // Handle errors like 404 (file not found)
-        console.error(`Could not load content for ${fileName}:`, error);
+
+  <script>
+    /**
+     * Loads project HTML content into the main 'app' container using a standard fetch request.
+     * This matches the loading pattern used for your main navigation, eliminating the need
+     * for a global PRELOADED_HTML object.
+     * @param {string} fileName - The HTML file to load (e.g. 'lot_tracker.html').
+     */
+    function loadProject(fileName) {
+      console.log(`[CLICK] Loading project: ${fileName}`);
+      const appContainer = document.getElementById('app');
+
+      fetch("html/" + fileName)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+          }
+          return response.text();
+        })
+        .then(html => {
+          if (appContainer) {
+            appContainer.innerHTML = html;
+            console.log('[CLICK] Replacement complete.');
+          } else {
+            console.error("The 'app' element was not found.");
+          }
+        })
+        .catch(error => {
+          console.error(`Could not load content for ${fileName}:`, error);
+        });
+    }
+
+    // stub (kept just in case older code calls it)
+    function generateProjection(){
+      console.log("generateProjection stub (will be replaced by LOP script)");
+    }
+  </script>
+
+  <script>
+  // ==============================
+  //  LANDLORD OPTIMIZATION GLOBALS
+  //  (put in index.html so injected HTML can call it)
+  // ==============================
+
+  // ---- 0. ensure Chart.js is present ----
+  function LOP_ensureChartJs(cb) {
+    if (window.Chart) {
+      cb && cb();
+      return;
+    }
+    var s = document.createElement('script');
+    s.src = "https://cdn.jsdelivr.net/npm/chart.js";
+    s.onload = function() { cb && cb(); };
+    s.onerror = function() {
+      console.warn("Chart.js failed to load.");
+      cb && cb();
+    };
+    document.head.appendChild(s);
+  }
+
+  // ---- 1. spider background (shared) ----
+  function LOP_initSpiderBackground() {
+    var c = document.getElementById('spiderweb');
+    if (!c) return;
+    var ctx = c.getContext('2d');
+
+    function resize() {
+      c.width = window.innerWidth;
+      c.height = window.innerHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    var nodes = [];
+    for (var i = 0; i < 50; i++) {
+      nodes.push({
+        x: Math.random() * c.width,
+        y: Math.random() * c.height,
+        vx: (Math.random() - 0.5) * 0.4,
+        vy: (Math.random() - 0.5) * 0.4
       });
+    }
+
+    function animate() {
+      ctx.clearRect(0, 0, c.width, c.height);
+      for (var i = 0; i < nodes.length; i++) {
+        var a = nodes[i];
+        a.x += a.vx;
+        a.y += a.vy;
+        if (a.x < 0 || a.x > c.width) a.vx *= -1;
+        if (a.y < 0 || a.y > c.height) a.vy *= -1;
+        for (var j = i + 1; j < nodes.length; j++) {
+          var b = nodes[j];
+          var dx = a.x - b.x;
+          var dy = a.y - b.y;
+          var dist = Math.sqrt(dx*dx + dy*dy);
+          if (dist < 130) {
+            ctx.strokeStyle = "rgba(52,152,219," + (1 - dist/130) + ")";
+            ctx.beginPath();
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(b.x, b.y);
+            ctx.stroke();
+          }
+        }
+      }
+      requestAnimationFrame(animate);
+    }
+    animate();
   }
 
-  function generateProjection(isOasis){
-    console.log("generateProjection:", isOasis)
+  // ---- 2. compute projection (NO oasis anymore) ----
+  function LOP_computeProjection() {
+    // dom presence
+    var rentEl = document.getElementById('lop-rent');
+    if (!rentEl) return null;
+
+    // inputs
+    var rentMonthly     = Number(rentEl.value) || 0;
+    var expensesMonthly = Number(document.getElementById('lop-expenses').value) || 0;
+    var mortgageMonthly = Number(document.getElementById('lop-mortgage').value) || 0;
+    var personalMonthly = Number(document.getElementById('lop-personal').value) || 0;
+
+    var rentGrowth      = (Number(document.getElementById('lop-rent-growth').value) || 0) / 100;
+    var expInflation    = (Number(document.getElementById('lop-exp-inflation').value) || 0) / 100;
+    var appreciation    = (Number(document.getElementById('lop-appreciation').value) || 0) / 100;
+    var years           = Number(document.getElementById('lop-years').value) || 1;
+
+    var personalTaxRate = (Number(document.getElementById('lop-personal-tax').value) || 0) / 100;
+    var corpTaxRate     = (Number(document.getElementById('lop-corp-tax').value) || 0) / 100;
+    var useCorp         = Number(document.getElementById('lop-use-corp').value) === 1;
+    var rebatePct       = (Number(document.getElementById('lop-rebate').value) || 0) / 100;
+
+    var roofMonthly     = Number(document.getElementById('lop-roof').value) || 0;
+    var billboardMonthly= Number(document.getElementById('lop-billboard').value) || 0;
+    var airbnbMonthly   = Number(document.getElementById('lop-airbnb').value) || 0;
+    var grantsAnnual    = Number(document.getElementById('lop-grants').value) || 0;
+
+    // annualize base values
+    var annualRent      = rentMonthly * 12;
+    var annualExpenses  = expensesMonthly * 12;
+    var annualMortgage  = mortgageMonthly * 12;
+    var annualPersonal  = personalMonthly * 12;
+    var annualRoof      = roofMonthly * 12;
+    var annualBillboard = billboardMonthly * 12;
+    var annualAirbnb    = airbnbMonthly * 12;
+
+    // we assume 40% of "monthly operating expenses" is actually property tax, to apply rebate
+    var propertyTaxShare = 0.4;
+
+    var labels = [];
+    var incomeSeries = [];
+    var expenseSeries = [];
+    var netSeries = [];
+    var valueSeries = [];
+    var personalTargetSeries = [];
+    var altRevenueSeries = [];
+
+    var mathLines = [];
+    var currentValue = 1000000;
+
+    for (var year = 1; year <= years; year++) {
+      labels.push("Year " + year);
+
+      // grow rents and expenses
+      annualRent     *= (1 + rentGrowth);
+      annualExpenses *= (1 + expInflation);
+      // mortgage stays flat
+      annualRoof      *= (1 + 0.01);
+      annualBillboard *= (1 + 0.01);
+      annualAirbnb    *= (1 + 0.01);
+      currentValue    *= (1 + appreciation);
+
+      // split expenses → property-tax part + other
+      var propertyTaxPart = annualExpenses * propertyTaxShare;
+      var nonPropertyPart = annualExpenses * (1 - propertyTaxShare);
+
+      // apply rebate
+      var rebatedPropertyTax = propertyTaxPart * (1 - rebatePct);
+
+      // final expenses incl. mortgage
+      var finalAnnualExpenses = nonPropertyPart + rebatedPropertyTax + annualMortgage;
+
+      // alt rev
+      var altRevenueAnnual = annualRoof + annualBillboard + annualAirbnb + grantsAnnual;
+
+      // pre-tax
+      var preTax = annualRent + altRevenueAnnual - finalAnnualExpenses;
+      var taxRateToUse = useCorp ? corpTaxRate : personalTaxRate;
+      var afterTax = preTax - Math.max(preTax, 0) * taxRateToUse;
+
+      incomeSeries.push(annualRent + altRevenueAnnual);
+      expenseSeries.push(finalAnnualExpenses);
+      netSeries.push(afterTax);
+      valueSeries.push(currentValue);
+      personalTargetSeries.push(annualPersonal);
+      altRevenueSeries.push(altRevenueAnnual);
+
+      // math trace (only year 1 and final year to keep it readable)
+      if (year === 1 || year === years) {
+        mathLines.push("===== YEAR " + year + " =====");
+        mathLines.push("Base rent (annual, grown): " + annualRent.toFixed(2));
+        mathLines.push("Alt revenue (annual): roof " + annualRoof.toFixed(2) + " + billboard " + annualBillboard.toFixed(2) + " + airbnb " + annualAirbnb.toFixed(2) + " + grants " + grantsAnnual.toFixed(2) + " = " + altRevenueAnnual.toFixed(2));
+        mathLines.push("Operating expenses (annual, grown): " + annualExpenses.toFixed(2));
+        mathLines.push("  -> property-tax portion (40%): " + propertyTaxPart.toFixed(2));
+        mathLines.push("  -> rebate applied (" + (rebatePct*100).toFixed(0) + "%): " + rebatedPropertyTax.toFixed(2));
+        mathLines.push("  -> non-property portion (60%): " + nonPropertyPart.toFixed(2));
+        mathLines.push("  -> mortgage (annual): " + annualMortgage.toFixed(2));
+        mathLines.push("Final expenses (with rebate + mortgage): " + finalAnnualExpenses.toFixed(2));
+        mathLines.push("Pre-Tax = income - expenses = (" + (annualRent + altRevenueAnnual).toFixed(2) + ") - (" + finalAnnualExpenses.toFixed(2) + ") = " + preTax.toFixed(2));
+        mathLines.push("Tax rate used: " + (taxRateToUse*100).toFixed(1) + "%  → tax = " + (Math.max(preTax,0)*taxRateToUse).toFixed(2));
+        mathLines.push("After-Tax Net: " + afterTax.toFixed(2));
+        mathLines.push("Owner personal target (annual): " + annualPersonal.toFixed(2));
+        mathLines.push("");
+      }
+    }
+
+    // --- PASS / WARN / FAIL LOGIC ---
+    // Test 1: does net ever go negative?
+    var everNegative = netSeries.some(function(v){ return v < 0; });
+
+    // Test 2: does net at final year meet personal needs?
+    var finalNet = netSeries[netSeries.length - 1];
+    var finalTarget = personalTargetSeries[personalTargetSeries.length - 1];
+    var finalMeets = finalNet >= finalTarget;
+
+    // Test 3: structural trend → rent growth vs expense inflation
+    var structureOK = rentGrowth >= expInflation;
+
+    // Score
+    var passCount = 0;
+    if (!everNegative) passCount++;
+    if (finalMeets) passCount++;
+    if (structureOK) passCount++;
+
+    var grade = "warn";
+    var headline = "";
+    var reason = [];
+
+    if (passCount === 3) {
+      grade = "pass";
+      headline = "✅ Sustainable (Strong margin)";
+      reason.push("Net never goes negative.");
+      reason.push("Final-year income meets your living cost.");
+      reason.push("Rent growth keeps up with expense inflation.");
+    } else if (passCount === 2) {
+      grade = "warn";
+      headline = "⚠️ Marginal (Watch taxes / insurance)";
+      if (everNegative) reason.push("Net goes negative in at least one year.");
+      if (!finalMeets) reason.push("Final-year income does not fully cover your personal target.");
+      if (!structureOK) reason.push("Expense inflation is higher than rent growth.");
+    } else {
+      grade = "fail";
+      headline = "❌ Unsustainable (Will be cashflow negative)";
+      if (everNegative) reason.push("Net goes negative early because expenses + mortgage outgrow income.");
+      if (!finalMeets) reason.push("By the end of the horizon, building can’t pay your life costs.");
+      if (!structureOK) reason.push("Expenses rise faster than rent; PTBO taxes + insurance are the main culprits.");
+    }
+
+    return {
+      labels: labels,
+      incomeSeries: incomeSeries,
+      expenseSeries: expenseSeries,
+      netSeries: netSeries,
+      valueSeries: valueSeries,
+      personalTargetSeries: personalTargetSeries,
+      altRevenueSeries: altRevenueSeries,
+      summaryGrade: grade,
+      summaryHeadline: headline,
+      summaryReason: reason.join(" "),
+      mathTrace: mathLines.join("\n")
+    };
   }
 
+  // ---- 3. render charts (4 of them) ----
+  var LOP_incomeChart = null;
+  var LOP_netChart = null;
+  var LOP_spiderChart = null;
+  var LOP_valueChart = null;
 
-</script>
-<script>
-// ==============================
-//  LANDLORD OPTIMIZATION GLOBALS
-//  (put in index.html so injected HTML can call it)
-// ==============================
+  function LOP_renderCharts(data) {
+    if (!data) return;
 
-// ---- 0. ensure Chart.js is present ----
-function LOP_ensureChartJs(cb) {
-  if (window.Chart) {
-    cb && cb();
-    return;
-  }
-  var s = document.createElement('script');
-  s.src = "https://cdn.jsdelivr.net/npm/chart.js";
-  s.onload = function() { cb && cb(); };
-  s.onerror = function() {
-    console.warn("Chart.js failed to load.");
-    cb && cb();
-  };
-  document.head.appendChild(s);
-}
+    var incomeCtx = document.getElementById('lop-income-chart');
+    var netCtx    = document.getElementById('lop-net-chart');
+    var spiderCtx = document.getElementById('lop-spider-chart');
+    var valueCtx  = document.getElementById('lop-value-chart');
 
-// ---- 1. spider background (shared) ----
-function LOP_initSpiderBackground() {
-  var c = document.getElementById('spiderweb');
-  if (!c) return;
-  var ctx = c.getContext('2d');
+    // also render summary + math
+    var summaryEl = document.getElementById('lop-summary');
+    var mathTextEl = document.getElementById('lop-math-text');
 
-  function resize() {
-    c.width = window.innerWidth;
-    c.height = window.innerHeight;
-  }
-  resize();
-  window.addEventListener('resize', resize);
+    if (summaryEl) {
+      summaryEl.className = ""; // reset
+      if (data.summaryGrade === "pass") {
+        summaryEl.className = "lop-summary--pass";
+      } else if (data.summaryGrade === "warn") {
+        summaryEl.className = "lop-summary--warn";
+      } else {
+        summaryEl.className = "lop-summary--fail";
+      }
+      summaryEl.innerHTML = "<h3>" + data.summaryHeadline + "</h3><p>" + data.summaryReason + "</p>";
+    }
+    if (mathTextEl) {
+      mathTextEl.textContent = data.mathTrace;
+    }
 
-  var nodes = [];
-  for (var i = 0; i < 50; i++) {
-    nodes.push({
-      x: Math.random() * c.width,
-      y: Math.random() * c.height,
-      vx: (Math.random() - 0.5) * 0.4,
-      vy: (Math.random() - 0.5) * 0.4
+    if (!incomeCtx || !netCtx || !spiderCtx || !valueCtx) {
+      // HTML not loaded yet, skip charts
+      return;
+    }
+
+    // 1) income vs expenses
+    if (LOP_incomeChart) LOP_incomeChart.destroy();
+    LOP_incomeChart = new Chart(incomeCtx.getContext('2d'), {
+      type: 'line',
+      data: {
+        labels: data.labels,
+        datasets: [
+          {
+            label: 'Total Income (Rent + Alt)',
+            data: data.incomeSeries,
+            borderColor: '#27ae60',
+            borderWidth: 2,
+            fill: false
+          },
+          {
+            label: 'Total Expenses (after rebate + mortgage)',
+            data: data.expenseSeries,
+            borderColor: '#e74c3c',
+            borderWidth: 2,
+            fill: false
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          title: { display: true, text: 'Income vs Expenses (Annual)' }
+        }
+      }
+    });
+
+    // 2) net after tax
+    if (LOP_netChart) LOP_netChart.destroy();
+    LOP_netChart = new Chart(netCtx.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: data.labels,
+        datasets: [
+          {
+            label: 'Net After Tax (CA$ / yr)',
+            data: data.netSeries,
+            backgroundColor: '#3498db'
+          },
+          {
+            label: 'Your Target (to live)',
+            data: data.personalTargetSeries,
+            backgroundColor: 'rgba(231, 76, 60, 0.35)'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          title: { display: true, text: 'Owner Spendable vs Target' }
+        }
+      }
+    });
+
+    // 3) spider / radar
+    if (LOP_spiderChart) LOP_spiderChart.destroy();
+    LOP_spiderChart = new Chart(spiderCtx.getContext('2d'), {
+      type: 'radar',
+      data: {
+        labels: ['Rent', 'Alt Revenue', 'Expenses', 'After-Tax'],
+        datasets: [
+          {
+            label: 'Year 1',
+            data: [
+              data.incomeSeries[0] - data.altRevenueSeries[0],
+              data.altRevenueSeries[0],
+              data.expenseSeries[0],
+              data.netSeries[0]
+            ],
+            backgroundColor: 'rgba(52, 152, 219, 0.2)',
+            borderColor: '#3498db'
+          },
+          {
+            label: 'Year ' + data.labels[data.labels.length - 1],
+            data: [
+              data.incomeSeries[data.incomeSeries.length - 1] - data.altRevenueSeries[data.altRevenueSeries.length - 1],
+              data.altRevenueSeries[data.altRevenueSeries.length - 1],
+              data.expenseSeries[data.expenseSeries.length - 1],
+              data.netSeries[data.netSeries.length - 1]
+            ],
+            backgroundColor: 'rgba(39, 174, 96, 0.2)',
+            borderColor: '#27ae60'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          title: { display: true, text: 'Revenue Composition (Start vs End)' }
+        },
+        scales: {
+          r: { beginAtZero: true }
+        }
+      }
+    });
+
+    // 4) property value vs costs
+    if (LOP_valueChart) LOP_valueChart.destroy();
+    LOP_valueChart = new Chart(valueCtx.getContext('2d'), {
+      type: 'line',
+      data: {
+        labels: data.labels,
+        datasets: [
+          {
+            label: 'Property Value (paper)',
+            data: data.valueSeries,
+            borderColor: '#8e44ad',
+            borderWidth: 2,
+            fill: false
+          },
+          {
+            label: 'Expenses',
+            data: data.expenseSeries,
+            borderColor: '#e67e22',
+            borderWidth: 2,
+            fill: false
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          title: { display: true, text: 'Paper Growth vs Real Cost Growth' }
+        }
+      }
     });
   }
 
-  function animate() {
-    ctx.clearRect(0, 0, c.width, c.height);
-    for (var i = 0; i < nodes.length; i++) {
-      var a = nodes[i];
-      a.x += a.vx;
-      a.y += a.vy;
-      if (a.x < 0 || a.x > c.width) a.vx *= -1;
-      if (a.y < 0 || a.y > c.height) a.vy *= -1;
-      for (var j = i + 1; j < nodes.length; j++) {
-        var b = nodes[j];
-        var dx = a.x - b.x;
-        var dy = a.y - b.y;
-        var dist = Math.sqrt(dx*dx + dy*dy);
-        if (dist < 130) {
-          ctx.strokeStyle = "rgba(52,152,219," + (1 - dist/130) + ")";
-          ctx.beginPath();
-          ctx.moveTo(a.x, a.y);
-          ctx.lineTo(b.x, b.y);
-          ctx.stroke();
-        }
-      }
+  // ---- 4. GLOBAL ENTRY POINT (what your buttons call) ----
+  window.generateProjection = function() {
+    var data = LOP_computeProjection();
+    if (!data) return;
+    if (!window.Chart) {
+      alert("Chart.js not available yet.");
+      return;
     }
-    requestAnimationFrame(animate);
-  }
-  animate();
-}
-
-// ---- 2. compute projection (all the PTBO / charity / corp logic) ----
-function LOP_computeProjection(isOasis) {
-  // grab DOM (they might not exist yet)
-  var rentEl       = document.getElementById('lop-rent');
-  if (!rentEl) {
-    // partial not loaded yet
-    return null;
-  }
-
-  var rentMonthly     = Number(rentEl.value) || 0;
-  var expensesMonthly = Number(document.getElementById('lop-expenses').value) || 0;
-  var mortgageMonthly = Number(document.getElementById('lop-mortgage').value) || 0;
-  var personalMonthly = Number(document.getElementById('lop-personal').value) || 0;
-
-  var rentGrowth      = (Number(document.getElementById('lop-rent-growth').value) || 0) / 100;
-  var expInflation    = (Number(document.getElementById('lop-exp-inflation').value) || 0) / 100;
-  var appreciation    = (Number(document.getElementById('lop-appreciation').value) || 0) / 100;
-  var years           = Number(document.getElementById('lop-years').value) || 1;
-
-  var personalTaxRate = (Number(document.getElementById('lop-personal-tax').value) || 0) / 100;
-  var corpTaxRate     = (Number(document.getElementById('lop-corp-tax').value) || 0) / 100;
-  var useCorp         = Number(document.getElementById('lop-use-corp').value) === 1;
-  var rebatePct       = (Number(document.getElementById('lop-rebate').value) || 0) / 100;
-
-  var roofMonthly     = Number(document.getElementById('lop-roof').value) || 0;
-  var billboardMonthly= Number(document.getElementById('lop-billboard').value) || 0;
-  var airbnbMonthly   = Number(document.getElementById('lop-airbnb').value) || 0;
-  var grantsAnnual    = Number(document.getElementById('lop-grants').value) || 0;
-
-  // oasis boost
-  if (isOasis) {
-    roofMonthly      *= 1.4;
-    billboardMonthly *= 1.3;
-    airbnbMonthly    *= 1.5;
-  }
-
-  var labels = [];
-  var incomeSeries = [];
-  var expenseSeries = [];
-  var netSeries = [];
-  var valueSeries = [];
-  var personalTargetSeries = [];
-  var altRevenueSeries = [];
-
-  var currentValue = 1000000; // just to show paper growth
-  var propertyTaxShare = 0.4;
-
-  // annualize
-  var annualRent      = rentMonthly * 12;
-  var annualExpenses  = expensesMonthly * 12;
-  var annualMortgage  = mortgageMonthly * 12;
-  var annualPersonal  = personalMonthly * 12;
-  var annualRoof      = roofMonthly * 12;
-  var annualBillboard = billboardMonthly * 12;
-  var annualAirbnb    = airbnbMonthly * 12;
-
-  for (var year = 1; year <= years; year++) {
-    labels.push("Year " + year);
-
-    annualRent      *= (1 + rentGrowth);
-    annualExpenses  *= (1 + expInflation);
-    annualMortgage  *= 1;
-    annualRoof      *= (1 + 0.01);
-    annualBillboard *= (1 + 0.01);
-    annualAirbnb    *= (1 + 0.01);
-    currentValue    *= (1 + appreciation);
-
-    // apply property-tax rebate on 40% portion
-    var propertyTaxPortion   = annualExpenses * propertyTaxShare;
-    var nonPropertyPortion   = annualExpenses * (1 - propertyTaxShare);
-    var rebatedPropertyTax   = propertyTaxPortion * (1 - rebatePct);
-    var finalAnnualExpenses  = nonPropertyPortion + rebatedPropertyTax + annualMortgage;
-
-    // alt revenue
-    var altRevenueAnnual = annualRoof + annualBillboard + annualAirbnb + grantsAnnual;
-
-    // before tax
-    var preTax = annualRent + altRevenueAnnual - finalAnnualExpenses;
-
-    // choose tax route
-    var taxRateToUse = useCorp ? corpTaxRate : personalTaxRate;
-    var afterTax = preTax - Math.max(preTax, 0) * taxRateToUse;
-
-    incomeSeries.push(annualRent + altRevenueAnnual);
-    expenseSeries.push(finalAnnualExpenses);
-    netSeries.push(afterTax);
-    valueSeries.push(currentValue);
-    personalTargetSeries.push(annualPersonal);
-    altRevenueSeries.push(altRevenueAnnual);
-  }
-
-  return {
-    labels: labels,
-    incomeSeries: incomeSeries,
-    expenseSeries: expenseSeries,
-    netSeries: netSeries,
-    valueSeries: valueSeries,
-    personalTargetSeries: personalTargetSeries,
-    altRevenueSeries: altRevenueSeries
+    LOP_renderCharts(data);
   };
-}
 
-// ---- 3. render charts (4 of them) ----
-var LOP_incomeChart = null;
-var LOP_netChart = null;
-var LOP_spiderChart = null;
-var LOP_valueChart = null;
-
-function LOP_renderCharts(data) {
-  if (!data) return;
-
-  var labels = data.labels;
-  var incomeSeries = data.incomeSeries;
-  var expenseSeries = data.expenseSeries;
-  var netSeries = data.netSeries;
-  var valueSeries = data.valueSeries;
-  var personalTargetSeries = data.personalTargetSeries;
-  var altRevenueSeries = data.altRevenueSeries;
-
-  var incomeCtx = document.getElementById('lop-income-chart');
-  var netCtx    = document.getElementById('lop-net-chart');
-  var spiderCtx = document.getElementById('lop-spider-chart');
-  var valueCtx  = document.getElementById('lop-value-chart');
-
-  if (!incomeCtx || !netCtx || !spiderCtx || !valueCtx) {
-    // HTML not loaded yet, skip
-    return;
-  }
-
-  // 1) income vs expenses
-  if (LOP_incomeChart) LOP_incomeChart.destroy();
-  LOP_incomeChart = new Chart(incomeCtx.getContext('2d'), {
-    type: 'line',
-    data: {
-      labels: labels,
-      datasets: [
-        {
-          label: 'Total Income (Rent + Alt)',
-          data: incomeSeries,
-          borderColor: '#27ae60',
-          borderWidth: 2,
-          fill: false
-        },
-        {
-          label: 'Total Expenses (after rebate + mortgage)',
-          data: expenseSeries,
-          borderColor: '#e74c3c',
-          borderWidth: 2,
-          fill: false
+  // ---- 5. AUTO-MOUNT after AJAX load ----
+  if (window.loadProject) {
+    var _origLoadProject = window.loadProject;
+    window.loadProject = function(page) {
+      _origLoadProject(page);
+      setTimeout(function() {
+        if (page.indexOf('landlord_optimization.html') !== -1) {
+          LOP_initSpiderBackground();
+          LOP_ensureChartJs(function() {
+            window.generateProjection();
+          });
         }
-      ]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        title: { display: true, text: 'Income vs Expenses (Annual)' }
-      }
-    }
-  });
-
-  // 2) net after tax
-  if (LOP_netChart) LOP_netChart.destroy();
-  LOP_netChart = new Chart(netCtx.getContext('2d'), {
-    type: 'bar',
-    data: {
-      labels: labels,
-      datasets: [
-        {
-          label: 'Net After Tax (CA$ / yr)',
-          data: netSeries,
-          backgroundColor: '#3498db'
-        },
-        {
-          label: 'Your Target (to live)',
-          data: personalTargetSeries,
-          backgroundColor: 'rgba(231, 76, 60, 0.35)'
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        title: { display: true, text: 'Owner Spendable vs Target' }
-      }
-    }
-  });
-
-  // 3) spider / radar
-  if (LOP_spiderChart) LOP_spiderChart.destroy();
-  LOP_spiderChart = new Chart(spiderCtx.getContext('2d'), {
-    type: 'radar',
-    data: {
-      labels: ['Rent', 'Alt Revenue', 'Expenses', 'After-Tax'],
-      datasets: [
-        {
-          label: 'Year 1',
-          data: [
-            incomeSeries[0] - altRevenueSeries[0],
-            altRevenueSeries[0],
-            expenseSeries[0],
-            netSeries[0]
-          ],
-          backgroundColor: 'rgba(52, 152, 219, 0.2)',
-          borderColor: '#3498db'
-        },
-        {
-          label: 'Year ' + labels[labels.length - 1],
-          data: [
-            incomeSeries[incomeSeries.length - 1] - altRevenueSeries[altRevenueSeries.length - 1],
-            altRevenueSeries[altRevenueSeries.length - 1],
-            expenseSeries[expenseSeries.length - 1],
-            netSeries[netSeries.length - 1]
-          ],
-          backgroundColor: 'rgba(39, 174, 96, 0.2)',
-          borderColor: '#27ae60'
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        title: { display: true, text: 'Revenue Composition (Start vs End)' }
-      },
-      scales: {
-        r: { beginAtZero: true }
-      }
-    }
-  });
-
-  // 4) property value vs costs
-  if (LOP_valueChart) LOP_valueChart.destroy();
-  LOP_valueChart = new Chart(valueCtx.getContext('2d'), {
-    type: 'line',
-    data: {
-      labels: labels,
-      datasets: [
-        {
-          label: 'Property Value (paper)',
-          data: valueSeries,
-          borderColor: '#8e44ad',
-          borderWidth: 2,
-          fill: false
-        },
-        {
-          label: 'Expenses',
-          data: expenseSeries,
-          borderColor: '#e67e22',
-          borderWidth: 2,
-          fill: false
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        title: { display: true, text: 'Paper Growth vs Real Cost Growth' }
-      }
-    }
-  });
-}
-
-// ---- 4. GLOBAL ENTRY POINT (what your buttons call) ----
-window.generateProjection = function(isOasis) {
-  var data = LOP_computeProjection(isOasis);
-  if (!data) return;
-  if (!window.Chart) {
-    alert("Chart.js not available yet.");
-    return;
-  }
-  LOP_renderCharts(data);
-};
-
-// ---- 5. AUTO-MOUNT after AJAX load ----
-// If your loader calls something like loadProject(page), add a hook AFTER insertion
-// Example:
-if (window.loadProject) {
-  // wrap original
-  var _origLoadProject = window.loadProject;
-  window.loadProject = function(page) {
-    _origLoadProject(page);
-    // defer to allow DOM to be inserted
-    setTimeout(function() {
-      if (page.indexOf('landlord_optimization.html') !== -1) {
+      }, 100);
+    };
+  } else {
+    // fallback: if page already has LOP on first load
+    document.addEventListener('DOMContentLoaded', function() {
+      if (document.getElementById('landlord-optimizer')) {
         LOP_initSpiderBackground();
         LOP_ensureChartJs(function() {
-          window.generateProjection(false);
+          window.generateProjection();
         });
       }
-    }, 100);
-  };
-} else {
-  // fallback: if page already has LOP on first load
-  document.addEventListener('DOMContentLoaded', function() {
-    if (document.getElementById('landlord-optimizer')) {
-      LOP_initSpiderBackground();
-      LOP_ensureChartJs(function() {
-        window.generateProjection(false);
-      });
-    }
-  });
-}
-</script>
-
+    });
+  }
+  </script>
 
 </body>
 </html>

@@ -33,8 +33,59 @@ body {
 #landlord-optimizer .subtitle {
   color: #7f8c8d;
   font-style: italic;
-  margin-bottom: 25px;
+  margin-bottom: 10px;
   text-align: center;
+}
+
+/* BUTTONS (now at top) */
+.button-row {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  margin: 16px 0 24px 0;
+  flex-wrap: wrap;
+}
+.lop-btn {
+  background-color: #3498db;
+  color: #fff;
+  padding: 11px 26px;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95em;
+  cursor: pointer;
+  transition: background-color 0.25s ease;
+}
+.lop-btn:hover {
+  background-color: #2980b9;
+}
+
+/* SUMMARY / PUNCHLINES (very clear pass/fail area) */
+#lop-summary {
+  margin-bottom: 26px;
+  border-radius: 10px;
+  padding: 16px 20px;
+  font-size: 1rem;
+  line-height: 1.5;
+  text-align: left;
+}
+.lop-summary--pass {
+  background: #e8f8f5;
+  color: #16613a;
+  border: 1px solid #1abc9c;
+}
+.lop-summary--warn {
+  background: #fef9e7;
+  color: #9a7d0a;
+  border: 1px solid #f1c40f;
+}
+.lop-summary--fail {
+  background: #fdecea;
+  color: #922b21;
+  border: 1px solid #e74c3c;
+}
+#lop-summary h3 {
+  margin: 0 0 6px 0;
+  font-size: 1.05rem;
 }
 
 /* FORM GRID */
@@ -75,35 +126,13 @@ body {
   background: #fff;
 }
 
-/* BUTTONS */
-.button-row {
-  display: flex;
-  justify-content: center;
-  gap: 18px;
-  margin: 16px 0 30px 0;
-  flex-wrap: wrap;
-}
-
-.lop-btn {
-  background-color: #3498db;
-  color: #fff;
-  padding: 11px 26px;
-  border: none;
-  border-radius: 8px;
-  font-size: 0.95em;
-  cursor: pointer;
-  transition: background-color 0.25s ease;
-}
-.lop-btn:hover {
-  background-color: #2980b9;
-}
-
 /* CHART AREA */
 .charts-row {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
   gap: 30px;
   align-items: stretch;
+  margin-top: 34px;
 }
 
 .chart-card {
@@ -126,7 +155,26 @@ body {
   height: 300px !important;
 }
 
-/* SPIDER BACKGROUND (moving points forming web) */
+/* DETAILS (math trace) */
+#lop-math-details {
+  margin-top: 12px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  padding: 10px 14px;
+  text-align: left;
+}
+#lop-math-details summary {
+  font-weight: 600;
+  cursor: pointer;
+}
+#lop-math-text {
+  white-space: pre-wrap;
+  font-family: ui-monospace, SFMono-Regular, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.83rem;
+  margin-top: 8px;
+}
+
+/* SPIDER BACKGROUND */
 #spiderweb {
   position: fixed;
   top: 0;
@@ -158,6 +206,17 @@ body {
   <p class="subtitle">
     Model PTBO taxes, rising insurance, charity rebates, alt revenue (roof, billboard, Airbnb), and your own life money in one place.
   </p>
+
+  <!-- BUTTON (now above fields, no oasis) -->
+  <div class="button-row">
+    <button class="lop-btn" onclick="window.generateProjection && window.generateProjection()">Generate Analysis</button>
+  </div>
+
+  <!-- SUMMARY / PUNCHLINES -->
+  <div id="lop-summary" class="lop-summary--warn">
+    <h3>Waiting for input...</h3>
+    <p>Click “Generate Analysis” to see if this setup is sustainable, marginal, or failing.</p>
+  </div>
 
   <!-- PROPERTY & CASHFLOW -->
   <div class="input-section" id="section-property">
@@ -255,13 +314,13 @@ body {
     </div>
   </div>
 
-  <!-- CONTROLS -->
-  <div class="button-row">
-    <button class="lop-btn" onclick="window.generateProjection && window.generateProjection(false)">Generate Charts</button>
-    <button class="lop-btn" onclick="window.generateProjection && window.generateProjection(true)">Show 'Oasis' Case</button>
-  </div>
+  <!-- DETAILED MATH (expandable) -->
+  <details id="lop-math-details">
+    <summary>Show detailed math (Year 1 & final year)</summary>
+    <pre id="lop-math-text">Click "Generate Analysis" to see the step-by-step calculations.</pre>
+  </details>
 
-  <!-- CHARTS -->
+  <!-- CHARTS (markers) -->
   <div class="charts-row">
     <div class="chart-card">
       <h4>Income vs Expenses (Annual)</h4>
