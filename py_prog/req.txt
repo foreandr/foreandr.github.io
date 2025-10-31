@@ -19,3 +19,5 @@ ultralytics
 secure-smtplib
 email-validator
 hypersel
+
+# obs
