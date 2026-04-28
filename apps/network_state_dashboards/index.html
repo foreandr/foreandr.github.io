@@ -1,0 +1,368 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network School</title>
+    <link rel="icon" type="image/x-icon" href="../../images.ico">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="data.js"></script>
+    <style>
+        :root {
+            --bg: #0a0b10;
+            --bg-2: #0f1119;
+            --card: #151826;
+            --card-2: #101320;
+            --text: #eef2ff;
+            --muted: #9aa3b2;
+            --accent: #ff6b4a;
+            --accent-2: #2dd4bf;
+            --accent-3: #60a5fa;
+            --border: #23283b;
+            --glow: 0 0 40px rgba(255, 107, 74, 0.12);
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            background: radial-gradient(1200px 700px at 10% -10%, #1b2140 0%, transparent 60%),
+                        radial-gradient(900px 500px at 90% 0%, #2a1324 0%, transparent 55%),
+                        var(--bg);
+            color: var(--text);
+            font-family: "Space Grotesk", "Segoe UI", sans-serif;
+            padding: 28px;
+        }
+        .topbar {
+            display: flex; align-items: center; justify-content: space-between; gap: 16px;
+            padding: 16px 20px; border: 1px solid var(--border); border-radius: 16px;
+            background: linear-gradient(135deg, rgba(255,107,74,0.14), rgba(45,212,191,0.08));
+            box-shadow: var(--glow);
+            margin-bottom: 22px;
+        }
+        .topbar h1 { margin: 0; font-size: 1.6rem; letter-spacing: 0.02em; }
+        .topbar p { margin: 4px 0 0; color: var(--muted); font-size: 0.95rem; }
+        .back-button {
+            text-decoration: none; color: #0a0b10; font-weight: 700;
+            background: var(--accent); padding: 10px 14px; border-radius: 12px;
+        }
+        .back-pill {
+            position: fixed; top: 14px; left: 14px; z-index: 9999;
+            text-decoration: none;
+            font-family: "Space Grotesk", "Segoe UI", sans-serif;
+            font-size: 0.78rem; font-weight: 600; letter-spacing: 0.03em;
+            color: rgba(238, 242, 255, 0.82);
+            background: rgba(21, 24, 38, 0.72);
+            border: 1px solid rgba(35, 40, 59, 0.9);
+            padding: 5px 12px; border-radius: 999px;
+            backdrop-filter: blur(8px);
+            transition: background 0.18s, color 0.18s;
+        }
+        .back-pill:hover {
+            background: rgba(255, 107, 74, 0.22);
+            color: #eef2ff;
+        }
+        .grid { display: grid; gap: 18px; }
+        .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .grid-2 { grid-template-columns: 1.6fr 1fr; }
+        .card {
+            background: linear-gradient(180deg, rgba(21,24,38,0.9), rgba(13,15,26,0.9));
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 18px;
+        }
+        .stat {
+            display: flex; flex-direction: column; gap: 8px;
+            background: var(--card); border: 1px solid var(--border);
+            padding: 16px; border-radius: 14px;
+        }
+        .stat .label { color: var(--muted); font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.12em; }
+        .stat .value { font-size: 1.7rem; font-weight: 700; }
+        .stat .sub { color: var(--muted); font-size: 0.9rem; }
+        .section-title { font-size: 1.05rem; margin: 0 0 6px; }
+        .section-desc { color: var(--muted); font-size: 0.86rem; margin: 0 0 12px; }
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; color: var(--muted); padding: 10px; border-bottom: 1px solid var(--border); font-size: 0.82rem; letter-spacing: 0.08em; text-transform: uppercase; }
+        td { padding: 10px; border-bottom: 1px solid var(--border); }
+        .tag { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; background: rgba(96,165,250,0.15); color: #cfe0ff; font-size: 0.8rem; }
+        .tag.secondary { background: rgba(45,212,191,0.18); color: #c1f5ef; }
+        .tag.warning { background: rgba(255,107,74,0.18); color: #ffd1c7; }
+        .muted { color: var(--muted); }
+        .pill-row { display: flex; flex-wrap: wrap; gap: 8px; }
+        .state-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+        .state-card {
+            background: var(--card-2); border: 1px solid var(--border); border-radius: 14px; padding: 14px;
+            display: flex; flex-direction: column; gap: 10px;
+        }
+        .state-card h4 { margin: 0; font-size: 1.05rem; }
+        .state-card .meta { display: flex; flex-wrap: wrap; gap: 8px; }
+        .state-card .kv { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .state-card .kv div { background: rgba(255,255,255,0.03); padding: 8px; border-radius: 10px; }
+        .state-card .kv .k { color: var(--muted); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; }
+        .state-card .kv .v { font-size: 0.95rem; margin-top: 4px; }
+        .divider { height: 1px; background: var(--border); margin: 12px 0; }
+        .wrap { word-break: break-all; overflow-wrap: anywhere; }
+        .top-list { list-style: none; padding-left: 0; margin: 0; }
+        .top-list li { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); }
+        .callout {
+            background: linear-gradient(120deg, rgba(255,107,74,0.18), rgba(96,165,250,0.18));
+            border: 1px solid rgba(255,107,74,0.4);
+            padding: 14px; border-radius: 14px; color: #ffe9e3;
+        }
+        @media (max-width: 1000px) {
+            .grid-3, .grid-2 { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <a class="back-pill" href="../../index.html">← Back</a>
+    <div class="topbar">
+        <div>
+            <h1>Network School</h1>
+            <p>Dense operational telemetry across network-school signals, captured from Snapshot space metadata.</p>
+        </div>
+        <a class="back-button" href="../../index.html">Back to Home</a>
+    </div>
+
+    <div class="grid grid-3">
+        <div class="stat">
+            <div class="label">Total Population</div>
+            <div class="value" id="totalPop">--</div>
+            <div class="sub" id="coveragePop">Coverage --</div>
+        </div>
+        <div class="stat">
+            <div class="label">Average Health</div>
+            <div class="value" id="avgHealth">--</div>
+            <div class="sub" id="coverageHealth">Coverage --</div>
+        </div>
+        <div class="stat">
+            <div class="label">States Indexed</div>
+            <div class="value" id="stateCount">--</div>
+            <div class="sub" id="dataFreshness">Latest proposal seen --</div>
+        </div>
+    </div>
+
+    <div class="grid grid-2" style="margin-top: 18px;">
+        <div class="card">
+            <div class="section-title">Population Census</div>
+            <div class="section-desc">Sum of reported population signals per state (Snapshot followers or fallback baseline).</div>
+            <canvas id="popChart"></canvas>
+        </div>
+        <div class="card">
+            <div class="section-title">State Type Distribution</div>
+            <div class="section-desc">Count of states grouped by type to show ecosystem balance.</div>
+            <canvas id="typeChart"></canvas>
+        </div>
+    </div>
+
+    <div class="grid grid-2" style="margin-top: 18px;">
+        <div class="card">
+            <div class="section-title">Governance Ledger</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>State</th>
+                        <th>Type</th>
+                        <th>Population</th>
+                        <th>Health</th>
+                        <th>Treasury</th>
+                        <th>Latest Proposal</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+        <div class="card">
+            <div class="section-title">Top Population Nodes</div>
+            <ul class="top-list" id="topPopList"></ul>
+            <div class="divider"></div>
+            <div class="section-title">Data Coverage</div>
+            <div class="pill-row" id="coverageTags"></div>
+            <div class="divider"></div>
+            <div class="callout" id="locationNote"></div>
+        </div>
+    </div>
+
+    <div class="card" style="margin-top: 18px;">
+        <div class="section-title">State Intelligence Cards</div>
+        <div class="state-cards" id="stateCards"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof sovereignData === 'undefined') {
+                console.error("Data file (data.js) not found or sovereignData not defined.");
+                return;
+            }
+
+            const tbody = document.getElementById('tableBody');
+            const totalPopEl = document.getElementById('totalPop');
+            const avgHealthEl = document.getElementById('avgHealth');
+            const stateCountEl = document.getElementById('stateCount');
+            const topPopList = document.getElementById('topPopList');
+            const stateCards = document.getElementById('stateCards');
+            const coverageTags = document.getElementById('coverageTags');
+            const coveragePop = document.getElementById('coveragePop');
+            const coverageHealth = document.getElementById('coverageHealth');
+            const dataFreshness = document.getElementById('dataFreshness');
+            const locationNote = document.getElementById('locationNote');
+
+            const safe = (v) => (v === null || v === undefined || v === '') ? '—' : v;
+            const pct = (num, den) => den === 0 ? '0%' : `${Math.round((num / den) * 100)}%`;
+            const palette = [
+                '#ff6b4a', '#2dd4bf', '#60a5fa', '#fbbf24', '#a78bfa',
+                '#34d399', '#f472b6', '#f97316', '#22d3ee', '#eab308'
+            ];
+            const hashStr = (str) => {
+                let h = 0;
+                for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) >>> 0;
+                return h;
+            };
+            const colorForType = (type, index) => {
+                if (!type) return palette[index % palette.length];
+                const h = hashStr(type) % 360;
+                return `hsl(${h}, 78%, 60%)`;
+            };
+
+            const hasField = (d, k) => d[k] !== null && d[k] !== undefined && d[k] !== '' && (!(Array.isArray(d[k])) || d[k].length > 0);
+
+            const coverage = {
+                about: sovereignData.filter(d => hasField(d, 'about')).length,
+                network: sovereignData.filter(d => hasField(d, 'network')).length,
+                symbol: sovereignData.filter(d => hasField(d, 'symbol')).length,
+                strategies: sovereignData.filter(d => hasField(d, 'strategies')).length,
+                admins: sovereignData.filter(d => hasField(d, 'admins')).length,
+                members: sovereignData.filter(d => hasField(d, 'members_count')).length,
+                latest: sovereignData.filter(d => d.latest && d.latest !== 'Maintenance').length
+            };
+
+            const latestCreated = sovereignData
+                .map(d => d.latest_proposal && d.latest_proposal.created ? d.latest_proposal.created : null)
+                .filter(v => v !== null)
+                .sort((a, b) => b - a)[0];
+
+            // Build Table
+            sovereignData.forEach(d => {
+                const treasury = d.treasury_address || 'Unknown';
+                const row = `<tr>
+                    <td><strong>${safe(d.name)}</strong><div class="muted">${safe(d.space_id)}</div></td>
+                    <td><span class="tag">${safe(d.type)}</span></td>
+                    <td>${(d.population || 0).toLocaleString()}</td>
+                    <td>${(d.health || 0).toFixed(2)}</td>
+                    <td class="muted wrap">${treasury}</td>
+                    <td>${safe(d.latest)}</td>
+                </tr>`;
+                tbody.innerHTML += row;
+            });
+
+            // Summary stats
+            const totalPop = sovereignData.reduce((sum, d) => sum + (d.population || 0), 0);
+            const avgHealth = sovereignData.length
+                ? (sovereignData.reduce((sum, d) => sum + (d.health || 0), 0) / sovereignData.length)
+                : 0;
+            totalPopEl.textContent = totalPop.toLocaleString();
+            avgHealthEl.textContent = avgHealth.toFixed(2);
+            stateCountEl.textContent = sovereignData.length.toString();
+
+            coveragePop.textContent = `Coverage ${pct(sovereignData.filter(d => d.population > 0).length, sovereignData.length)}`;
+            coverageHealth.textContent = `Coverage ${pct(sovereignData.filter(d => d.health > 0).length, sovereignData.length)}`;
+
+            if (latestCreated) {
+                const date = new Date(latestCreated * 1000);
+                dataFreshness.textContent = `Latest proposal seen ${date.toISOString().slice(0, 10)}`;
+            } else {
+                dataFreshness.textContent = 'Latest proposal seen —';
+            }
+
+            // Top population list
+            const topPop = [...sovereignData].sort((a, b) => (b.population || 0) - (a.population || 0)).slice(0, 6);
+            topPopList.innerHTML = topPop.map(d => `<li><span>${d.name}</span><span>${(d.population || 0).toLocaleString()}</span></li>`).join('');
+
+            // Coverage tags
+            const tags = [
+                { label: `About ${coverage.about}/${sovereignData.length}`, cls: 'secondary' },
+                { label: `Network ${coverage.network}/${sovereignData.length}`, cls: '' },
+                { label: `Symbol ${coverage.symbol}/${sovereignData.length}`, cls: '' },
+                { label: `Strategies ${coverage.strategies}/${sovereignData.length}`, cls: '' },
+                { label: `Admins ${coverage.admins}/${sovereignData.length}`, cls: 'secondary' },
+                { label: `Members ${coverage.members}/${sovereignData.length}`, cls: 'secondary' },
+                { label: `Latest ${coverage.latest}/${sovereignData.length}`, cls: 'warning' }
+            ];
+            coverageTags.innerHTML = tags.map(t => `<span class="tag ${t.cls}">${t.label}</span>`).join('');
+
+            locationNote.textContent = sovereignData[0] && sovereignData[0].location_note
+                ? sovereignData[0].location_note
+                : 'Location data not provided by Snapshot.';
+
+            // State cards
+            stateCards.innerHTML = sovereignData.map(d => {
+                const strategies = (d.strategies || []).slice(0, 3).map(s => s.name).filter(Boolean);
+                const stratDisplay = strategies.length ? strategies.join(', ') : '—';
+                return `
+                <div class="state-card">
+                    <div>
+                        <h4>${safe(d.name)}</h4>
+                        <div class="muted">${safe(d.space_id)} · ${safe(d.network)}</div>
+                    </div>
+                    <div class="meta">
+                        <span class="tag">${safe(d.type)}</span>
+                        <span class="tag secondary">${safe(d.symbol)}</span>
+                    </div>
+                    <div class="kv">
+                        <div>
+                            <div class="k">Population</div>
+                            <div class="v">${(d.population || 0).toLocaleString()}</div>
+                        </div>
+                        <div>
+                            <div class="k">Health</div>
+                            <div class="v">${(d.health || 0).toFixed(2)}</div>
+                        </div>
+                        <div>
+                            <div class="k">Admins</div>
+                            <div class="v">${safe(d.admins_count)}</div>
+                        </div>
+                        <div>
+                            <div class="k">Members</div>
+                            <div class="v">${safe(d.members_count)}</div>
+                        </div>
+                    </div>
+                    <div class="muted">${safe(d.about)}</div>
+                    <div class="muted">Strategies: ${safe(stratDisplay)}</div>
+                    <div class="muted">Treasury: <span class="wrap">${safe(d.treasury_address)}</span></div>
+                    <div class="muted">Latest: ${safe(d.latest)}</div>
+                </div>`;
+            }).join('');
+
+            // Population Bar Chart
+            new Chart(document.getElementById('popChart'), {
+                type: 'bar',
+                data: {
+                    labels: sovereignData.map(d => d.name),
+                    datasets: [{
+                        label: 'Citizens',
+                        data: sovereignData.map(d => d.population),
+                        backgroundColor: palette[0]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: { y: { beginAtZero: true } },
+                    plugins: { legend: { labels: { color: '#eef2ff' } } }
+                }
+            });
+
+            // Type Doughnut Chart
+            const counts = sovereignData.reduce((acc, d) => { acc[d.type] = (acc[d.type] || 0) + 1; return acc; }, {});
+            new Chart(document.getElementById('typeChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(counts),
+                    datasets: [{
+                        data: Object.values(counts),
+                        backgroundColor: Object.keys(counts).map((k, i) => colorForType(k, i))
+                    }]
+                },
+                options: { plugins: { legend: { labels: { color: '#eef2ff' } } } }
+            });
+        });
+    </script>
+</body>
+</html>

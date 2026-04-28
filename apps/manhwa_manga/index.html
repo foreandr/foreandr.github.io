@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Sovereign Archive</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #0a0b10; color: #e2e4ec; font-family: 'Inter', sans-serif; overflow: hidden; }
+
+    /* ── AUTH GATE (Full Screen) ── */
+    #gate { 
+      position: fixed; inset: 0; background: #08090f; z-index: 10000; 
+      display: flex; align-items: center; justify-content: center; 
+    }
+    .gate-box { 
+      background: #0e1018; padding: 45px; border-radius: 20px; 
+      border: 1px solid rgba(255,255,255,0.1); text-align: center; width: 350px; 
+      box-shadow: 0 25px 50px rgba(0,0,0,0.6);
+    }
+    #pw-input { 
+      width: 100%; padding: 14px; background: #12141d; border: 1px solid #333; 
+      color: white; border-radius: 8px; margin: 20px 0; outline: none; text-align: center;
+      font-size: 16px;
+    }
+    #pw-btn { 
+      width: 100%; padding: 14px; background: #5865f2; border: none; 
+      color: white; border-radius: 8px; cursor: pointer; font-weight: 800;
+      transition: background 0.2s;
+    }
+    #pw-btn:hover { background: #4752c4; }
+
+    /* ── MAIN APP (Locked Down) ── */
+    #app { display: none; padding: 40px; max-width: 1400px; margin: 0 auto; }
+    #app.unlocked { display: block; }
+
+    /* UI Layout */
+    .title { font-size: 32px; font-weight: 800; margin-bottom: 5px; }
+    .subtitle { color: #888; margin-bottom: 28px; }
+
+    .search-area { position: relative; max-width: 600px; margin-bottom: 20px; }
+    #tag-in { 
+      width: 100%; height: 52px; background: #12141d; border: 1px solid #333; 
+      padding: 0 20px; color: white; border-radius: 8px; outline: none;
+    }
+    
+    #suggestions {
+      position: absolute; top: 58px; left: 0; right: 0;
+      background: #12141d; border: 1px solid #333; border-radius: 8px;
+      max-height: 280px; overflow-y: auto; z-index: 100;
+    }
+    .suggest-item { 
+      padding: 12px 20px; cursor: pointer; border-bottom: 1px solid #1a1c26; 
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .suggest-item:hover { background: #1e212e; color: #5865f2; }
+
+    .chips { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 30px; }
+    .chip { background: #5865f2; padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 700; cursor: pointer; }
+    .chip:hover { background: #ef4444; }
+
+    #grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
+    .card { background: #12141d; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); }
+    .card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; background: #000; }
+    .card-info { padding: 15px; font-size: 12px; }
+  </style>
+</head>
+<body>
+
+  <div id="gate">
+    <div class="gate-box">
+      <h2 style="letter-spacing: 1px; font-weight: 900;">SECURE ACCESS</h2>
+      <input type="password" id="pw-input" placeholder="Password Required..." autofocus>
+      <button id="pw-btn" onclick="verify()">AUTHORIZE</button>
+      <div id="error-msg" style="color:#ef4444; font-size:12px; margin-top:10px; display:none;">Access Denied.</div>
+    </div>
+  </div>
+
+  <div id="app">
+    <h1 class="title">Archive Explorer</h1>
+    <p class="subtitle">Search and intersect tags to narrow results.</p>
+
+    <div class="search-area">
+      <input type="text" id="tag-in" placeholder="Filter tags..." autocomplete="off">
+      <div id="suggestions" style="display:none;"></div>
+    </div>
+
+    <div class="chips" id="active-chips"></div>
+    <div id="grid"></div>
+  </div>
+
+  <script src="db.js"></script>
+  <script>
+    const SECRET = 'cooldood';
+    let activeTags = new Set();
+
+    function verify() {
+      const val = document.getElementById('pw-input').value;
+      if (val === SECRET) {
+        document.getElementById('gate').style.display = 'none';
+        document.getElementById('app').classList.add('unlocked');
+        document.body.style.overflow = 'auto';
+        startApp(); // Trigger functionality only after success
+      } else {
+        document.getElementById('error-msg').style.display = 'block';
+        document.getElementById('pw-input').value = '';
+      }
+    }
+
+    // Handle 'Enter' key for password
+    document.getElementById('pw-input').onkeydown = (e) => { if(e.key === 'Enter') verify(); };
+
+    function startApp() {
+      const input = document.getElementById('tag-in');
+      const suggestBox = document.getElementById('suggestions');
+
+      input.oninput = () => {
+        const val = input.value.trim().toLowerCase();
+        
+        // If input is empty, hide suggestions and show preview
+        if (!val) { 
+          suggestBox.style.display = 'none'; 
+          return; 
+        }
+
+        // Filter the master tag list based on what you typed
+        const matches = window.ALL_TAGS
+          .filter(t => t.includes(val) && !activeTags.has(t))
+          .slice(0, 10); // Show top 10 matches
+
+        if (matches.length > 0) {
+          suggestBox.innerHTML = matches.map(m => `
+            <div class="suggest-item" onclick="addTag('${m}')">
+              <span>${m}</span>
+              <span style="opacity:0.4">${window.TAG_MAP[m].length} items</span>
+            </div>
+          `).join('');
+          suggestBox.style.display = 'block';
+        } else {
+          suggestBox.style.display = 'none';
+        }
+      };
+      
+      render(); 
+    }
+
+    function addTag(tag) {
+      activeTags.add(tag);
+      document.getElementById('tag-in').value = '';
+      document.getElementById('suggestions').style.display = 'none';
+      render();
+    }
+
+    function removeTag(tag) {
+      activeTags.delete(tag);
+      render();
+    }
+
+    function render() {
+      const chipBox = document.getElementById('active-chips');
+      const grid = document.getElementById('grid');
+      
+      // Update Selection Chips
+      chipBox.innerHTML = Array.from(activeTags).map(t => `
+        <div class="chip" onclick="removeTag('${t}')">${t} &times;</div>
+      `).join('');
+
+      let results = [];
+      if (activeTags.size === 0) {
+        results = window.MANGA_DB.slice(0, 40); // Initial random sampling
+      } else {
+        const tags = Array.from(activeTags);
+        let matchedIds = window.TAG_MAP[tags[0]] || [];
+        
+        // Multi-tag Intersection logic
+        for (let i = 1; i < tags.length; i++) {
+          const nextSet = new Set(window.TAG_MAP[tags[i]] || []);
+          matchedIds = matchedIds.filter(id => nextSet.has(id));
+        }
+        
+        const idSet = new Set(matchedIds);
+        results = window.MANGA_DB.filter(m => idSet.has(m.id));
+      }
+
+      grid.innerHTML = results.slice(0, 400).map(d => `
+        <div class="card">
+          <img src="${d.c}" loading="lazy" onerror="this.src='https://via.placeholder.com/200x300?text=No+Cover'">
+          <div class="card-info">
+            <div style="color:#5865f2; font-weight:bold; margin-bottom: 2px;">#${d.id}</div>
+            <div style="opacity:0.5; font-size: 10px;">${d.l.toUpperCase()}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+  </script>
+</body>
+</html>

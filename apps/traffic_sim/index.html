@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Traffic Simulator</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0d1118;color:#d9e2f1;font-family:"Segoe UI",sans-serif;display:flex;flex-direction:column;height:100vh;overflow:hidden}
+#bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 16px;background:#151c27;border-bottom:1px solid #2b3646;flex-shrink:0}
+#bar h1{font-size:14px;letter-spacing:1px;color:#77c6ff;margin-right:8px}
+.btn{background:#1d2634;border:1px solid #34445a;color:#d9e2f1;padding:5px 12px;border-radius:6px;cursor:pointer;font-size:12px;transition:.15s}
+.btn:hover{border-color:#77c6ff;color:#77c6ff}
+.btn.red{border-color:#bf5f5f}
+.btn.red:hover{background:#2a1717;color:#ffaaaa}
+.btn.warn{border-color:#c59f57}
+.btn.warn:hover{background:#2a2418;color:#ffd594}
+label{font-size:11px;color:#97a6ba}
+input[type=range]{width:92px;accent-color:#77c6ff}
+#stats{margin-left:auto;display:flex;gap:16px;font-size:11px;color:#97a6ba}
+#stats span{color:#f2f7ff}
+#wrap{flex:1;position:relative}
+canvas{display:block;width:100%;height:100%}
+</style>
+</head>
+<body>
+<div id="bar">
+  <h1>TRAFFIC SIM</h1>
+  <button class="btn" onclick="sim.addCars(1)">+1 Cars</button>
+  <button class="btn" onclick="sim.addCars(5)">+5 Cars</button>
+  <button class="btn" onclick="sim.addCars(15)">+15 Cars</button>
+  <button class="btn" onclick="sim.addCars(30)">+30 Cars</button>
+  <button class="btn" onclick="sim.addCars(90)">+90 Cars</button>
+  <button class="btn red" onclick="sim.clearCars()">Clear</button>
+  <button class="btn warn" onclick="sim.triggerIncident()">Incident</button>
+  <button class="btn" id="btn-pause" onclick="sim.togglePause()">Pause</button>
+  <label>Speed <input type="range" min="1" max="8" value="3" id="spd"> <span id="spd-lbl">3x</span></label>
+  <label>Light cycle <input type="range" min="8" max="70" value="24" id="cyc"> <span id="cyc-lbl">24s</span></label>
+  <div id="stats">
+    Cars: <span id="st-cars">0</span>
+    Avg speed: <span id="st-spd">0</span>
+    Congested: <span id="st-jam">0</span>%
+    Incidents: <span id="st-inc">0</span>
+  </div>
+</div>
+<div id="wrap"><canvas id="c"></canvas></div>
+
+<script>
+const WORLD_W = 2200;
+const WORLD_H = 1400;
+
+const N = {};
+const E = [];
+const LIGHT_NODES = [];
+
+function node(id, x, y) {
+  N[id] = { x, y };
+}
+
+function addEdge(f, t, type, spd, options = {}) {
+  E.push({ f, t, type, spd, ...options });
+}
+
+function addTwoWay(a, b, type, spd, options = {}) {
+  addEdge(a, b, type, spd, options);
+  addEdge(b, a, type, spd, options);
+}
+
+const topY = 120;
+const midY = 700;
+const botY = 1260;
+const leftHX = 0;
+const h1 = 320;
+const h2 = 760;
+const h3 = 1220;
+const h4 = 1680;
+const rightHX = WORLD_W;
+
+const leftVX = 160;
+const rightVX = 1980;
+
+node("hw_w", leftHX, topY);
+node("hw1", h1, topY);
+node("hw2", h2, topY);
+node("hw3", h3, topY);
+node("hw4", h4, topY);
+node("hw_e", rightHX, topY);
+
+node("mw_w", leftHX, midY);
+node("mw1", h1, midY);
+node("mw2", h2, midY);
+node("mw3", h3, midY);
+node("mw4", h4, midY);
+node("mw_e", rightHX, midY);
+
+node("bw_w", leftHX, botY);
+node("bw1", h1, botY);
+node("bw2", h2, botY);
+node("bw3", h3, botY);
+node("bw4", h4, botY);
+node("bw_e", rightHX, botY);
+
+node("lv_n", leftVX, 0);
+node("lv1", leftVX, 320);
+node("lv2", leftVX, 700);
+node("lv3", leftVX, 1040);
+node("lv_s", leftVX, WORLD_H);
+
+node("rv_n", rightVX, 0);
+node("rv1", rightVX, 320);
+node("rv2", rightVX, 700);
+node("rv3", rightVX, 1040);
+node("rv_s", rightVX, WORLD_H);
+
+const grids = [
+  { prefix: "w", x0: 260, cols: [260, 420, 580, 740], rows: [260, 420, 580, 820, 980] },
+  { prefix: "c", x0: 860, cols: [860, 1020, 1180, 1340], rows: [260, 420, 580, 820, 980] },
+  { prefix: "e", x0: 1460, cols: [1460, 1620, 1780, 1940], rows: [260, 420, 580, 820, 980] }
+];
+
+for (const grid of grids) {
+  for (let y = 0; y < grid.rows.length; y++) {
+    for (let x = 0; x < grid.cols.length; x++) {
+      const id = `${grid.prefix}${x}${y}`;
+      node(id, grid.cols[x], grid.rows[y]);
+      LIGHT_NODES.push(id);
+    }
+  }
+}
+
+const rb = { cx: 1540, cy: 1160, r: 120 };
+node("rb_n", rb.cx, rb.cy - rb.r);
+node("rb_e", rb.cx + rb.r, rb.cy);
+node("rb_s", rb.cx, rb.cy + rb.r);
+node("rb_w", rb.cx - rb.r, rb.cy);
+
+function connectLine(points, type, spd, options = {}) {
+  for (let i = 0; i < points.length - 1; i++) addTwoWay(points[i], points[i + 1], type, spd, options);
+}
+
+connectLine(["hw_w", "hw1", "hw2", "hw3", "hw4", "hw_e"], "highway", 130);
+connectLine(["mw_w", "mw1", "mw2", "mw3", "mw4", "mw_e"], "highway", 120);
+connectLine(["bw_w", "bw1", "bw2", "bw3", "bw4", "bw_e"], "highway", 122);
+connectLine(["lv_n", "lv1", "lv2", "lv3", "lv_s"], "highway", 118);
+connectLine(["rv_n", "rv1", "rv2", "rv3", "rv_s"], "highway", 118);
+
+for (const grid of grids) {
+  for (let y = 0; y < grid.rows.length; y++) {
+    const row = grid.cols.map((_, x) => `${grid.prefix}${x}${y}`);
+    connectLine(row, "street", y < 3 ? 44 : 40);
+  }
+  for (let x = 0; x < grid.cols.length; x++) {
+    const col = grid.rows.map((_, y) => `${grid.prefix}${x}${y}`);
+    connectLine(col, "street", 38);
+  }
+}
+
+addTwoWay("hw1", "w00", "ramp", 58);
+addTwoWay("hw2", "w30", "ramp", 58);
+addTwoWay("mw1", "w03", "ramp", 54);
+addTwoWay("mw2", "c03", "ramp", 54);
+addTwoWay("hw2", "c00", "ramp", 58);
+addTwoWay("hw3", "c30", "ramp", 58);
+addTwoWay("mw3", "c33", "ramp", 54);
+addTwoWay("bw3", "c34", "ramp", 54);
+addTwoWay("hw4", "e00", "ramp", 58);
+addTwoWay("mw4", "e03", "ramp", 54);
+addTwoWay("bw4", "e34", "ramp", 54);
+addTwoWay("rv1", "e30", "ramp", 52);
+addTwoWay("rv2", "e33", "ramp", 52);
+addTwoWay("rv3", "rb_n", "ramp", 48);
+addTwoWay("bw3", "rb_w", "street", 34, { yieldAtEnd: true });
+addTwoWay("e33", "rb_s", "street", 34, { yieldAtEnd: true });
+addTwoWay("e23", "rb_n", "street", 34, { yieldAtEnd: true });
+
+addEdge("rb_n", "rb_e", "ring", 28, { ring: true });
+addEdge("rb_e", "rb_s", "ring", 28, { ring: true });
+addEdge("rb_s", "rb_w", "ring", 28, { ring: true });
+addEdge("rb_w", "rb_n", "ring", 28, { ring: true });
+
+class Sim {
+  constructor() {
+    this.cv = document.getElementById("c");
+    this.ctx = this.cv.getContext("2d");
+    this.speedMult = 3;
+    this.paused = false;
+    this.uid = 0;
+    this.cars = [];
+    this.incidents = [];
+    this.lastTs = null;
+    this.statsTimer = 0;
+
+    this.edges = E.map((e, i) => {
+      const from = N[e.f];
+      const to = N[e.t];
+      const dx = to.x - from.x;
+      const dy = to.y - from.y;
+      const len = Math.hypot(dx, dy);
+      return {
+        ...e,
+        id: i,
+        len,
+        dx,
+        dy,
+        nx: dx / len,
+        ny: dy / len,
+        angle: Math.atan2(dy, dx),
+        cars: []
+      };
+    });
+
+    this.outEdges = {};
+    this.inEdges = {};
+    for (const edge of this.edges) {
+      (this.outEdges[edge.f] ||= []).push(edge);
+      (this.inEdges[edge.t] ||= []).push(edge);
+    }
+
+    this.lights = {};
+    for (let i = 0; i < LIGHT_NODES.length; i++) {
+      this.lights[LIGHT_NODES[i]] = { phase: i % 2, t: 24 * Math.random(), cycle: 24 };
+    }
+
+    this.resize();
+    window.addEventListener("resize", () => this.resize());
+    document.getElementById("spd").addEventListener("input", (e) => {
+      this.speedMult = +e.target.value;
+      document.getElementById("spd-lbl").textContent = e.target.value + "x";
+    });
+    document.getElementById("cyc").addEventListener("input", (e) => {
+      this.setCycle(+e.target.value);
+      document.getElementById("cyc-lbl").textContent = e.target.value + "s";
+    });
+
+    this.addCars(180);
+    requestAnimationFrame((ts) => this.loop(ts));
+  }
+
+  resize() {
+    const rect = this.cv.parentElement.getBoundingClientRect();
+    this.cv.width = rect.width;
+    this.cv.height = rect.height;
+    this.sx = rect.width / WORLD_W;
+    this.sy = rect.height / WORLD_H;
+    this.scale = Math.min(this.sx, this.sy);
+  }
+
+  setCycle(v) {
+    for (const light of Object.values(this.lights)) light.cycle = v;
+  }
+
+  togglePause() {
+    this.paused = !this.paused;
+    document.getElementById("btn-pause").textContent = this.paused ? "Resume" : "Pause";
+  }
+
+  addCars(count) {
+    const candidates = this.edges.filter((e) => !e.ring && e.len > 90);
+    for (let i = 0; i < count; i++) {
+      const edge = candidates[Math.floor(Math.random() * candidates.length)];
+      const hue = Math.floor(Math.random() * 360);
+      const car = {
+        id: this.uid++,
+        edge,
+        pos: Math.random() * Math.max(15, edge.len - 35),
+        spd: edge.spd * (0.45 + Math.random() * 0.35),
+        cruise: edge.spd * (0.74 + Math.random() * 0.28),
+        baseColor: `hsl(${hue},70%,58%)`,
+        prevEdgeId: null,
+        nextEdge: null
+      };
+      edge.cars.push(car);
+      this.cars.push(car);
+    }
+  }
+
+  clearCars() {
+    for (const edge of this.edges) edge.cars = [];
+    this.cars = [];
+  }
+
+  triggerIncident() {
+    const candidates = this.edges.filter((e) => e.type === "street" || e.type === "ramp");
+    const edge = candidates[Math.floor(Math.random() * candidates.length)];
+    if (!this.incidents.some((x) => x.edge === edge)) this.incidents.push({ edge, ttl: 18 });
+  }
+
+  loop(ts) {
+    requestAnimationFrame((next) => this.loop(next));
+    if (this.lastTs == null) {
+      this.lastTs = ts;
+      return;
+    }
+    const rawDt = Math.min((ts - this.lastTs) / 1000, 0.05);
+    this.lastTs = ts;
+    const dt = this.paused ? 0 : rawDt * this.speedMult;
+
+    this.updateLights(dt);
+    this.updateIncidents(dt);
+    this.updateCars(dt);
+
+    this.statsTimer -= rawDt;
+    if (this.statsTimer <= 0) {
+      this.updateStats();
+      this.statsTimer = 0.45;
+    }
+    this.render();
+  }
+
+  updateLights(dt) {
+    for (const light of Object.values(this.lights)) {
+      light.t -= dt;
+      if (light.t <= 0) {
+        light.phase = 1 - light.phase;
+        light.t = light.cycle;
+      }
+    }
+  }
+
+  updateIncidents(dt) {
+    for (let i = this.incidents.length - 1; i >= 0; i--) {
+      this.incidents[i].ttl -= dt;
+      if (this.incidents[i].ttl <= 0) this.incidents.splice(i, 1);
+    }
+  }
+
+  isBlocked(edge) {
+    return this.incidents.some((x) => x.edge === edge);
+  }
+
+  isGreen(edge) {
+    const light = this.lights[edge.t];
+    if (!light) return true;
+    const vertical = Math.abs(edge.dy) > Math.abs(edge.dx);
+    return vertical ? light.phase === 0 : light.phase === 1;
+  }
+
+  canEnterRoundabout(edge) {
+    if (!edge.yieldAtEnd) return true;
+    for (const other of this.inEdges[edge.t] || []) {
+      if (!other.ring) continue;
+      for (const car of other.cars) {
+        if (car.pos > other.len - 42) return false;
+      }
+    }
+    return true;
+  }
+
+  chooseNextEdge(car) {
+    const outs = (this.outEdges[car.edge.t] || []).filter((edge) => !this.isBlocked(edge));
+    if (!outs.length) return null;
+    let filtered = outs.filter((edge) => edge.id !== car.prevEdgeId);
+    if (!filtered.length) filtered = outs.slice();
+
+    if (car.edge.ring) {
+      const exits = filtered.filter((edge) => !edge.ring);
+      if (exits.length && Math.random() < 0.68) filtered = exits;
+      else {
+        const stay = filtered.filter((edge) => edge.ring);
+        if (stay.length) filtered = stay;
+      }
+    } else {
+      const notBackwards = filtered.filter((edge) => edge.nx * car.edge.nx + edge.ny * car.edge.ny > -0.3);
+      if (notBackwards.length) filtered = notBackwards;
+      const highways = filtered.filter((edge) => edge.type === "highway");
+      const streets = filtered.filter((edge) => edge.type === "street");
+      if (car.edge.type === "highway" && highways.length && Math.random() < 0.75) filtered = highways;
+      else if (car.edge.type === "street" && streets.length && Math.random() < 0.7) filtered = streets;
+    }
+
+    return filtered[Math.floor(Math.random() * filtered.length)];
+  }
+
+  updateCars(dt) {
+    const CAR_LEN = 12;
+    const MIN_GAP = 9;
+    const TIME_GAP = 1.05;
+    const ACCEL = 32;
+    const BRAKE = 66;
+
+    for (const edge of this.edges) edge.cars.sort((a, b) => a.pos - b.pos);
+
+    for (const edge of this.edges) {
+      for (let i = edge.cars.length - 1; i >= 0; i--) {
+        const car = edge.cars[i];
+        if (!car.nextEdge) car.nextEdge = this.chooseNextEdge(car);
+
+        const ahead = i < edge.cars.length - 1 ? edge.cars[i + 1] : null;
+        let want = Math.min(edge.spd, car.cruise);
+        if (this.isBlocked(edge)) want = 0;
+
+        if (ahead) {
+          const gap = ahead.pos - car.pos - CAR_LEN;
+          const safe = MIN_GAP + TIME_GAP * car.spd;
+          if (gap < safe) want = Math.min(want, ahead.spd * Math.max(0, gap / Math.max(1, safe)));
+          if (gap < MIN_GAP) want = 0;
+        }
+
+        const stopLine = edge.len - CAR_LEN - 5;
+        if (!edge.ring) {
+          if (!this.isGreen(edge)) {
+            const remain = stopLine - car.pos;
+            if (remain < 110) want = Math.min(want, edge.spd * Math.max(0, remain / 110));
+            if (remain < 9) want = 0;
+          }
+          if (edge.yieldAtEnd && !this.canEnterRoundabout(edge)) {
+            const remain = stopLine - car.pos;
+            if (remain < 82) want = Math.min(want, edge.spd * Math.max(0, remain / 82));
+            if (remain < 8) want = 0;
+          }
+          if (car.nextEdge && this.isBlocked(car.nextEdge)) {
+            const remain = stopLine - car.pos;
+            if (remain < 82) want = Math.min(want, edge.spd * Math.max(0, remain / 82));
+            if (remain < 8) want = 0;
+          }
+        }
+
+        if (!car.nextEdge) want = Math.min(want, 10);
+
+        if (car.spd < want) car.spd = Math.min(want, car.spd + ACCEL * dt);
+        else car.spd = Math.max(want, car.spd - BRAKE * dt);
+        if (want === 0 && car.spd < 0.4) car.spd = 0;
+
+        car.pos += car.spd * dt;
+        if (car.pos >= edge.len) {
+          if ((!this.isGreen(edge) || (edge.yieldAtEnd && !this.canEnterRoundabout(edge))) && !edge.ring) {
+            car.pos = stopLine;
+            car.spd = 0;
+            continue;
+          }
+          const next = car.nextEdge || this.chooseNextEdge(car);
+          if (!next) {
+            car.pos = stopLine;
+            car.spd = 0;
+            continue;
+          }
+          edge.cars.splice(i, 1);
+          const overflow = car.pos - edge.len;
+          car.prevEdgeId = edge.id;
+          car.edge = next;
+          car.nextEdge = this.chooseNextEdge(car);
+          car.pos = Math.max(0, Math.min(overflow, next.len * 0.16));
+          car.spd = Math.min(car.spd, next.spd);
+          next.cars.push(car);
+        }
+      }
+    }
+  }
+
+  updateStats() {
+    document.getElementById("st-cars").textContent = this.cars.length;
+    document.getElementById("st-inc").textContent = this.incidents.length;
+    if (!this.cars.length) {
+      document.getElementById("st-spd").textContent = "0";
+      document.getElementById("st-jam").textContent = "0";
+      return;
+    }
+    let total = 0;
+    let jam = 0;
+    for (const car of this.cars) {
+      total += car.spd;
+      if (car.spd < car.edge.spd * 0.22) jam++;
+    }
+    document.getElementById("st-spd").textContent = (total / this.cars.length).toFixed(0);
+    document.getElementById("st-jam").textContent = Math.round(jam / this.cars.length * 100);
+  }
+
+  laneOffset(edge) {
+    if (edge.ring) return { x: 0, y: 0 };
+    const width = edge.type === "highway" ? 16 : edge.type === "ramp" ? 9 : 8;
+    return { x: -edge.ny * width, y: edge.nx * width };
+  }
+
+  drawEdge(edge) {
+    const ctx = this.ctx;
+    const scale = this.scale;
+    const from = N[edge.f];
+    const to = N[edge.t];
+    const off = this.laneOffset(edge);
+    const x1 = (from.x + off.x) * this.sx;
+    const y1 = (from.y + off.y) * this.sy;
+    const x2 = (to.x + off.x) * this.sx;
+    const y2 = (to.y + off.y) * this.sy;
+
+    const outer = edge.type === "highway" ? 28 : edge.ring ? 20 : edge.type === "ramp" ? 18 : 16;
+    const inner = edge.type === "highway" ? 20 : edge.ring ? 14 : edge.type === "ramp" ? 12 : 10;
+
+    ctx.lineCap = "round";
+    ctx.strokeStyle = edge.type === "highway" ? "#1b2230" : edge.ring ? "#1a2f22" : "#1b2230";
+    ctx.lineWidth = outer * scale;
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+
+    ctx.strokeStyle = edge.type === "highway" ? "#36435b" : edge.ring ? "#29503a" : edge.type === "ramp" ? "#3a4b65" : "#314056";
+    ctx.lineWidth = inner * scale;
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+
+    if (!edge.ring) {
+      ctx.strokeStyle = "rgba(255,255,255,0.14)";
+      ctx.lineWidth = 1.8 * scale;
+      ctx.setLineDash([10 * scale, 12 * scale]);
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    if (this.isBlocked(edge)) {
+      ctx.strokeStyle = "rgba(255,88,88,0.6)";
+      ctx.lineWidth = 7 * scale;
+      ctx.setLineDash([10 * scale, 7 * scale]);
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+  }
+
+  render() {
+    const ctx = this.ctx;
+    const W = this.cv.width;
+    const H = this.cv.height;
+    const scale = this.scale;
+    ctx.fillStyle = "#0d1118";
+    ctx.fillRect(0, 0, W, H);
+
+    for (const edge of this.edges) this.drawEdge(edge);
+
+    ctx.strokeStyle = "#2f5740";
+    ctx.lineWidth = 3 * scale;
+    ctx.beginPath();
+    ctx.arc(rb.cx * this.sx, rb.cy * this.sy, rb.r * this.scale, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.fillStyle = "#132117";
+    ctx.beginPath();
+    ctx.arc(rb.cx * this.sx, rb.cy * this.sy, rb.r * 0.55 * this.scale, 0, Math.PI * 2);
+    ctx.fill();
+
+    for (const [id, light] of Object.entries(this.lights)) {
+      const n = N[id];
+      const x = n.x * this.sx;
+      const y = n.y * this.sy;
+      const r = 4.5 * scale;
+      ctx.strokeStyle = "#4c5668";
+      ctx.lineWidth = 1.3 * scale;
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(x, y - 15 * scale);
+      ctx.stroke();
+      ctx.fillStyle = light.phase === 0 ? "#43f57e" : "#ff4e4e";
+      ctx.beginPath();
+      ctx.arc(x - 8 * scale, y - 10 * scale, r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = light.phase === 1 ? "#43f57e" : "#ff4e4e";
+      ctx.beginPath();
+      ctx.arc(x + 8 * scale, y - 10 * scale, r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    const carW = 12 * scale;
+    const carH = 6.8 * scale;
+    for (const car of this.cars) {
+      const edge = car.edge;
+      const off = this.laneOffset(edge);
+      const from = N[edge.f];
+      const t = car.pos / edge.len;
+      const cx = (from.x + off.x + edge.dx * t) * this.sx;
+      const cy = (from.y + off.y + edge.dy * t) * this.sy;
+      const ratio = edge.spd ? car.spd / edge.spd : 0;
+      const color = ratio < 0.14 ? "#ff4d4d" : ratio < 0.35 ? "#ffb34d" : car.baseColor;
+
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(edge.angle);
+      ctx.fillStyle = color;
+      ctx.fillRect(-carW / 2, -carH / 2, carW, carH);
+      ctx.fillStyle = "rgba(255,255,255,0.22)";
+      ctx.fillRect(-carW * 0.08, -carH * 0.3, carW * 0.32, carH * 0.6);
+      ctx.restore();
+    }
+
+    ctx.fillStyle = "rgba(10,14,22,0.8)";
+    ctx.fillRect(16, H - 74, 250, 58);
+    ctx.font = `${11 * scale}px sans-serif`;
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    const legend = [
+      ["#36435b", "Highway"],
+      ["#314056", "Street"],
+      ["#29503a", "Roundabout"],
+      ["#ff4d4d", "Stopped traffic"]
+    ];
+    legend.forEach(([color, label], i) => {
+      ctx.fillStyle = color;
+      ctx.fillRect(26, H - 63 + i * 13, 22, 8);
+      ctx.fillStyle = "#9eacc1";
+      ctx.fillText(label, 56, H - 59 + i * 13);
+    });
+  }
+}
+
+const sim = new Sim();
+</script>
+</body>
+</html>

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dré Foreman · SoundCloud</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#111;--panel:#1a1a1a;--card:#222;--border:#333;
+  --orange:#ff5500;--purple:#b366ff;--text:#fff;--dim:#aaa;
+}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;}
+
+header{
+  background:linear-gradient(135deg,rgba(255,85,0,.12),rgba(179,102,255,.12));
+  border-bottom:2px solid var(--border);
+  padding:36px 20px 28px;text-align:center;
+}
+header h1{font-size:2rem;font-weight:700;background:linear-gradient(90deg,var(--orange),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+header p{color:var(--dim);margin-top:6px;font-size:.95rem;}
+header .meta{display:flex;justify-content:center;gap:24px;margin-top:14px;font-size:.85rem;color:var(--dim);}
+header .meta span{border:1px solid var(--border);padding:3px 12px;border-radius:20px;}
+
+.controls{
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  padding:14px 24px;background:var(--panel);border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:10;
+}
+.controls input{
+  flex:1;min-width:180px;background:#111;border:1px solid var(--border);color:var(--text);
+  padding:7px 14px;border-radius:20px;font-size:.85rem;outline:none;
+}
+.controls input:focus{border-color:var(--orange);}
+.badge{font-size:.78rem;color:var(--dim);white-space:nowrap;}
+.sort-btn{background:none;border:1px solid var(--border);color:var(--dim);padding:4px 12px;border-radius:12px;cursor:pointer;font-size:.78rem;transition:.15s;}
+.sort-btn.active,.sort-btn:hover{border-color:var(--orange);color:var(--orange);}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+  gap:1px;background:var(--border);
+  padding:0;
+}
+.card{
+  background:var(--card);padding:0;overflow:hidden;
+  display:flex;flex-direction:column;
+  transition:background .15s;
+}
+.card:hover{background:#2a2a2a;}
+.card-title{
+  padding:10px 14px 4px;font-size:.9rem;font-weight:600;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  color:var(--text);
+}
+.card-plays{padding:0 14px 8px;font-size:.75rem;color:var(--dim);}
+.card iframe{width:100%;border:none;display:block;}
+
+footer{text-align:center;padding:28px;color:var(--dim);font-size:.8rem;border-top:1px solid var(--border);}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Dré Foreman</h1>
+  <p>London, Canada · SoundCloud</p>
+  <div class="meta">
+    <span>71 tracks</span>
+    <span>6 followers</span>
+    <span>I love making beats what can i say.</span>
+  </div>
+</header>
+
+<div class="controls">
+  <input type="text" id="search" placeholder="Search tracks…" oninput="filterTracks()">
+  <span class="badge" id="count-badge">70 tracks</span>
+  <button class="sort-btn active" id="sort-alpha" onclick="sortTracks('alpha')">A–Z</button>
+  <button class="sort-btn" id="sort-plays" onclick="sortTracks('plays')">Most Played</button>
+  <button class="sort-btn" id="sort-default" onclick="sortTracks('default')">Latest</button>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<footer>Dré Foreman on SoundCloud · <a href="https://soundcloud.com/dr-foreman" target="_blank" style="color:var(--orange)">soundcloud.com/dr-foreman</a></footer>
+
+<script>
+const TRACKS = [
+  {title:"Warren Dre Sauli Powell 2.0", slug:"warren-dre-sauli-powell-3", plays:463},
+  {title:"play boi powie", slug:"play-boi-powie", plays:9},
+  {title:"Balls Out", slug:"balls-out", plays:21},
+  {title:"Sampled Siren", slug:"sampled-siren", plays:18},
+  {title:"Barton Test", slug:"barton-test", plays:25},
+  {title:"Plug it in", slug:"plug-it-in", plays:11},
+  {title:"One Of My Best Beats", slug:"one-of-my-best-beats", plays:25},
+  {title:"Arcade Game Sound", slug:"arcade-game-sound", plays:43},
+  {title:"Yams", slug:"yams", plays:12},
+  {title:"My Day Off", slug:"my-day-off", plays:7},
+  {title:"Good Drama", slug:"good-drama", plays:7},
+  {title:"Foolishness", slug:"foolishness", plays:11},
+  {title:"Schools Out", slug:"schools-out", plays:18},
+  {title:"Oh Shmuck Yes", slug:"oh-shmuck-yes", plays:9},
+  {title:"LOTTA TIME", slug:"lotta-time", plays:9},
+  {title:"Children Flyin", slug:"children-flyin", plays:10},
+  {title:"20 Minute Walk", slug:"20-minute-walk", plays:10},
+  {title:"Two Pink Hearts", slug:"two-pink-hearts", plays:18},
+  {title:"Toughy Pal", slug:"toughy-pal", plays:8},
+  {title:"Another Doug", slug:"another-doug", plays:7},
+  {title:"Proper English", slug:"proper-english", plays:24},
+  {title:"Koolio", slug:"koolio", plays:37},
+  {title:"Debt Collector", slug:"debt-collector", plays:7},
+  {title:"Up Too Late", slug:"up-too-late", plays:7},
+  {title:"Doity Spoit", slug:"doity-spoit", plays:4},
+  {title:"Malato", slug:"malato", plays:11},
+  {title:"The Salo's", slug:"the-salos", plays:3},
+  {title:"Dawkness", slug:"dawkness", plays:4},
+  {title:"Nyoom", slug:"nyoom", plays:29},
+  {title:"Uncle Ruckus", slug:"uncle-ruckus", plays:30},
+  {title:"S-S-S-S-S-S", slug:"s-s-s-s-s-s", plays:4},
+  {title:"Naughty Blue", slug:"naughty-blue", plays:4},
+  {title:"Go In On It Boi", slug:"go-in-on-it-boi", plays:12},
+  {title:"Radge Boy Piano", slug:"radge-boy-piano", plays:3},
+  {title:"It's A Murder", slug:"its-a-murder", plays:11},
+  {title:"Nose Blow", slug:"nose-blow", plays:9},
+  {title:"Reverse ERIF", slug:"reverse-erif", plays:5},
+  {title:"Funky Lil Samaple", slug:"funky-lil-samaple", plays:1},
+  {title:"State Championship", slug:"state-championship", plays:4},
+  {title:"Bingo Event", slug:"bingo-event", plays:6},
+  {title:"Spooked Ya", slug:"spooked-ya", plays:77},
+  {title:"LOVER BEAT", slug:"lover-beat", plays:13},
+  {title:"Angels", slug:"angels", plays:5},
+  {title:"Vitamin C", slug:"minors", plays:5},
+  {title:"All Aboard Feels", slug:"all-aboard-feels", plays:8},
+  {title:"No Sample Damn Son", slug:"no-sample-damn-son", plays:15},
+  {title:"Very Interesting", slug:"very-interesting", plays:5},
+  {title:"You Know", slug:"you-know-1", plays:2},
+  {title:"Switchup", slug:"switchup", plays:2},
+  {title:"Rascal", slug:"rascal", plays:5},
+  {title:"Pretty Heavy", slug:"pretty-heavy", plays:5},
+  {title:"Mummified (PROD BY DNUTTYS)", slug:"mummified-prod-by-dnuttys", plays:3},
+  {title:"Strike (PROD BY DNUTTYS)", slug:"strike-prod-by-dnuttys", plays:3},
+  {title:"Banapa Banapa (PROD BY DNUTTYS)", slug:"banapa-banapa", plays:7},
+  {title:"Shuttle Run (PROD BY DNUTTYS)", slug:"shuttle-run", plays:18},
+  {title:"Youthful Banger (PROD BY DNUTTYS)", slug:"youthful-banger", plays:12},
+  {title:"Teach Me Howta (PROD BY DNUTTYS)", slug:"teach-me-howta", plays:4},
+  {title:"Polar Loving (PROD BY DNUTTYS)", slug:"polar-loving", plays:5},
+  {title:"Ferda Bugle (PROD BY DNUTTYS)", slug:"ferda-bugle", plays:11},
+  {title:"Konratina (PROD BY DNUTTYS)", slug:"konratina", plays:8},
+  {title:"THE FECTS (PROD BY DNUTTYS)", slug:"the-fects", plays:3},
+  {title:"Punch Rack (PROD BY DNUTTYS)", slug:"punch-rack", plays:4},
+  {title:"Manda Will Hurt You (PROD BY DNUTTYS)", slug:"manda-will-hurt-you-prod-by-dnuttys", plays:9},
+  {title:"Gaining Knowledge (PROD BY DNUTTYS)", slug:"gaining-knowledge", plays:2},
+  {title:"FL Studio Virginity (PROD BY DNUTTYS)", slug:"fl-studio-virginity", plays:3},
+  {title:"Trample Steam (PROD BY DNUTTYS)", slug:"trample-steam", plays:4},
+  {title:"Free Hearts (PROD BY DNUTTYS)", slug:"free-hearts", plays:9},
+  {title:"ISSA TRAP (PROD BY DNUTTYS)", slug:"issa-trap", plays:5},
+  {title:"Cream Soda (PROD BY DNUTTYS)", slug:"cream-soda", plays:5},
+  {title:"Crazy Deluxe (PROD BY DNUTTYS)", slug:"crazy-deluxe", plays:4},
+  {title:"Trap Gamer (PROD BY DNUTTYS)", slug:"trap-gamer", plays:13},
+];
+
+let sorted = [...TRACKS];
+let currentSort = 'default';
+
+function embedUrl(slug){
+  return `https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/dr-foreman/${slug}&color=%23ff5500&auto_play=false&hide_related=true&show_comments=false&show_user=false&show_reposts=false&show_teaser=false`;
+}
+
+function renderGrid(list){
+  const grid = document.getElementById('grid');
+  grid.innerHTML = list.map(t => `
+    <div class="card" data-title="${t.title.toLowerCase()}">
+      <div class="card-title" title="${t.title}">${t.title}</div>
+      <div class="card-plays">▶ ${t.plays.toLocaleString()} plays</div>
+      <iframe scrolling="no" frameborder="no" allow="autoplay"
+        src="${embedUrl(t.slug)}"
+        height="80"></iframe>
+    </div>
+  `).join('');
+  document.getElementById('count-badge').textContent = list.length + ' tracks';
+}
+
+function filterTracks(){
+  const q = document.getElementById('search').value.toLowerCase();
+  const filtered = sorted.filter(t => t.title.toLowerCase().includes(q));
+  renderGrid(filtered);
+}
+
+function sortTracks(mode){
+  currentSort = mode;
+  document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('sort-'+mode).classList.add('active');
+  if(mode === 'alpha') sorted = [...TRACKS].sort((a,b) => a.title.localeCompare(b.title));
+  else if(mode === 'plays') sorted = [...TRACKS].sort((a,b) => b.plays - a.plays);
+  else sorted = [...TRACKS];
+  filterTracks();
+}
+
+// Initial render
+renderGrid(sorted);
+</script>
+</body>
+</html>

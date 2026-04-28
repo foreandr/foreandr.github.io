@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Checkers · AI Solved</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root{--bg:#0a0a0f;--card:#16161f;--border:#2a2a3a;--text:#e8e8f0;--muted:#6b6b8a;--accent:#ef4444;--green:#10b981;}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;min-height:100vh;}
+    nav{background:rgba(10,10,15,.95);border-bottom:1px solid var(--border);padding:0 32px;height:56px;display:flex;align-items:center;justify-content:space-between;}
+    nav a{color:var(--muted);text-decoration:none;font-size:.875rem;}nav a:hover{color:var(--text);}
+    nav .title{color:var(--text);font-weight:700;font-size:1rem;}
+    .layout{max-width:1050px;margin:0 auto;padding:32px 20px;display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:start;}
+    h1{font-size:1.75rem;font-weight:800;letter-spacing:-.03em;margin-bottom:6px;}
+    .sub{color:var(--muted);font-size:.875rem;margin-bottom:16px;}
+    .game-col{display:flex;flex-direction:column;align-items:center;gap:14px;}
+    canvas{border:3px solid #3a1a0a;border-radius:10px;cursor:pointer;display:block;}
+    .status{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 18px;text-align:center;width:100%;}
+    .status .turn{font-size:.95rem;font-weight:700;}.status .hint{font-size:.78rem;color:var(--muted);margin-top:3px;}
+    .score-row{display:flex;gap:16px;align-items:center;}
+    .sbox{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 20px;text-align:center;}
+    .sbox .lbl{font-size:.65rem;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:3px;}
+    .sbox .val{font-size:1.4rem;font-weight:800;}
+    .controls{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;}
+    button{padding:8px 14px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:.8125rem;font-weight:600;cursor:pointer;transition:all .15s;}
+    button:hover{border-color:var(--accent);color:var(--accent);}
+    button.primary{background:var(--accent);border-color:var(--accent);color:#fff;}
+    button.primary:hover{background:#dc2626;}
+    .sidebar{display:flex;flex-direction:column;gap:12px;}
+    .panel{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;}
+    .panel h3{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:10px;}
+    .stat-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);font-size:.8125rem;}
+    .stat-row:last-child{border-bottom:none;}
+    .sv{font-weight:700;}.sv.green{color:var(--green);}.sv.red{color:var(--accent);}
+    .algo-info{font-size:.78rem;color:var(--muted);line-height:1.8;}.algo-info b{color:var(--text);}
+    .log{max-height:180px;overflow-y:auto;font-size:.75rem;line-height:1.9;color:var(--muted);}
+    @media(max-width:700px){.layout{grid-template-columns:1fr;}canvas{max-width:95vw;}}
+  </style>
+</head>
+<body>
+<nav>
+  <a href="index.html">← Solved Games</a>
+  <span class="title">Checkers</span>
+  <a href="../../index.html">Home</a>
+</nav>
+<div class="layout">
+  <div class="game-col">
+    <div style="text-align:center">
+      <h1>Checkers</h1>
+      <p class="sub">Alpha-Beta Minimax · King mobility + capture heuristics · <span style="color:var(--accent);font-weight:600">AI Solver</span></p>
+    </div>
+    <div class="score-row">
+      <div class="sbox"><div class="lbl">Red (You)</div><div class="val" style="color:#ef4444" id="sc-red">12</div></div>
+      <div style="font-size:.8rem;color:var(--muted)">vs</div>
+      <div class="sbox"><div class="lbl">Black (AI)</div><div class="val" style="color:#aaa" id="sc-black">12</div></div>
+    </div>
+    <div class="status"><div class="turn" id="status-turn">Your turn — You are Red</div><div class="hint" id="status-hint">Click a piece to select, then click destination</div></div>
+    <canvas id="canvas" width="440" height="440"></canvas>
+    <div class="controls">
+      <button class="primary" onclick="resetGame()">New Game</button>
+      <button onclick="aiDoMove()">AI Move Now</button>
+      <button onclick="autoPlay()">Auto-Play Game</button>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;font-size:.8rem;color:var(--muted)">
+      <span>Depth:</span>
+      <input type="range" id="depth-sl" min="2" max="7" value="5" step="1" style="accent-color:var(--accent)" oninput="document.getElementById('depth-lbl').textContent=this.value">
+      <span id="depth-lbl">5</span>
+      <span style="margin-left:12px">Speed:</span>
+      <input type="range" id="speed-sl" min="100" max="1000" value="400" step="100" style="accent-color:var(--accent)" oninput="document.getElementById('speed-lbl').textContent=this.value+'ms'">
+      <span id="speed-lbl">400ms</span>
+    </div>
+  </div>
+  <div class="sidebar">
+    <div class="panel">
+      <h3>Session Stats</h3>
+      <div class="stat-row"><span>Games</span><span class="sv" id="st-g">0</span></div>
+      <div class="stat-row"><span>Red Wins</span><span class="sv green" id="st-rw">0</span></div>
+      <div class="stat-row"><span>Black Wins</span><span class="sv red" id="st-bw">0</span></div>
+      <div class="stat-row"><span>Draws</span><span class="sv" id="st-d">0</span></div>
+      <div class="stat-row"><span>Nodes Eval</span><span class="sv" id="nodes">0</span></div>
+    </div>
+    <div class="panel">
+      <h3>Algorithm</h3>
+      <div class="algo-info">
+        <b>Algorithm:</b> Minimax + Alpha-Beta<br>
+        <b>Eval:</b> Pieces + kings×1.5 + back-row<br>
+        <b>Mobility bonus:</b> Available moves<br>
+        <b>King weight:</b> 1.5× normal piece<br>
+        <b>Back-row bonus:</b> +0.5 per piece<br>
+        <b>Forced capture:</b> Mandatory jumps<br>
+        <b>Multi-jump:</b> Chain captures allowed
+      </div>
+    </div>
+    <div class="panel">
+      <h3>Move Log</h3>
+      <div class="log" id="move-log"><span style="color:var(--muted)">No moves.</span></div>
+    </div>
+  </div>
+</div>
+<script>
+// 8x8 checkers. Board: 0=empty, 1=red, 2=black, 3=red king, 4=black king
+const SZ=8,CELL=55;
+const RED=1,BLK=2,RKING=3,BKING=4;
+let board,currentPlayer,selected,validMoves,gameOver,autoTimer,nodesEval;
+let stats={g:0,rw:0,bw:0,d:0};
+
+function isRed(p){return p===RED||p===RKING;}
+function isBlack(p){return p===BLK||p===BKING;}
+function isKing(p){return p===RKING||p===BKING;}
+function playerOf(p){return isRed(p)?RED:isBlack(p)?BLK:0;}
+function makeKing(p,r){return (isRed(p)&&r===0)?RKING:(isBlack(p)&&r===7)?BKING:p;}
+function getDepth(){return parseInt(document.getElementById('depth-sl').value);}
+function getSpeed(){return parseInt(document.getElementById('speed-sl').value);}
+
+function resetGame(){
+  clearTimeout(autoTimer);
+  board=Array.from({length:SZ},()=>Array(SZ).fill(0));
+  // Place pieces
+  for(let r=0;r<3;r++)for(let c=0;c<SZ;c++)if((r+c)%2===1)board[r][c]=BLK;
+  for(let r=5;r<SZ;r++)for(let c=0;c<SZ;c++)if((r+c)%2===1)board[r][c]=RED;
+  currentPlayer=RED;selected=null;validMoves=[];gameOver=false;nodesEval=0;
+  document.getElementById('move-log').innerHTML='';
+  draw();updateStatus();updateCounts();
+}
+
+function getMoves(b,player){
+  const captures=[],moves=[];
+  for(let r=0;r<SZ;r++)for(let c=0;c<SZ;c++){
+    const p=b[r][c];if(!p||playerOf(p)!==player)continue;
+    const dirs=[];
+    if(isRed(p)||isKing(p))dirs.push([-1,-1],[-1,1]);
+    if(isBlack(p)||isKing(p))dirs.push([1,-1],[1,1]);
+    for(const[dr,dc]of dirs){
+      const nr=r+dr,nc=c+dc;
+      if(nr<0||nr>=SZ||nc<0||nc>=SZ)continue;
+      if(!b[nr][nc])moves.push({from:[r,c],to:[nr,nc],captures:[]});
+      else if(playerOf(b[nr][nc])!==player){
+        const jr=nr+dr,jc=nc+dc;
+        if(jr>=0&&jr<SZ&&jc>=0&&jc<SZ&&!b[jr][jc])captures.push({from:[r,c],to:[jr,jc],captured:[nr,nc],captures:[[nr,nc]]});
+      }
+    }
+  }
+  // Multi-jump
+  if(captures.length>0){
+    const all=[...captures];
+    for(const cap of captures){
+      const nb=applyMove(b,cap);
+      const chained=getJumps(nb,cap.to,playerOf(b[cap.from[0]][cap.from[1]]),cap.captures);
+      chained.forEach(c2=>all.push({from:cap.from,to:c2.to,captures:cap.captures.concat(c2.captures)}));
+    }
+    return all;
+  }
+  return moves;
+}
+
+function getJumps(b,from,player,prev){
+  const p=b[from[0]][from[1]];if(!p)return[];
+  const dirs=[];
+  if(isRed(p)||isKing(p))dirs.push([-1,-1],[-1,1]);
+  if(isBlack(p)||isKing(p))dirs.push([1,-1],[1,1]);
+  const jumps=[];
+  for(const[dr,dc]of dirs){
+    const[r,c]=from;const nr=r+dr,nc=c+dc;
+    if(nr<0||nr>=SZ||nc<0||nc>=SZ)continue;
+    const key=`${nr},${nc}`;
+    if(b[nr][nc]&&playerOf(b[nr][nc])!==player&&!prev.some(([pr,pc])=>pr===nr&&pc===nc)){
+      const jr=nr+dr,jc=nc+dc;
+      if(jr>=0&&jr<SZ&&jc>=0&&jc<SZ&&!b[jr][jc]){
+        jumps.push({to:[jr,jc],captures:[[nr,nc]]});
+      }
+    }
+  }
+  return jumps;
+}
+
+function applyMove(b,move){
+  const nb=b.map(r=>[...r]);
+  const[fr,fc]=move.from,[tr,tc]=move.to;
+  nb[tr][tc]=makeKing(nb[fr][fc],tr);nb[fr][fc]=0;
+  (move.captures||[]).forEach(([cr,cc])=>{nb[cr][cc]=0;});
+  return nb;
+}
+
+function evalBoard(b,forPlayer){
+  nodesEval++;
+  let s=0;
+  const opp=forPlayer===RED?BLK:RED;
+  for(let r=0;r<SZ;r++)for(let c=0;c<SZ;c++){
+    const p=b[r][c];if(!p)continue;
+    let val=isKing(p)?1.5:1;
+    // Back row bonus
+    if(p===RED&&r===7)val+=0.3;
+    if(p===BLK&&r===0)val+=0.3;
+    if(playerOf(p)===forPlayer)s+=val;else s-=val;
+  }
+  // Mobility
+  const myM=getMoves(b,forPlayer).length;const opM=getMoves(b,opp).length;
+  s+=0.05*(myM-opM);
+  return s;
+}
+
+function minimax(b,depth,alpha,beta,isMax,aiP){
+  const moves=getMoves(b,isMax?aiP:3-aiP+1===2?2:1);
+  if(depth===0||moves.length===0)return evalBoard(b,aiP);
+  if(isMax){
+    let best=-Infinity;
+    for(const m of moves){const nb=applyMove(b,m);best=Math.max(best,minimax(nb,depth-1,alpha,beta,false,aiP));alpha=Math.max(alpha,best);if(beta<=alpha)break;}
+    return best;
+  }else{
+    let best=Infinity;
+    for(const m of moves){const nb=applyMove(b,m);best=Math.min(best,minimax(nb,depth-1,alpha,beta,true,aiP));beta=Math.min(beta,best);if(beta<=alpha)break;}
+    return best;
+  }
+}
+
+function getBestMoveAI(b,aiP){
+  nodesEval=0;
+  const moves=getMoves(b,aiP);if(!moves.length)return null;
+  let best=null,bestS=-Infinity;
+  for(const m of moves){
+    const nb=applyMove(b,m);
+    const s=minimax(nb,getDepth()-1,-Infinity,Infinity,false,aiP);
+    if(s>bestS){bestS=s;best=m;}
+  }
+  return best;
+}
+
+// Canvas rendering
+const canvas=document.getElementById('canvas');
+const ctx=canvas.getContext('2d');
+
+function draw(preview=null){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  for(let r=0;r<SZ;r++)for(let c=0;c<SZ;c++){
+    ctx.fillStyle=(r+c)%2===0?'#c8a97a':'#7a4f28';
+    ctx.fillRect(c*CELL,r*CELL,CELL,CELL);
+  }
+  // Highlights
+  if(selected){
+    const[sr,sc]=selected;
+    ctx.fillStyle='rgba(255,255,0,0.3)';ctx.fillRect(sc*CELL,sr*CELL,CELL,CELL);
+    validMoves.forEach(m=>{const[tr,tc]=m.to;ctx.fillStyle='rgba(0,255,100,0.35)';ctx.fillRect(tc*CELL,tr*CELL,CELL,CELL);});
+  }
+  // Pieces
+  for(let r=0;r<SZ;r++)for(let c=0;c<SZ;c++){
+    const p=board[r][c];if(!p)continue;
+    const x=c*CELL+CELL/2,y=r*CELL+CELL/2,rad=CELL/2-5;
+    ctx.beginPath();ctx.arc(x,y,rad,0,Math.PI*2);
+    ctx.fillStyle=isRed(p)?'#ef4444':'#222';ctx.fill();
+    ctx.strokeStyle=isRed(p)?'#dc2626':'#555';ctx.lineWidth=2;ctx.stroke();
+    if(isKing(p)){ctx.fillStyle='#ffd700';ctx.font=`bold ${Math.floor(rad)}px sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('♛',x,y);}
+  }
+}
+
+canvas.addEventListener('click',e=>{
+  if(gameOver||currentPlayer!==RED)return;
+  const rect=canvas.getBoundingClientRect();
+  const c=Math.floor((e.clientX-rect.left)/CELL),r=Math.floor((e.clientY-rect.top)/CELL);
+  if(selected){
+    const move=validMoves.find(m=>m.to[0]===r&&m.to[1]===c);
+    if(move){doMove(move);return;}
+  }
+  const p=board[r][c];
+  if(p&&playerOf(p)===RED){
+    selected=[r,c];
+    const all=getMoves(board,RED);
+    validMoves=all.filter(m=>m.from[0]===r&&m.from[1]===c);
+    draw();
+  }else{selected=null;validMoves=[];draw();}
+});
+
+function doMove(move){
+  board=applyMove(board,move);
+  const[tr,tc]=move.to;
+  logMove(currentPlayer,move);
+  selected=null;validMoves=[];
+  updateCounts();
+  const oppMoves=getMoves(board,currentPlayer===RED?BLK:RED);
+  if(!oppMoves.length||(board.flat().every(p=>!isRed(p))||board.flat().every(p=>!isBlack(p)))){
+    endGame();return;
+  }
+  currentPlayer=currentPlayer===RED?BLK:RED;
+  draw();updateStatus();
+  if(currentPlayer===BLK&&!gameOver)setTimeout(()=>aiDoMove(),getSpeed());
+}
+
+function aiDoMove(){
+  if(gameOver)return;
+  const m=getBestMoveAI(board,BLK);
+  document.getElementById('nodes').textContent=nodesEval.toLocaleString();
+  if(!m){endGame();return;}
+  doMove(m);
+}
+
+function endGame(){
+  gameOver=true;
+  const reds=board.flat().filter(p=>isRed(p)).length;
+  const blks=board.flat().filter(p=>isBlack(p)).length;
+  stats.g++;
+  let msg;
+  if(reds>blks){stats.rw++;msg='🎉 Red Wins!';}
+  else if(blks>reds){stats.bw++;msg='🤖 Black Wins!';}
+  else{stats.d++;msg='🤝 Draw!';}
+  document.getElementById('status-turn').textContent=msg;
+  document.getElementById('status-hint').textContent=`Red: ${reds} pieces | Black: ${blks} pieces`;
+  document.getElementById('st-g').textContent=stats.g;
+  document.getElementById('st-rw').textContent=stats.rw;
+  document.getElementById('st-bw').textContent=stats.bw;
+  document.getElementById('st-d').textContent=stats.d;
+  draw();
+}
+
+function updateStatus(){
+  if(gameOver)return;
+  document.getElementById('status-turn').textContent=currentPlayer===RED?'Your turn — Red':'AI thinking — Black';
+  document.getElementById('status-hint').textContent=currentPlayer===RED?'Click a red piece, then click destination':'Calculating best capture/move...';
+}
+
+function updateCounts(){
+  document.getElementById('sc-red').textContent=board.flat().filter(p=>isRed(p)).length;
+  document.getElementById('sc-black').textContent=board.flat().filter(p=>isBlack(p)).length;
+}
+
+function logMove(player,move){
+  const el=document.getElementById('move-log');
+  if(el.querySelector('span'))el.innerHTML='';
+  const d=document.createElement('div');
+  const cols='ABCDEFGH';
+  d.style.color=player===RED?'#ef4444':'#aaa';
+  const cap=move.captures&&move.captures.length>0?` (captured ${move.captures.length})`:'';
+  d.textContent=`${player===RED?'Red':'Black'}: ${cols[move.from[1]]}${8-move.from[0]} → ${cols[move.to[1]]}${8-move.to[0]}${cap}`;
+  el.appendChild(d);el.scrollTop=el.scrollHeight;
+}
+
+async function autoPlay(){
+  clearTimeout(autoTimer);
+  if(gameOver)resetGame();
+  let safety=0;
+  while(!gameOver&&safety<300){safety++;
+    if(currentPlayer===RED){const m=getBestMoveAI(board,RED);if(!m){endGame();break;}doMove(m);}
+    else{const m=getBestMoveAI(board,BLK);if(!m){endGame();break;}doMove(m);}
+    draw();updateCounts();
+    await new Promise(r=>setTimeout(r,getSpeed()));
+  }
+}
+
+resetGame();
+</script>
+</body>
+</html>

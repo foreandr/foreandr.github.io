@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="UTF-8">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { overflow:hidden; background:#fff; font-family:system-ui,sans-serif; }
+.hint { position:fixed; bottom:10px; left:12px; font-size:11px; color:#aaa; pointer-events:none; line-height:1.8; }
+.layer-ui { position:fixed; top:10px; right:12px; display:flex; align-items:center; gap:6px; font-size:12px; color:#555; z-index:10; }
+.layer-btn { width:26px; height:26px; border:1px solid #ccc; background:#f5f5f5; border-radius:5px; cursor:pointer; font-size:15px; display:flex; align-items:center; justify-content:center; }
+.layer-btn:hover { background:#eee; }
+.layer-val { font-weight:600; color:#222; min-width:40px; text-align:center; }
+</style>
+</head><body>
+<div class="hint">
+  Click · place/erase block<br>
+  Right-drag · orbit &amp; pan<br>
+  Scroll · zoom<br>
+  [ ] or buttons · change layer
+</div>
+<div class="layer-ui">
+  <button class="layer-btn" id="layerDown">−</button>
+  <span class="layer-val" id="layerVal">Layer 0</span>
+  <button class="layer-btn" id="layerUp">+</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+<script>
+const N = 10;
+const S = 50;
+let activeLayer = 0;
+const cells = new Set();
+
+// Ghost cell position
+let ghostX = -1, ghostY = -1;
+
+function cellKey(x,y,z) { return `${x},${y},${z}`; }
+
+function setLayer(l) {
+  activeLayer = Math.max(0, Math.min(N-1, l));
+  document.getElementById('layerVal').textContent = 'Layer ' + activeLayer;
+}
+
+document.getElementById('layerDown').onclick = () => setLayer(activeLayer - 1);
+document.getElementById('layerUp').onclick   = () => setLayer(activeLayer + 1);
+
+function setup() {
+  createCanvas(windowWidth, windowHeight, WEBGL);
+  smooth();
+}
+
+function draw() {
+  background(255);
+  // Right-drag only for orbit (button 2)
+  orbitControl(2, 2, 0.5);
+
+  // Translate so grid is centred
+  translate(-N*S/2, -N*S/2, -N*S/2);
+
+  // ── GRID LINES ────────────────────────────────────────────────────────────
+  for (let i = 0; i <= N; i++) {
+    for (let j = 0; j <= N; j++) {
+      // Active layer lines darker
+      const onActive = (j === activeLayer || j === activeLayer+1);
+      stroke(onActive ? 120 : 210);
+      strokeWeight(onActive ? 1.5 : 0.8);
+      line(0, j*S, i*S,   N*S, j*S, i*S); // X-parallel (varying Y,Z)
+      line(i*S, j*S, 0,   i*S, j*S, N*S); // Z-parallel
+      line(i*S, 0, j*S,   i*S, N*S, j*S); // Y-parallel
+    }
+  }
+
+  // ── PLACED BLOCKS ─────────────────────────────────────────────────────────
+  noStroke();
+  fill(17, 17, 17);
+  for (const k of cells) {
+    const [x,y,z] = k.split(',').map(Number);
+    push();
+    translate((x+0.5)*S, (y+0.5)*S, (z+0.5)*S);
+    box(S * 0.88);
+    pop();
+  }
+
+  // ── GHOST BLOCK ───────────────────────────────────────────────────────────
+  if (ghostX >= 0 && ghostY >= 0) {
+    push();
+    translate((ghostX+0.5)*S, (activeLayer+0.5)*S, (ghostY+0.5)*S);
+    fill(99, 102, 241, 100);
+    noStroke();
+    box(S * 0.88);
+    pop();
+  }
+}
+
+// ── CLICK TO PLACE ────────────────────────────────────────────────────────────
+// p5's mouseClicked fires for all buttons; filter to left-click only
+function mouseClicked() {
+  if (mouseButton !== LEFT) return;
+  // Convert screen click to grid cell on active layer
+  // Use p5's screenX/screenY → world via inverse projection
+  // Simplest: raycast against Y = activeLayer plane
+  const hit = raycastLayer();
+  if (!hit) return;
+  const k = cellKey(hit.x, activeLayer, hit.z);
+  if (cells.has(k)) cells.delete(k);
+  else cells.add(k);
+}
+
+function mouseMoved() { updateGhost(); }
+function mouseDragged() { updateGhost(); }
+
+function updateGhost() {
+  const hit = raycastLayer();
+  if (hit) { ghostX = hit.x; ghostY = hit.z; }
+  else { ghostX = -1; ghostY = -1; }
+}
+
+function raycastLayer() {
+  // Build a ray from camera through mouse and intersect Y = (activeLayer+0.5)*S plane
+  // p5 WEBGL stores camera in _renderer.uMVMatrix / _renderer._curCamera
+  // Use the p5 camera object
+  const cam = _renderer._curCamera;
+  if (!cam) return null;
+
+  // Camera position in world (p5 WEBGL uses Z-up convention internally but we work in the translated space)
+  // Use ported approach: map mouse to NDC, unproject two points
+  const cw = width, ch = height;
+  const nx = (mouseX / cw) * 2 - 1;
+  const ny = -((mouseY / ch) * 2 - 1);
+
+  // Get inverse of projection * view
+  const proj = cam.projMatrix.mat4;
+  const view = cam.cameraMatrix.mat4;
+
+  // Build near/far points in NDC and unproject
+  function unproject(ndcX, ndcY, ndcZ) {
+    // Build combined PV matrix and invert
+    const pv = multiplyMat4(proj, view);
+    const inv = invertMat4(pv);
+    if (!inv) return null;
+    const v = [ndcX, ndcY, ndcZ, 1];
+    const out = mulMat4Vec(inv, v);
+    if (out[3] === 0) return null;
+    return { x: out[0]/out[3], y: out[1]/out[3], z: out[2]/out[3] };
+  }
+
+  const near = unproject(nx, ny, -1);
+  const far  = unproject(nx, ny,  1);
+  if (!near || !far) return null;
+
+  // Intersect ray with plane worldY = (activeLayer + 0.5)*S - N*S/2
+  const targetY = (activeLayer + 0.5) * S - N * S / 2;
+  const dy = far.y - near.y;
+  if (Math.abs(dy) < 0.0001) return null;
+  const t = (targetY - near.y) / dy;
+  if (t < 0) return null;
+
+  const wx = near.x + t * (far.x - near.x);
+  const wz = near.z + t * (far.z - near.z);
+
+  // Convert back to grid coords
+  const gx = Math.floor((wx + N*S/2) / S);
+  const gz = Math.floor((wz + N*S/2) / S);
+
+  if (gx < 0 || gx >= N || gz < 0 || gz >= N) return null;
+  return { x: gx, z: gz };
+}
+
+// ── MATRIX HELPERS ────────────────────────────────────────────────────────────
+function multiplyMat4(a, b) {
+  const out = new Float32Array(16);
+  for (let r = 0; r < 4; r++)
+    for (let c = 0; c < 4; c++)
+      for (let k = 0; k < 4; k++)
+        out[r*4+c] += a[r*4+k] * b[k*4+c];
+  return out;
+}
+
+function invertMat4(m) {
+  const inv = new Float32Array(16);
+  inv[0]  =  m[5]*m[10]*m[15] - m[5]*m[11]*m[14] - m[9]*m[6]*m[15] + m[9]*m[7]*m[14] + m[13]*m[6]*m[11] - m[13]*m[7]*m[10];
+  inv[4]  = -m[4]*m[10]*m[15] + m[4]*m[11]*m[14] + m[8]*m[6]*m[15] - m[8]*m[7]*m[14] - m[12]*m[6]*m[11] + m[12]*m[7]*m[10];
+  inv[8]  =  m[4]*m[9]*m[15]  - m[4]*m[11]*m[13] - m[8]*m[5]*m[15] + m[8]*m[7]*m[13] + m[12]*m[5]*m[11] - m[12]*m[7]*m[9];
+  inv[12] = -m[4]*m[9]*m[14]  + m[4]*m[10]*m[13] + m[8]*m[5]*m[14] - m[8]*m[6]*m[13] - m[12]*m[5]*m[10] + m[12]*m[6]*m[9];
+  inv[1]  = -m[1]*m[10]*m[15] + m[1]*m[11]*m[14] + m[9]*m[2]*m[15] - m[9]*m[3]*m[14] - m[13]*m[2]*m[11] + m[13]*m[3]*m[10];
+  inv[5]  =  m[0]*m[10]*m[15] - m[0]*m[11]*m[14] - m[8]*m[2]*m[15] + m[8]*m[3]*m[14] + m[12]*m[2]*m[11] - m[12]*m[3]*m[10];
+  inv[9]  = -m[0]*m[9]*m[15]  + m[0]*m[11]*m[13] + m[8]*m[1]*m[15] - m[8]*m[3]*m[13] - m[12]*m[1]*m[11] + m[12]*m[3]*m[9];
+  inv[13] =  m[0]*m[9]*m[14]  - m[0]*m[10]*m[13] - m[8]*m[1]*m[14] + m[8]*m[2]*m[13] + m[12]*m[1]*m[10] - m[12]*m[2]*m[9];
+  inv[2]  =  m[1]*m[6]*m[15]  - m[1]*m[7]*m[14]  - m[5]*m[2]*m[15] + m[5]*m[3]*m[14] + m[13]*m[2]*m[7]  - m[13]*m[3]*m[6];
+  inv[6]  = -m[0]*m[6]*m[15]  + m[0]*m[7]*m[14]  + m[4]*m[2]*m[15] - m[4]*m[3]*m[14] - m[12]*m[2]*m[7]  + m[12]*m[3]*m[6];
+  inv[10] =  m[0]*m[5]*m[15]  - m[0]*m[7]*m[13]  - m[4]*m[1]*m[15] + m[4]*m[3]*m[13] + m[12]*m[1]*m[7]  - m[12]*m[3]*m[5];
+  inv[14] = -m[0]*m[5]*m[14]  + m[0]*m[6]*m[13]  + m[4]*m[1]*m[14] - m[4]*m[2]*m[13] - m[12]*m[1]*m[6]  + m[12]*m[2]*m[5];
+  inv[3]  = -m[1]*m[6]*m[11]  + m[1]*m[7]*m[10]  + m[5]*m[2]*m[11] - m[5]*m[3]*m[10] - m[9]*m[2]*m[7]   + m[9]*m[3]*m[6];
+  inv[7]  =  m[0]*m[6]*m[11]  - m[0]*m[7]*m[10]  - m[4]*m[2]*m[11] + m[4]*m[3]*m[10] + m[8]*m[2]*m[7]   - m[8]*m[3]*m[6];
+  inv[11] = -m[0]*m[5]*m[11]  + m[0]*m[7]*m[9]   + m[4]*m[1]*m[11] - m[4]*m[3]*m[9]  - m[8]*m[1]*m[7]   + m[8]*m[3]*m[5];
+  inv[15] =  m[0]*m[5]*m[10]  - m[0]*m[6]*m[9]   - m[4]*m[1]*m[10] + m[4]*m[2]*m[9]  + m[8]*m[1]*m[6]   - m[8]*m[2]*m[5];
+  let det = m[0]*inv[0] + m[1]*inv[4] + m[2]*inv[8] + m[3]*inv[12];
+  if (det === 0) return null;
+  det = 1 / det;
+  for (let i = 0; i < 16; i++) inv[i] *= det;
+  return inv;
+}
+
+function mulMat4Vec(m, v) {
+  return [
+    m[0]*v[0]+m[1]*v[1]+m[2]*v[2]+m[3]*v[3],
+    m[4]*v[0]+m[5]*v[1]+m[6]*v[2]+m[7]*v[3],
+    m[8]*v[0]+m[9]*v[1]+m[10]*v[2]+m[11]*v[3],
+    m[12]*v[0]+m[13]*v[1]+m[14]*v[2]+m[15]*v[3]
+  ];
+}
+
+window.addEventListener('keydown', e => {
+  if (e.key === '[') setLayer(activeLayer - 1);
+  if (e.key === ']') setLayer(activeLayer + 1);
+});
+
+function windowResized() { resizeCanvas(windowWidth, windowHeight); }
+</script>
+</body></html>

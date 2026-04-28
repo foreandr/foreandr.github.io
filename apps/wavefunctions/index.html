@@ -1,0 +1,1367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wavefunctions – Periodic Table</title>
+<link rel="icon" type="image/x-icon" href="../../images.ico">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d1117;
+    --panel: #161b22;
+    --panel2: #1c2128;
+    --border: #30363d;
+    --accent: #58a6ff;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --s-block: #1a3a5c;
+    --s-border: #2f6fb5;
+    --p-block: #1a3d1a;
+    --p-border: #2e7d32;
+    --d-block: #3d2a00;
+    --d-border: #b05a00;
+    --f-block: #2d1a3d;
+    --f-border: #7b2fbe;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  body.panel-open {
+    overflow: hidden;
+  }
+
+  #back-btn {
+    position: fixed;
+    top: 12px;
+    left: 14px;
+    z-index: 1000;
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    padding: 6px 12px;
+    border-radius: 6px;
+    transition: background 0.15s;
+  }
+  #back-btn:hover { background: var(--panel2); }
+
+  h1.site-title {
+    text-align: center;
+    padding: 14px 0 6px;
+    font-size: 18px;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+    font-weight: 700;
+  }
+  .subtitle {
+    text-align: center;
+    color: var(--muted);
+    font-size: 12px;
+    margin-bottom: 10px;
+  }
+
+  /* ── Periodic Table ── */
+  #pt-wrap {
+    overflow-x: auto;
+    padding: 6px 16px 0;
+    display: flex;
+    justify-content: center;
+    transition: padding 0.3s cubic-bezier(0.4,0,0.2,1), justify-content 0.3s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  #periodic-table {
+    display: grid;
+    grid-template-columns: repeat(18, 42px);
+    grid-template-rows: repeat(9, 42px);
+    gap: 2px;
+  }
+
+  .element-cell {
+    width: 42px;
+    height: 42px;
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: transform 0.12s, border-color 0.12s, box-shadow 0.12s;
+    position: relative;
+    user-select: none;
+  }
+  .element-cell:hover {
+    transform: scale(1.15);
+    z-index: 10;
+    box-shadow: 0 0 8px rgba(88, 166, 255, 0.5);
+    border-color: var(--accent) !important;
+  }
+  .element-cell.selected {
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 2px var(--accent), 0 0 12px rgba(88,166,255,0.6);
+    transform: scale(1.1);
+    z-index: 5;
+  }
+  .cell-z {
+    font-size: 7.5px;
+    color: #aaa;
+    line-height: 1;
+    align-self: flex-start;
+    padding-left: 3px;
+  }
+  .cell-sym {
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.1;
+  }
+  .cell-name {
+    font-size: 5.5px;
+    color: #bbb;
+    line-height: 1;
+    max-width: 40px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .block-s { background: var(--s-block); border-color: var(--s-border); }
+  .block-p { background: var(--p-block); border-color: var(--p-border); }
+  .block-d { background: var(--d-block); border-color: var(--d-border); }
+  .block-f { background: var(--f-block); border-color: var(--f-border); }
+
+  /* gap row marker */
+  .gap-label {
+    grid-column: 1 / 4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    color: var(--muted);
+    font-style: italic;
+  }
+
+  /* ── Legend ── */
+  #legend {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    margin: 8px 0 6px;
+    flex-wrap: wrap;
+  }
+  .leg-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .leg-swatch {
+    width: 14px; height: 14px;
+    border-radius: 3px;
+    border: 1px solid #555;
+  }
+
+  /* ── Right Panel ── */
+  #info-panel {
+    position: fixed;
+    top: 0; right: 0;
+    width: min(480px, 100vw);
+    height: 100vh;
+    background: var(--panel);
+    border-left: 1px solid var(--border);
+    transform: translateX(100%);
+    transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+    z-index: 500;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  #info-panel.open { transform: translateX(0); }
+
+  #panel-close {
+    position: absolute;
+    top: 10px; right: 12px;
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 22px;
+    cursor: pointer;
+    line-height: 1;
+    z-index: 10;
+  }
+  #panel-close:hover { color: var(--text); }
+
+  #panel-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 18px 30px;
+  }
+
+  /* Element header */
+  #el-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 18px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  #el-symbol-big {
+    font-size: 48px;
+    font-weight: 900;
+    line-height: 1;
+    min-width: 60px;
+    text-align: center;
+  }
+  #el-info h2 { font-size: 20px; margin-bottom: 2px; }
+  #el-info .el-z { color: var(--muted); font-size: 13px; }
+  #el-config {
+    margin-top: 4px;
+    font-size: 13px;
+    color: var(--accent);
+    font-family: monospace;
+  }
+
+  /* Section card */
+  .section-card {
+    background: var(--panel2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 14px;
+    margin-bottom: 14px;
+  }
+  .section-card h3 {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  /* KaTeX display */
+  .eq-block {
+    overflow-x: auto;
+    padding: 6px 0;
+    font-size: 13px;
+  }
+
+  /* Quantum numbers table */
+  #qnum-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    margin-top: 6px;
+  }
+  #qnum-table th {
+    text-align: left;
+    color: var(--muted);
+    padding: 3px 6px;
+    border-bottom: 1px solid var(--border);
+    font-weight: 600;
+  }
+  #qnum-table td {
+    padding: 4px 6px;
+    color: var(--text);
+  }
+  #qnum-table td:first-child { color: var(--accent); }
+
+  /* Energy */
+  #energy-display {
+    font-size: 14px;
+    margin-top: 6px;
+  }
+  #energy-display .energy-val {
+    color: #f0c040;
+    font-weight: 700;
+    font-size: 18px;
+  }
+  #zeff-display { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+  /* Canvas */
+  #orbital-canvas {
+    display: block;
+    width: 100%;
+    height: 320px;
+    border-radius: 6px;
+    background: #0a0e14;
+    cursor: grab;
+    touch-action: none;
+  }
+  #orbital-canvas:active { cursor: grabbing; }
+  #canvas-label {
+    text-align: center;
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+  #canvas-loading {
+    text-align: center;
+    color: var(--muted);
+    font-size: 12px;
+    padding: 10px 0;
+  }
+  @media (min-width: 1200px) {
+    body.panel-open #back-btn {
+      left: auto;
+      right: 14px;
+    }
+    body.panel-open #pt-wrap {
+      justify-content: flex-end;
+      padding-left: clamp(760px, 59vw, 1120px);
+      padding-right: 24px;
+    }
+    #info-panel {
+      left: 0;
+      right: auto;
+      width: clamp(720px, 56vw, 1080px);
+      border-left: none;
+      border-right: 1px solid var(--border);
+      transform: translateX(-100%);
+    }
+    #panel-scroll {
+      padding: 28px 28px 40px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 18px;
+      align-content: start;
+    }
+    #el-header,
+    .section-card:last-child {
+      grid-column: 1 / -1;
+    }
+    .section-card {
+      padding: 18px 18px;
+      margin-bottom: 0;
+      border-radius: 12px;
+    }
+    .section-card h3 {
+      font-size: 13px;
+      margin-bottom: 12px;
+    }
+    .eq-block {
+      font-size: 15px;
+    }
+    #qnum-table {
+      font-size: 13px;
+    }
+    #energy-display {
+      font-size: 16px;
+      margin-top: 10px;
+    }
+    #energy-display .energy-val {
+      font-size: 24px;
+    }
+    #orbital-canvas {
+      height: min(62vh, 760px);
+      min-height: 500px;
+    }
+    #canvas-label {
+      font-size: 12px;
+      margin-top: 8px;
+    }
+  }
+  @media (max-width: 768px) {
+    #orbital-canvas {
+      height: 280px;
+    }
+  }
+
+  /* Plain-English gloss text */
+  .gloss {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 6px;
+    line-height: 1.5;
+  }
+  .gloss strong { color: #c9d1d9; }
+
+  /* Quantum numbers table tweaks */
+  #qnum-table td.qval { color: var(--accent); font-weight: 700; font-family: monospace; }
+  #qnum-table td.qmeaning { color: var(--muted); font-size: 11px; }
+
+  /* Energy row */
+  #energy-display {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+  #energy-display .energy-label { font-size: 13px; color: var(--muted); }
+
+  /* Canvas bar */
+  #canvas-hint {
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 6px;
+    text-align: center;
+    line-height: 1.5;
+  }
+  #canvas-hint span { color: #58a6ff; }
+  #canvas-hint span.neg { color: #f85149; }
+</style>
+</head>
+<body>
+
+<a id="back-btn" href="../../index.html">← Back</a>
+
+<h1 class="site-title">Wavefunctions</h1>
+<p class="subtitle">Click any element to explore its outermost electron orbital</p>
+
+<div id="pt-wrap">
+  <div id="periodic-table"></div>
+</div>
+
+<div id="legend">
+  <div class="leg-item"><div class="leg-swatch" style="background:var(--s-block);border-color:var(--s-border)"></div>s-block</div>
+  <div class="leg-item"><div class="leg-swatch" style="background:var(--p-block);border-color:var(--p-border)"></div>p-block</div>
+  <div class="leg-item"><div class="leg-swatch" style="background:var(--d-block);border-color:var(--d-border)"></div>d-block</div>
+  <div class="leg-item"><div class="leg-swatch" style="background:var(--f-block);border-color:var(--f-border)"></div>f-block</div>
+</div>
+
+<!-- Right panel -->
+<div id="info-panel">
+  <button id="panel-close" title="Close">×</button>
+  <div id="panel-scroll">
+    <div id="el-header">
+      <div id="el-symbol-big">–</div>
+      <div id="el-info">
+        <h2 id="el-name">—</h2>
+        <div class="el-z" id="el-z">Z = —</div>
+        <div id="el-config">—</div>
+      </div>
+    </div>
+
+    <!-- Schrödinger equation -->
+    <div class="section-card">
+      <h3>Wave Equation</h3>
+      <div class="eq-block" id="schrodinger-eq"></div>
+      <div class="gloss">The Schrödinger equation — solving it gives the wavefunction ψ, whose square |ψ|² tells you the probability of finding the electron at each point in space.</div>
+    </div>
+
+    <!-- Wavefunction -->
+    <div class="section-card">
+      <h3>Wavefunction — Outermost Orbital</h3>
+      <div class="eq-block" id="radial-eq"></div>
+      <div class="eq-block" id="angular-eq"></div>
+      <table id="qnum-table">
+        <thead><tr><th>Number</th><th>Value</th><th>Meaning</th></tr></thead>
+        <tbody id="qnum-body"></tbody>
+      </table>
+    </div>
+
+    <!-- Energy -->
+    <div class="section-card">
+      <h3>Orbital Energy</h3>
+      <div class="eq-block" id="energy-eq"></div>
+      <div id="energy-display">
+        <span class="energy-label">E =</span>
+        <span class="energy-val" id="energy-val">—</span>
+        <span class="energy-label">eV</span>
+      </div>
+      <div id="zeff-display"></div>
+    </div>
+
+    <!-- 3D orbital -->
+    <div class="section-card">
+      <h3>Electron Cloud</h3>
+      <div id="canvas-loading">Computing orbital…</div>
+      <canvas id="orbital-canvas" width="440" height="280" style="display:none"></canvas>
+      <div id="canvas-label"></div>
+      <div id="canvas-hint">Drag to rotate &nbsp;·&nbsp; <span>blue dots</span> = positive phase &nbsp;·&nbsp; <span class="neg">red dots</span> = negative phase</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// ELEMENT DATA: all 118 elements
+// ═══════════════════════════════════════════════════════════════
+const ELEMENTS = [
+  {Z:1,  sym:'H',  name:'Hydrogen',      config:'1s¹',                    block:'s', group:1,  period:1},
+  {Z:2,  sym:'He', name:'Helium',        config:'1s²',                    block:'s', group:18, period:1},
+  {Z:3,  sym:'Li', name:'Lithium',       config:'[He] 2s¹',               block:'s', group:1,  period:2},
+  {Z:4,  sym:'Be', name:'Beryllium',     config:'[He] 2s²',               block:'s', group:2,  period:2},
+  {Z:5,  sym:'B',  name:'Boron',         config:'[He] 2s² 2p¹',           block:'p', group:13, period:2},
+  {Z:6,  sym:'C',  name:'Carbon',        config:'[He] 2s² 2p²',           block:'p', group:14, period:2},
+  {Z:7,  sym:'N',  name:'Nitrogen',      config:'[He] 2s² 2p³',           block:'p', group:15, period:2},
+  {Z:8,  sym:'O',  name:'Oxygen',        config:'[He] 2s² 2p⁴',           block:'p', group:16, period:2},
+  {Z:9,  sym:'F',  name:'Fluorine',      config:'[He] 2s² 2p⁵',           block:'p', group:17, period:2},
+  {Z:10, sym:'Ne', name:'Neon',          config:'[He] 2s² 2p⁶',           block:'p', group:18, period:2},
+  {Z:11, sym:'Na', name:'Sodium',        config:'[Ne] 3s¹',               block:'s', group:1,  period:3},
+  {Z:12, sym:'Mg', name:'Magnesium',     config:'[Ne] 3s²',               block:'s', group:2,  period:3},
+  {Z:13, sym:'Al', name:'Aluminum',      config:'[Ne] 3s² 3p¹',           block:'p', group:13, period:3},
+  {Z:14, sym:'Si', name:'Silicon',       config:'[Ne] 3s² 3p²',           block:'p', group:14, period:3},
+  {Z:15, sym:'P',  name:'Phosphorus',    config:'[Ne] 3s² 3p³',           block:'p', group:15, period:3},
+  {Z:16, sym:'S',  name:'Sulfur',        config:'[Ne] 3s² 3p⁴',           block:'p', group:16, period:3},
+  {Z:17, sym:'Cl', name:'Chlorine',      config:'[Ne] 3s² 3p⁵',           block:'p', group:17, period:3},
+  {Z:18, sym:'Ar', name:'Argon',         config:'[Ne] 3s² 3p⁶',           block:'p', group:18, period:3},
+  {Z:19, sym:'K',  name:'Potassium',     config:'[Ar] 4s¹',               block:'s', group:1,  period:4},
+  {Z:20, sym:'Ca', name:'Calcium',       config:'[Ar] 4s²',               block:'s', group:2,  period:4},
+  {Z:21, sym:'Sc', name:'Scandium',      config:'[Ar] 3d¹ 4s²',           block:'d', group:3,  period:4},
+  {Z:22, sym:'Ti', name:'Titanium',      config:'[Ar] 3d² 4s²',           block:'d', group:4,  period:4},
+  {Z:23, sym:'V',  name:'Vanadium',      config:'[Ar] 3d³ 4s²',           block:'d', group:5,  period:4},
+  {Z:24, sym:'Cr', name:'Chromium',      config:'[Ar] 3d⁵ 4s¹',           block:'d', group:6,  period:4},
+  {Z:25, sym:'Mn', name:'Manganese',     config:'[Ar] 3d⁵ 4s²',           block:'d', group:7,  period:4},
+  {Z:26, sym:'Fe', name:'Iron',          config:'[Ar] 3d⁶ 4s²',           block:'d', group:8,  period:4},
+  {Z:27, sym:'Co', name:'Cobalt',        config:'[Ar] 3d⁷ 4s²',           block:'d', group:9,  period:4},
+  {Z:28, sym:'Ni', name:'Nickel',        config:'[Ar] 3d⁸ 4s²',           block:'d', group:10, period:4},
+  {Z:29, sym:'Cu', name:'Copper',        config:'[Ar] 3d¹⁰ 4s¹',          block:'d', group:11, period:4},
+  {Z:30, sym:'Zn', name:'Zinc',          config:'[Ar] 3d¹⁰ 4s²',          block:'d', group:12, period:4},
+  {Z:31, sym:'Ga', name:'Gallium',       config:'[Ar] 3d¹⁰ 4s² 4p¹',      block:'p', group:13, period:4},
+  {Z:32, sym:'Ge', name:'Germanium',     config:'[Ar] 3d¹⁰ 4s² 4p²',      block:'p', group:14, period:4},
+  {Z:33, sym:'As', name:'Arsenic',       config:'[Ar] 3d¹⁰ 4s² 4p³',      block:'p', group:15, period:4},
+  {Z:34, sym:'Se', name:'Selenium',      config:'[Ar] 3d¹⁰ 4s² 4p⁴',      block:'p', group:16, period:4},
+  {Z:35, sym:'Br', name:'Bromine',       config:'[Ar] 3d¹⁰ 4s² 4p⁵',      block:'p', group:17, period:4},
+  {Z:36, sym:'Kr', name:'Krypton',       config:'[Ar] 3d¹⁰ 4s² 4p⁶',      block:'p', group:18, period:4},
+  {Z:37, sym:'Rb', name:'Rubidium',      config:'[Kr] 5s¹',               block:'s', group:1,  period:5},
+  {Z:38, sym:'Sr', name:'Strontium',     config:'[Kr] 5s²',               block:'s', group:2,  period:5},
+  {Z:39, sym:'Y',  name:'Yttrium',       config:'[Kr] 4d¹ 5s²',           block:'d', group:3,  period:5},
+  {Z:40, sym:'Zr', name:'Zirconium',     config:'[Kr] 4d² 5s²',           block:'d', group:4,  period:5},
+  {Z:41, sym:'Nb', name:'Niobium',       config:'[Kr] 4d⁴ 5s¹',           block:'d', group:5,  period:5},
+  {Z:42, sym:'Mo', name:'Molybdenum',    config:'[Kr] 4d⁵ 5s¹',           block:'d', group:6,  period:5},
+  {Z:43, sym:'Tc', name:'Technetium',    config:'[Kr] 4d⁵ 5s²',           block:'d', group:7,  period:5},
+  {Z:44, sym:'Ru', name:'Ruthenium',     config:'[Kr] 4d⁷ 5s¹',           block:'d', group:8,  period:5},
+  {Z:45, sym:'Rh', name:'Rhodium',       config:'[Kr] 4d⁸ 5s¹',           block:'d', group:9,  period:5},
+  {Z:46, sym:'Pd', name:'Palladium',     config:'[Kr] 4d¹⁰',              block:'d', group:10, period:5},
+  {Z:47, sym:'Ag', name:'Silver',        config:'[Kr] 4d¹⁰ 5s¹',          block:'d', group:11, period:5},
+  {Z:48, sym:'Cd', name:'Cadmium',       config:'[Kr] 4d¹⁰ 5s²',          block:'d', group:12, period:5},
+  {Z:49, sym:'In', name:'Indium',        config:'[Kr] 4d¹⁰ 5s² 5p¹',      block:'p', group:13, period:5},
+  {Z:50, sym:'Sn', name:'Tin',           config:'[Kr] 4d¹⁰ 5s² 5p²',      block:'p', group:14, period:5},
+  {Z:51, sym:'Sb', name:'Antimony',      config:'[Kr] 4d¹⁰ 5s² 5p³',      block:'p', group:15, period:5},
+  {Z:52, sym:'Te', name:'Tellurium',     config:'[Kr] 4d¹⁰ 5s² 5p⁴',      block:'p', group:16, period:5},
+  {Z:53, sym:'I',  name:'Iodine',        config:'[Kr] 4d¹⁰ 5s² 5p⁵',      block:'p', group:17, period:5},
+  {Z:54, sym:'Xe', name:'Xenon',         config:'[Kr] 4d¹⁰ 5s² 5p⁶',      block:'p', group:18, period:5},
+  {Z:55, sym:'Cs', name:'Cesium',        config:'[Xe] 6s¹',               block:'s', group:1,  period:6},
+  {Z:56, sym:'Ba', name:'Barium',        config:'[Xe] 6s²',               block:'s', group:2,  period:6},
+  {Z:57, sym:'La', name:'Lanthanum',     config:'[Xe] 5d¹ 6s²',           block:'d', group:3,  period:6},
+  {Z:58, sym:'Ce', name:'Cerium',        config:'[Xe] 4f¹ 5d¹ 6s²',       block:'f', group:4,  period:6},
+  {Z:59, sym:'Pr', name:'Praseodymium',  config:'[Xe] 4f³ 6s²',           block:'f', group:5,  period:6},
+  {Z:60, sym:'Nd', name:'Neodymium',     config:'[Xe] 4f⁴ 6s²',           block:'f', group:6,  period:6},
+  {Z:61, sym:'Pm', name:'Promethium',    config:'[Xe] 4f⁵ 6s²',           block:'f', group:7,  period:6},
+  {Z:62, sym:'Sm', name:'Samarium',      config:'[Xe] 4f⁶ 6s²',           block:'f', group:8,  period:6},
+  {Z:63, sym:'Eu', name:'Europium',      config:'[Xe] 4f⁷ 6s²',           block:'f', group:9,  period:6},
+  {Z:64, sym:'Gd', name:'Gadolinium',    config:'[Xe] 4f⁷ 5d¹ 6s²',       block:'f', group:10, period:6},
+  {Z:65, sym:'Tb', name:'Terbium',       config:'[Xe] 4f⁹ 6s²',           block:'f', group:11, period:6},
+  {Z:66, sym:'Dy', name:'Dysprosium',    config:'[Xe] 4f¹⁰ 6s²',          block:'f', group:12, period:6},
+  {Z:67, sym:'Ho', name:'Holmium',       config:'[Xe] 4f¹¹ 6s²',          block:'f', group:13, period:6},
+  {Z:68, sym:'Er', name:'Erbium',        config:'[Xe] 4f¹² 6s²',          block:'f', group:14, period:6},
+  {Z:69, sym:'Tm', name:'Thulium',       config:'[Xe] 4f¹³ 6s²',          block:'f', group:15, period:6},
+  {Z:70, sym:'Yb', name:'Ytterbium',     config:'[Xe] 4f¹⁴ 6s²',          block:'f', group:16, period:6},
+  {Z:71, sym:'Lu', name:'Lutetium',      config:'[Xe] 4f¹⁴ 5d¹ 6s²',      block:'d', group:17, period:6},
+  {Z:72, sym:'Hf', name:'Hafnium',       config:'[Xe] 4f¹⁴ 5d² 6s²',      block:'d', group:4,  period:6},
+  {Z:73, sym:'Ta', name:'Tantalum',      config:'[Xe] 4f¹⁴ 5d³ 6s²',      block:'d', group:5,  period:6},
+  {Z:74, sym:'W',  name:'Tungsten',      config:'[Xe] 4f¹⁴ 5d⁴ 6s²',      block:'d', group:6,  period:6},
+  {Z:75, sym:'Re', name:'Rhenium',       config:'[Xe] 4f¹⁴ 5d⁵ 6s²',      block:'d', group:7,  period:6},
+  {Z:76, sym:'Os', name:'Osmium',        config:'[Xe] 4f¹⁴ 5d⁶ 6s²',      block:'d', group:8,  period:6},
+  {Z:77, sym:'Ir', name:'Iridium',       config:'[Xe] 4f¹⁴ 5d⁷ 6s²',      block:'d', group:9,  period:6},
+  {Z:78, sym:'Pt', name:'Platinum',      config:'[Xe] 4f¹⁴ 5d⁹ 6s¹',      block:'d', group:10, period:6},
+  {Z:79, sym:'Au', name:'Gold',          config:'[Xe] 4f¹⁴ 5d¹⁰ 6s¹',     block:'d', group:11, period:6},
+  {Z:80, sym:'Hg', name:'Mercury',       config:'[Xe] 4f¹⁴ 5d¹⁰ 6s²',     block:'d', group:12, period:6},
+  {Z:81, sym:'Tl', name:'Thallium',      config:'[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p¹', block:'p', group:13, period:6},
+  {Z:82, sym:'Pb', name:'Lead',          config:'[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p²', block:'p', group:14, period:6},
+  {Z:83, sym:'Bi', name:'Bismuth',       config:'[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p³', block:'p', group:15, period:6},
+  {Z:84, sym:'Po', name:'Polonium',      config:'[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p⁴', block:'p', group:16, period:6},
+  {Z:85, sym:'At', name:'Astatine',      config:'[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p⁵', block:'p', group:17, period:6},
+  {Z:86, sym:'Rn', name:'Radon',         config:'[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p⁶', block:'p', group:18, period:6},
+  {Z:87, sym:'Fr', name:'Francium',      config:'[Rn] 7s¹',               block:'s', group:1,  period:7},
+  {Z:88, sym:'Ra', name:'Radium',        config:'[Rn] 7s²',               block:'s', group:2,  period:7},
+  {Z:89, sym:'Ac', name:'Actinium',      config:'[Rn] 6d¹ 7s²',           block:'d', group:3,  period:7},
+  {Z:90, sym:'Th', name:'Thorium',       config:'[Rn] 6d² 7s²',           block:'f', group:4,  period:7},
+  {Z:91, sym:'Pa', name:'Protactinium',  config:'[Rn] 5f² 6d¹ 7s²',       block:'f', group:5,  period:7},
+  {Z:92, sym:'U',  name:'Uranium',       config:'[Rn] 5f³ 6d¹ 7s²',       block:'f', group:6,  period:7},
+  {Z:93, sym:'Np', name:'Neptunium',     config:'[Rn] 5f⁴ 6d¹ 7s²',       block:'f', group:7,  period:7},
+  {Z:94, sym:'Pu', name:'Plutonium',     config:'[Rn] 5f⁶ 7s²',           block:'f', group:8,  period:7},
+  {Z:95, sym:'Am', name:'Americium',     config:'[Rn] 5f⁷ 7s²',           block:'f', group:9,  period:7},
+  {Z:96, sym:'Cm', name:'Curium',        config:'[Rn] 5f⁷ 6d¹ 7s²',       block:'f', group:10, period:7},
+  {Z:97, sym:'Bk', name:'Berkelium',     config:'[Rn] 5f⁹ 7s²',           block:'f', group:11, period:7},
+  {Z:98, sym:'Cf', name:'Californium',   config:'[Rn] 5f¹⁰ 7s²',          block:'f', group:12, period:7},
+  {Z:99, sym:'Es', name:'Einsteinium',   config:'[Rn] 5f¹¹ 7s²',          block:'f', group:13, period:7},
+  {Z:100,sym:'Fm', name:'Fermium',       config:'[Rn] 5f¹² 7s²',          block:'f', group:14, period:7},
+  {Z:101,sym:'Md', name:'Mendelevium',   config:'[Rn] 5f¹³ 7s²',          block:'f', group:15, period:7},
+  {Z:102,sym:'No', name:'Nobelium',      config:'[Rn] 5f¹⁴ 7s²',          block:'f', group:16, period:7},
+  {Z:103,sym:'Lr', name:'Lawrencium',    config:'[Rn] 5f¹⁴ 7s² 7p¹',      block:'d', group:17, period:7},
+  {Z:104,sym:'Rf', name:'Rutherfordium', config:'[Rn] 5f¹⁴ 6d² 7s²',      block:'d', group:4,  period:7},
+  {Z:105,sym:'Db', name:'Dubnium',       config:'[Rn] 5f¹⁴ 6d³ 7s²',      block:'d', group:5,  period:7},
+  {Z:106,sym:'Sg', name:'Seaborgium',    config:'[Rn] 5f¹⁴ 6d⁴ 7s²',      block:'d', group:6,  period:7},
+  {Z:107,sym:'Bh', name:'Bohrium',       config:'[Rn] 5f¹⁴ 6d⁵ 7s²',      block:'d', group:7,  period:7},
+  {Z:108,sym:'Hs', name:'Hassium',       config:'[Rn] 5f¹⁴ 6d⁶ 7s²',      block:'d', group:8,  period:7},
+  {Z:109,sym:'Mt', name:'Meitnerium',    config:'[Rn] 5f¹⁴ 6d⁷ 7s²',      block:'d', group:9,  period:7},
+  {Z:110,sym:'Ds', name:'Darmstadtium',  config:'[Rn] 5f¹⁴ 6d⁸ 7s²',      block:'d', group:10, period:7},
+  {Z:111,sym:'Rg', name:'Roentgenium',   config:'[Rn] 5f¹⁴ 6d¹⁰ 7s¹',     block:'d', group:11, period:7},
+  {Z:112,sym:'Cn', name:'Copernicium',   config:'[Rn] 5f¹⁴ 6d¹⁰ 7s²',     block:'d', group:12, period:7},
+  {Z:113,sym:'Nh', name:'Nihonium',      config:'[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p¹', block:'p', group:13, period:7},
+  {Z:114,sym:'Fl', name:'Flerovium',     config:'[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p²', block:'p', group:14, period:7},
+  {Z:115,sym:'Mc', name:'Moscovium',     config:'[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p³', block:'p', group:15, period:7},
+  {Z:116,sym:'Lv', name:'Livermorium',   config:'[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p⁴', block:'p', group:16, period:7},
+  {Z:117,sym:'Ts', name:'Tennessine',    config:'[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p⁵', block:'p', group:17, period:7},
+  {Z:118,sym:'Og', name:'Oganesson',     config:'[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p⁶', block:'p', group:18, period:7},
+];
+
+// Grid positions [row, col] (1-indexed)
+// Standard layout: periods 1-7, groups 1-18
+// Lanthanides row 8, Actinides row 9 (separated)
+function getGridPos(el) {
+  const Z = el.Z;
+  // Special placements
+  if (Z === 1)  return [1, 1];
+  if (Z === 2)  return [1, 18];
+  if (Z >= 3  && Z <= 4)  return [2, Z - 2];
+  if (Z >= 5  && Z <= 10) return [2, Z + 8];
+  if (Z >= 11 && Z <= 12) return [3, Z - 10];
+  if (Z >= 13 && Z <= 18) return [3, Z];
+  if (Z >= 19 && Z <= 36) return [4, Z - 18];
+  if (Z >= 37 && Z <= 54) return [5, Z - 36];
+  if (Z >= 55 && Z <= 56) return [6, Z - 54];
+  // La-Lu: 57 goes row 6 col 3, then 58-71 → lanthanide row 8
+  if (Z === 57) return [6, 3];
+  if (Z >= 58 && Z <= 71) return [8, Z - 54]; // row 8, cols 4..17 (lanthanides)
+  if (Z >= 72 && Z <= 86) return [6, Z - 68];
+  if (Z >= 87 && Z <= 88) return [7, Z - 86];
+  if (Z === 89) return [7, 3];
+  if (Z >= 90 && Z <= 103) return [9, Z - 86]; // row 9, actinides
+  if (Z >= 104 && Z <= 118) return [7, Z - 100];
+  return [1,1];
+}
+
+// ═══════════════════════════════════════════════════════════════
+// OUTERMOST ORBITAL INFO per element
+// Returns {n, l, m, subshell}
+// ═══════════════════════════════════════════════════════════════
+function getOutermostOrbital(el) {
+  const Z = el.Z;
+  // Map to outermost electron {n, l, m}
+  // l: 0=s, 1=p, 2=d, 3=f
+  const orbitals = [
+    // H, He
+    {n:1,l:0,m:0}, // 1  H
+    {n:1,l:0,m:0}, // 2  He
+    // Li-Ne (2s, 2p)
+    {n:2,l:0,m:0}, // 3  Li
+    {n:2,l:0,m:0}, // 4  Be
+    {n:2,l:1,m:1}, // 5  B
+    {n:2,l:1,m:1}, // 6  C
+    {n:2,l:1,m:0}, // 7  N
+    {n:2,l:1,m:0}, // 8  O
+    {n:2,l:1,m:1}, // 9  F
+    {n:2,l:1,m:1}, // 10 Ne
+    // Na-Ar (3s, 3p)
+    {n:3,l:0,m:0}, // 11 Na
+    {n:3,l:0,m:0}, // 12 Mg
+    {n:3,l:1,m:1}, // 13 Al
+    {n:3,l:1,m:1}, // 14 Si
+    {n:3,l:1,m:0}, // 15 P
+    {n:3,l:1,m:0}, // 16 S
+    {n:3,l:1,m:1}, // 17 Cl
+    {n:3,l:1,m:1}, // 18 Ar
+    // K-Ca (4s)
+    {n:4,l:0,m:0}, // 19 K
+    {n:4,l:0,m:0}, // 20 Ca
+    // Sc-Zn (3d)
+    {n:3,l:2,m:0}, // 21 Sc
+    {n:3,l:2,m:0}, // 22 Ti
+    {n:3,l:2,m:1}, // 23 V
+    {n:3,l:2,m:2}, // 24 Cr
+    {n:3,l:2,m:2}, // 25 Mn
+    {n:3,l:2,m:2}, // 26 Fe
+    {n:3,l:2,m:2}, // 27 Co
+    {n:3,l:2,m:2}, // 28 Ni
+    {n:3,l:2,m:0}, // 29 Cu
+    {n:3,l:2,m:0}, // 30 Zn
+    // Ga-Kr (4p)
+    {n:4,l:1,m:1}, // 31 Ga
+    {n:4,l:1,m:1}, // 32 Ge
+    {n:4,l:1,m:0}, // 33 As
+    {n:4,l:1,m:0}, // 34 Se
+    {n:4,l:1,m:1}, // 35 Br
+    {n:4,l:1,m:1}, // 36 Kr
+    // Rb-Sr (5s)
+    {n:5,l:0,m:0}, // 37 Rb
+    {n:5,l:0,m:0}, // 38 Sr
+    // Y-Cd (4d)
+    {n:4,l:2,m:0}, // 39 Y
+    {n:4,l:2,m:0}, // 40 Zr
+    {n:4,l:2,m:1}, // 41 Nb
+    {n:4,l:2,m:2}, // 42 Mo
+    {n:4,l:2,m:2}, // 43 Tc
+    {n:4,l:2,m:2}, // 44 Ru
+    {n:4,l:2,m:2}, // 45 Rh
+    {n:4,l:2,m:0}, // 46 Pd
+    {n:4,l:2,m:0}, // 47 Ag
+    {n:4,l:2,m:0}, // 48 Cd
+    // In-Xe (5p)
+    {n:5,l:1,m:1}, // 49 In
+    {n:5,l:1,m:1}, // 50 Sn
+    {n:5,l:1,m:0}, // 51 Sb
+    {n:5,l:1,m:0}, // 52 Te
+    {n:5,l:1,m:1}, // 53 I
+    {n:5,l:1,m:1}, // 54 Xe
+    // Cs-Ba (6s)
+    {n:6,l:0,m:0}, // 55 Cs
+    {n:6,l:0,m:0}, // 56 Ba
+    // La (5d)
+    {n:5,l:2,m:0}, // 57 La
+    // Ce-Yb (4f)
+    {n:4,l:3,m:0}, // 58 Ce
+    {n:4,l:3,m:1}, // 59 Pr
+    {n:4,l:3,m:1}, // 60 Nd
+    {n:4,l:3,m:2}, // 61 Pm
+    {n:4,l:3,m:2}, // 62 Sm
+    {n:4,l:3,m:3}, // 63 Eu
+    {n:4,l:3,m:3}, // 64 Gd
+    {n:4,l:3,m:3}, // 65 Tb
+    {n:4,l:3,m:3}, // 66 Dy
+    {n:4,l:3,m:3}, // 67 Ho
+    {n:4,l:3,m:3}, // 68 Er
+    {n:4,l:3,m:3}, // 69 Tm
+    {n:4,l:3,m:3}, // 70 Yb
+    // Lu (5d)
+    {n:5,l:2,m:0}, // 71 Lu
+    // Hf-Hg (5d)
+    {n:5,l:2,m:0}, // 72 Hf
+    {n:5,l:2,m:1}, // 73 Ta
+    {n:5,l:2,m:2}, // 74 W
+    {n:5,l:2,m:2}, // 75 Re
+    {n:5,l:2,m:2}, // 76 Os
+    {n:5,l:2,m:2}, // 77 Ir
+    {n:5,l:2,m:2}, // 78 Pt
+    {n:5,l:2,m:0}, // 79 Au
+    {n:5,l:2,m:0}, // 80 Hg
+    // Tl-Rn (6p)
+    {n:6,l:1,m:1}, // 81 Tl
+    {n:6,l:1,m:1}, // 82 Pb
+    {n:6,l:1,m:0}, // 83 Bi
+    {n:6,l:1,m:0}, // 84 Po
+    {n:6,l:1,m:1}, // 85 At
+    {n:6,l:1,m:1}, // 86 Rn
+    // Fr-Ra (7s)
+    {n:7,l:0,m:0}, // 87 Fr
+    {n:7,l:0,m:0}, // 88 Ra
+    // Ac (6d)
+    {n:6,l:2,m:0}, // 89 Ac
+    // Th-No (5f or 6d)
+    {n:5,l:3,m:0}, // 90 Th
+    {n:5,l:3,m:1}, // 91 Pa
+    {n:5,l:3,m:1}, // 92 U
+    {n:5,l:3,m:2}, // 93 Np
+    {n:5,l:3,m:2}, // 94 Pu
+    {n:5,l:3,m:3}, // 95 Am
+    {n:5,l:3,m:3}, // 96 Cm
+    {n:5,l:3,m:3}, // 97 Bk
+    {n:5,l:3,m:3}, // 98 Cf
+    {n:5,l:3,m:3}, // 99 Es
+    {n:5,l:3,m:3}, //100 Fm
+    {n:5,l:3,m:3}, //101 Md
+    {n:5,l:3,m:3}, //102 No
+    // Lr (7p)
+    {n:7,l:1,m:0}, //103 Lr
+    // Rf-Cn (6d)
+    {n:6,l:2,m:0}, //104 Rf
+    {n:6,l:2,m:1}, //105 Db
+    {n:6,l:2,m:2}, //106 Sg
+    {n:6,l:2,m:2}, //107 Bh
+    {n:6,l:2,m:2}, //108 Hs
+    {n:6,l:2,m:2}, //109 Mt
+    {n:6,l:2,m:2}, //110 Ds
+    {n:6,l:2,m:0}, //111 Rg
+    {n:6,l:2,m:0}, //112 Cn
+    // Nh-Og (7p)
+    {n:7,l:1,m:1}, //113 Nh
+    {n:7,l:1,m:1}, //114 Fl
+    {n:7,l:1,m:0}, //115 Mc
+    {n:7,l:1,m:0}, //116 Lv
+    {n:7,l:1,m:1}, //117 Ts
+    {n:7,l:1,m:1}, //118 Og
+  ];
+  return orbitals[Z - 1];
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SLATER'S RULES for Z_eff
+// ═══════════════════════════════════════════════════════════════
+function slaterZeff(Z, orb) {
+  // orb = {n, l}
+  // Groups for Slater's rules:
+  // [1s] [2s,2p] [3s,3p] [3d] [4s,4p] [4d] [4f] [5s,5p] ...
+  // sigma (screening constant):
+  // For ns or np electron:
+  //   same group: 0.35 (except 1s: 0.30)
+  //   n-1 shell (s or p): 0.85
+  //   n-1 d: 1.00
+  //   n-2 and below: 1.00
+  // For nd or nf electron:
+  //   same group: 0.35
+  //   all lower shells: 1.00
+
+  // We'll use a simplified electron count approach
+  // Build occupation array from aufbau order
+  const aufbau = [
+    {n:1,l:0,cap:2},  // 1s
+    {n:2,l:0,cap:2},  // 2s
+    {n:2,l:1,cap:6},  // 2p
+    {n:3,l:0,cap:2},  // 3s
+    {n:3,l:1,cap:6},  // 3p
+    {n:3,l:2,cap:10}, // 3d
+    {n:4,l:0,cap:2},  // 4s
+    {n:4,l:1,cap:6},  // 4p
+    {n:4,l:2,cap:10}, // 4d
+    {n:4,l:3,cap:14}, // 4f
+    {n:5,l:0,cap:2},  // 5s
+    {n:5,l:1,cap:6},  // 5p
+    {n:5,l:2,cap:10}, // 5d
+    {n:5,l:3,cap:14}, // 5f
+    {n:6,l:0,cap:2},  // 6s
+    {n:6,l:1,cap:6},  // 6p
+    {n:6,l:2,cap:10}, // 6d
+    {n:7,l:0,cap:2},  // 7s
+    {n:7,l:1,cap:6},  // 7p
+  ];
+
+  // Fill electrons
+  let remaining = Z;
+  let filled = [];
+  for (const sh of aufbau) {
+    if (remaining <= 0) break;
+    const e = Math.min(remaining, sh.cap);
+    filled.push({...sh, e});
+    remaining -= e;
+  }
+
+  // Find how many electrons are in the outermost nl
+  const {n, l} = orb;
+
+  // Count screening
+  let sigma = 0;
+  const isSP = l <= 1;
+
+  for (const sh of filled) {
+    if (sh.n === n && sh.l === l) {
+      // Same subshell: each other electron contributes 0.35 (or 0.30 if 1s)
+      const sameShell = sh.e - 1; // exclude the electron itself
+      sigma += sameShell * (n === 1 ? 0.30 : 0.35);
+    } else if (isSP) {
+      // ns/np electron
+      if (sh.n === n - 1) {
+        // n-1 shell (s or p type): 0.85; d type: 1.00
+        sigma += sh.e * (sh.l <= 1 ? 0.85 : 1.00);
+      } else if (sh.n < n - 1) {
+        sigma += sh.e * 1.00;
+      }
+      // same n, different subshell: 0.85 for s/p group, but actually for same n different l
+      // In standard Slater for sp: same-n group means all ns and np treated together
+      // Let's handle same n different l as part of same group
+      else if (sh.n === n && sh.l !== l) {
+        sigma += sh.e * (n === 1 ? 0.30 : 0.35);
+      }
+    } else {
+      // nd or nf electron: all electrons in lower shells contribute 1.00
+      // same group 0.35
+      if (sh.n < n || (sh.n === n && sh.l < l)) {
+        sigma += sh.e * 1.00;
+      }
+    }
+  }
+
+  return Math.max(Z - sigma, 1);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PHYSICS: Hydrogen-like wavefunctions
+// ═══════════════════════════════════════════════════════════════
+
+// Associated Laguerre polynomial L_p^q(x)
+function assocLaguerre(p, q, x) {
+  // L_0^q = 1, L_1^q = 1 + q - x
+  if (p === 0) return 1;
+  if (p === 1) return 1 + q - x;
+  let Lm1 = 1;
+  let L0 = 1 + q - x;
+  for (let k = 2; k <= p; k++) {
+    const Lk = ((2*k - 1 + q - x) * L0 - (k - 1 + q) * Lm1) / k;
+    Lm1 = L0;
+    L0 = Lk;
+  }
+  return L0;
+}
+
+function factorial(n) {
+  if (n <= 1) return 1;
+  let r = 1;
+  for (let i = 2; i <= n; i++) r *= i;
+  return r;
+}
+
+// Radial wavefunction R_nl(r) in units of a0/Z_eff
+// r is in units of a0/Z_eff
+function radialWF(n, l, r) {
+  // R_nl(r) normalized
+  const rho = 2 * r / n;
+  const norm = Math.sqrt(
+    (2/n)**3 * factorial(n-l-1) / (2*n * factorial(n+l)**3)
+  );
+  // Use full normalization
+  const norm2 = Math.sqrt(
+    Math.pow(2/n, 3) * factorial(n-l-1) / (2*n * Math.pow(factorial(n+l), 3))
+  );
+  return norm2 * Math.exp(-rho/2) * Math.pow(rho, l) * assocLaguerre(n-l-1, 2*l+1, rho);
+}
+
+// Real spherical harmonics Y_lm(theta, phi)
+function sphericalHarmonic(l, m, theta, phi) {
+  const cosT = Math.cos(theta);
+  const sinT = Math.sin(theta);
+
+  if (l === 0) return 0.5 * Math.sqrt(1/Math.PI);
+
+  if (l === 1) {
+    if (m === 0)  return 0.5 * Math.sqrt(3/Math.PI) * cosT;
+    if (m === 1)  return 0.5 * Math.sqrt(3/(2*Math.PI)) * sinT * Math.cos(phi); // Y_{1,1} real part
+    if (m === -1) return 0.5 * Math.sqrt(3/(2*Math.PI)) * sinT * Math.sin(phi); // Y_{1,-1} imag part
+  }
+
+  if (l === 2) {
+    if (m === 0)  return 0.25 * Math.sqrt(5/Math.PI) * (3*cosT*cosT - 1);
+    if (m === 1)  return 0.5  * Math.sqrt(15/(2*Math.PI)) * sinT * cosT * Math.cos(phi);
+    if (m === -1) return 0.5  * Math.sqrt(15/(2*Math.PI)) * sinT * cosT * Math.sin(phi);
+    if (m === 2)  return 0.25 * Math.sqrt(15/(2*Math.PI)) * sinT*sinT * Math.cos(2*phi);
+    if (m === -2) return 0.25 * Math.sqrt(15/(2*Math.PI)) * sinT*sinT * Math.sin(2*phi);
+  }
+
+  if (l === 3) {
+    if (m === 0)  return 0.25 * Math.sqrt(7/Math.PI) * (5*cosT**3 - 3*cosT);
+    if (m === 1)  return 0.125 * Math.sqrt(42/Math.PI) * sinT * (5*cosT**2 - 1) * Math.cos(phi);
+    if (m === -1) return 0.125 * Math.sqrt(42/Math.PI) * sinT * (5*cosT**2 - 1) * Math.sin(phi);
+    if (m === 2)  return 0.25 * Math.sqrt(105/Math.PI) * sinT**2 * cosT * Math.cos(2*phi);
+    if (m === -2) return 0.25 * Math.sqrt(105/Math.PI) * sinT**2 * cosT * Math.sin(2*phi);
+    if (m === 3)  return 0.125 * Math.sqrt(70/Math.PI) * sinT**3 * Math.cos(3*phi);
+    if (m === -3) return 0.125 * Math.sqrt(70/Math.PI) * sinT**3 * Math.sin(3*phi);
+  }
+
+  return 0;
+}
+
+// Full wavefunction psi(r, theta, phi) = R_nl(r) * Y_lm(theta, phi)
+function psi(n, l, m, r, theta, phi) {
+  return radialWF(n, l, r) * sphericalHarmonic(l, m, theta, phi);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// BUILD PERIODIC TABLE
+// ═══════════════════════════════════════════════════════════════
+const ptGrid = document.getElementById('periodic-table');
+
+// Create cells
+ELEMENTS.forEach(el => {
+  const [row, col] = getGridPos(el);
+  const cell = document.createElement('div');
+  cell.className = `element-cell block-${el.block}`;
+  cell.style.gridRow = row;
+  cell.style.gridColumn = col;
+  cell.innerHTML = `
+    <span class="cell-z">${el.Z}</span>
+    <span class="cell-sym">${el.sym}</span>
+    <span class="cell-name">${el.name}</span>
+  `;
+  cell.addEventListener('click', () => selectElement(el, cell));
+  ptGrid.appendChild(cell);
+});
+
+// Add row 7.5 gap label (lanthanide/actinide separator)
+const gapA = document.createElement('div');
+gapA.style.gridRow = 7;
+gapA.style.gridColumn = '1 / 3';
+gapA.style.display = 'flex';
+gapA.style.alignItems = 'center';
+gapA.style.justifyContent = 'flex-end';
+gapA.style.paddingRight = '4px';
+gapA.style.fontSize = '8px';
+gapA.style.color = 'var(--muted)';
+gapA.textContent = '57-71';
+ptGrid.appendChild(gapA);
+
+const gapB = document.createElement('div');
+gapB.style.gridRow = 8;
+gapB.style.gridColumn = '1 / 3';
+gapB.style.display = 'flex';
+gapB.style.alignItems = 'center';
+gapB.style.justifyContent = 'flex-end';
+gapB.style.paddingRight = '4px';
+gapB.style.fontSize = '8px';
+gapB.style.color = 'var(--muted)';
+gapB.textContent = '89-103';
+ptGrid.appendChild(gapB);
+
+// ═══════════════════════════════════════════════════════════════
+// PANEL LOGIC
+// ═══════════════════════════════════════════════════════════════
+const panel = document.getElementById('info-panel');
+let selectedCell = null;
+let rotX = 0.4, rotY = 0.6;
+let dragging = false, lastMX = 0, lastMY = 0;
+let animFrame = null;
+let currentDots = [];
+let autoRotate = true;
+
+document.getElementById('panel-close').addEventListener('click', closePanel);
+
+function closePanel() {
+  panel.classList.remove('open');
+  document.body.classList.remove('panel-open');
+  if (selectedCell) selectedCell.classList.remove('selected');
+  selectedCell = null;
+  if (animFrame) { cancelAnimationFrame(animFrame); animFrame = null; }
+}
+
+function selectElement(el, cell) {
+  if (selectedCell) selectedCell.classList.remove('selected');
+  selectedCell = cell;
+  cell.classList.add('selected');
+  panel.classList.add('open');
+  document.body.classList.add('panel-open');
+  populatePanel(el);
+}
+
+// ── KaTeX rendering helper ──
+function renderKaTeX(id, tex) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  try {
+    katex.render(tex, el, {displayMode: true, throwOnError: false});
+  } catch(e) {
+    el.textContent = tex;
+  }
+}
+
+function populatePanel(el) {
+  // Header
+  document.getElementById('el-symbol-big').textContent = el.sym;
+  document.getElementById('el-symbol-big').style.color =
+    el.block === 's' ? '#58a6ff' :
+    el.block === 'p' ? '#56d364' :
+    el.block === 'd' ? '#e3b341' : '#bc8cff';
+  document.getElementById('el-name').textContent = el.name;
+  document.getElementById('el-z').textContent = `Z = ${el.Z}  ·  Period ${el.period}  ·  ${el.block}-block`;
+  document.getElementById('el-config').textContent = el.config;
+
+  const orb = getOutermostOrbital(el);
+  const {n, l, m} = orb;
+  const lNames = ['s','p','d','f'];
+  const subshell = `${n}${lNames[l]}`;
+
+  // Schrödinger eq
+  renderKaTeX('schrodinger-eq',
+    String.raw`-\frac{\hbar^2}{2m_e}\nabla^2\psi + V(r)\psi = E\psi`
+  );
+
+  // Radial formula
+  const tex_R = buildRadialLatex(n, l);
+  renderKaTeX('radial-eq', tex_R);
+
+  // Angular (Y_lm)
+  const tex_Y = buildAngularLatex(l, m);
+  renderKaTeX('angular-eq', tex_Y);
+
+  // Quantum numbers table
+  const qBody = document.getElementById('qnum-body');
+  qBody.innerHTML = '';
+  const shapeNames = ['sphere (s)','dumbbell (p)','cloverleaf (d)','complex (f)'];
+  const qnums = [
+    [n,  'n — shell', `energy level; higher n = larger, farther from nucleus`],
+    [l,  `l — shape`, shapeNames[l] || l],
+    [m,  'mₗ — orientation', m === 0 ? 'points along z-axis' : `tilted (lobe direction ${m > 0 ? '+' : ''}${m})`],
+    [subshell, 'subshell', ''],
+  ];
+  qnums.forEach(([val, label, meaning]) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${label}</td><td class="qval">${val}</td><td class="qmeaning">${meaning}</td>`;
+    qBody.appendChild(tr);
+  });
+
+  // Slater Z_eff & Energy
+  const Zeff = slaterZeff(el.Z, orb);
+  const En = -13.6 * Zeff * Zeff / (n * n);
+  const shielded = (el.Z - Zeff).toFixed(1);
+  renderKaTeX('energy-eq',
+    String.raw`E_n = -13.6\,\text{eV} \times \frac{Z_{\text{eff}}^2}{n^2}`
+  );
+  document.getElementById('energy-val').textContent = En.toFixed(2);
+  document.getElementById('zeff-display').innerHTML =
+    `<div class="gloss"><strong>Z<sub>eff</sub> = ${Zeff.toFixed(2)}</strong> — the ${el.name} nucleus has ${el.Z} protons, but the other electrons shield ~${shielded} of them, so the outer electron feels only ${Zeff.toFixed(2)} net protons pulling on it.<br>More negative energy = more tightly bound (harder to remove).</div>`;
+
+  // 3D canvas
+  rotX = 0.4; rotY = 0.6;
+  if (animFrame) { cancelAnimationFrame(animFrame); animFrame = null; }
+  const canvas = document.getElementById('orbital-canvas');
+  const loading = document.getElementById('canvas-loading');
+  canvas.style.display = 'block';
+  canvas.style.visibility = 'hidden';
+  loading.style.display = 'block';
+  document.getElementById('canvas-label').textContent = `${el.name} — ${subshell} orbital  ·  each dot = a probable electron location`;
+
+  autoRotate = true;
+  // Defer to let panel animate in
+  setTimeout(() => {
+    sizeOrbitalCanvas(canvas);
+    currentDots = computeDots(n, l, m, canvas);
+    canvas.style.visibility = 'visible';
+    loading.style.display = 'none';
+    startRenderLoop(canvas, currentDots);
+  }, 80);
+}
+
+// ── LaTeX builders ──
+function buildRadialLatex(n, l) {
+  const lNames = ['s','p','d','f'];
+  const lName = lNames[l];
+  return String.raw`R_{${n}${l}}(r) = N_{${n}${l}}\left(\frac{2r}{na_0}\right)^{${l}} e^{-r/(${n}a_0)} L_{${n-l-1}}^{${2*l+1}}\!\left(\frac{2r}{${n}a_0}\right)`;
+}
+
+function buildAngularLatex(l, m) {
+  const absM = Math.abs(m);
+  if (l === 0) return String.raw`Y_{0}^{0}(\theta,\phi) = \frac{1}{2\sqrt{\pi}}`;
+  if (l === 1 && m === 0) return String.raw`Y_{1}^{0}(\theta,\phi) = \frac{1}{2}\sqrt{\frac{3}{\pi}}\cos\theta`;
+  if (l === 1 && m !== 0) return m > 0
+    ? String.raw`Y_{1}^{1}(\theta,\phi) = \frac{1}{2}\sqrt{\frac{3}{2\pi}}\sin\theta\cos\phi`
+    : String.raw`Y_{1}^{-1}(\theta,\phi) = \frac{1}{2}\sqrt{\frac{3}{2\pi}}\sin\theta\sin\phi`;
+  if (l === 2 && m === 0) return String.raw`Y_{2}^{0}(\theta,\phi) = \frac{1}{4}\sqrt{\frac{5}{\pi}}(3\cos^2\theta-1)`;
+  if (l === 2 && absM === 1) return m > 0
+    ? String.raw`Y_{2}^{1}(\theta,\phi) = \frac{1}{2}\sqrt{\frac{15}{2\pi}}\sin\theta\cos\theta\cos\phi`
+    : String.raw`Y_{2}^{-1}(\theta,\phi) = \frac{1}{2}\sqrt{\frac{15}{2\pi}}\sin\theta\cos\theta\sin\phi`;
+  if (l === 2 && absM === 2) return m > 0
+    ? String.raw`Y_{2}^{2}(\theta,\phi) = \frac{1}{4}\sqrt{\frac{15}{2\pi}}\sin^2\theta\cos 2\phi`
+    : String.raw`Y_{2}^{-2}(\theta,\phi) = \frac{1}{4}\sqrt{\frac{15}{2\pi}}\sin^2\theta\sin 2\phi`;
+  if (l === 3 && m === 0) return String.raw`Y_{3}^{0}(\theta,\phi) = \frac{1}{4}\sqrt{\frac{7}{\pi}}(5\cos^3\theta-3\cos\theta)`;
+  return String.raw`Y_{${l}}^{${m}}(\theta,\phi)`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// MONTE CARLO ORBITAL SAMPLING
+// Separates radial and angular sampling for efficiency.
+// All orbitals — including sparse f orbitals — get dense clouds.
+// ═══════════════════════════════════════════════════════════════
+function computeDots(n, l, m, canvas) {
+  const area = canvas ? canvas.width * canvas.height : 0;
+  const NPTS = Math.max(6000, Math.min(18000, Math.round(area / 80)));
+  const dots = [];
+
+  const rMax = Math.min(4 * n * n + 10, 100);
+
+  // ── Step 1: Build radial CDF for P(r) ∝ r² |R_nl(r)|²
+  // This lets us sample r from the correct radial distribution
+  // instead of inefficiently sampling a huge cube.
+  const RBINS = 2000;
+  const dr = rMax / RBINS;
+  const radialPDF = new Float64Array(RBINS);
+  for (let i = 0; i < RBINS; i++) {
+    const r = (i + 0.5) * dr;
+    const Rnl = radialWF(n, l, r);
+    radialPDF[i] = r * r * Rnl * Rnl;
+  }
+  let total = 0;
+  for (let i = 0; i < RBINS; i++) total += radialPDF[i];
+  if (total === 0) total = 1;
+  const radialCDF = new Float64Array(RBINS);
+  let cumsum = 0;
+  for (let i = 0; i < RBINS; i++) {
+    cumsum += radialPDF[i] / total;
+    radialCDF[i] = cumsum;
+  }
+
+  // ── Step 2: Estimate max |Y_lm|² for angular rejection
+  let Ymax = 0;
+  for (let i = 0; i < 2000; i++) {
+    const theta = Math.acos(2 * Math.random() - 1);
+    const phi = Math.random() * 2 * Math.PI;
+    const yval = Math.abs(sphericalHarmonic(l, m, theta, phi));
+    if (yval > Ymax) Ymax = yval;
+  }
+  if (Ymax === 0) Ymax = 1;
+  const Ymax2 = Ymax * Ymax;
+
+  // ── Step 3: Sample dots
+  let attempts = 0;
+  while (dots.length < NPTS && attempts < NPTS * 40) {
+    attempts++;
+
+    // Sample r from radial CDF (inverse CDF via binary search)
+    const u = Math.random();
+    let lo = 0, hi = RBINS - 1;
+    while (lo < hi) {
+      const mid = (lo + hi) >> 1;
+      if (radialCDF[mid] < u) lo = mid + 1; else hi = mid;
+    }
+    const r = (lo + Math.random()) * dr;
+
+    // Sample angular direction uniformly on the sphere,
+    // then reject proportional to |Y_lm(θ,φ)|²
+    const cosTheta = 2 * Math.random() - 1;
+    const theta = Math.acos(cosTheta);
+    const phi = Math.random() * 2 * Math.PI;
+    const Yval = sphericalHarmonic(l, m, theta, phi);
+    if (Math.random() * Ymax2 > Yval * Yval) continue;
+
+    // Convert spherical → Cartesian
+    const sinT = Math.sin(theta);
+    const x = r * sinT * Math.cos(phi);
+    const y = r * sinT * Math.sin(phi);
+    const z = r * Math.cos(theta);
+    dots.push({x, y, z, sign: Yval >= 0 ? 1 : -1});
+  }
+
+  // ── Normalize to fit display
+  let maxCoord = 0;
+  for (const d of dots) {
+    maxCoord = Math.max(maxCoord, Math.abs(d.x), Math.abs(d.y), Math.abs(d.z));
+  }
+  if (maxCoord === 0) maxCoord = 1;
+  for (const d of dots) {
+    d.x /= maxCoord;
+    d.y /= maxCoord;
+    d.z /= maxCoord;
+  }
+
+  return dots;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 3D RENDER WITH ROTATION
+// ═══════════════════════════════════════════════════════════════
+function project(x, y, z, cx, cy, scale, rx, ry) {
+  // Rotate around Y axis (ry), then X axis (rx)
+  const cosY = Math.cos(ry), sinY = Math.sin(ry);
+  const x1 = x * cosY + z * sinY;
+  const z1 = -x * sinY + z * cosY;
+  const y1 = y;
+
+  const cosX = Math.cos(rx), sinX = Math.sin(rx);
+  const y2 = y1 * cosX - z1 * sinX;
+  const z2 = y1 * sinX + z1 * cosX;
+
+  const fov = 3;
+  const depth = fov + z2;
+  const px = cx + scale * x1 * fov / depth;
+  const py = cy + scale * y2 * fov / depth;
+  const alpha = Math.min(1, 0.4 + 0.6 * (z2 + 1.5) / 3);
+  return {px, py, depth: z2, alpha};
+}
+
+function renderDots(canvas, dots, rx, ry) {
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const pointRadius = Math.max(1.2, Math.min(2.8, Math.min(W, H) * 0.0016));
+  ctx.clearRect(0, 0, W, H);
+
+  // Dark bg
+  ctx.fillStyle = '#0a0e14';
+  ctx.fillRect(0, 0, W, H);
+
+  // Draw axes (subtle)
+  const cx = W / 2, cy = H / 2, scale = Math.min(W, H) * 0.38;
+  const axLen = 0.7;
+  const axColors = ['#ff4444','#44ff44','#4488ff'];
+  const axVecs = [[axLen,0,0],[0,axLen,0],[0,0,axLen]];
+  axVecs.forEach((v, i) => {
+    const p0 = project(0, 0, 0, cx, cy, scale, rx, ry);
+    const p1 = project(v[0], v[1], v[2], cx, cy, scale, rx, ry);
+    ctx.beginPath();
+    ctx.strokeStyle = axColors[i] + '44';
+    ctx.lineWidth = 0.7;
+    ctx.moveTo(p0.px, p0.py);
+    ctx.lineTo(p1.px, p1.py);
+    ctx.stroke();
+  });
+
+  // Sort by depth (painter's algorithm)
+  const projected = dots.map(d => {
+    const {px, py, depth, alpha} = project(d.x, d.y, d.z, cx, cy, scale, rx, ry);
+    return {px, py, depth, alpha, sign: d.sign};
+  });
+  projected.sort((a, b) => a.depth - b.depth);
+
+  for (const p of projected) {
+    const col = p.sign >= 0 ? `rgba(88,166,255,${(p.alpha*0.85).toFixed(2)})` : `rgba(248,81,73,${(p.alpha*0.85).toFixed(2)})`;
+    ctx.beginPath();
+    ctx.arc(p.px, p.py, pointRadius, 0, Math.PI*2);
+    ctx.fillStyle = col;
+    ctx.fill();
+  }
+}
+
+function sizeOrbitalCanvas(canvas) {
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const rect = canvas.getBoundingClientRect();
+  const width = Math.max(320, Math.round(rect.width * dpr));
+  const height = Math.max(240, Math.round(rect.height * dpr));
+  if (canvas.width !== width || canvas.height !== height) {
+    canvas.width = width;
+    canvas.height = height;
+  }
+}
+
+function startRenderLoop(canvas, dots) {
+  function frame() {
+    if (autoRotate && !dragging) rotY += 0.004;
+    renderDots(canvas, dots, rotX, rotY);
+    animFrame = requestAnimationFrame(frame);
+  }
+  animFrame = requestAnimationFrame(frame);
+}
+
+// Mouse drag
+const canvas = document.getElementById('orbital-canvas');
+canvas.addEventListener('mousedown', e => {
+  dragging = true;
+  autoRotate = false;
+  lastMX = e.clientX;
+  lastMY = e.clientY;
+});
+window.addEventListener('mousemove', e => {
+  if (!dragging) return;
+  const dx = e.clientX - lastMX;
+  const dy = e.clientY - lastMY;
+  rotY += dx * 0.012;
+  rotX += dy * 0.012;
+  lastMX = e.clientX;
+  lastMY = e.clientY;
+});
+window.addEventListener('mouseup', () => { dragging = false; });
+
+// Touch drag
+canvas.addEventListener('touchstart', e => {
+  dragging = true;
+  autoRotate = false;
+  lastMX = e.touches[0].clientX;
+  lastMY = e.touches[0].clientY;
+  e.preventDefault();
+}, {passive: false});
+canvas.addEventListener('touchmove', e => {
+  if (!dragging) return;
+  const dx = e.touches[0].clientX - lastMX;
+  const dy = e.touches[0].clientY - lastMY;
+  rotY += dx * 0.012;
+  rotX += dy * 0.012;
+  lastMX = e.touches[0].clientX;
+  lastMY = e.touches[0].clientY;
+  e.preventDefault();
+}, {passive: false});
+canvas.addEventListener('touchend', () => { dragging = false; });
+
+window.addEventListener('resize', () => {
+  if (!panel.classList.contains('open') || !canvas || canvas.style.display === 'none') return;
+  sizeOrbitalCanvas(canvas);
+  if (currentDots.length) renderDots(canvas, currentDots, rotX, rotY);
+});
+
+</script>
+</body>
+</html>

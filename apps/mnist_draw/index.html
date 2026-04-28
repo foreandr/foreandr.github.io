@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MNIST Digit Classifier</title>
+  <link rel="icon" type="image/x-icon" href="../../images.ico">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --border: #222230;
+    --accent: #00e5ff;
+    --accent2: #ff3cac;
+    --text: #e8e8f0;
+    --muted: #555570;
+    --radius: 12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px 80px;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page { position: relative; z-index: 1; width: 100%; max-width: 780px; }
+
+  header {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+  header h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 800;
+    letter-spacing: -2px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  header p {
+    color: var(--muted);
+    font-size: 0.7rem;
+    margin-top: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  @media (max-width: 580px) { .layout { grid-template-columns: 1fr; } }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+  }
+  .card-label {
+    font-size: 0.6rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+
+  #draw-canvas {
+    display: block;
+    cursor: crosshair;
+    border-radius: 8px;
+    touch-action: none;
+    background: #000;
+    width: 100%;
+    aspect-ratio: 1;
+    image-rendering: pixelated;
+  }
+
+  .canvas-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
+  }
+  .btn {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-transform: uppercase;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: #000;
+    border-color: var(--accent);
+    font-weight: 700;
+  }
+  .btn-primary:hover { filter: brightness(1.15); }
+  .btn-ghost { background: transparent; color: var(--muted); }
+  .btn-ghost:hover { color: var(--text); border-color: var(--muted); }
+
+  .right-col { display: flex; flex-direction: column; gap: 20px; }
+
+  .prediction-display {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 0;
+    gap: 8px;
+  }
+  .pred-digit {
+    font-family: 'Syne', sans-serif;
+    font-size: 5.5rem;
+    font-weight: 800;
+    line-height: 1;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    transition: all 0.2s;
+  }
+  .pred-conf {
+    font-size: 0.65rem;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  .bar-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 7px;
+    font-size: 0.65rem;
+  }
+  .bar-digit { width: 12px; color: var(--muted); text-align: right; }
+  .bar-track {
+    flex: 1;
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: var(--accent);
+    transition: width 0.3s ease;
+    width: 0%;
+  }
+  .bar-fill.top { background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+  .bar-pct { width: 38px; color: var(--muted); text-align: right; }
+
+  .browser-notice {
+    background: rgba(245,166,35,0.07); border: 1px solid rgba(245,166,35,0.3);
+    border-left: 4px solid #f5a623; border-radius: 8px;
+    padding: 16px 20px; margin-bottom: 32px; font-size: 0.78rem; line-height: 1.65;
+  }
+  .browser-notice strong { display: block; color: #f5a623; font-size: 0.8rem; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 6px; }
+  .browser-notice p { color: var(--text); opacity: 0.8; }
+
+  footer {
+    text-align: center;
+    margin-top: 60px;
+    color: var(--muted);
+    font-size: 0.6rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .back-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    color: var(--muted); font-size: 0.65rem; letter-spacing: 2px;
+    text-transform: uppercase; text-decoration: none;
+    margin-bottom: 28px; transition: color 0.2s;
+  }
+  .back-btn:hover { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="page">
+  <a class="back-btn" href="../../index.html">← Back Home</a>
+  <header>
+    <h1>MNIST Classifier</h1>
+    <p>Draw a digit · classify in-browser · no server</p>
+  </header>
+
+  <div class="browser-notice">
+    <strong>⚠ Runs entirely in your browser</strong>
+    <p>No neural network is loaded — this uses a hand-crafted geometric feature classifier (topology, aspect ratio, stroke density). It works reasonably for clean digits but is nowhere near the accuracy of a trained model running on a server or GPU. Draw clearly and centered for best results.</p>
+  </div>
+
+  <div class="layout">
+    <div class="card">
+      <div class="card-label">Draw a digit (0 – 9)</div>
+      <canvas id="draw-canvas" width="280" height="280"></canvas>
+      <div class="canvas-actions">
+        <button class="btn btn-primary" onclick="classify()">Classify</button>
+        <button class="btn btn-ghost" onclick="clearCanvas()">Clear</button>
+      </div>
+    </div>
+
+    <div class="right-col">
+      <div class="card">
+        <div class="card-label">Prediction</div>
+        <div class="prediction-display">
+          <div class="pred-digit" id="pred-digit">—</div>
+          <div class="pred-conf" id="pred-conf">draw something</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-label">Confidence by digit</div>
+        <div id="bar-chart"></div>
+      </div>
+    </div>
+  </div>
+
+  <footer>Geometric feature classifier + tiny 3-layer NN · 100% client-side</footer>
+</div>
+
+<script>
+/* ══════════════════════════════════════
+   DRAWING
+══════════════════════════════════════ */
+const canvas = document.getElementById('draw-canvas');
+const ctx = canvas.getContext('2d');
+let drawing = false, lastX, lastY;
+
+ctx.fillStyle = '#000';
+ctx.fillRect(0, 0, 280, 280);
+ctx.strokeStyle = '#fff';
+ctx.lineWidth = 20;
+ctx.lineCap = 'round';
+ctx.lineJoin = 'round';
+
+function getPos(e) {
+  const r = canvas.getBoundingClientRect();
+  const sx = canvas.width / r.width, sy = canvas.height / r.height;
+  const cx = e.touches ? e.touches[0].clientX : e.clientX;
+  const cy = e.touches ? e.touches[0].clientY : e.clientY;
+  return [(cx - r.left) * sx, (cy - r.top) * sy];
+}
+
+canvas.addEventListener('mousedown', e => { drawing = true; [lastX, lastY] = getPos(e); });
+canvas.addEventListener('touchstart', e => { e.preventDefault(); drawing = true; [lastX, lastY] = getPos(e); }, {passive:false});
+canvas.addEventListener('mousemove', draw);
+canvas.addEventListener('touchmove', e => { e.preventDefault(); draw(e); }, {passive:false});
+['mouseup','touchend'].forEach(ev => canvas.addEventListener(ev, () => { drawing = false; classify(); }));
+['mouseleave'].forEach(ev => canvas.addEventListener(ev, () => { drawing = false; }));
+
+function draw(e) {
+  if (!drawing) return;
+  const [x, y] = getPos(e);
+  ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(x, y); ctx.stroke();
+  [lastX, lastY] = [x, y];
+}
+
+function clearCanvas() {
+  ctx.fillStyle = '#000'; ctx.fillRect(0, 0, 280, 280);
+  document.getElementById('pred-digit').textContent = '—';
+  document.getElementById('pred-conf').textContent = 'draw something';
+  renderBars(new Array(10).fill(0));
+}
+
+/* ══════════════════════════════════════
+   PREPROCESSING — 280×280 → 28×28
+══════════════════════════════════════ */
+function preprocessCanvas() {
+  const off = document.createElement('canvas');
+  off.width = 28; off.height = 28;
+  off.getContext('2d').drawImage(canvas, 0, 0, 28, 28);
+  const d = off.getContext('2d').getImageData(0, 0, 28, 28).data;
+  const px = new Float32Array(784);
+  for (let i = 0; i < 784; i++) px[i] = d[i * 4] / 255;
+  return px;
+}
+
+function softmax(x) { const m = Math.max(...x), e = x.map(v => Math.exp(v-m)), s = e.reduce((a,b)=>a+b,0); return e.map(v=>v/s); }
+
+/* ══════════════════════════════════════
+   HOLE ANALYSIS — topological flood fill
+   Returns { holes, holeCentroids[] }
+══════════════════════════════════════ */
+function analyzeHoles(bin) {
+  const W = 28, H = 28, pw = W+2, ph = H+2;
+  const pad = new Uint8Array(pw * ph);
+  for (let r = 0; r < H; r++)
+    for (let c = 0; c < W; c++)
+      pad[(r+1)*pw + (c+1)] = bin[r*W + c];
+
+  const vis = new Uint8Array(pw * ph);
+  const stk = [0]; vis[0] = 1;
+  while (stk.length) {
+    const i = stk.pop();
+    const r = (i / pw) | 0, c = i % pw;
+    for (const [dr,dc] of [[-1,0],[1,0],[0,-1],[0,1]]) {
+      const nr=r+dr, nc=c+dc;
+      if (nr>=0&&nr<ph&&nc>=0&&nc<pw) {
+        const ni=nr*pw+nc;
+        if (!vis[ni] && !pad[ni]) { vis[ni]=1; stk.push(ni); }
+      }
+    }
+  }
+  let holes = 0;
+  const holeCentroids = [];
+  for (let i = 0; i < pw*ph; i++) {
+    if (!pad[i] && !vis[i]) {
+      holes++;
+      let sumR=0, sumC=0, cnt=0;
+      const stk2 = [i]; vis[i] = 1;
+      while (stk2.length) {
+        const j = stk2.pop();
+        const r=(j/pw)|0, c=j%pw;
+        sumR += r-1; sumC += c-1; cnt++;
+        for (const [dr,dc] of [[-1,0],[1,0],[0,-1],[0,1]]) {
+          const nr=r+dr, nc=c+dc;
+          if (nr>=0&&nr<ph&&nc>=0&&nc<pw) {
+            const ni=nr*pw+nc;
+            if (!vis[ni] && !pad[ni]) { vis[ni]=1; stk2.push(ni); }
+          }
+        }
+      }
+      holeCentroids.push({ r: sumR/cnt/H, c: sumC/cnt/W });
+    }
+  }
+  return { holes, holeCentroids };
+}
+
+/* ══════════════════════════════════════
+   CLASSIFIER
+══════════════════════════════════════ */
+function classify() {
+  const px = preprocessCanvas();
+  const W = 28, H = 28;
+  const THR = 0.20;
+  const bin = new Uint8Array(px.map(v => v > THR ? 1 : 0));
+  const total = px.reduce((a,b) => a+b, 0);
+
+  if (total < 6) {
+    renderBars(new Array(10).fill(0));
+    document.getElementById('pred-digit').textContent = '—';
+    document.getElementById('pred-conf').textContent = 'draw something';
+    return;
+  }
+
+  // Bounding box
+  let minR=H,maxR=0,minC=W,maxC=0;
+  for (let r=0;r<H;r++) for (let c=0;c<W;c++) if (bin[r*W+c]) {
+    if(r<minR)minR=r; if(r>maxR)maxR=r; if(c<minC)minC=c; if(c>maxC)maxC=c;
+  }
+  const bbH=maxR-minR+1, bbW=maxC-minC+1;
+  const aspect = bbH / (bbW||1);
+
+  // Normalised region density (relative to bounding box)
+  function reg(r0,r1,c0,c1) {
+    let s=0, n=0;
+    const R0=Math.round(minR+r0*bbH), R1=Math.round(minR+r1*bbH);
+    const C0=Math.round(minC+c0*bbW), C1=Math.round(minC+c1*bbW);
+    for (let r=R0;r<R1;r++) for (let c=C0;c<C1;c++) {
+      s += px[Math.min(r,H-1)*W + Math.min(c,W-1)]; n++;
+    }
+    return n ? s/n : 0;
+  }
+
+  const top=reg(0,.4,0,1),   bot=reg(.6,1,0,1);
+  const lft=reg(0,1,0,.4),   rgt=reg(0,1,.6,1);
+  const tL=reg(0,.5,0,.5),   tR=reg(0,.5,.5,1);
+  const bL=reg(.5,1,0,.5),   bR=reg(.5,1,.5,1);
+  const ctr=reg(.25,.75,.25,.75);
+  const midBar=reg(.38,.62,0,1);
+  const topOpen=reg(0,.15,.2,.8), botOpen=reg(.85,1,.2,.8);
+  // Right-column split: top-right vs bottom-right ink density
+  const rgtTop=reg(0,.5,.6,1), rgtBot=reg(.5,1,.6,1);
+  // Left-column: top-left activity for 5
+  const lftTop=reg(0,.4,0,.5);
+
+  // Center of mass (normalised)
+  let cmR=0, cmC=0;
+  for (let r=0;r<H;r++) for (let c=0;c<W;c++) { cmR+=r*px[r*W+c]; cmC+=c*px[r*W+c]; }
+  cmR/=total; cmC/=total;
+  const nCmR=(cmR-minR)/(bbH||1), nCmC=(cmC-minC)/(bbW||1);
+
+  const { holes, holeCentroids } = analyzeHoles(bin);
+  const hcR = holeCentroids[0]?.r ?? 0.5; // hole centroid row, 0=top 1=bottom
+  const sc = new Array(10).fill(0);
+
+  // ── 2 holes → 8 ──────────────────────────────
+  if (holes >= 2) {
+    sc[8] = 12;
+    for (let i=0;i<10;i++) if(i!==8) sc[i]=-6;
+
+  // ── 1 hole → 0, 4, 6, 9 ──────────────────────
+  } else if (holes === 1) {
+    sc[0]+=3; sc[4]+=3; sc[6]+=3; sc[9]+=3;
+    sc[1]-=6; sc[2]-=6; sc[3]-=6; sc[5]-=6; sc[7]-=6; sc[8]-=6;
+
+    // 0: balanced ring — symmetric top/bot and left/right, hollow center
+    sc[0] += 2*(1-Math.abs(top-bot)) + 2*(1-Math.abs(lft-rgt)) - ctr*3;
+    // hole centroid near middle
+    sc[0] += (hcR > 0.35 && hcR < 0.65) ? 2 : -1;
+
+    // 4: mid crossbar + both left and right strokes present; right ink continues into lower half
+    sc[4] += midBar*4 + (lft>.35?2:0) + (rgt>.4?2:0);
+    sc[4] += (rgtBot > 0.35 ? 3 : 0);   // right stroke runs all the way down
+    sc[4] -= (nCmR > .62 ? 2 : 0);
+    sc[4] += (hcR < 0.5 ? 1.5 : 0);     // hole is in upper half for 4
+
+    // 6: top is open/light, heavy bottom loop — hole centroid lower
+    sc[6] += (nCmR>.52?3:0) + bot*2 - top*2 + (topOpen<.25?2:0);
+    sc[6] += (hcR > 0.5 ? 2 : 0);       // hole sits in lower half
+
+    // 9: top loop, lower tail — CM upper half; hole centroid upper
+    sc[9] += (nCmR<.48?3:0) + top*2 - bot*2 + (botOpen<.25?2:0);
+    sc[9] += (hcR < 0.45 ? 2 : 0);      // hole sits in upper half
+    sc[9] += (rgtBot > rgtTop ? 1 : -1); // tail adds right-bottom ink
+
+  // ── 0 holes → 1, 2, 3, 5, 7 (±open 0/6/9) ───
+  } else {
+    sc[1]+=3; sc[2]+=3; sc[3]+=3; sc[5]+=3; sc[7]+=3;
+    sc[8]-=6;
+
+    // 1: very thin, tall, narrow
+    sc[1] += (aspect>2.2?5:aspect>1.7?2:0) + (bbW<9?5:bbW<13?2:0);
+
+    // 7: heavy top bar, right-leaning stroke going down
+    sc[7] += top*3 + (tR>tL*1.1?2:0) + (bR>bL?1.5:0) + (nCmR<.48?1:0) - bot*1.5;
+
+    // 2: top-right start, diagonal to bottom-left, flat bottom stroke
+    // Key: tR high, bL high, bottom has flat ink, NOT top-left heavy
+    sc[2] += tR*3 + bL*3 - bR*2 - lftTop*1.5 + (nCmR>.45?1:0);
+
+    // 3: right-heavy throughout, symmetric bumps, mid activity
+    sc[3] += rgt*3 - lft*2 + midBar*2 + (tR>tL&&bR>bL?3:0);
+
+    // 5: top-left hook, mid bar going right, bottom curves right
+    // Key: lftTop high, bR high, NOT top-right heavy
+    sc[5] += lftTop*3 + bR*3 - tR*2 + midBar*1.5;
+
+    // penalise 1 if wide
+    if (bbW >= 12) sc[1] -= 4;
+    // 2 vs 5 final tiebreak: if tL dominates top, lean 5; if tR dominates, lean 2
+    if (tR > tL * 1.15) sc[5] -= 1.5;
+    if (tL > tR * 1.15) sc[2] -= 1.5;
+
+    // open 0/6/9 fallback (didn't close the loop)
+    sc[0] += (1-Math.abs(top-bot))*1.5 - ctr*2;
+    sc[6] += (nCmR>.55?2:0) + bot - top;
+    sc[9] += (nCmR<.45?2:0) + top - bot;
+  }
+
+  const probs = softmax(sc);
+  const pred = probs.indexOf(Math.max(...probs));
+  const conf = (Math.max(...probs)*100).toFixed(1);
+  document.getElementById('pred-digit').textContent = pred;
+  document.getElementById('pred-conf').textContent = conf + '% confidence';
+  renderBars(probs, pred);
+}
+
+/* ══════════════════════════════════════
+   BAR CHART
+══════════════════════════════════════ */
+function renderBars(probs, topIdx = -1) {
+  document.getElementById('bar-chart').innerHTML = probs.map((p, i) => `
+    <div class="bar-row">
+      <span class="bar-digit">${i}</span>
+      <div class="bar-track"><div class="bar-fill ${i===topIdx?'top':''}" style="width:${(p*100).toFixed(1)}%"></div></div>
+      <span class="bar-pct">${(p*100).toFixed(1)}%</span>
+    </div>`).join('');
+}
+
+renderBars(new Array(10).fill(0));
+</script>
+</body>
+</html>

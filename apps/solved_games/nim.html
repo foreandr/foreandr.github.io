@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Nim · Solved</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root { --bg:#0a0a0f;--card:#16161f;--border:#2a2a3a;--text:#e8e8f0;--muted:#6b6b8a;--accent:#10b981;--red:#ef4444;--yellow:#f59e0b; }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;min-height:100vh;}
+    nav{background:rgba(10,10,15,.95);border-bottom:1px solid var(--border);padding:0 32px;height:56px;display:flex;align-items:center;justify-content:space-between;}
+    nav a{color:var(--muted);text-decoration:none;font-size:.875rem;}nav a:hover{color:var(--text);}
+    nav .title{color:var(--text);font-weight:700;font-size:1rem;}
+    .layout{max-width:1000px;margin:0 auto;padding:36px 24px;display:grid;grid-template-columns:1fr 300px;gap:28px;align-items:start;}
+    h1{font-size:2rem;font-weight:800;letter-spacing:-.03em;margin-bottom:6px;}
+    .sub{color:var(--muted);font-size:.9rem;margin-bottom:28px;}
+    .game-col{display:flex;flex-direction:column;gap:20px;}
+    .heaps{display:flex;flex-direction:column;gap:12px;}
+    .heap-row{display:flex;align-items:center;gap:14px;}
+    .heap-label{font-size:.85rem;font-weight:700;color:var(--muted);width:60px;}
+    .sticks{display:flex;gap:4px;flex-wrap:wrap;flex:1;}
+    .stick{width:18px;height:60px;border-radius:4px;background:var(--accent);cursor:pointer;transition:all .15s;position:relative;}
+    .stick:hover{filter:brightness(1.3);transform:translateY(-2px);}
+    .stick.selected{background:var(--red);box-shadow:0 0 10px rgba(239,68,68,.5);}
+    .stick.removed{background:#2a2a3a;cursor:default;}
+    .stick.removed:hover{filter:none;transform:none;}
+    .heap-count{font-size:1.2rem;font-weight:800;color:var(--accent);min-width:24px;text-align:right;}
+    .controls{display:flex;gap:10px;flex-wrap:wrap;}
+    button{padding:9px 18px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:.875rem;font-weight:600;cursor:pointer;transition:all .15s;}
+    button:hover{border-color:var(--accent);color:var(--accent);}
+    button.primary{background:var(--accent);border-color:var(--accent);color:#fff;}
+    button.primary:hover{background:#059669;}
+    .status{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 20px;text-align:center;}
+    .status .turn{font-size:1rem;font-weight:700;}
+    .status .hint{font-size:.8rem;color:var(--muted);margin-top:4px;}
+    .sidebar{display:flex;flex-direction:column;gap:14px;}
+    .panel{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;}
+    .panel h3{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:12px;}
+    .stat-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);font-size:.875rem;}
+    .stat-row:last-child{border-bottom:none;}
+    .sv{font-weight:700;}.sv.green{color:var(--accent);}.sv.red{color:var(--red);}
+    .algo-info{font-size:.8rem;color:var(--muted);line-height:1.8;}.algo-info b{color:var(--text);}
+    .nim-formula{background:#1a1a2e;border:1px solid #2a2a5a;border-radius:8px;padding:12px;font-size:.85rem;color:var(--accent);font-family:monospace;text-align:center;margin-top:8px;}
+    .log{max-height:180px;overflow-y:auto;font-size:.78rem;line-height:1.9;color:var(--muted);}
+    .heap-config{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+    .heap-input{width:52px;padding:6px 8px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:.85rem;text-align:center;}
+    @media(max-width:700px){.layout{grid-template-columns:1fr;}}
+  </style>
+</head>
+<body>
+<nav>
+  <a href="index.html">← Solved Games</a>
+  <span class="title">Nim</span>
+  <a href="../../index.html">Home</a>
+</nav>
+<div class="layout">
+  <div class="game-col">
+    <div>
+      <h1>Nim</h1>
+      <p class="sub">Mathematically solved via Nim-sum (XOR). The AI always wins from a winning position. · <span style="color:var(--accent);font-weight:600">Perfectly Solved</span></p>
+    </div>
+    <div class="status">
+      <div class="turn" id="status-turn">Your turn</div>
+      <div class="hint" id="status-hint">Click sticks to select, then click "Remove Selected"</div>
+    </div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;">
+      <div style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:10px;">Heap Configuration</div>
+      <div class="heap-config">
+        <span style="font-size:.8rem;color:var(--muted)">Heaps:</span>
+        <input class="heap-input" id="h0" value="5" type="number" min="0" max="15">
+        <input class="heap-input" id="h1" value="4" type="number" min="0" max="15">
+        <input class="heap-input" id="h2" value="3" type="number" min="0" max="15">
+        <input class="heap-input" id="h3" value="0" type="number" min="0" max="15">
+        <button onclick="resetGame()" class="primary">Start</button>
+      </div>
+    </div>
+    <div class="heaps" id="heaps"></div>
+    <div class="controls">
+      <button onclick="removeSelected()">Remove Selected</button>
+      <button onclick="clearSelection()">Clear Selection</button>
+      <button onclick="showHint()">Show AI Move</button>
+      <button onclick="autoPlay()">Auto-Play to End</button>
+    </div>
+  </div>
+  <div class="sidebar">
+    <div class="panel">
+      <h3>Nim Analysis</h3>
+      <div class="stat-row"><span>Nim-Sum (XOR)</span><span class="sv" id="nim-sum">—</span></div>
+      <div class="stat-row"><span>Position</span><span class="sv" id="nim-pos">—</span></div>
+      <div class="stat-row"><span>Total Sticks</span><span class="sv" id="total-sticks">—</span></div>
+      <div class="stat-row"><span>Heaps Remaining</span><span class="sv" id="heaps-rem">—</span></div>
+      <div class="nim-formula" id="nim-formula">XOR = ?</div>
+    </div>
+    <div class="panel">
+      <h3>Session Stats</h3>
+      <div class="stat-row"><span>Games</span><span class="sv" id="st-g">0</span></div>
+      <div class="stat-row"><span>You Win</span><span class="sv green" id="st-w">0</span></div>
+      <div class="stat-row"><span>AI Wins</span><span class="sv red" id="st-l">0</span></div>
+      <div class="stat-row"><span>Win Rate</span><span class="sv" id="st-wr">—</span></div>
+    </div>
+    <div class="panel">
+      <h3>Algorithm</h3>
+      <div class="algo-info">
+        <b>Theory:</b> Sprague-Grundy (1935)<br>
+        <b>Rule:</b> Nim-sum = XOR of all heaps<br>
+        <b>Win condition:</b> Leave opponent with XOR=0<br>
+        <b>Strategy:</b> Find heap where<br>
+        &nbsp;&nbsp;heap XOR nimsum &lt; heap<br>
+        <b>Complexity:</b> O(n) per move<br>
+        <b>Variant:</b> Normal play (last takes wins)
+      </div>
+    </div>
+    <div class="panel">
+      <h3>Log</h3>
+      <div class="log" id="game-log"><span style="color:var(--muted)">No moves.</span></div>
+    </div>
+  </div>
+</div>
+<script>
+let heaps, currentPlayer, gameOver, selected;
+let stats = {g:0, w:0, l:0};
+
+function nimSum(h) { return h.reduce((a,b)=>a^b,0); }
+
+function resetGame() {
+  const inputs = [0,1,2,3].map(i => parseInt(document.getElementById('h'+i).value)||0);
+  heaps = inputs.filter(v => v > 0).concat(inputs.filter(v=>v===0).slice(0,0));
+  heaps = inputs; // keep all 4 (some may be 0)
+  currentPlayer = 'human';
+  gameOver = false;
+  selected = {}; // {heapIdx: count}
+  document.getElementById('game-log').innerHTML = '';
+  renderHeaps();
+  updateAnalysis();
+  updateStatus();
+}
+
+function renderHeaps() {
+  const el = document.getElementById('heaps');
+  el.innerHTML = '';
+  heaps.forEach((count, hi) => {
+    if (count < 0) return;
+    const row = document.createElement('div');
+    row.className = 'heap-row';
+    const lbl = document.createElement('div');
+    lbl.className = 'heap-label';
+    lbl.textContent = `Heap ${hi+1}`;
+    const stickDiv = document.createElement('div');
+    stickDiv.className = 'sticks';
+    const total = parseInt(document.getElementById('h'+hi).value)||0;
+    for (let s = 0; s < total; s++) {
+      const stick = document.createElement('div');
+      stick.className = 'stick' + (s >= count ? ' removed' : '');
+      if (s < count) {
+        const selCount = selected[hi] || 0;
+        const fromEnd = total - count; // already removed
+        const stickPos = s; // position in remaining sticks (0-indexed from left of remaining)
+        // selection highlights the last N sticks
+        const remaining = count;
+        const isSelected = selCount > 0 && s >= (remaining - selCount);
+        if (isSelected) stick.classList.add('selected');
+        stick.onclick = () => toggleStick(hi, s, remaining);
+      }
+      stickDiv.appendChild(stick);
+    }
+    const cnt = document.createElement('div');
+    cnt.className = 'heap-count';
+    cnt.textContent = count;
+    row.appendChild(lbl);
+    row.appendChild(stickDiv);
+    row.appendChild(cnt);
+    el.appendChild(row);
+  });
+}
+
+function toggleStick(hi, stickIdx, remaining) {
+  if (gameOver || currentPlayer !== 'human') return;
+  // Only allow selecting from ONE heap at a time
+  const otherHeaps = Object.keys(selected).map(Number).filter(k => k !== hi && (selected[k]||0) > 0);
+  if (otherHeaps.length > 0) { selected = {}; }
+  // The sticks are shown 0..remaining-1. Clicked stickIdx.
+  // We select from the end of the heap. If click stickIdx, select from stickIdx to end.
+  const selFrom = stickIdx;
+  const newSel = remaining - selFrom;
+  selected[hi] = selected[hi] === newSel ? 0 : newSel;
+  renderHeaps();
+}
+
+function clearSelection() { selected = {}; renderHeaps(); }
+
+function removeSelected() {
+  if (gameOver || currentPlayer !== 'human') return;
+  const heapIdxs = Object.keys(selected).map(Number).filter(k => (selected[k]||0)>0);
+  if (heapIdxs.length !== 1) { logMsg('Select sticks from exactly one heap.'); return; }
+  const hi = heapIdxs[0];
+  const n = selected[hi];
+  if (n <= 0 || n > heaps[hi]) { logMsg('Invalid selection.'); return; }
+  heaps[hi] -= n;
+  logMsg(`You removed ${n} from Heap ${hi+1}. (Heap now: ${heaps[hi]})`);
+  selected = {};
+  checkEnd('human');
+  if (!gameOver) { currentPlayer='ai'; renderHeaps(); updateAnalysis(); updateStatus(); setTimeout(doAI, 600); }
+  else { renderHeaps(); updateAnalysis(); }
+}
+
+function doAI() {
+  if (gameOver) return;
+  const ns = nimSum(heaps);
+  let moved = false;
+  if (ns !== 0) {
+    // Find a heap to reduce
+    for (let i = 0; i < heaps.length; i++) {
+      const target = heaps[i] ^ ns;
+      if (target < heaps[i]) {
+        const remove = heaps[i] - target;
+        logMsg(`AI removed ${remove} from Heap ${i+1}. (Heap now: ${target}) [XOR strategy]`);
+        heaps[i] = target;
+        moved = true;
+        break;
+      }
+    }
+  }
+  if (!moved) {
+    // Losing position — just remove 1 from largest heap
+    const maxIdx = heaps.indexOf(Math.max(...heaps));
+    if (heaps[maxIdx] > 0) { heaps[maxIdx]--; logMsg(`AI removed 1 from Heap ${maxIdx+1} (losing position).`); }
+  }
+  checkEnd('ai');
+  currentPlayer = 'human';
+  renderHeaps();
+  updateAnalysis();
+  updateStatus();
+}
+
+function checkEnd(player) {
+  if (heaps.every(h => h === 0)) {
+    gameOver = true;
+    // Last to take wins (normal play) — the player who just moved wins
+    const winner = player;
+    stats.g++;
+    if (winner === 'human') { stats.w++; logMsg('🎉 You win! You took the last stick.'); }
+    else { stats.l++; logMsg('🤖 AI wins! AI took the last stick.'); }
+    updateStats();
+    document.getElementById('status-turn').textContent = winner === 'human' ? '🎉 You Win!' : '🤖 AI Wins!';
+    document.getElementById('status-hint').textContent = 'Click Start to play again.';
+  }
+}
+
+function updateAnalysis() {
+  const ns = nimSum(heaps);
+  const total = heaps.reduce((a,b)=>a+b,0);
+  const rem = heaps.filter(h=>h>0).length;
+  document.getElementById('nim-sum').textContent = ns;
+  document.getElementById('nim-pos').textContent = ns === 0 ? 'P-position (Losing for mover)' : 'N-position (Winning for mover)';
+  document.getElementById('total-sticks').textContent = total;
+  document.getElementById('heaps-rem').textContent = rem;
+  document.getElementById('nim-formula').textContent = heaps.filter(h=>h>0).join(' XOR ') + ' = ' + ns;
+}
+
+function updateStatus() {
+  if (gameOver) return;
+  document.getElementById('status-turn').textContent = currentPlayer === 'human' ? 'Your turn' : 'AI thinking...';
+  const ns = nimSum(heaps);
+  document.getElementById('status-hint').textContent = currentPlayer === 'human'
+    ? (ns === 0 ? 'You\'re in a losing position (XOR=0) — AI will win with perfect play.' : 'You have a winning move! XOR ≠ 0.')
+    : 'AI is calculating...';
+}
+
+function showHint() {
+  const ns = nimSum(heaps);
+  if (ns === 0) { logMsg('Hint: You are in a losing position. Any move gives AI the win.'); return; }
+  for (let i = 0; i < heaps.length; i++) {
+    const t = heaps[i] ^ ns;
+    if (t < heaps[i]) { logMsg(`Hint: Remove ${heaps[i]-t} from Heap ${i+1} (reduce to ${t}). XOR becomes 0.`); return; }
+  }
+}
+
+async function autoPlay() {
+  if (gameOver) resetGame();
+  let safety = 0;
+  while (!gameOver && safety < 200) {
+    safety++;
+    if (currentPlayer === 'human') {
+      // AI plays for human too
+      const ns = nimSum(heaps);
+      let moved = false;
+      if (ns !== 0) {
+        for (let i = 0; i < heaps.length; i++) {
+          const t = heaps[i] ^ ns;
+          if (t < heaps[i]) { heaps[i] = t; moved = true; break; }
+        }
+      }
+      if (!moved) { const m = heaps.indexOf(Math.max(...heaps)); if (heaps[m]>0) heaps[m]--; }
+      checkEnd('human');
+      if (!gameOver) currentPlayer = 'ai';
+    } else {
+      doAI();
+    }
+    renderHeaps(); updateAnalysis();
+    await new Promise(r => setTimeout(r, 150));
+  }
+}
+
+function logMsg(msg) {
+  const el = document.getElementById('game-log');
+  if (el.querySelector('span')) el.innerHTML = '';
+  const d = document.createElement('div');
+  d.textContent = msg;
+  el.appendChild(d);
+  el.scrollTop = el.scrollHeight;
+}
+
+function updateStats() {
+  document.getElementById('st-g').textContent = stats.g;
+  document.getElementById('st-w').textContent = stats.w;
+  document.getElementById('st-l').textContent = stats.l;
+  document.getElementById('st-wr').textContent = stats.g > 0 ? ((stats.w/stats.g)*100).toFixed(0)+'%' : '—';
+}
+
+resetGame();
+</script>
+</body>
+</html>

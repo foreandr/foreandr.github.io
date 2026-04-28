@@ -1,0 +1,1010 @@
+{
+  "scanned_at": "2026-04-24",
+  "project": "foreandr.github.io",
+  "total_files": 10319,
+  "total_lines": 2855739,
+  "total_code_lines": 2836819,
+  "total_apps": 100,
+  "by_language": {
+    "JSON": 1723160,
+    "JavaScript": 805273,
+    "HTML": 299825,
+    "Python": 17703,
+    "CSS": 9591,
+    "Markdown": 109,
+    "Batch": 78
+  },
+  "apps": {
+    "finance_sentiment": {
+      "name": "finance_sentiment",
+      "files": 6,
+      "total_lines": 1549406,
+      "code_lines": 1548966,
+      "by_lang": {
+        "Python": 618,
+        "HTML": 1313,
+        "JSON": 1547473,
+        "JavaScript": 2
+      }
+    },
+    "reddit_fetish_tracker": {
+      "name": "reddit_fetish_tracker",
+      "files": 4,
+      "total_lines": 486114,
+      "code_lines": 485957,
+      "by_lang": {
+        "Python": 163,
+        "HTML": 705,
+        "JavaScript": 485246
+      }
+    },
+    "pagerank_sim": {
+      "name": "pagerank_sim",
+      "files": 10002,
+      "total_lines": 248660,
+      "code_lines": 245985,
+      "by_lang": {
+        "HTML": 247875,
+        "Python": 785
+      }
+    },
+    "jobs_analysis": {
+      "name": "jobs_analysis",
+      "files": 4,
+      "total_lines": 173910,
+      "code_lines": 173876,
+      "by_lang": {
+        "JSON": 173427,
+        "HTML": 483
+      }
+    },
+    "social_graph": {
+      "name": "social_graph",
+      "files": 13,
+      "total_lines": 155414,
+      "code_lines": 154711,
+      "by_lang": {
+        "Python": 2106,
+        "JavaScript": 152807,
+        "HTML": 92,
+        "CSS": 409
+      }
+    },
+    "earth_data": {
+      "name": "earth_data",
+      "files": 32,
+      "total_lines": 79045,
+      "code_lines": 77743,
+      "by_lang": {
+        "Python": 2569,
+        "HTML": 119,
+        "CSS": 717,
+        "JavaScript": 75458,
+        "JSON": 182
+      }
+    },
+    "holy_books_analysis": {
+      "name": "holy_books_analysis",
+      "files": 5,
+      "total_lines": 43136,
+      "code_lines": 42825,
+      "by_lang": {
+        "Python": 407,
+        "JavaScript": 41987,
+        "HTML": 330,
+        "CSS": 412
+      }
+    },
+    "sanctions": {
+      "name": "sanctions",
+      "files": 4,
+      "total_lines": 27816,
+      "code_lines": 27586,
+      "by_lang": {
+        "Python": 88,
+        "HTML": 1068,
+        "JavaScript": 26660
+      }
+    },
+    "solved_games": {
+      "name": "solved_games",
+      "files": 12,
+      "total_lines": 5102,
+      "code_lines": 4638,
+      "by_lang": {
+        "HTML": 5102
+      }
+    },
+    "compiler": {
+      "name": "compiler",
+      "files": 20,
+      "total_lines": 4723,
+      "code_lines": 3592,
+      "by_lang": {
+        "Python": 3200,
+        "JavaScript": 792,
+        "HTML": 731
+      }
+    },
+    "youtube_channel": {
+      "name": "youtube_channel",
+      "files": 29,
+      "total_lines": 4158,
+      "code_lines": 2965,
+      "by_lang": {
+        "Python": 3095,
+        "JSON": 11,
+        "HTML": 1052
+      }
+    },
+    "(root)": {
+      "name": "(root)",
+      "files": 5,
+      "total_lines": 3913,
+      "code_lines": 3403,
+      "by_lang": {
+        "Python": 30,
+        "Batch": 50,
+        "JSON": 6,
+        "HTML": 3718,
+        "Markdown": 109
+      }
+    },
+    "natural_resources": {
+      "name": "natural_resources",
+      "files": 5,
+      "total_lines": 3753,
+      "code_lines": 3423,
+      "by_lang": {
+        "HTML": 101,
+        "Python": 533,
+        "JavaScript": 2477,
+        "CSS": 642
+      }
+    },
+    "network_state_dashboards": {
+      "name": "network_state_dashboards",
+      "files": 3,
+      "total_lines": 3410,
+      "code_lines": 3358,
+      "by_lang": {
+        "JavaScript": 2851,
+        "Python": 191,
+        "HTML": 368
+      }
+    },
+    "math_tree": {
+      "name": "math_tree",
+      "files": 9,
+      "total_lines": 2881,
+      "code_lines": 2492,
+      "by_lang": {
+        "JavaScript": 1633,
+        "CSS": 517,
+        "HTML": 731
+      }
+    },
+    "special_functions": {
+      "name": "special_functions",
+      "files": 4,
+      "total_lines": 2584,
+      "code_lines": 2226,
+      "by_lang": {
+        "HTML": 217,
+        "JavaScript": 2006,
+        "CSS": 361
+      }
+    },
+    "collatz_cascade_2": {
+      "name": "collatz_cascade_2",
+      "files": 3,
+      "total_lines": 2544,
+      "code_lines": 2164,
+      "by_lang": {
+        "HTML": 176,
+        "JavaScript": 1436,
+        "CSS": 932
+      }
+    },
+    "collatz_cascade": {
+      "name": "collatz_cascade",
+      "files": 3,
+      "total_lines": 2340,
+      "code_lines": 2014,
+      "by_lang": {
+        "HTML": 186,
+        "JavaScript": 1543,
+        "CSS": 611
+      }
+    },
+    "topcap_rotation": {
+      "name": "topcap_rotation",
+      "files": 10,
+      "total_lines": 2099,
+      "code_lines": 1765,
+      "by_lang": {
+        "JavaScript": 869,
+        "HTML": 203,
+        "CSS": 575,
+        "Python": 448,
+        "JSON": 4
+      }
+    },
+    "path_connect": {
+      "name": "path_connect",
+      "files": 3,
+      "total_lines": 2057,
+      "code_lines": 1824,
+      "by_lang": {
+        "HTML": 117,
+        "JavaScript": 1572,
+        "CSS": 368
+      }
+    },
+    "path_integral_phase_space": {
+      "name": "path_integral_phase_space",
+      "files": 3,
+      "total_lines": 1857,
+      "code_lines": 1687,
+      "by_lang": {
+        "HTML": 1209,
+        "JavaScript": 364,
+        "CSS": 284
+      }
+    },
+    "found_arbitrages": {
+      "name": "found_arbitrages",
+      "files": 7,
+      "total_lines": 1824,
+      "code_lines": 1603,
+      "by_lang": {
+        "JSON": 722,
+        "Python": 589,
+        "HTML": 485,
+        "Batch": 28
+      }
+    },
+    "omnibus_time": {
+      "name": "omnibus_time",
+      "files": 3,
+      "total_lines": 1610,
+      "code_lines": 1433,
+      "by_lang": {
+        "HTML": 161,
+        "JavaScript": 984,
+        "CSS": 465
+      }
+    },
+    "sorting_algorithms": {
+      "name": "sorting_algorithms",
+      "files": 3,
+      "total_lines": 1566,
+      "code_lines": 1408,
+      "by_lang": {
+        "JavaScript": 1153,
+        "HTML": 106,
+        "CSS": 307
+      }
+    },
+    "lot_recorder": {
+      "name": "lot_recorder",
+      "files": 8,
+      "total_lines": 1561,
+      "code_lines": 1198,
+      "by_lang": {
+        "Python": 1073,
+        "JSON": 14,
+        "HTML": 474
+      }
+    },
+    "game_of_life": {
+      "name": "game_of_life",
+      "files": 3,
+      "total_lines": 1487,
+      "code_lines": 1246,
+      "by_lang": {
+        "HTML": 95,
+        "JavaScript": 973,
+        "CSS": 419
+      }
+    },
+    "audiobook": {
+      "name": "audiobook",
+      "files": 2,
+      "total_lines": 1479,
+      "code_lines": 1293,
+      "by_lang": {
+        "HTML": 1415,
+        "JSON": 64
+      }
+    },
+    "graph_scraper_viz": {
+      "name": "graph_scraper_viz",
+      "files": 3,
+      "total_lines": 1446,
+      "code_lines": 1210,
+      "by_lang": {
+        "HTML": 177,
+        "JavaScript": 825,
+        "CSS": 444
+      }
+    },
+    "linear_transformations": {
+      "name": "linear_transformations",
+      "files": 3,
+      "total_lines": 1399,
+      "code_lines": 1158,
+      "by_lang": {
+        "HTML": 91,
+        "JavaScript": 894,
+        "CSS": 414
+      }
+    },
+    "wavefunctions": {
+      "name": "wavefunctions",
+      "files": 1,
+      "total_lines": 1367,
+      "code_lines": 1077,
+      "by_lang": {
+        "HTML": 1367
+      }
+    },
+    "rf_channel_sim": {
+      "name": "rf_channel_sim",
+      "files": 3,
+      "total_lines": 1333,
+      "code_lines": 1195,
+      "by_lang": {
+        "HTML": 109,
+        "JavaScript": 817,
+        "CSS": 407
+      }
+    },
+    "code_stats": {
+      "name": "code_stats",
+      "files": 3,
+      "total_lines": 1332,
+      "code_lines": 1297,
+      "by_lang": {
+        "HTML": 232,
+        "Python": 92,
+        "JSON": 1008
+      }
+    },
+    "blockchain_tracker": {
+      "name": "blockchain_tracker",
+      "files": 5,
+      "total_lines": 1165,
+      "code_lines": 1007,
+      "by_lang": {
+        "Python": 393,
+        "JavaScript": 1,
+        "HTML": 770,
+        "JSON": 1
+      }
+    },
+    "drone_show_studio": {
+      "name": "drone_show_studio",
+      "files": 1,
+      "total_lines": 1148,
+      "code_lines": 946,
+      "by_lang": {
+        "HTML": 1148
+      }
+    },
+    "arxiv": {
+      "name": "arxiv",
+      "files": 4,
+      "total_lines": 1090,
+      "code_lines": 851,
+      "by_lang": {
+        "JavaScript": 3,
+        "Python": 468,
+        "HTML": 619
+      }
+    },
+    "gauge_theory": {
+      "name": "gauge_theory",
+      "files": 1,
+      "total_lines": 1076,
+      "code_lines": 867,
+      "by_lang": {
+        "HTML": 1076
+      }
+    },
+    "projective_cartesian": {
+      "name": "projective_cartesian",
+      "files": 1,
+      "total_lines": 1058,
+      "code_lines": 867,
+      "by_lang": {
+        "HTML": 1058
+      }
+    },
+    "peano_compiler": {
+      "name": "peano_compiler",
+      "files": 3,
+      "total_lines": 1021,
+      "code_lines": 852,
+      "by_lang": {
+        "JavaScript": 586,
+        "HTML": 75,
+        "CSS": 360
+      }
+    },
+    "meta_analyzer": {
+      "name": "meta_analyzer",
+      "files": 1,
+      "total_lines": 949,
+      "code_lines": 757,
+      "by_lang": {
+        "HTML": 949
+      }
+    },
+    "recurrence_lab": {
+      "name": "recurrence_lab",
+      "files": 3,
+      "total_lines": 949,
+      "code_lines": 833,
+      "by_lang": {
+        "HTML": 183,
+        "JavaScript": 458,
+        "CSS": 308
+      }
+    },
+    "landloard_calculator": {
+      "name": "landloard_calculator",
+      "files": 1,
+      "total_lines": 901,
+      "code_lines": 779,
+      "by_lang": {
+        "HTML": 901
+      }
+    },
+    "pdf_editor": {
+      "name": "pdf_editor",
+      "files": 1,
+      "total_lines": 892,
+      "code_lines": 861,
+      "by_lang": {
+        "HTML": 892
+      }
+    },
+    "network_state_test": {
+      "name": "network_state_test",
+      "files": 1,
+      "total_lines": 882,
+      "code_lines": 739,
+      "by_lang": {
+        "HTML": 882
+      }
+    },
+    "materials_lab": {
+      "name": "materials_lab",
+      "files": 1,
+      "total_lines": 829,
+      "code_lines": 678,
+      "by_lang": {
+        "HTML": 829
+      }
+    },
+    "math_editor": {
+      "name": "math_editor",
+      "files": 1,
+      "total_lines": 808,
+      "code_lines": 696,
+      "by_lang": {
+        "HTML": 808
+      }
+    },
+    "ocr": {
+      "name": "ocr",
+      "files": 1,
+      "total_lines": 749,
+      "code_lines": 660,
+      "by_lang": {
+        "HTML": 749
+      }
+    },
+    "game_of_life_4d": {
+      "name": "game_of_life_4d",
+      "files": 1,
+      "total_lines": 717,
+      "code_lines": 600,
+      "by_lang": {
+        "HTML": 717
+      }
+    },
+    "manhwa_manga": {
+      "name": "manhwa_manga",
+      "files": 7,
+      "total_lines": 717,
+      "code_lines": 533,
+      "by_lang": {
+        "JavaScript": 3,
+        "HTML": 196,
+        "Python": 517,
+        "JSON": 1
+      }
+    },
+    "text_to_pdf": {
+      "name": "text_to_pdf",
+      "files": 1,
+      "total_lines": 702,
+      "code_lines": 612,
+      "by_lang": {
+        "HTML": 702
+      }
+    },
+    "qm_boxes": {
+      "name": "qm_boxes",
+      "files": 3,
+      "total_lines": 692,
+      "code_lines": 610,
+      "by_lang": {
+        "HTML": 67,
+        "JavaScript": 320,
+        "CSS": 305
+      }
+    },
+    "doc_converter": {
+      "name": "doc_converter",
+      "files": 1,
+      "total_lines": 689,
+      "code_lines": 577,
+      "by_lang": {
+        "HTML": 689
+      }
+    },
+    "quantum_materials": {
+      "name": "quantum_materials",
+      "files": 1,
+      "total_lines": 667,
+      "code_lines": 568,
+      "by_lang": {
+        "HTML": 667
+      }
+    },
+    "prime_compositions": {
+      "name": "prime_compositions",
+      "files": 3,
+      "total_lines": 584,
+      "code_lines": 474,
+      "by_lang": {
+        "HTML": 34,
+        "JavaScript": 216,
+        "CSS": 334
+      }
+    },
+    "anticrawl": {
+      "name": "anticrawl",
+      "files": 3,
+      "total_lines": 557,
+      "code_lines": 425,
+      "by_lang": {
+        "JavaScript": 254,
+        "HTML": 303
+      }
+    },
+    "onyx_tts": {
+      "name": "onyx_tts",
+      "files": 5,
+      "total_lines": 545,
+      "code_lines": 498,
+      "by_lang": {
+        "HTML": 228,
+        "Python": 71,
+        "JSON": 246
+      }
+    },
+    "image_compressor": {
+      "name": "image_compressor",
+      "files": 1,
+      "total_lines": 544,
+      "code_lines": 469,
+      "by_lang": {
+        "HTML": 544
+      }
+    },
+    "parlay_arbitrage": {
+      "name": "parlay_arbitrage",
+      "files": 1,
+      "total_lines": 526,
+      "code_lines": 490,
+      "by_lang": {
+        "HTML": 526
+      }
+    },
+    "github_tracker": {
+      "name": "github_tracker",
+      "files": 1,
+      "total_lines": 524,
+      "code_lines": 429,
+      "by_lang": {
+        "HTML": 524
+      }
+    },
+    "plant_id": {
+      "name": "plant_id",
+      "files": 1,
+      "total_lines": 521,
+      "code_lines": 428,
+      "by_lang": {
+        "HTML": 521
+      }
+    },
+    "game_of_life_1d": {
+      "name": "game_of_life_1d",
+      "files": 1,
+      "total_lines": 502,
+      "code_lines": 422,
+      "by_lang": {
+        "HTML": 502
+      }
+    },
+    "images_to_pdf": {
+      "name": "images_to_pdf",
+      "files": 1,
+      "total_lines": 502,
+      "code_lines": 424,
+      "by_lang": {
+        "HTML": 502
+      }
+    },
+    "mnist_draw": {
+      "name": "mnist_draw",
+      "files": 1,
+      "total_lines": 501,
+      "code_lines": 411,
+      "by_lang": {
+        "HTML": 501
+      }
+    },
+    "spaceorbits": {
+      "name": "spaceorbits",
+      "files": 4,
+      "total_lines": 478,
+      "code_lines": 396,
+      "by_lang": {
+        "Python": 267,
+        "HTML": 209,
+        "JavaScript": 1,
+        "JSON": 1
+      }
+    },
+    "csv_viewer": {
+      "name": "csv_viewer",
+      "files": 1,
+      "total_lines": 465,
+      "code_lines": 417,
+      "by_lang": {
+        "HTML": 465
+      }
+    },
+    "color_tools": {
+      "name": "color_tools",
+      "files": 1,
+      "total_lines": 462,
+      "code_lines": 436,
+      "by_lang": {
+        "HTML": 462
+      }
+    },
+    "pomodoro": {
+      "name": "pomodoro",
+      "files": 1,
+      "total_lines": 454,
+      "code_lines": 413,
+      "by_lang": {
+        "HTML": 454
+      }
+    },
+    "pdf_splitter": {
+      "name": "pdf_splitter",
+      "files": 1,
+      "total_lines": 448,
+      "code_lines": 385,
+      "by_lang": {
+        "HTML": 448
+      }
+    },
+    "local_llm": {
+      "name": "local_llm",
+      "files": 2,
+      "total_lines": 442,
+      "code_lines": 360,
+      "by_lang": {
+        "HTML": 360,
+        "JavaScript": 82
+      }
+    },
+    "markdown_editor": {
+      "name": "markdown_editor",
+      "files": 1,
+      "total_lines": 420,
+      "code_lines": 338,
+      "by_lang": {
+        "HTML": 420
+      }
+    },
+    "word_counter": {
+      "name": "word_counter",
+      "files": 1,
+      "total_lines": 420,
+      "code_lines": 354,
+      "by_lang": {
+        "HTML": 420
+      }
+    },
+    "base64_tool": {
+      "name": "base64_tool",
+      "files": 1,
+      "total_lines": 417,
+      "code_lines": 390,
+      "by_lang": {
+        "HTML": 417
+      }
+    },
+    "invoice_gen": {
+      "name": "invoice_gen",
+      "files": 1,
+      "total_lines": 408,
+      "code_lines": 388,
+      "by_lang": {
+        "HTML": 408
+      }
+    },
+    "star_id": {
+      "name": "star_id",
+      "files": 1,
+      "total_lines": 395,
+      "code_lines": 325,
+      "by_lang": {
+        "HTML": 395
+      }
+    },
+    "json_formatter": {
+      "name": "json_formatter",
+      "files": 1,
+      "total_lines": 362,
+      "code_lines": 318,
+      "by_lang": {
+        "HTML": 362
+      }
+    },
+    "unit_converter": {
+      "name": "unit_converter",
+      "files": 1,
+      "total_lines": 350,
+      "code_lines": 331,
+      "by_lang": {
+        "HTML": 350
+      }
+    },
+    "speech_to_text": {
+      "name": "speech_to_text",
+      "files": 1,
+      "total_lines": 347,
+      "code_lines": 298,
+      "by_lang": {
+        "HTML": 347
+      }
+    },
+    "qr_generator": {
+      "name": "qr_generator",
+      "files": 1,
+      "total_lines": 344,
+      "code_lines": 304,
+      "by_lang": {
+        "HTML": 344
+      }
+    },
+    "password_gen": {
+      "name": "password_gen",
+      "files": 1,
+      "total_lines": 313,
+      "code_lines": 290,
+      "by_lang": {
+        "HTML": 313
+      }
+    },
+    "mushroom_id": {
+      "name": "mushroom_id",
+      "files": 1,
+      "total_lines": 302,
+      "code_lines": 287,
+      "by_lang": {
+        "HTML": 302
+      }
+    },
+    "game_of_life_3d": {
+      "name": "game_of_life_3d",
+      "files": 3,
+      "total_lines": 290,
+      "code_lines": 246,
+      "by_lang": {
+        "HTML": 290
+      }
+    },
+    "rock_id": {
+      "name": "rock_id",
+      "files": 1,
+      "total_lines": 279,
+      "code_lines": 265,
+      "by_lang": {
+        "HTML": 279
+      }
+    },
+    "zip_tool": {
+      "name": "zip_tool",
+      "files": 1,
+      "total_lines": 270,
+      "code_lines": 246,
+      "by_lang": {
+        "HTML": 270
+      }
+    },
+    "pill_id": {
+      "name": "pill_id",
+      "files": 1,
+      "total_lines": 267,
+      "code_lines": 245,
+      "by_lang": {
+        "HTML": 267
+      }
+    },
+    "timezone_converter": {
+      "name": "timezone_converter",
+      "files": 1,
+      "total_lines": 267,
+      "code_lines": 243,
+      "by_lang": {
+        "HTML": 267
+      }
+    },
+    "bird_id": {
+      "name": "bird_id",
+      "files": 1,
+      "total_lines": 265,
+      "code_lines": 232,
+      "by_lang": {
+        "HTML": 265
+      }
+    },
+    "hash_generator": {
+      "name": "hash_generator",
+      "files": 1,
+      "total_lines": 264,
+      "code_lines": 241,
+      "by_lang": {
+        "HTML": 264
+      }
+    },
+    "meeting_timer": {
+      "name": "meeting_timer",
+      "files": 1,
+      "total_lines": 261,
+      "code_lines": 233,
+      "by_lang": {
+        "HTML": 261
+      }
+    },
+    "sentiment_analysis": {
+      "name": "sentiment_analysis",
+      "files": 1,
+      "total_lines": 252,
+      "code_lines": 217,
+      "by_lang": {
+        "HTML": 252
+      }
+    },
+    "image_classifier": {
+      "name": "image_classifier",
+      "files": 1,
+      "total_lines": 233,
+      "code_lines": 202,
+      "by_lang": {
+        "HTML": 233
+      }
+    },
+    "text_diff": {
+      "name": "text_diff",
+      "files": 1,
+      "total_lines": 233,
+      "code_lines": 211,
+      "by_lang": {
+        "HTML": 233
+      }
+    },
+    "screen_recorder": {
+      "name": "screen_recorder",
+      "files": 1,
+      "total_lines": 221,
+      "code_lines": 194,
+      "by_lang": {
+        "HTML": 221
+      }
+    },
+    "what_is_my_ip": {
+      "name": "what_is_my_ip",
+      "files": 1,
+      "total_lines": 200,
+      "code_lines": 158,
+      "by_lang": {
+        "HTML": 200
+      }
+    },
+    "bug_id": {
+      "name": "bug_id",
+      "files": 1,
+      "total_lines": 199,
+      "code_lines": 187,
+      "by_lang": {
+        "HTML": 199
+      }
+    },
+    "food_id": {
+      "name": "food_id",
+      "files": 1,
+      "total_lines": 190,
+      "code_lines": 175,
+      "by_lang": {
+        "HTML": 190
+      }
+    },
+    "fish_id": {
+      "name": "fish_id",
+      "files": 1,
+      "total_lines": 189,
+      "code_lines": 178,
+      "by_lang": {
+        "HTML": 189
+      }
+    },
+    "lorem_ipsum": {
+      "name": "lorem_ipsum",
+      "files": 1,
+      "total_lines": 186,
+      "code_lines": 172,
+      "by_lang": {
+        "HTML": 186
+      }
+    },
+    "text_cleaner": {
+      "name": "text_cleaner",
+      "files": 1,
+      "total_lines": 176,
+      "code_lines": 160,
+      "by_lang": {
+        "HTML": 176
+      }
+    },
+    "email_signature": {
+      "name": "email_signature",
+      "files": 1,
+      "total_lines": 171,
+      "code_lines": 154,
+      "by_lang": {
+        "HTML": 171
+      }
+    },
+    "pdf_watermark": {
+      "name": "pdf_watermark",
+      "files": 1,
+      "total_lines": 166,
+      "code_lines": 149,
+      "by_lang": {
+        "HTML": 166
+      }
+    },
+    "pdf_merger": {
+      "name": "pdf_merger",
+      "files": 1,
+      "total_lines": 0,
+      "code_lines": 0,
+      "by_lang": {
+        "HTML": 0
+      }
+    }
+  }
+}

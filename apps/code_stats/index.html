@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Code Stats</title>
+<link rel="icon" type="image/x-icon" href="../../images.ico">
+<style>
+:root {
+  --bg: #0d0d0f; --panel: #141417; --panel2: #1a1a1f;
+  --border: #2a2a35; --text: #e8e8f0; --muted: #5a5a72;
+  --accent: #f97316; --sans: "Segoe UI", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; }
+.topbar { display:flex; align-items:center; gap:14px; padding:0 20px; height:50px; background:var(--panel); border-bottom:1px solid var(--border); position:sticky; top:0; z-index:10; }
+.back { color:var(--muted); text-decoration:none; font-size:13px; }
+.back:hover { color:var(--accent); }
+.title { font-size:15px; font-weight:700; }
+.spacer { flex:1; }
+.scan-info { font-size:11px; color:var(--muted); font-family:var(--mono); }
+.btn { padding:6px 14px; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; border:1px solid var(--border); background:var(--panel2); color:var(--text); transition:all .12s; }
+.btn:hover { border-color:var(--accent); color:var(--accent); }
+.main { max-width:1400px; margin:0 auto; padding:24px 20px; display:flex; flex-direction:column; gap:24px; }
+.summary-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:12px; }
+.stat-card { background:var(--panel); border:1px solid var(--border); border-radius:8px; padding:16px 20px; display:flex; flex-direction:column; gap:4px; }
+.stat-card .val { font-size:28px; font-weight:700; font-family:var(--mono); color:var(--accent); }
+.stat-card .lbl { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.8px; }
+.section-header { font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--muted); padding-bottom:10px; border-bottom:1px solid var(--border); margin-bottom:14px; }
+.charts-row { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+.chart-card { background:var(--panel); border:1px solid var(--border); border-radius:8px; padding:18px 20px; }
+.lang-bars { display:flex; flex-direction:column; gap:8px; }
+.lang-row { display:flex; align-items:center; gap:10px; }
+.lang-name { font-size:12px; min-width:110px; color:var(--text); }
+.lang-bar-wrap { flex:1; height:14px; background:var(--panel2); border-radius:3px; overflow:hidden; }
+.lang-bar { height:100%; border-radius:3px; }
+.lang-count { font-size:11px; font-family:var(--mono); color:var(--muted); min-width:60px; text-align:right; }
+.top10 { display:flex; flex-direction:column; gap:6px; }
+.top10-row { display:flex; align-items:center; gap:10px; }
+.top10-rank { font-size:10px; font-family:var(--mono); color:var(--muted); min-width:20px; text-align:right; }
+.top10-name { font-size:12px; min-width:160px; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.top10-bar-wrap { flex:1; height:18px; background:var(--panel2); border-radius:4px; overflow:hidden; }
+.top10-bar { height:100%; border-radius:4px; background:var(--accent); opacity:.8; }
+.top10-val { font-size:11px; font-family:var(--mono); color:var(--muted); min-width:65px; text-align:right; }
+.donut-card { background:var(--panel); border:1px solid var(--border); border-radius:8px; padding:18px 20px; }
+.donut-inner { display:flex; align-items:center; gap:28px; flex-wrap:wrap; }
+.donut-legend { display:flex; flex-direction:column; gap:6px; }
+.legend-row { display:flex; align-items:center; gap:8px; font-size:11px; }
+.legend-dot { width:10px; height:10px; border-radius:2px; flex-shrink:0; }
+.legend-name { color:var(--text); }
+.legend-pct { color:var(--muted); font-family:var(--mono); margin-left:auto; padding-left:12px; }
+.table-card { background:var(--panel); border:1px solid var(--border); border-radius:8px; overflow:hidden; }
+.table-wrap { overflow-x:auto; max-height:600px; overflow-y:auto; }
+.table-wrap::-webkit-scrollbar { width:6px; height:6px; }
+.table-wrap::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+table { width:100%; border-collapse:collapse; font-size:12px; }
+th { padding:10px 14px; text-align:left; font-size:10px; font-weight:700; letter-spacing:.8px; text-transform:uppercase; color:var(--muted); background:var(--panel); border-bottom:1px solid var(--border); cursor:pointer; white-space:nowrap; user-select:none; position:sticky; top:0; z-index:2; }
+th:hover { color:var(--accent); }
+th.sorted { color:var(--accent); }
+td { padding:8px 14px; border-bottom:1px solid rgba(255,255,255,.04); font-family:var(--mono); color:var(--muted); }
+td.app-name { font-family:var(--sans); font-size:12px; font-weight:500; color:var(--text); }
+td.big { color:var(--accent); font-weight:600; }
+tr:hover td { background:rgba(249,115,22,.04); }
+.mini-bar { display:inline-block; height:5px; border-radius:2px; vertical-align:middle; margin-left:6px; background:var(--accent); opacity:.4; }
+.note { font-size:11px; color:var(--muted); text-align:center; padding:12px; }
+canvas { display:block; }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <a class="back" href="../../index.html">← Back</a>
+  <span class="title">Code Stats</span>
+  <span class="scan-info" id="scanInfo">Loading…</span>
+  <div class="spacer"></div>
+  <button class="btn" onclick="location.reload()">↻ Refresh</button>
+  <label class="btn" style="cursor:pointer" title="Load a stats.json from any project">⬆ Load stats.json<input type="file" accept=".json" id="fileInput" style="display:none"></label>
+</div>
+<div class="main" id="main">
+  <div style="color:var(--muted);text-align:center;padding:60px;font-size:13px;">Loading project stats…</div>
+</div>
+<script>
+const LANG_COLORS = {'JavaScript':'#f7df1e','HTML':'#e34c26','CSS':'#264de4','Python':'#3572A5','TypeScript':'#3178c6','JSON':'#6b7280','Markdown':'#555','Shell':'#89e051','C':'#5555aa','C++':'#f34b7d','Go':'#00acd7','Rust':'#dea584','SQL':'#e38c00','XML':'#0060ac','YAML':'#cb171e','Batch':'#8bc34a','Other':'#666'};
+const lc = l => LANG_COLORS[l] || '#888';
+const fmt = n => n >= 1e6 ? (n/1e6).toFixed(1)+'M' : n >= 1000 ? (n/1000).toFixed(1)+'K' : n.toString();
+
+function render(data) {
+  document.getElementById('scanInfo').textContent = `Scanned ${data.scanned_at} · ${data.total_apps} apps · ${fmt(data.total_files)} files`;
+  const main = document.getElementById('main');
+  main.innerHTML = '';
+
+  // Summary
+  const sr = document.createElement('div'); sr.className = 'summary-row';
+  [['total_lines','Total Lines'],['total_code_lines','Code Lines'],['total_files','Files'],['total_apps','Apps']].forEach(([k,l]) => {
+    sr.innerHTML += `<div class="stat-card"><div class="val">${fmt(data[k])}</div><div class="lbl">${l}</div></div>`;
+  });
+  sr.innerHTML += `<div class="stat-card"><div class="val">${Object.keys(data.by_language).length}</div><div class="lbl">Languages</div></div>`;
+  main.appendChild(sr);
+
+  const langs = Object.entries(data.by_language).sort((a,b)=>b[1]-a[1]);
+  const maxLang = langs[0][1];
+  const totalLangLines = langs.reduce((s,[,v])=>s+v,0);
+
+  // Charts row
+  const cr = document.createElement('div'); cr.className = 'charts-row';
+
+  // Lang bars
+  const lc_card = document.createElement('div'); lc_card.className = 'chart-card';
+  lc_card.innerHTML = '<div class="section-header">Lines by Language</div>';
+  const lb = document.createElement('div'); lb.className = 'lang-bars';
+  langs.forEach(([lang,count]) => {
+    const pct = Math.round(count/maxLang*100);
+    const row = document.createElement('div'); row.className = 'lang-row';
+    row.innerHTML = `<span class="lang-name">${lang}</span><div class="lang-bar-wrap"><div class="lang-bar" style="width:${pct}%;background:${lc(lang)}"></div></div><span class="lang-count">${fmt(count)}</span>`;
+    lb.appendChild(row);
+  });
+  lc_card.appendChild(lb);
+  cr.appendChild(lc_card);
+
+  // Top 10
+  const t10 = document.createElement('div'); t10.className = 'chart-card';
+  t10.innerHTML = '<div class="section-header">Top 10 Apps by Lines</div>';
+  const t10d = document.createElement('div'); t10d.className = 'top10';
+  const allApps = Object.values(data.apps).sort((a,b)=>b.total_lines-a.total_lines);
+  const maxApp = allApps[0].total_lines;
+  allApps.slice(0,10).forEach((app,i) => {
+    const pct = Math.round(app.total_lines/maxApp*100);
+    const row = document.createElement('div'); row.className = 'top10-row';
+    row.innerHTML = `<span class="top10-rank">${i+1}</span><span class="top10-name" title="${app.name}">${app.name}</span><div class="top10-bar-wrap"><div class="top10-bar" style="width:${pct}%"></div></div><span class="top10-val">${fmt(app.total_lines)}</span>`;
+    t10d.appendChild(row);
+  });
+  t10.appendChild(t10d); cr.appendChild(t10);
+  main.appendChild(cr);
+
+  // Donut
+  const dc = document.createElement('div'); dc.className = 'donut-card';
+  dc.innerHTML = '<div class="section-header">Language Distribution</div>';
+  const di = document.createElement('div'); di.className = 'donut-inner';
+  const cv = document.createElement('canvas'); cv.width=160; cv.height=160;
+  const ctx = cv.getContext('2d');
+  let angle = -Math.PI/2;
+  const top8 = langs.slice(0,8);
+  const other = langs.slice(8).reduce((s,[,v])=>s+v,0);
+  const slices = [...top8, other>0?['Other',other]:null].filter(Boolean);
+  slices.forEach(([lang,count]) => {
+    const sweep = count/totalLangLines*Math.PI*2;
+    ctx.beginPath(); ctx.moveTo(80,80); ctx.arc(80,80,70,angle,angle+sweep); ctx.closePath();
+    ctx.fillStyle=lc(lang); ctx.fill();
+    angle+=sweep;
+  });
+  ctx.beginPath(); ctx.arc(80,80,36,0,Math.PI*2); ctx.fillStyle='#141417'; ctx.fill();
+  ctx.fillStyle='#e8e8f0'; ctx.font='bold 13px monospace'; ctx.textAlign='center'; ctx.fillText(fmt(totalLangLines),80,78);
+  ctx.fillStyle='#5a5a72'; ctx.font='10px sans-serif'; ctx.fillText('lines',80,93);
+  const leg = document.createElement('div'); leg.className='donut-legend';
+  slices.forEach(([lang,count]) => {
+    const pct = (count/totalLangLines*100).toFixed(1);
+    leg.innerHTML += `<div class="legend-row"><span class="legend-dot" style="background:${lc(lang)}"></span><span class="legend-name">${lang}</span><span class="legend-pct">${pct}%</span></div>`;
+  });
+  di.appendChild(cv); di.appendChild(leg); dc.appendChild(di);
+  main.appendChild(dc);
+
+  // Table
+  const tc = document.createElement('div'); tc.className='table-card';
+  tc.innerHTML='<div class="section-header" style="padding:14px 20px 10px;margin:0;border-bottom:1px solid var(--border)">All Apps</div>';
+  const tw = document.createElement('div'); tw.className='table-wrap';
+  let sortCol='total_lines', sortDir=-1;
+  function buildTable() {
+    const sorted = [...Object.values(data.apps)].sort((a,b)=>{
+      if(sortCol==='name') return sortDir*a.name.localeCompare(b.name);
+      return sortDir*((b[sortCol]||0)-(a[sortCol]||0));
+    });
+    const mxL = sorted[0]?.total_lines||1;
+    const topLangs = langs.slice(0,4).map(([l])=>l);
+    let html='<table><thead><tr>';
+    const cols=[{k:'name',l:'App'},{k:'files',l:'Files'},{k:'total_lines',l:'Total Lines'},{k:'code_lines',l:'Code Lines'},...topLangs.map(l=>({k:'l_'+l,l:l,lang:l})),{k:'primary',l:'Primary'}];
+    cols.forEach(c=>{
+      const s=c.k===sortCol;
+      html+=`<th class="${s?'sorted':''}" data-col="${c.k}">${c.l}${s?`<span style="font-size:9px;margin-left:3px">${sortDir>0?'↑':'↓'}</span>`:''}</th>`;
+    });
+    html+='</tr></thead><tbody>';
+    sorted.forEach(app=>{
+      const pct=Math.min(80,Math.round(app.total_lines/mxL*80));
+      const pl=Object.entries(app.by_lang||{}).sort((a,b)=>b[1]-a[1])[0]?.[0]||'—';
+      html+='<tr>';
+      cols.forEach(c=>{
+        if(c.k==='name') html+=`<td class="app-name">${app.name}</td>`;
+        else if(c.k==='total_lines') html+=`<td class="big">${fmt(app.total_lines)}<span class="mini-bar" style="width:${pct}px"></span></td>`;
+        else if(c.k==='code_lines') html+=`<td>${fmt(app.code_lines)}</td>`;
+        else if(c.k==='files') html+=`<td>${app.files}</td>`;
+        else if(c.k==='primary') html+=`<td style="color:${lc(pl)};font-size:11px">${pl}</td>`;
+        else if(c.lang){const v=app.by_lang?.[c.lang]||0; html+=`<td>${v>0?fmt(v):'<span style="opacity:.3">—</span>'}</td>`;}
+      });
+      html+='</tr>';
+    });
+    html+='</tbody></table>';
+    tw.innerHTML=html;
+    tw.querySelectorAll('th[data-col]').forEach(th=>th.addEventListener('click',()=>{
+      if(sortCol===th.dataset.col) sortDir*=-1; else{sortCol=th.dataset.col;sortDir=-1;}
+      buildTable();
+    }));
+  }
+  buildTable();
+  tc.appendChild(tw);
+  main.appendChild(tc);
+  main.innerHTML+=`<div class="note">Stats auto-generated from project scan on ${data.scanned_at}</div>`;
+}
+
+// Default: load pre-built project stats
+fetch('stats.json').then(r=>{if(!r.ok)throw new Error();return r.json();}).then(render).catch(()=>{
+  document.getElementById('main').innerHTML=`<div style="color:var(--muted);text-align:center;padding:60px;font-size:13px">stats.json not found — run <code>python apps/code_stats/scan.py</code> first</div>`;
+});
+
+// File upload: let anyone drop in their own stats.json
+document.getElementById('fileInput').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      document.getElementById('scanInfo').textContent = 'Loaded: ' + file.name;
+      render(data);
+    } catch {
+      alert('Invalid stats.json file.');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = ''; // reset so same file can be re-loaded
+});
+</script>
+</body>
+</html>

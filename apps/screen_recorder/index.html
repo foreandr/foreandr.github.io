@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Screen Recorder</title>
+  <link rel="icon" type="image/x-icon" href="../../images.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0d1118;
+      --panel: #131b28;
+      --panel-2: #182236;
+      --border: #253551;
+      --text: #e7edf7;
+      --muted: #9fb2c7;
+      --accent: #38bdf8;
+      --accent-2: #f97316;
+      --good: #34d399;
+      --bad: #f87171;
+      --shadow: 0 14px 30px rgba(0,0,0,0.4);
+      --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+      --sans: "Space Grotesk", system-ui, -apple-system, Segoe UI, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--sans);
+      color: var(--text);
+      background:
+        radial-gradient(900px 500px at 10% -20%, rgba(56, 189, 248, 0.2), transparent 60%),
+        radial-gradient(900px 500px at 90% -20%, rgba(249, 115, 22, 0.18), transparent 60%),
+        var(--bg);
+      min-height: 100vh;
+    }
+    header {
+      padding: 26px 36px 18px;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(19, 27, 40, 0.95), rgba(13, 17, 24, 0.9));
+      position: sticky; top: 0; z-index: 10;
+    }
+    header .wrap { max-width: 1000px; margin: 0 auto; }
+    .back {
+      display: inline-flex; align-items: center; gap: 8px;
+      color: var(--muted); text-decoration: none; font-size: 12px;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      border: 1px solid var(--border); padding: 6px 12px; border-radius: 999px;
+      font-family: var(--mono);
+    }
+    h1 { margin-top: 12px; font-size: clamp(1.6rem, 2.6vw, 2.4rem); }
+    .sub { margin-top: 6px; color: var(--muted); }
+    main { max-width: 1000px; margin: 0 auto; padding: 30px 36px 80px; display: grid; gap: 22px; }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 22px;
+      box-shadow: var(--shadow);
+    }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 12px; }
+    .btn {
+      background: var(--accent); color: #04131c; border: none; border-radius: 10px;
+      padding: 10px 16px; font-weight: 700; cursor: pointer; font-family: var(--mono);
+      text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.72rem;
+    }
+    .btn.secondary { background: transparent; border: 1px solid var(--border); color: var(--text); }
+    .btn.warn { background: var(--accent-2); color: #1e0c00; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .status { font-family: var(--mono); font-size: 0.8rem; color: var(--muted); }
+    .timer { font-family: var(--mono); font-size: 1.2rem; margin-top: 8px; }
+    video { width: 100%; border-radius: 12px; border: 1px solid var(--border); background: #000; }
+    label { font-size: 0.8rem; color: var(--muted); font-family: var(--mono); letter-spacing: 0.08em; text-transform: uppercase; }
+    .switch { display: inline-flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 0.8rem; color: var(--muted); }
+    @media (max-width: 640px) {
+      header, main { padding-left: 20px; padding-right: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <a class="back" href="../../index.html">Back Home</a>
+      <h1>Screen Recorder</h1>
+      <p class="sub">Capture your screen with optional microphone audio. Download as WebM.</p>
+    </div>
+  </header>
+
+  <main>
+    <section class="panel">
+      <div class="row">
+        <label class="switch"><input type="checkbox" id="micToggle"> Include Microphone</label>
+        <label class="switch"><input type="checkbox" id="systemToggle"> Include System Audio (if available)</label>
+      </div>
+      <div class="row">
+        <button class="btn" id="startBtn">Start Recording</button>
+        <button class="btn secondary" id="pauseBtn" disabled>Pause</button>
+        <button class="btn secondary" id="resumeBtn" disabled>Resume</button>
+        <button class="btn warn" id="stopBtn" disabled>Stop</button>
+      </div>
+      <div class="status" id="status">Idle.</div>
+      <div class="timer" id="timer">00:00</div>
+    </section>
+
+    <section class="panel">
+      <h2>Preview</h2>
+      <video id="preview" controls></video>
+      <div class="row">
+        <button class="btn secondary" id="downloadBtn" disabled>Download Recording</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const startBtn = document.getElementById('startBtn');
+    const pauseBtn = document.getElementById('pauseBtn');
+    const resumeBtn = document.getElementById('resumeBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const statusEl = document.getElementById('status');
+    const timerEl = document.getElementById('timer');
+    const preview = document.getElementById('preview');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const micToggle = document.getElementById('micToggle');
+    const systemToggle = document.getElementById('systemToggle');
+
+    let recorder;
+    let chunks = [];
+    let timer;
+    let startTime;
+    let lastBlobUrl = null;
+
+    function setStatus(text) { statusEl.textContent = text; }
+    function updateTimer() {
+      const elapsed = Math.floor((Date.now() - startTime) / 1000);
+      const mm = String(Math.floor(elapsed / 60)).padStart(2, '0');
+      const ss = String(elapsed % 60).padStart(2, '0');
+      timerEl.textContent = `${mm}:${ss}`;
+    }
+    function resetTimer() {
+      clearInterval(timer);
+      timerEl.textContent = '00:00';
+    }
+
+    async function startRecording() {
+      chunks = [];
+      if (lastBlobUrl) URL.revokeObjectURL(lastBlobUrl);
+      preview.src = '';
+      downloadBtn.disabled = true;
+
+      const displayStream = await navigator.mediaDevices.getDisplayMedia({
+        video: true,
+        audio: systemToggle.checked
+      });
+
+      let tracks = [...displayStream.getVideoTracks()];
+      let audioTracks = displayStream.getAudioTracks();
+
+      if (micToggle.checked) {
+        const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        audioTracks = audioTracks.concat(micStream.getAudioTracks());
+      }
+
+      const mixedStream = new MediaStream([...tracks, ...audioTracks]);
+      recorder = new MediaRecorder(mixedStream, { mimeType: 'video/webm;codecs=vp9,opus' });
+
+      recorder.ondataavailable = (e) => { if (e.data.size) chunks.push(e.data); };
+      recorder.onstop = () => {
+        const blob = new Blob(chunks, { type: 'video/webm' });
+        lastBlobUrl = URL.createObjectURL(blob);
+        preview.src = lastBlobUrl;
+        downloadBtn.disabled = false;
+      };
+
+      recorder.start(200);
+      setStatus('Recording...');
+      startTime = Date.now();
+      timer = setInterval(updateTimer, 1000);
+      startBtn.disabled = true;
+      pauseBtn.disabled = false;
+      stopBtn.disabled = false;
+    }
+
+    startBtn.addEventListener('click', () => {
+      startRecording().catch(err => setStatus('Error: ' + err.message));
+    });
+    pauseBtn.addEventListener('click', () => {
+      if (recorder && recorder.state === 'recording') {
+        recorder.pause();
+        setStatus('Paused.');
+        pauseBtn.disabled = true;
+        resumeBtn.disabled = false;
+      }
+    });
+    resumeBtn.addEventListener('click', () => {
+      if (recorder && recorder.state === 'paused') {
+        recorder.resume();
+        setStatus('Recording...');
+        pauseBtn.disabled = false;
+        resumeBtn.disabled = true;
+      }
+    });
+    stopBtn.addEventListener('click', () => {
+      if (recorder && (recorder.state === 'recording' || recorder.state === 'paused')) {
+        recorder.stop();
+        setStatus('Stopped.');
+        startBtn.disabled = false;
+        pauseBtn.disabled = true;
+        resumeBtn.disabled = true;
+        stopBtn.disabled = true;
+        resetTimer();
+      }
+    });
+    downloadBtn.addEventListener('click', () => {
+      if (!lastBlobUrl) return;
+      const a = document.createElement('a');
+      a.href = lastBlobUrl;
+      a.download = 'screen-recording.webm';
+      a.click();
+    });
+  </script>
+</body>
+</html>

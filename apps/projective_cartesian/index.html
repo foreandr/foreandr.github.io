@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cartesian ↔ Projective Geometry Sandbox</title>
+  <link rel="icon" type="image/x-icon" href="../../images.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,600;1,300&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+<style>
+  :root {
+    --bg:        #f5f5f0;
+    --panel:     #eeeeea;
+    --border:    #d0d0c8;
+    --border2:   #b0b0a8;
+    --text:      #1a1a1a;
+    --muted:     #707068;
+    --accent:    #1a6ef5;
+    --accent2:   #d4006a;
+    --accent3:   #b07800;
+    --grid-line: rgba(0,0,0,0.08);
+    --axis-line: rgba(0,0,0,0.5);
+    --horizon:   #d4006a;
+    --font-mono: 'JetBrains Mono', monospace;
+    --font-ui:   'Space Mono', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-mono);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--panel);
+    flex-shrink: 0;
+  }
+
+  header .back-btn {
+    font-size: 11px;
+    font-family: var(--font-ui);
+    color: var(--muted);
+    text-decoration: none;
+    letter-spacing: 0.04em;
+    padding: 3px 8px;
+    border: 1px solid var(--border2);
+    border-radius: 4px;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  header .back-btn:hover { color: var(--accent); border-color: var(--accent); }
+
+  header .logo {
+    font-family: var(--font-ui);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    text-transform: uppercase;
+  }
+
+  header .subtitle {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+  }
+
+  header .badge {
+    margin-left: auto;
+    font-size: 10px;
+    color: var(--muted);
+    border: 1px solid var(--border2);
+    padding: 2px 8px;
+    border-radius: 3px;
+    letter-spacing: 0.06em;
+  }
+
+  .app {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: 280px;
+    flex-shrink: 0;
+    background: var(--panel);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .sidebar-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    text-transform: uppercase;
+    font-family: var(--font-ui);
+  }
+
+  .curves-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+  }
+
+  .curves-list::-webkit-scrollbar { width: 4px; }
+  .curves-list::-webkit-scrollbar-track { background: transparent; }
+  .curves-list::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+  .curve-card {
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-bottom: 10px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .curve-card:hover { border-color: var(--border2); }
+  .curve-card.active { border-color: var(--border2); }
+
+  .curve-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .curve-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .curve-label {
+    flex: 1;
+    font-size: 11px;
+    color: var(--text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .curve-eq {
+    font-size: 11px;
+    color: #1a6ef5;
+    padding: 0 10px 6px;
+    min-height: 22px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .curve-eq .katex { font-size: 11px; }
+
+  .curve-body {
+    padding: 8px 10px 10px;
+    border-top: 1px solid var(--border);
+  }
+
+  .input-row {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 8px;
+    align-items: center;
+  }
+
+  .input-row label {
+    font-size: 10px;
+    color: var(--muted);
+    width: 18px;
+    flex-shrink: 0;
+    font-style: italic;
+  }
+
+  .curve-input {
+    flex: 1;
+    background: #f8f8f6;
+    border: 1px solid var(--border2);
+    border-radius: 4px;
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 5px 8px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .curve-input:focus { border-color: var(--accent); }
+
+  .slider-group {
+    margin-top: 6px;
+  }
+
+  .slider-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+
+  .slider-row label {
+    font-size: 9px;
+    color: var(--muted);
+    width: 50px;
+    flex-shrink: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .slider-row input[type=range] {
+    flex: 1;
+    -webkit-appearance: none;
+    height: 3px;
+    background: var(--border2);
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+  }
+
+  .slider-row input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    transition: transform 0.1s;
+  }
+
+  .slider-row input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.3); }
+
+  .slider-val {
+    font-size: 10px;
+    color: var(--accent3);
+    width: 32px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  .del-btn {
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    padding: 0 2px;
+    transition: color 0.2s;
+  }
+  .del-btn:hover { color: var(--accent2); }
+
+  .add-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: calc(100% - 20px);
+    margin: 0 10px 10px;
+    background: none;
+    border: 1px dashed var(--border2);
+    border-radius: 5px;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s;
+    letter-spacing: 0.04em;
+  }
+  .add-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .sidebar-footer {
+    padding: 10px 16px;
+    border-top: 1px solid var(--border);
+    font-size: 10px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  /* ── CANVAS AREA ── */
+  .canvas-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .pane-labels {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    background: var(--panel);
+  }
+
+  .pane-label {
+    flex: 1;
+    text-align: center;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-family: var(--font-ui);
+    padding: 7px 0;
+    position: relative;
+  }
+
+  .pane-label:first-child::after {
+    content: '';
+    position: absolute;
+    right: 0; top: 20%; height: 60%;
+    width: 1px;
+    background: var(--border);
+  }
+
+  .pane-label .tag {
+    display: inline-block;
+    margin-left: 6px;
+    font-size: 9px;
+    padding: 1px 5px;
+    border-radius: 3px;
+    vertical-align: middle;
+  }
+
+  .pane-label .pane-coord {
+    margin-left: 10px;
+    font-size: 10px;
+    color: #1a1a1a;
+    font-family: var(--font-mono);
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: none;
+  }
+
+  .canvases {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .pane {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .pane-divider {
+    width: 1px;
+    background: var(--border);
+    flex-shrink: 0;
+    position: relative;
+  }
+
+  canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    cursor: crosshair;
+  }
+
+  .coord-readout {
+    position: absolute;
+    bottom: 8px;
+    left: 10px;
+    font-size: 10px;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    pointer-events: none;
+    letter-spacing: 0.04em;
+  }
+
+  .horizon-label {
+    position: absolute;
+    top: 6px;
+    right: 10px;
+    font-size: 9px;
+    color: var(--accent2);
+    font-family: var(--font-ui);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    pointer-events: none;
+    opacity: 0.7;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="back-btn" href="../../index.html">← Back</a>
+  <div class="logo">GeoSandbox</div>
+  <div class="subtitle">Cartesian ↔ Projective Dual Grid</div>
+  <div class="badge">v1.0</div>
+</header>
+
+<div class="app">
+  <div class="sidebar">
+    <div class="sidebar-header">Curves</div>
+    <div class="curves-list" id="curvesList"></div>
+    <button class="add-btn" id="addCurveBtn">+ Add Curve</button>
+    <div class="sidebar-footer">
+      Drag sliders to move curves.<br>
+      The projective view warps algebra into geometry.
+    </div>
+  </div>
+
+  <div class="canvas-area">
+    <div class="pane-labels">
+      <div class="pane-label">Cartesian <span class="tag cart">SOURCE</span><span class="pane-coord" id="cartCoordHeader">—</span></div>
+      <div class="pane-label">Projective <span class="tag proj">VIEW</span><span class="pane-coord" id="projCoordHeader">—</span></div>
+    </div>
+    <div class="canvases">
+      <div class="pane" id="leftPane">
+        <canvas id="cartCanvas"></canvas>
+        <div class="coord-readout" id="cartCoord">x: 0.00  y: 0.00</div>
+      </div>
+      <div class="pane-divider"></div>
+      <div class="pane" id="rightPane">
+        <canvas id="projCanvas"></canvas>
+        <div class="coord-readout" id="projCoord">x: 0.00  y: 0.00</div>
+        <div class="horizon-label">Horizon ∞</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── PALETTE ──────────────────────────────────────────────────────
+const PALETTE = [
+  '#1a6ef5','#d4006a','#c47a00','#7c3aed','#059669','#ea4b08','#0284c7','#be185d'
+];
+
+// ── MATH PARSER ──────────────────────────────────────────────────
+function parseExpr(expr) {
+  // Returns a JS function f(x) or throws
+  // Supports: x, ^, sqrt, sin, cos, tan, abs, log, exp, pi, e
+  let s = expr.trim();
+  // Strip leading "y=" or "f(x)="
+  s = s.replace(/^[yf]\s*\(?\s*x\s*\)?\s*=\s*/i, '');
+  s = s.replace(/\^/g, '**');
+  s = s.replace(/\b(sin|cos|tan|sqrt|abs|log|exp)\b/g, 'Math.$1');
+  s = s.replace(/\bpi\b/gi, 'Math.PI');
+  s = s.replace(/\be\b/g, 'Math.E');
+  // implicit multiplication: 2x → 2*x, 2( → 2*(, )( → )*(
+  s = s.replace(/(\d)(x)/g, '$1*$2');
+  s = s.replace(/(\d)\(/g, '$1*(');
+  s = s.replace(/\)\(/g, ')*(');
+  try {
+    const fn = new Function('x', `"use strict"; return (${s});`);
+    fn(0); // test
+    return fn;
+  } catch(e) {
+    throw new Error('Parse error');
+  }
+}
+
+function buildEquationLatex(expr, dx, dy) {
+  // Show the transformed equation: y - dy = f(x - dx)
+  // i.e. y = f(x - dx) + dy
+  let base = expr.trim().replace(/^[yf]\s*\(?\s*x\s*\)?\s*=\s*/i,'');
+  let inner = base;
+  if (dx !== 0) {
+    const sign = dx > 0 ? '-' : '+';
+    const val  = Math.abs(dx).toFixed(2).replace(/\.00$/,'');
+    inner = `(${base.replace(/x/g, `(x ${sign} ${val})`)})`;
+    // simplify redundant wrapping for simple x
+    inner = inner.replace(/\(\(x/g,'(x');
+  }
+  let eq = inner;
+  if (dy !== 0) {
+    const sign = dy > 0 ? '+' : '-';
+    const val  = Math.abs(dy).toFixed(2).replace(/\.00$/,'');
+    eq = `${inner} ${sign} ${val}`;
+  }
+  return `y = ${eq}`;
+}
+
+// ── STATE ─────────────────────────────────────────────────────────
+let curves = [];
+let nextId = 1;
+let paletteIdx = 0;
+
+function makeCurve() {
+  const id = nextId++;
+  const color = PALETTE[paletteIdx % PALETTE.length];
+  paletteIdx++;
+  return {
+    id,
+    expr: 'x',
+    color,
+    dx: 0,
+    dy: 0,
+    fn: null,
+    error: false
+  };
+}
+
+// ── DOM HELPERS ───────────────────────────────────────────────────
+function katexStr(latex) {
+  try {
+    return katex.renderToString(latex, {throwOnError: false, displayMode: false});
+  } catch(e) { return latex; }
+}
+
+function renderCurveCard(curve) {
+  const card = document.createElement('div');
+  card.className = 'curve-card';
+  card.dataset.id = curve.id;
+
+  // Build latex for current state
+  const latex = buildEquationLatex(curve.expr, curve.dx, curve.dy);
+
+  card.innerHTML = `
+    <div class="curve-header">
+      <div class="curve-dot" style="background:${curve.color}"></div>
+      <div class="curve-label">Curve ${curve.id}</div>
+      <button class="del-btn" data-del="${curve.id}" title="Remove">×</button>
+    </div>
+    <div class="curve-eq" id="eq-${curve.id}">${katexStr(latex)}</div>
+    <div class="curve-body">
+      <div class="input-row">
+        <label>f =</label>
+        <input type="text" class="curve-input" id="inp-${curve.id}"
+          value="${curve.expr}" placeholder="e.g. x^2 or sin(x)" spellcheck="false">
+      </div>
+      <div class="slider-group">
+        <div class="slider-row">
+          <label>↕ Up/Dn</label>
+          <input type="range" id="dy-${curve.id}" min="-10" max="10" step="0.1" value="${curve.dy}">
+          <span class="slider-val" id="dyv-${curve.id}">${curve.dy.toFixed(1)}</span>
+        </div>
+        <div class="slider-row">
+          <label>↔ L/R</label>
+          <input type="range" id="dx-${curve.id}" min="-10" max="10" step="0.1" value="${curve.dx}">
+          <span class="slider-val" id="dxv-${curve.id}">${curve.dx.toFixed(1)}</span>
+        </div>
+      </div>
+    </div>
+  `;
+  return card;
+}
+
+function refreshCurveEq(curve) {
+  const el = document.getElementById(`eq-${curve.id}`);
+  if (!el) return;
+  const latex = buildEquationLatex(curve.expr, curve.dx, curve.dy);
+  el.innerHTML = katexStr(latex);
+}
+
+function addCurveToDOM(curve) {
+  const list = document.getElementById('curvesList');
+  const card = renderCurveCard(curve);
+  list.appendChild(card);
+
+  // events
+  const inp = document.getElementById(`inp-${curve.id}`);
+  inp.addEventListener('input', () => {
+    curve.expr = inp.value;
+    updateCurveFn(curve);
+    refreshCurveEq(curve);
+    draw();
+  });
+
+  const dySlider = document.getElementById(`dy-${curve.id}`);
+  dySlider.addEventListener('input', () => {
+    curve.dy = parseFloat(dySlider.value);
+    document.getElementById(`dyv-${curve.id}`).textContent = curve.dy.toFixed(1);
+    refreshCurveEq(curve);
+    draw();
+  });
+
+  const dxSlider = document.getElementById(`dx-${curve.id}`);
+  dxSlider.addEventListener('input', () => {
+    curve.dx = parseFloat(dxSlider.value);
+    document.getElementById(`dxv-${curve.id}`).textContent = curve.dx.toFixed(1);
+    refreshCurveEq(curve);
+    draw();
+  });
+
+  card.querySelector(`[data-del="${curve.id}"]`).addEventListener('click', () => {
+    curves = curves.filter(c => c.id !== curve.id);
+    card.remove();
+    draw();
+  });
+}
+
+function updateCurveFn(curve) {
+  try {
+    curve.fn = parseExpr(curve.expr);
+    curve.error = false;
+  } catch(e) {
+    curve.fn = null;
+    curve.error = true;
+  }
+}
+
+// ── CANVAS SETUP ──────────────────────────────────────────────────
+const cartCanvas = document.getElementById('cartCanvas');
+const projCanvas = document.getElementById('projCanvas');
+const ctxC = cartCanvas.getContext('2d');
+const ctxP = projCanvas.getContext('2d');
+
+function resizeCanvases() {
+  const lp = document.getElementById('leftPane');
+  const rp = document.getElementById('rightPane');
+  cartCanvas.width  = lp.clientWidth;
+  cartCanvas.height = lp.clientHeight;
+  projCanvas.width  = rp.clientWidth;
+  projCanvas.height = rp.clientHeight;
+  draw();
+}
+
+window.addEventListener('resize', resizeCanvases);
+
+// ── ZOOM STATE ────────────────────────────────────────────────────
+let cartScale = 50; // pixels per unit — mutable for zoom
+let projZoom  = 1.0; // multiplier for projective camera height
+
+function cartToScreen(x, y, W, H) {
+  return [W/2 + x * cartScale, H/2 - y * cartScale];
+}
+function screenToCart(px, py, W, H) {
+  return [(px - W/2) / cartScale, (H/2 - py) / cartScale];
+}
+
+// Projective transform:
+// z(y) = 1 + y * PERSP_K
+// screen_x' = cx + (x / z) * PROJ_SCALE * projZoom
+// screen_y' = horizonY + (CAM_H * projZoom) / z
+const PERSP_K    = 0.04;   // very shallow — curves travel far before vanishing
+const BASE_CAM_H = 900;    // very tall camera — huge asymptote room
+const PROJ_SCALE = 50;
+
+function projTransform(x, y, W, H) {
+  const z  = Math.max(1 + y * PERSP_K, 0.0001);
+  const cx = W / 2;
+  const horizonY = getHorizonY(H);
+  const camH = BASE_CAM_H * projZoom;
+  const sx = cx + (x / z) * PROJ_SCALE * projZoom;
+  const sy = horizonY + camH / z;
+  return [sx, sy, z];
+}
+
+function getHorizonY(H) { return 12; } // fixed 12px from top — absolute ceiling
+
+// ── DRAWING ───────────────────────────────────────────────────────
+function drawCartGrid(ctx, W, H) {
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, W, H);
+
+  // minor grid
+  const step = cartScale;
+  const ox = (W/2) % step;
+  const oy = (H/2) % step;
+  // minor grid lines — bold enough to actually see
+  ctx.lineWidth = 1;
+
+  // vertical lines
+  ctx.strokeStyle = 'rgba(0,0,0,0.6)';
+  for (let x = ox; x < W; x += step) {
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+  }
+  // horizontal lines
+  ctx.strokeStyle = 'rgba(0,0,0,0.6)';
+  for (let y = oy; y < H; y += step) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+  }
+
+  // tick marks at each grid intersection on the axes — small cross-hairs
+  ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+  ctx.lineWidth = 1;
+  const xRange2 = Math.ceil(W / (2 * cartScale));
+  for (let i = -xRange2; i <= xRange2; i++) {
+    const [sx] = cartToScreen(i, 0, W, H);
+    ctx.beginPath(); ctx.moveTo(sx, H/2 - 5); ctx.lineTo(sx, H/2 + 5); ctx.stroke();
+  }
+  const yRange2 = Math.ceil(H / (2 * cartScale));
+  for (let i = -yRange2; i <= yRange2; i++) {
+    const [, sy] = cartToScreen(0, i, W, H);
+    ctx.beginPath(); ctx.moveTo(W/2 - 5, sy); ctx.lineTo(W/2 + 5, sy); ctx.stroke();
+  }
+
+  // axes
+  ctx.strokeStyle = 'rgba(0,0,0,0.7)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(W/2, 0); ctx.lineTo(W/2, H); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(0, H/2); ctx.lineTo(W, H/2); ctx.stroke();
+
+  // axis labels
+  ctx.fillStyle = 'rgba(0,0,0,0.4)';
+  ctx.font = '10px JetBrains Mono';
+  ctx.textAlign = 'center';
+  const xRange = Math.ceil(W / (2 * cartScale));
+  for (let i = -xRange; i <= xRange; i++) {
+    if (i === 0) continue;
+    const [sx, sy] = cartToScreen(i, 0, W, H);
+    ctx.fillText(i, sx, H/2 + 14);
+  }
+  ctx.textAlign = 'right';
+  const yRange = Math.ceil(H / (2 * cartScale));
+  for (let i = -yRange; i <= yRange; i++) {
+    if (i === 0) continue;
+    const [sx, sy] = cartToScreen(0, i, W, H);
+    ctx.fillText(i, W/2 - 6, sy + 3);
+  }
+  // origin
+  ctx.fillStyle = 'rgba(0,0,0,0.4)';
+  ctx.textAlign = 'right';
+  ctx.fillText('0', W/2 - 5, H/2 + 14);
+
+  // ── MOUSE TILE HIGHLIGHT ─────────────────────────────────────
+  if (cartMouse.x !== null) {
+    const tileX = Math.floor(cartMouse.x);
+    const tileY = Math.floor(cartMouse.y);
+    const [tlx, tly] = cartToScreen(tileX,     tileY + 1, W, H);
+    const [brx, bry] = cartToScreen(tileX + 1, tileY,     W, H);
+    ctx.fillStyle = 'rgba(0,0,0,0.12)';
+    ctx.fillRect(tlx, tly, brx - tlx, bry - tly);
+    // crosshair dot
+    const [mx, my] = cartToScreen(cartMouse.x, cartMouse.y, W, H);
+    ctx.fillStyle = 'rgba(0,0,0,0.7)';
+    ctx.beginPath(); ctx.arc(mx, my, 3, 0, Math.PI*2); ctx.fill();
+  }
+}
+
+function drawProjectiveGrid(ctx, W, H) {
+  ctx.clearRect(0, 0, W, H);
+  const bg = ctx.createLinearGradient(0, 0, 0, H);
+  bg.addColorStop(0, '#f8f0f4');
+  bg.addColorStop(0.06, '#fafafa');
+  bg.addColorStop(1, '#ffffff');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+
+  const horizonY = getHorizonY(H);
+  const cx = W / 2;
+  const vp = { x: cx, y: horizonY };
+
+  // ── VERTICAL TRAIN-TRACK LINES ────────────────────────────────
+  // Evenly spaced at bottom, all converge to vp
+  const spacing = cartScale * projZoom;
+  ctx.lineWidth = 1.2;
+  ctx.strokeStyle = 'rgba(0,0,0,0.75)';
+  for (let offset = 0; offset <= W * 1.5; offset += spacing) {
+    for (const sign of [1, -1]) {
+      if (offset === 0 && sign === -1) continue;
+      const bx = cx + sign * offset;
+      ctx.beginPath();
+      ctx.moveTo(bx, H);
+      ctx.lineTo(vp.x, vp.y);
+      ctx.stroke();
+    }
+  }
+
+  // ── HORIZONTAL SLEEPER LINES (perspective-spaced) ─────────────
+  // Step through Cartesian y values; project each to screen y
+  // Use fractional steps for dense lines near horizon
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = 'rgba(0,0,0,0.6)';
+  ctx.font = '9px JetBrains Mono';
+  ctx.fillStyle = 'rgba(0,0,0,0.45)';
+
+  const yStep = 1 / projZoom;  // finer steps when zoomed in
+  let prevSy = H + 999;
+  for (let yi = -30; yi <= 200; yi += yStep) {
+    const [, sy] = projTransform(0, yi, W, H);
+    if (sy > H + 2) continue;
+    if (sy < horizonY - 1) break;
+    // skip if too close to previous line (avoid over-crowding near horizon)
+    if (prevSy - sy < 2) continue;
+    prevSy = sy;
+
+    ctx.beginPath();
+    ctx.moveTo(0, sy);
+    ctx.lineTo(W, sy);
+    ctx.stroke();
+
+    // Label every integer y value if lines are spaced enough
+    if (Number.isInteger(Math.round(yi / yStep) * yStep) &&
+        Math.abs(yi - Math.round(yi)) < 0.01 &&
+        prevSy - sy >= 12) {
+      const label = Math.round(yi).toString();
+      ctx.fillText(label, cx + 4, sy - 2);
+    }
+  }
+
+  // ── HORIZON LINE ──────────────────────────────────────────────
+  const grad = ctx.createLinearGradient(0, 0, W, 0);
+  grad.addColorStop(0, 'transparent');
+  grad.addColorStop(0.15, '#d4006a');
+  grad.addColorStop(0.85, '#d4006a');
+  grad.addColorStop(1, 'transparent');
+  ctx.strokeStyle = grad;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(0, horizonY);
+  ctx.lineTo(W, horizonY);
+  ctx.stroke();
+
+  ctx.strokeStyle = 'rgba(212,0,106,0.1)';
+  ctx.lineWidth = 10;
+  ctx.beginPath();
+  ctx.moveTo(0, horizonY);
+  ctx.lineTo(W, horizonY);
+  ctx.stroke();
+
+  // Vanishing point dot
+  ctx.fillStyle = '#d4006a';
+  ctx.beginPath();
+  ctx.arc(cx, horizonY, 4, 0, Math.PI * 2);
+  ctx.fill();
+
+  // ── MOUSE TILE HIGHLIGHT ─────────────────────────────────────
+  if (projMouse.sx !== null && projMouse.sy !== null && projMouse.sy > horizonY) {
+    const mx = projMouse.sx, my = projMouse.sy;
+
+    // Inverse: recover cartesian coords from screen position
+    // sy = horizonY + camH/z  =>  z = camH/(sy-horizonY)
+    // sx = cx + (x/z)*PROJ_SCALE*projZoom  =>  x = (sx-cx)*z/(PROJ_SCALE*projZoom)
+    // y = (z-1)/PERSP_K
+    const camH = BASE_CAM_H * projZoom;
+    const dsy  = my - horizonY;
+    if (dsy > 1) {
+      const z     = camH / dsy;
+      const cartX = (mx - cx) * z / (PROJ_SCALE * projZoom);
+      const cartY = (z - 1) / PERSP_K;
+
+      // which integer tile?
+      const xFloor = Math.floor(cartX);
+      const yFloor = Math.floor(cartY);
+
+      // The 4 corners in cartesian space, projected to screen
+      // Note: yFloor+1 is CLOSER to horizon (higher y = higher up screen)
+      // so we order: bottom-left, bottom-right, top-right, top-left
+      const bl = projTransform(xFloor,     yFloor,     W, H); // farther from horizon
+      const br = projTransform(xFloor + 1, yFloor,     W, H);
+      const tr = projTransform(xFloor + 1, yFloor + 1, W, H); // closer to horizon
+      const tl = projTransform(xFloor,     yFloor + 1, W, H);
+
+      // Only draw if all corners are below the horizon
+      if (bl[1] > horizonY && br[1] > horizonY && tr[1] > horizonY && tl[1] > horizonY) {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.18)';
+        ctx.strokeStyle = 'rgba(0, 0, 0, 0.6)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(bl[0], bl[1]);
+        ctx.lineTo(br[0], br[1]);
+        ctx.lineTo(tr[0], tr[1]);
+        ctx.lineTo(tl[0], tl[1]);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+      }
+    }
+
+    // dot at exact mouse position
+    ctx.fillStyle = 'rgba(0,0,0,0.8)';
+    ctx.beginPath(); ctx.arc(mx, my, 3, 0, Math.PI*2); ctx.fill();
+  }
+}
+
+function drawCurveOnCart(ctx, curve, W, H) {
+  if (!curve.fn) return;
+  const steps = W * 2;
+  const xMin = -W/(2*cartScale) - 1;
+  const xMax =  W/(2*cartScale) + 1;
+  ctx.strokeStyle = curve.color;
+  ctx.lineWidth = 2;
+  ctx.shadowBlur = 0;
+  ctx.beginPath();
+  let first = true;
+  for (let i = 0; i <= steps; i++) {
+    const xCart = xMin + (xMax - xMin) * i / steps;
+    const xRel  = xCart - curve.dx;
+    let yCart;
+    try { yCart = curve.fn(xRel) + curve.dy; } catch(e) { first = true; continue; }
+    if (!isFinite(yCart) || Math.abs(yCart) > 1000) { first = true; continue; }
+    const [sx, sy] = cartToScreen(xCart, yCart, W, H);
+    if (first) { ctx.moveTo(sx, sy); first = false; } else { ctx.lineTo(sx, sy); }
+  }
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+}
+
+function drawCurveOnProj(ctx, curve, W, H) {
+  if (!curve.fn) return;
+  const horizonY = getHorizonY(H);
+  const steps = W * 3;
+  const xMin = -W/(2*cartScale) - 5;
+  const xMax =  W/(2*cartScale) + 5;
+
+  ctx.strokeStyle = curve.color;
+  ctx.lineWidth = 2.5;
+  ctx.shadowBlur = 0;
+  ctx.beginPath();
+  let first = true;
+  let prevPx = null, prevPy = null;
+  for (let i = 0; i <= steps; i++) {
+    const xCart = xMin + (xMax - xMin) * i / steps;
+    const xRel  = xCart - curve.dx;
+    let yCart;
+    try { yCart = curve.fn(xRel) + curve.dy; } catch(e) { first = true; continue; }
+    if (!isFinite(yCart)) { first = true; continue; }
+
+    const [px, py, z] = projTransform(xCart, yCart, W, H);
+
+    // Clip to horizon
+    if (py <= horizonY) { first = true; continue; }
+    if (py > H + 20) { first = true; continue; }
+    if (px < -W || px > 2*W) { first = true; continue; }
+
+    if (first) { ctx.moveTo(px, py); first = false; }
+    else { ctx.lineTo(px, py); }
+    prevPx = px; prevPy = py;
+  }
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+}
+
+function draw() {
+  const W1 = cartCanvas.width, H1 = cartCanvas.height;
+  const W2 = projCanvas.width, H2 = projCanvas.height;
+
+  drawCartGrid(ctxC, W1, H1);
+  drawProjectiveGrid(ctxP, W2, H2);
+
+  for (const curve of curves) {
+    drawCurveOnCart(ctxC, curve, W1, H1);
+    drawCurveOnProj(ctxP, curve, W2, H2);
+  }
+}
+
+// ── MOUSE STATE ───────────────────────────────────────────────────
+const cartMouse = { x: null, y: null };   // Cartesian coords
+const projMouse = { sx: null, sy: null, cartX: null, cartY: null }; // screen + inverse cart
+// ── MOUSE COORDS READOUT + TILE HIGHLIGHT ─────────────────────────
+cartCanvas.addEventListener('mousemove', e => {
+  const r  = cartCanvas.getBoundingClientRect();
+  const px = (e.clientX - r.left) * (cartCanvas.width  / r.width);
+  const py = (e.clientY - r.top)  * (cartCanvas.height / r.height);
+  const [cx, cy] = screenToCart(px, py, cartCanvas.width, cartCanvas.height);
+  cartMouse.x = cx; cartMouse.y = cy;
+  const txt = `x: ${cx.toFixed(2)}  y: ${cy.toFixed(2)}`;
+  document.getElementById('cartCoord').textContent = txt;
+  document.getElementById('cartCoordHeader').textContent = txt;
+  draw();
+});
+cartCanvas.addEventListener('mouseleave', () => {
+  cartMouse.x = null; cartMouse.y = null;
+  document.getElementById('cartCoordHeader').textContent = '—';
+  draw();
+});
+
+projCanvas.addEventListener('mousemove', e => {
+  const r  = projCanvas.getBoundingClientRect();
+  const sx = (e.clientX - r.left) * (projCanvas.width  / r.width);
+  const sy = (e.clientY - r.top)  * (projCanvas.height / r.height);
+  projMouse.sx = sx; projMouse.sy = sy;
+  const W2 = projCanvas.width, H2 = projCanvas.height;
+  const horizonY = getHorizonY(H2);
+  const camH = BASE_CAM_H * projZoom;
+  const dsy = sy - horizonY;
+  if (dsy > 0.5) {
+    const z = camH / dsy;
+    const cartX = (sx - W2/2) * z / (PROJ_SCALE * projZoom);
+    const cartY = (z - 1) / PERSP_K;
+    projMouse.cartX = cartX; projMouse.cartY = cartY;
+    const txt = `x: ${cartX.toFixed(2)}  y: ${cartY.toFixed(2)}`;
+    document.getElementById('projCoord').textContent = txt;
+    document.getElementById('projCoordHeader').textContent = txt;
+  }
+  draw();
+});
+projCanvas.addEventListener('mouseleave', () => {
+  projMouse.sx = null; projMouse.sy = null;
+  document.getElementById('projCoordHeader').textContent = '—';
+  draw();
+});
+
+// ── SCROLL ZOOM ───────────────────────────────────────────────────
+cartCanvas.addEventListener('wheel', e => {
+  e.preventDefault();
+  const factor = e.deltaY < 0 ? 1.1 : 0.9;
+  cartScale = Math.max(10, Math.min(300, cartScale * factor));
+  draw();
+}, { passive: false });
+
+projCanvas.addEventListener('wheel', e => {
+  e.preventDefault();
+  const factor = e.deltaY < 0 ? 1.1 : 0.9;
+  projZoom = Math.max(0.2, Math.min(8, projZoom * factor));
+  draw();
+}, { passive: false });
+
+
+document.getElementById('addCurveBtn').addEventListener('click', () => {
+  const curve = makeCurve();
+  // Default expressions cycle through interesting functions
+  const defaults = ['x', 'x^2', 'sin(x)', '0.5*x + 2', 'x^3 - 3*x', 'cos(x)*x'];
+  curve.expr = defaults[(curves.length) % defaults.length];
+  updateCurveFn(curve);
+  curves.push(curve);
+  addCurveToDOM(curve);
+  draw();
+});
+
+// ── INIT ──────────────────────────────────────────────────────────
+// Add two starter curves
+function init() {
+  resizeCanvases();
+
+  const defaults = [
+    { expr: 'x',             dy: 0,  dx: 0 },
+    { expr: 'x^2 / 4',      dy: 0,  dx: 0 },
+    { expr: 'sin(x) * 3',   dy: 0,  dx: 0 },
+    { expr: '0.5 * x + 3',  dy: 0,  dx: 0 },
+  ];
+
+  for (const d of defaults) {
+    const c = makeCurve();
+    c.expr = d.expr;
+    c.dy   = d.dy;
+    c.dx   = d.dx;
+    updateCurveFn(c);
+    curves.push(c);
+    addCurveToDOM(c);
+  }
+
+  draw();
+}
+
+// Wait for fonts + KaTeX
+window.addEventListener('load', () => {
+  setTimeout(init, 100);
+});
+</script>
+</body>
+</html>

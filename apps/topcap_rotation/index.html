@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>S&P 500 Market-Cap Rotation</title>
+  <link rel="icon" type="image/x-icon" href="../../images.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header>
+    <a class="back-btn" href="../../index.html">← Back to Portfolio</a>
+    <div class="title">
+      <span class="badge">S&P 500 Market-Cap Rotation</span>
+      <h1>S&P 500 Market-Cap Rotation</h1>
+      <p>
+        Hold the biggest companies by market cap and rotate on schedule. Watch which tickers you would have owned,
+        when they got swapped, and how your money compounded — across 25 years of real market data.
+      </p>
+      <div class="data-status" id="dataStatus">Loading dataset…</div>
+    </div>
+  </header>
+
+  <main>
+    <section class="grid">
+      <aside class="panel">
+        <h2>Controls</h2>
+        <div class="controls">
+          <div class="control-group">
+            <label>Initial Capital</label>
+            <div class="range-row">
+              <input id="capitalInput" type="number" min="100" step="100" value="10000" />
+            </div>
+          </div>
+
+          <div class="control-group">
+            <label>Rebalance Frequency</label>
+            <select id="rebalanceSelect">
+              <option value="1">Monthly (default)</option>
+              <option value="3">Quarterly</option>
+              <option value="12">Yearly</option>
+            </select>
+          </div>
+
+          <div class="control-group">
+            <label>Compare Top-N Sets</label>
+            <div class="checkbox-grid" id="topNGrid"></div>
+          </div>
+
+          <div class="control-group">
+            <label>Focus Strategy</label>
+            <select id="focusSelect"></select>
+          </div>
+
+          <div class="control-group">
+            <label>Rolling Window</label>
+            <select id="windowSelect">
+              <option value="12">12 months</option>
+              <option value="36">36 months</option>
+              <option value="60" selected>60 months</option>
+            </select>
+          </div>
+
+          <div class="control-group">
+            <label>Chart Scale</label>
+            <select id="scaleSelect">
+              <option value="linear">Linear</option>
+              <option value="log">Log</option>
+            </select>
+          </div>
+
+          <button id="runBtn">Run Simulation</button>
+        </div>
+      </aside>
+
+      <section class="panel">
+        <h2>Growth Curves</h2>
+        <div class="chart-wrap">
+          <canvas id="chart"></canvas>
+        </div>
+        <div id="legend" class="legend"></div>
+      </section>
+    </section>
+
+    <section class="panel">
+      <h2>Summary</h2>
+      <table class="table" id="summaryTable">
+        <thead>
+          <tr>
+            <th>Top-N</th>
+            <th>Final Value</th>
+            <th>CAGR</th>
+            <th>Max Drawdown</th>
+            <th>Rotations</th>
+            <th>Volatility</th>
+            <th>Best Month</th>
+            <th>Worst Month</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <section class="panel analytics">
+      <h2>Strategy Diagnostics</h2>
+      <div class="metrics-grid" id="metricsCards"></div>
+
+      <div class="mini-grid">
+        <div class="mini-panel">
+          <h3>Rolling CAGR</h3>
+          <div class="mini-chart">
+            <canvas id="rollingChart"></canvas>
+          </div>
+        </div>
+        <div class="mini-panel">
+          <h3>Drawdown Path</h3>
+          <div class="mini-chart">
+            <canvas id="drawdownChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="table" id="returnsTable">
+          <thead>
+            <tr>
+              <th>Metric</th>
+              <th>Value</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- PORTFOLIO TIME MACHINE -->
+    <section class="panel time-machine" id="timelinePanel">
+      <div class="tl-header-row">
+        <h2>Portfolio Time Machine</h2>
+        <div class="tl-strategy-pick">
+          <label>Strategy</label>
+          <select class="tl-select" id="tlFocusSelect"></select>
+        </div>
+      </div>
+
+      <div class="tl-stats-row">
+        <div class="tl-stat">
+          <div class="tl-stat-label">Date</div>
+          <div class="tl-stat-value tl-date-val" id="tlDate">—</div>
+        </div>
+        <div class="tl-stat">
+          <div class="tl-stat-label">Portfolio Value</div>
+          <div class="tl-value" id="tlValue">$—</div>
+        </div>
+        <div class="tl-stat">
+          <div class="tl-stat-label">Total Return</div>
+          <div class="tl-gain" id="tlGain">—</div>
+        </div>
+        <div class="tl-stat">
+          <div class="tl-stat-label">Rebalance</div>
+          <div class="tl-stat-value" id="tlProgress">— / —</div>
+        </div>
+      </div>
+
+      <div class="tl-controls">
+        <button class="tl-btn" id="tlResetBtn">⏮</button>
+        <button class="tl-btn" id="tlPrevBtn">◀</button>
+        <button class="tl-btn" id="tlPlayBtn">▶ Play</button>
+        <button class="tl-btn" id="tlNextBtn">▶▶</button>
+        <input type="range" class="tl-scrubber" id="tlScrubber" min="0" value="0" />
+        <select class="tl-select" id="tlSpeedSelect">
+          <option value="800">0.5×</option>
+          <option value="400" selected>1×</option>
+          <option value="200">2×</option>
+          <option value="80">5×</option>
+          <option value="30">10×</option>
+        </select>
+      </div>
+
+      <div class="ticker-grid" id="tlTickerGrid">
+        <div class="tl-placeholder">Run simulation to load portfolio data.</div>
+      </div>
+
+      <div class="swap-log-section">
+        <div class="swap-log-title">Swap Log <span class="swap-log-count" id="tlSwapCount"></span></div>
+        <div class="swap-log" id="tlSwapLog">
+          <span class="tl-placeholder">Press Play or step through time to see tickers being swapped.</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel note">
+      Data: real market data from Yahoo Finance (2000–2026), ~7,700 tickers, monthly frequency.
+      Generated via <code>data/fetch_topcap_data.py</code>.
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Game of Life · 2D</title>
+  <link rel="icon" type="image/x-icon" href="../../images.ico">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+<div class="page">
+
+  <header class="topbar">
+    <a class="back-btn" href="../../index.html">← Back</a>
+    <div class="title-wrap">
+      <h1>Game of Life &nbsp;<span style="color:var(--text2);font-weight:400">2D</span></h1>
+    </div>
+    <div class="top-controls">
+      <button class="ctrl-btn primary" id="btn-play">▶ Play</button>
+      <button class="ctrl-btn" id="btn-step">Step</button>
+      <button class="ctrl-btn" id="btn-clear">Clear</button>
+      <button class="ctrl-btn" id="btn-random">Random</button>
+      <label class="speed-label">
+        <span>Speed</span>
+        <input type="range" id="speed-range" min="1" max="60" value="10">
+        <span id="speed-val">10 fps</span>
+      </label>
+    </div>
+    <div class="stats">
+      <span class="stat">Gen <b id="gen-val">0</b></span>
+      <span class="stat">Pop <b id="pop-val">0</b></span>
+    </div>
+  </header>
+
+  <div class="main-layout">
+
+    <aside class="sidebar" id="sidebar">
+      <button class="sidebar-toggle" id="sidebar-toggle">‹</button>
+      <div class="sidebar-inner" id="sidebar-inner">
+
+        <section class="sb-section">
+          <h4 class="sb-title">Rules</h4>
+          <div class="rule-row">
+            <span class="rule-label">Generations</span>
+            <label class="toggle-switch">
+              <input type="checkbox" id="gen-toggle">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div id="gen-states-row" class="rule-row" style="display:none">
+            <span class="rule-label">States (N)</span>
+            <div class="slider-wrapper">
+              <input type="range" id="gen-states" min="2" max="10" value="2">
+              <span id="gen-states-val">2</span>
+            </div>
+          </div>
+          <div class="rule-presets" id="rule-presets"></div>
+          <div class="rule-row">
+            <span class="rule-label">Birth</span>
+            <div class="rule-toggles" id="birth-toggles"></div>
+          </div>
+          <div class="rule-row">
+            <span class="rule-label">Survival</span>
+            <div class="rule-toggles" id="survival-toggles"></div>
+          </div>
+          <div class="rule-notation" id="rule-notation">B3/S23</div>
+        </section>
+
+        <section class="sb-section">
+          <h4 class="sb-title">Patterns
+            <span class="pattern-hint" id="pattern-hint"></span>
+          </h4>
+          <div id="pattern-library"></div>
+        </section>
+
+      </div>
+    </aside>
+
+    <div class="canvas-wrap" id="canvas-wrap">
+      <canvas id="gol-canvas"></canvas>
+      <div class="canvas-overlay" id="canvas-overlay">
+        <div class="ghost-hint" id="ghost-hint" style="display:none">
+          Click to place · R to rotate · ESC to cancel
+        </div>
+        <div class="canvas-hint">
+          Scroll to zoom · Drag to pan · Click to draw
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+<script src="./script.js"></script>
+</body>
+</html>

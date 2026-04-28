@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Password Generator</title>
+  <link rel="icon" type="image/x-icon" href="../../images.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=JetBrains+Mono:wght@400;500;700&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0b;--bg2:#111113;--bg3:#18181b;--border:#252528;--text:#e2e2e6;--muted:#6b6b72;--accent:#c8a96e;--green:#5aab7a;--red:#e05555;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Crimson Pro',serif;min-height:100vh;}
+a{color:var(--accent);text-decoration:none;}
+a:hover{text-decoration:underline;}
+.header{padding:1.5rem 2rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:1rem;}
+.back-link{font-family:'JetBrains Mono',monospace;font-size:.8rem;color:var(--muted);display:flex;align-items:center;gap:.4rem;}
+.back-link:hover{color:var(--accent);}
+.eyebrow{font-family:'Cinzel',serif;font-size:.7rem;letter-spacing:.15em;color:var(--muted);text-transform:uppercase;margin-bottom:.4rem;}
+h1{font-family:'Cinzel',serif;font-size:2rem;font-weight:700;background:linear-gradient(135deg,var(--accent),#e8c98e,var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.subtitle{font-family:'Crimson Pro',serif;font-style:italic;color:var(--muted);font-size:1rem;margin-top:.3rem;}
+.main{max-width:900px;margin:0 auto;padding:2rem;}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:1.5rem;margin-bottom:1.5rem;}
+.card-title{font-family:'Cinzel',serif;font-size:.85rem;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.1em;margin-bottom:1.2rem;}
+.controls-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;}
+@media(max-width:600px){.controls-grid{grid-template-columns:1fr;}}
+label{display:block;font-size:.9rem;color:var(--muted);margin-bottom:.4rem;}
+input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer;}
+.slider-row{display:flex;align-items:center;gap:.8rem;}
+.slider-row input[type=range]{flex:1;}
+.slider-val{font-family:'JetBrains Mono',monospace;font-size:.85rem;color:var(--accent);min-width:2.5rem;text-align:right;}
+.checkbox-group{display:flex;flex-direction:column;gap:.6rem;}
+.checkbox-row{display:flex;align-items:center;gap:.6rem;cursor:pointer;font-size:.95rem;}
+.checkbox-row input[type=checkbox]{accent-color:var(--accent);width:15px;height:15px;cursor:pointer;}
+input[type=text],input[type=number],select,textarea{background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:.85rem;padding:.5rem .75rem;width:100%;outline:none;transition:border-color .2s;}
+input[type=text]:focus,input[type=number]:focus,select:focus,textarea:focus{border-color:var(--accent);}
+.password-display{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:1.2rem 1.5rem;font-family:'JetBrains Mono',monospace;font-size:1.4rem;word-break:break-all;min-height:4rem;display:flex;align-items:center;color:var(--text);letter-spacing:.05em;margin-bottom:1rem;}
+.btn{background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);cursor:pointer;font-family:'Crimson Pro',serif;font-size:.95rem;padding:.5rem 1.1rem;transition:all .2s;display:inline-flex;align-items:center;gap:.4rem;}
+.btn:hover{border-color:var(--accent);color:var(--accent);}
+.btn-accent{background:var(--accent);border-color:var(--accent);color:#0a0a0b;font-weight:600;}
+.btn-accent:hover{background:#e8c98e;border-color:#e8c98e;color:#0a0a0b;}
+.btn-row{display:flex;gap:.7rem;flex-wrap:wrap;}
+.strength-bar-wrap{height:6px;background:var(--bg3);border-radius:3px;overflow:hidden;margin-bottom:.5rem;}
+.strength-bar{height:100%;border-radius:3px;transition:width .3s,background .3s;}
+.strength-info{display:flex;justify-content:space-between;font-size:.85rem;}
+.strength-label{font-weight:600;}
+.bulk-row{display:flex;gap:.7rem;align-items:flex-end;margin-bottom:1rem;}
+.bulk-row .form-group{flex:1;}
+.form-group{margin-bottom:.8rem;}
+.bulk-list{max-height:200px;overflow-y:auto;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:.5rem;}
+.bulk-item{font-family:'JetBrains Mono',monospace;font-size:.82rem;padding:.3rem .5rem;border-radius:4px;cursor:pointer;transition:background .15s;display:flex;justify-content:space-between;align-items:center;}
+.bulk-item:hover{background:var(--border);}
+.passphrase-controls{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.8rem;margin-bottom:.8rem;}
+@media(max-width:600px){.passphrase-controls{grid-template-columns:1fr 1fr;}}
+.toggle-group{display:flex;gap:.5rem;margin-bottom:1rem;}
+.toggle-btn{background:var(--bg3);border:1px solid var(--border);border-radius:20px;color:var(--muted);cursor:pointer;font-family:'Crimson Pro',serif;font-size:.9rem;padding:.35rem 1rem;transition:all .2s;}
+.toggle-btn.active{background:var(--accent);border-color:var(--accent);color:#0a0a0b;font-weight:600;}
+.history-list{display:flex;flex-direction:column;gap:.4rem;}
+.history-item{font-family:'JetBrains Mono',monospace;font-size:.8rem;padding:.4rem .8rem;background:var(--bg3);border:1px solid var(--border);border-radius:5px;cursor:pointer;truncate:ellipsis;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;transition:border-color .2s;}
+.history-item:hover{border-color:var(--accent);}
+.toast{position:fixed;bottom:2rem;right:2rem;background:var(--accent);color:#0a0a0b;padding:.6rem 1.2rem;border-radius:6px;font-family:'JetBrains Mono',monospace;font-size:.85rem;font-weight:600;opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none;z-index:999;}
+.toast.show{opacity:1;transform:translateY(0);}
+</style>
+</head>
+<body>
+<div class="header">
+  <div>
+    <div class="back-link"><a href="../../index.html">← Back</a></div>
+    <div class="eyebrow">Office</div>
+    <h1>Password Generator</h1>
+    <div class="subtitle">Cryptographically random passwords with strength analysis — bulk generate or use passphrases.</div>
+  </div>
+</div>
+<div class="main">
+  <div class="card">
+    <div class="card-title">Mode</div>
+    <div class="toggle-group">
+      <button class="toggle-btn active" onclick="setMode('random')">Random Password</button>
+      <button class="toggle-btn" onclick="setMode('passphrase')">Passphrase</button>
+    </div>
+
+    <div id="random-controls">
+      <div class="controls-grid">
+        <div>
+          <label>Length: <span id="len-display">20</span></label>
+          <div class="slider-row">
+            <input type="range" id="length" min="8" max="128" value="20" oninput="document.getElementById('len-display').textContent=this.value;generate()">
+          </div>
+        </div>
+        <div>
+          <label>Custom Exclude Characters</label>
+          <input type="text" id="custom-exclude" placeholder="e.g. {}[]" oninput="generate()">
+        </div>
+      </div>
+      <div class="controls-grid" style="margin-top:.8rem;">
+        <div class="checkbox-group">
+          <label class="checkbox-row"><input type="checkbox" id="use-upper" checked onchange="generate()"> Uppercase (A-Z)</label>
+          <label class="checkbox-row"><input type="checkbox" id="use-lower" checked onchange="generate()"> Lowercase (a-z)</label>
+          <label class="checkbox-row"><input type="checkbox" id="use-digits" checked onchange="generate()"> Numbers (0-9)</label>
+        </div>
+        <div class="checkbox-group">
+          <label class="checkbox-row"><input type="checkbox" id="use-symbols" checked onchange="generate()"> Symbols (!@#$%^&amp;*...)</label>
+          <label class="checkbox-row"><input type="checkbox" id="excl-ambig" onchange="generate()"> Exclude Ambiguous (0Ol1I)</label>
+        </div>
+      </div>
+    </div>
+
+    <div id="passphrase-controls" style="display:none;">
+      <div class="passphrase-controls">
+        <div class="form-group">
+          <label>Word Count</label>
+          <input type="number" id="word-count" value="4" min="2" max="12" oninput="generate()">
+        </div>
+        <div class="form-group">
+          <label>Separator</label>
+          <input type="text" id="pp-sep" value="-" maxlength="5" oninput="generate()">
+        </div>
+        <div class="form-group">
+          <label style="visibility:hidden;">x</label>
+          <div class="checkbox-group" style="margin-top:.5rem;">
+            <label class="checkbox-row"><input type="checkbox" id="pp-capitalize" onchange="generate()"> Capitalize words</label>
+            <label class="checkbox-row"><input type="checkbox" id="pp-number" checked onchange="generate()"> Append number</label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Generated Password</div>
+    <div class="password-display" id="password-display">—</div>
+    <div class="strength-bar-wrap"><div class="strength-bar" id="strength-bar" style="width:0%"></div></div>
+    <div class="strength-info">
+      <span class="strength-label" id="strength-label">—</span>
+      <span id="entropy-display" style="font-family:'JetBrains Mono',monospace;font-size:.82rem;color:var(--muted);">— bits</span>
+    </div>
+    <div class="btn-row" style="margin-top:1rem;">
+      <button class="btn btn-accent" onclick="generate()">↻ Regenerate</button>
+      <button class="btn" onclick="copyPassword()">Copy</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Bulk Generator</div>
+    <div class="bulk-row">
+      <div class="form-group">
+        <label>Count (1–100)</label>
+        <input type="number" id="bulk-count" value="10" min="1" max="100">
+      </div>
+      <button class="btn btn-accent" onclick="generateBulk()" style="margin-bottom:.8rem;">Generate Bulk</button>
+      <button class="btn" onclick="copyAll()" style="margin-bottom:.8rem;">Copy All</button>
+    </div>
+    <div class="bulk-list" id="bulk-list"><div style="color:var(--muted);font-size:.85rem;padding:.5rem;">Click "Generate Bulk" to populate...</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">History (last 10)</div>
+    <div class="history-list" id="history-list"><div style="color:var(--muted);font-size:.85rem;">No history yet.</div></div>
+  </div>
+</div>
+<div class="toast" id="toast">Copied!</div>
+
+<script>
+const WORDS = ["abandon","ability","able","about","above","absent","absorb","abstract","absurd","abuse","access","accident","account","accuse","achieve","acid","acoustic","acquire","across","action","actor","actual","adapt","add","addict","address","adjust","admit","adult","advance","advice","aerobic","afford","afraid","again","agent","agree","ahead","aim","airport","aisle","alarm","album","alcohol","alert","alien","align","alive","alley","allow","almost","alone","alpha","already","alter","always","amateur","amazing","among","amount","amused","analyst","anchor","ancient","anger","angry","animal","answer","antenna","antique","anxiety","apart","apple","approve","april","arch","arctic","arena","argue","armed","armor","army","around","arrange","arrest","arrive","arrow","artefact","artist","artwork","aspect","assault","asset","assist","assume","asthma","athlete","atom","attack","attend","attitude","attract","auction","aunt","author","auto","autumn","average","avoid","awake","aware","away","awesome","awful","awkward","axis","baby","bacon","badge","balance","banana","banner","barely","bargain","barrel","base","basket","battle","beach","bean","beauty","because","become","before","begin","behave","behind","believe","below","bench","benefit","best","betray","better","between","beyond","bicycle","bird","birth","bitter","black","blade","blame","blast","bleak","bless","blind","block","blood","bloom","board","bonus","boost","border","borrow","bounce","brain","brand","brave","breach","breeze","brick","bridge","brief","bright","bring","broken","bronze","broom","brother","brown","brush","bubble","buddy","budget","bulk","bullet","bundle","burger","burst","buyer","cabin","camera","canvas","canyon","captain","carbon","casual","catalog","catch","cause","chain","chair","chaos","charge","chart","chase","cheap","check","cheese","chief","child","chimney","chronic","citizen","city","claim","clap","clarify","clean","clever","client","clock","close","cloud","clump","cluster","coast","coin","collect","color","column","combine","common","confirm","congress","connect","consider","control","cool","copper","coral","corner","correct","cost","cotton","couple","cover","crane","crash","crazy","credit","crime","cross","cruise","cry","crystal","cube","culture","curve","cycle","damage","danger","daring","dash","daughter","dawn","deal","debate","debris","decade","decide","decline","decorate","decrease","defend","define","degree","delay","deliver","demand","depart","depend","deposit","depth","derive","describe","desert","design","detect","develop","device","diagram","diamond","differ","digital","dignity","dilemma","dinner","direct","disagree","discover","disease","disorder","display","distance","divert","divide","divorce","dizzy","doctor","dolphin","domain","double","draft","dragon","drama","drastic","dream","dress","drink","drip","drive","drop","drum","dry","duck","dust","duty","dwarf","dynamic","eagle","early","earth","easily","east","echo","edge","effort","eight","elbow","elder","element","elite","else","embrace","emerge","emotion","employ","empty","endless","enemy","engage","engine","enhance","enjoy","entire","entry","equal","escape","eternal","evidence","exact","example","excess","exchange","excuse","exercise","exile","extra","fable","face","faculty","faint","faith","false","fame","family","fancy","fantasy","farm","fashion","fatal","fatigue","fault","feature","federal","fern","fiction","figure","final","finger","finish","firm","fiscal","flag","flavor","flee","flight","flip","float","flock","floor","flower","fluid","flush","fly","focus","follow","food","force","forest","forget","fork","fortune","frame","frequent","fresh","friend","front","frost","frown","funny","garden","garlic","garment","gesture","gesture","ghost","ginger","giraffe","girl","give","glacier","glad","glance","glare","glass","global","gloom","glory","glove","glue","grace","grain","grant","grape","grass","gravity","great","green","grid","grief","grit","grocery","group","grow","guard","guess","guide","guilt","guitar","habitat","hammer","hamster","hand","harbor","harvest","health","heavy","height","hero","hidden","high","hill","hint","hobby","hold","holiday","hollow","home","honey","honor","hope","horror","horse","hotel","hour","hover","huge","human","humble","humor","hundred","hunger","hurry","husband","hybrid","idea","identify","idle","image","impact","impose","improve","impulse","include","increase","index","indicate","indoor","industry","infant","inflict","inform","inhale","initial","inject","injury","inmate","inner","innocent","inquiry","insect","inside","inspire","install","intact","interest","invest","invite","involve","iron","island","isolate","issue","ivory","jacket","jaguar","jelly","jewel","jingle","journey","judge","juice","jungle","junior","junk","just","kangaroo","keep","kernel","kettle","kitten","knee","know","label","lamp","language","laptop","large","later","laugh","layer","lazy","leader","learn","legend","lemon","level","light","limit","lion","liquid","list","little","local","logic","lonely","long","lunch","machine","magic","magnet","major","mammal","maple","marble","march","margin","master","match","material","matter","meadow","media","melody","mentor","method","middle","milk","million","mirror","mobile","model","modify","moment","money","monster","moral","motion","mountain","mouse","movie","music","mystery","naive","narrow","nature","nerve","never","noble","noise","north","notable","nothing","novel","nurse","object","obtain","ocean","offline","often","omen","once","option","orange","order","original","outdoor","outside","owner","oxygen","package","paddle","panda","panic","paper","parade","parent","patient","patrol","peace","pencil","perfect","permit","phase","photo","phrase","piece","pilot","pipe","pistol","pizza","place","planet","pluck","plunge","poem","polar","police","pool","popular","portion","pottery","powder","power","practice","prepare","present","pretty","pride","print","priority","private","problem","process","produce","profile","profit","protect","proud","public","pulse","pumpkin","purchase","puzzle","quality","quarter","question","quick","quote","rabbit","radar","radio","raise","ranger","rapid","rather","raven","razor","ready","rebel","recycle","reduce","reflect","reform","region","reject","relax","relief","rely","remind","remove","render","repair","replace","rescue","resist","resolve","retire","reveal","review","reward","rhythm","ribbon","rice","riot","ripple","ritual","rival","river","road","robot","robust","round","royal","rule","rural","scale","scene","screen","search","season","second","section","select","senior","settle","seven","shadow","share","shed","shell","shield","shock","silent","single","skill","slice","slim","slow","small","smile","smoke","smooth","snake","solar","solid","solve","sorry","south","space","spare","speed","sphere","spirit","split","spray","spring","squeeze","stable","stake","stand","start","state","stay","step","stock","store","story","strategy","stream","street","strength","strong","student","study","style","subject","submit","supply","surface","survey","suspect","sustain","swamp","swear","sweep","sweet","swing","symbol","symptom","system","table","tackle","talent","target","tilt","timber","tissue","title","toast","token","topple","topic","tower","trace","trade","train","transfer","trap","travel","tree","trend","trial","tribe","trick","trim","triple","trophy","trouble","truck","truly","trumpet","trust","truth","tuition","tunnel","turkey","turn","turtle","twice","type","umbrella","unable","uncle","unfair","unique","unlock","until","upper","upset","urban","useful","useless","usual","vacant","venture","video","view","village","violin","virtual","vision","vital","vivid","voice","volume","voyage","vulture","wage","wander","warfare","wash","waste","water","wealth","weapon","weather","wedding","wheel","where","white","whole","wide","wisdom","witness","wolf","world","worry","worth","wreck","write","young","zebra"];
+
+let mode = 'random';
+let history = [];
+let currentPassword = '';
+
+function setMode(m) {
+  mode = m;
+  document.querySelectorAll('.toggle-btn').forEach((b,i)=>b.classList.toggle('active',i===(m==='random'?0:1)));
+  document.getElementById('random-controls').style.display = m==='random'?'':'none';
+  document.getElementById('passphrase-controls').style.display = m==='passphrase'?'':'none';
+  generate();
+}
+
+function getCharset() {
+  const upper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const lower = 'abcdefghijklmnopqrstuvwxyz';
+  const digits = '0123456789';
+  const symbols = '!@#$%^&*()-_=+[]{}|;:,.<>?/~`';
+  const ambig = '0Ol1I';
+  let cs = '';
+  const excl = document.getElementById('custom-exclude').value;
+  const exclAmbig = document.getElementById('excl-ambig').checked;
+  if (document.getElementById('use-upper').checked) cs += upper;
+  if (document.getElementById('use-lower').checked) cs += lower;
+  if (document.getElementById('use-digits').checked) cs += digits;
+  if (document.getElementById('use-symbols').checked) cs += symbols;
+  if (exclAmbig) cs = cs.split('').filter(c=>!ambig.includes(c)).join('');
+  if (excl) cs = cs.split('').filter(c=>!excl.includes(c)).join('');
+  return cs;
+}
+
+function cryptoRand(max) {
+  const arr = new Uint32Array(1);
+  let limit = Math.floor(0xFFFFFFFF/max)*max;
+  do { crypto.getRandomValues(arr); } while(arr[0]>=limit);
+  return arr[0]%max;
+}
+
+function generateRandom() {
+  const len = parseInt(document.getElementById('length').value);
+  const cs = getCharset();
+  if (!cs) return '(no characters selected)';
+  let pw = '';
+  for (let i=0;i<len;i++) pw += cs[cryptoRand(cs.length)];
+  return pw;
+}
+
+function generatePassphrase() {
+  const count = parseInt(document.getElementById('word-count').value)||4;
+  const sep = document.getElementById('pp-sep').value;
+  const cap = document.getElementById('pp-capitalize').checked;
+  const num = document.getElementById('pp-number').checked;
+  let words = [];
+  for (let i=0;i<count;i++) {
+    let w = WORDS[cryptoRand(WORDS.length)];
+    if (cap) w = w.charAt(0).toUpperCase()+w.slice(1);
+    words.push(w);
+  }
+  let pp = words.join(sep);
+  if (num) pp += sep + (cryptoRand(9000)+1000);
+  return pp;
+}
+
+function calcEntropy(pw) {
+  if (mode==='passphrase') {
+    const count = parseInt(document.getElementById('word-count').value)||4;
+    const num = document.getElementById('pp-number').checked;
+    let bits = count * Math.log2(WORDS.length);
+    if (num) bits += Math.log2(9000);
+    return bits;
+  }
+  const cs = getCharset();
+  if (!cs) return 0;
+  return pw.length * Math.log2(cs.length);
+}
+
+function updateStrength(pw) {
+  const bits = calcEntropy(pw);
+  const bar = document.getElementById('strength-bar');
+  const lbl = document.getElementById('strength-label');
+  const ent = document.getElementById('entropy-display');
+  ent.textContent = Math.round(bits)+' bits';
+  let pct, label, color;
+  if (bits<28){pct=10;label='Weak';color='var(--red)';}
+  else if (bits<36){pct=25;label='Fair';color='#e07c55';}
+  else if (bits<60){pct=50;label='Good';color:'#c8a96e';color='var(--accent)';}
+  else if (bits<80){pct=75;label='Strong';color='#7ab85a';}
+  else{pct=100;label='Very Strong';color='var(--green)';}
+  bar.style.width=pct+'%';
+  bar.style.background=color;
+  lbl.textContent=label;
+  lbl.style.color=color;
+}
+
+function generate() {
+  const pw = mode==='random' ? generateRandom() : generatePassphrase();
+  currentPassword = pw;
+  document.getElementById('password-display').textContent = pw;
+  updateStrength(pw);
+  addHistory(pw);
+}
+
+function addHistory(pw) {
+  if (!pw || pw.startsWith('(')) return;
+  history = [pw, ...history.filter(h=>h!==pw)].slice(0,10);
+  renderHistory();
+}
+
+function renderHistory() {
+  const el = document.getElementById('history-list');
+  if (!history.length){el.innerHTML='<div style="color:var(--muted);font-size:.85rem;">No history yet.</div>';return;}
+  el.innerHTML = history.map((h,i)=>`<div class="history-item" title="${h}" onclick="copyText('${h.replace(/'/g,"&#39;")}')"><span style="color:var(--muted);margin-right:.5rem;">${i+1}.</span>${h}</div>`).join('');
+}
+
+function copyText(t) {
+  navigator.clipboard.writeText(t).then(()=>showToast('Copied!'));
+}
+function copyPassword() { copyText(currentPassword); }
+
+function generateBulk() {
+  const count = Math.max(1,Math.min(100,parseInt(document.getElementById('bulk-count').value)||10));
+  const list = document.getElementById('bulk-list');
+  let items = [];
+  for (let i=0;i<count;i++) {
+    const pw = mode==='random'?generateRandom():generatePassphrase();
+    items.push(pw);
+  }
+  list.innerHTML = items.map(pw=>`<div class="bulk-item" onclick="copyText('${pw.replace(/'/g,"&#39;")}')"><span>${pw}</span><span style="font-size:.75rem;color:var(--muted);">click to copy</span></div>`).join('');
+  list._items = items;
+}
+
+function copyAll() {
+  const list = document.getElementById('bulk-list');
+  if (!list._items||!list._items.length){showToast('Generate bulk first');return;}
+  copyText(list._items.join('\n'));
+  showToast('Copied '+list._items.length+' passwords!');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2000);
+}
+
+generate();
+</script>
+</body>
+</html>

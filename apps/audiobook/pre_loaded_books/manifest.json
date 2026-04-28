@@ -1,0 +1,64 @@
+{
+  "books": [
+    {
+      "filename": "men-of-mathematics-bell.pdf",
+      "title": "Men of Mathematics",
+      "author": "E.T. Bell",
+      "type": "pdf"
+    },
+    {
+      "filename": "honors-class-yandell.pdf",
+      "title": "The Honors Class: Hilbert's Problems and Their Solvers",
+      "author": "Ben Yandell",
+      "type": "pdf"
+    },
+    {
+      "filename": "journey-through-genius-dunham-alt.pdf",
+      "title": "Journey Through Genius",
+      "author": "William Dunham",
+      "type": "pdf"
+    },
+    {
+      "filename": "zermelos-axiom-of-choice-moore.pdf",
+      "title": "Zermelo's Axiom of Choice",
+      "author": "Gregory H. Moore",
+      "type": "pdf"
+    },
+    {
+      "filename": "felix-klein-sophus-lie-yaglom.pdf",
+      "title": "Felix Klein and Sophus Lie",
+      "author": "I.M. Yaglom",
+      "type": "pdf"
+    },
+    {
+      "filename": "change-and-variations-gray.pdf",
+      "title": "Change and Variations",
+      "author": "Jeremy Gray",
+      "type": "pdf"
+    },
+    {
+      "filename": "uniqueness-western-civilization-duchesne.pdf",
+      "title": "The Uniqueness of Western Civilization",
+      "author": "Ricardo Duchesne",
+      "type": "pdf"
+    },
+    {
+      "filename": "zapffe-last-messiah.pdf",
+      "title": "The Last Messiah",
+      "author": "Peter Wessel Zapffe",
+      "type": "pdf"
+    },
+    {
+      "filename": "20ffc20442840af26f33c09d4f1ddd3d.pdf",
+      "title": "Unknown (hash-named PDF)",
+      "author": "",
+      "type": "pdf"
+    },
+    {
+      "filename": "shall-religious-inherit-earth-kaufmann.epub",
+      "title": "Shall the Religious Inherit the Earth?",
+      "author": "Eric Kaufmann",
+      "type": "epub"
+    }
+  ]
+}

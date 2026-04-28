@@ -1,0 +1,1 @@
+A simple formula generator tool which basically takes the first prime number then the second and third then the 4th and the 5th and kind of shows all of the different functions. We can use kind of recurrence relations to Define that and then I suspect as we grow the recurrence relationship get more complicated and there should be fewer of them.

@@ -1,0 +1,853 @@
+{
+  "last_scanned": "2026-04-27 20:00:09",
+  "total_arbs": 21,
+  "min_net": 0.0,
+  "scan_history": [
+    {
+      "scanned_at": "2026-04-06 19:34:39",
+      "scan_seconds": 3.22,
+      "n_events": 0,
+      "api_requests": 12,
+      "new_arbs": 0,
+      "total_arbs": 0
+    },
+    {
+      "scanned_at": "2026-04-06 19:37:04",
+      "scan_seconds": 5.93,
+      "n_events": 292,
+      "api_requests": 14,
+      "new_arbs": 2,
+      "total_arbs": 2
+    },
+    {
+      "scanned_at": "2026-04-06 19:53:33",
+      "scan_seconds": 7.24,
+      "n_events": 292,
+      "api_requests": 15,
+      "new_arbs": 0,
+      "total_arbs": 2
+    },
+    {
+      "scanned_at": "2026-04-06 19:55:55",
+      "scan_seconds": 7.11,
+      "n_events": 292,
+      "api_requests": 16,
+      "new_arbs": 0,
+      "total_arbs": 2
+    },
+    {
+      "scanned_at": "2026-04-06 19:56:57",
+      "scan_seconds": 7.18,
+      "n_events": 292,
+      "api_requests": 16,
+      "new_arbs": 0,
+      "total_arbs": 2
+    },
+    {
+      "scanned_at": "2026-04-06 19:59:13",
+      "scan_seconds": 8.49,
+      "n_events": 292,
+      "api_requests": 16,
+      "new_arbs": 1,
+      "total_arbs": 3
+    },
+    {
+      "scanned_at": "2026-04-16 16:26:36",
+      "scan_seconds": 5.53,
+      "n_events": 317,
+      "api_requests": 13,
+      "new_arbs": 1,
+      "total_arbs": 4
+    },
+    {
+      "scanned_at": "2026-04-16 16:26:50",
+      "scan_seconds": 5.01,
+      "n_events": 317,
+      "api_requests": 13,
+      "new_arbs": 0,
+      "total_arbs": 4
+    },
+    {
+      "scanned_at": "2026-04-17 20:00:10",
+      "scan_seconds": 6.5,
+      "n_events": 188,
+      "api_requests": 19,
+      "new_arbs": 2,
+      "total_arbs": 6
+    },
+    {
+      "scanned_at": "2026-04-18 20:00:35",
+      "scan_seconds": 31.77,
+      "n_events": 226,
+      "api_requests": 19,
+      "new_arbs": 2,
+      "total_arbs": 8
+    },
+    {
+      "scanned_at": "2026-04-19 20:00:46",
+      "scan_seconds": 18.88,
+      "n_events": 266,
+      "api_requests": 13,
+      "new_arbs": 2,
+      "total_arbs": 10
+    },
+    {
+      "scanned_at": "2026-04-20 20:00:09",
+      "scan_seconds": 5.78,
+      "n_events": 125,
+      "api_requests": 13,
+      "new_arbs": 3,
+      "total_arbs": 13
+    },
+    {
+      "scanned_at": "2026-04-21 20:00:09",
+      "scan_seconds": 5.87,
+      "n_events": 169,
+      "api_requests": 13,
+      "new_arbs": 0,
+      "total_arbs": 13
+    },
+    {
+      "scanned_at": "2026-04-22 20:00:11",
+      "scan_seconds": 7.0,
+      "n_events": 251,
+      "api_requests": 13,
+      "new_arbs": 4,
+      "total_arbs": 17
+    },
+    {
+      "scanned_at": "2026-04-23 20:00:09",
+      "scan_seconds": 4.58,
+      "n_events": 292,
+      "api_requests": 13,
+      "new_arbs": 1,
+      "total_arbs": 18
+    },
+    {
+      "scanned_at": "2026-04-24 20:00:10",
+      "scan_seconds": 4.59,
+      "n_events": 308,
+      "api_requests": 13,
+      "new_arbs": 1,
+      "total_arbs": 19
+    },
+    {
+      "scanned_at": "2026-04-27 11:27:53",
+      "scan_seconds": 12.01,
+      "n_events": 259,
+      "api_requests": 13,
+      "new_arbs": 1,
+      "total_arbs": 20
+    },
+    {
+      "scanned_at": "2026-04-27 20:00:09",
+      "scan_seconds": 4.98,
+      "n_events": 269,
+      "api_requests": 13,
+      "new_arbs": 1,
+      "total_arbs": 21
+    }
+  ],
+  "arbs": [
+    {
+      "event": "Charlotte FC vs Nashville SC",
+      "home": "Charlotte FC",
+      "away": "Nashville SC",
+      "sport": "MLS",
+      "sport_key": "soccer_usa_mls",
+      "commence": "2026-04-11",
+      "days_until": 4.9951,
+      "net_pct": 0.00671,
+      "apr": 0.6302,
+      "has_safe_leg": true,
+      "all_safe": false,
+      "n_outcomes": 3,
+      "found_at": "2026-04-06 19:37:04",
+      "legs": {
+        "Charlotte FC": {
+          "book": "Pinnacle",
+          "book_key": "pinnacle",
+          "book_type": "sharp",
+          "odds": 2.67,
+          "can_ban": false
+        },
+        "Nashville SC": {
+          "book": "Pinnacle",
+          "book_key": "pinnacle",
+          "book_type": "sharp",
+          "odds": 3.04,
+          "can_ban": false
+        },
+        "Draw": {
+          "book": "LeoVegas",
+          "book_key": "leovegas",
+          "book_type": "soft",
+          "odds": 3.45,
+          "can_ban": true
+        }
+      }
+    },
+    {
+      "event": "Arthur Biyarslanov vs Jimerr Espinosa",
+      "home": "Arthur Biyarslanov",
+      "away": "Jimerr Espinosa",
+      "sport": "BOXING",
+      "sport_key": "boxing_boxing",
+      "commence": "2026-04-10",
+      "days_until": 3.0576,
+      "net_pct": 0.002448,
+      "apr": 0.3389,
+      "has_safe_leg": true,
+      "all_safe": false,
+      "n_outcomes": 2,
+      "found_at": "2026-04-06 19:37:04",
+      "legs": {
+        "Arthur Biyarslanov": {
+          "book": "Pinnacle",
+          "book_key": "pinnacle",
+          "book_type": "sharp",
+          "odds": 1.17,
+          "can_ban": false
+        },
+        "Jimerr Espinosa": {
+          "book": "DraftKings",
+          "book_key": "draftkings",
+          "book_type": "soft",
+          "odds": 7.0,
+          "can_ban": true
+        }
+      }
+    },
+    {
+      "event": "Justis Huni vs Frazer Clarke",
+      "home": "Justis Huni",
+      "away": "Frazer Clarke",
+      "sport": "BOXING",
+      "sport_key": "boxing_boxing",
+      "commence": "2026-04-11",
+      "days_until": 4.7505,
+      "net_pct": 0.007423,
+      "apr": 0.7651,
+      "has_safe_leg": true,
+      "all_safe": false,
+      "n_outcomes": 2,
+      "found_at": "2026-04-06 19:59:13",
+      "legs": {
+        "Frazer Clarke": {
+          "book": "Pinnacle",
+          "book_key": "pinnacle",
+          "book_type": "sharp",
+          "odds": 7.25,
+          "can_ban": false
+        },
+        "Justis Huni": {
+          "book": "DraftKings",
+          "book_key": "draftkings",
+          "book_type": "soft",
+          "odds": 1.17,
+          "can_ban": true
+        }
+      }
+    },
+    {
+      "event": "Jamey-Lyn Horth vs J.J. Aldrich",
+      "home": "Jamey-Lyn Horth",
+      "away": "J.J. Aldrich",
+      "sport": "MMA",
+      "sport_key": "mma_mixed_martial_arts",
+      "commence": "2026-04-18",
+      "days_until": 2.0649,
+      "net_pct": 0.008353,
+      "apr": 3.3512,
+      "has_safe_leg": true,
+      "all_safe": false,
+      "n_outcomes": 2,
+      "found_at": "2026-04-16 16:26:36",
+      "legs": {
+        "J.J. Aldrich": {
+          "book": "Betway",
+          "book_key": "betway",
+          "book_type": "soft",
+          "odds": 2.5,
+          "can_ban": true
+        },
+        "Jamey-Lyn Horth": {
+          "book": "Pinnacle",
+          "book_key": "pinnacle",
+          "book_type": "sharp",
+          "odds": 1.69,
+          "can_ban": false
+        }
+      }
+    },
+    {
+      "event": "Thiago Moises vs Gauge Young",
+      "home": "Thiago Moises",
+      "away": "Gauge Young",
+      "sport": "MMA",
+      "sport_key": "mma_mixed_martial_arts",
+      "commence": "in 22.0h",
+      "days_until": 0.9165,
+      "net_pct": 0.005327,
+      "apr": 7.2956,
+      "has_safe_leg": false,
+      "all_safe": false,
+      "n_outcomes": 2,
+      "found_at": "2026-04-17 20:00:10",
+      "legs": {
+        "Gauge Young": {
+          "book": "Betway",
+          "book_key": "betway",
+          "book_type": "soft",
+          "odds": 1.73,
+          "can_ban": true
+        },
+        "Thiago Moises": {
+          "book": "DraftKings",
+          "book_key": "draftkings",
+          "book_type": "soft",
+          "odds": 2.4,
+          "can_ban": true
+        }
+      }
+    },
+    {
+      "event": "Melissa Croden vs Darya Zheleznyakova",
+      "home": "Melissa Croden",
+      "away": "Darya Zheleznyakova",
+      "sport": "MMA",
+      "sport_key": "mma_mixed_martial_arts",
+      "commence": "in 22.4h",
+      "days_until": 0.9339,
+      "net_pct": 0.003431,
+      "apr": 2.8145,
+      "has_safe_leg": true,
+      "all_safe": false,
+      "n_outcomes": 2,
+      "found_at": "2026-04-17 20:00:10",
+      "legs": {
+        "Darya Zheleznyakova": {
+          "book": "Betway",
+          "book_key": "betway",
+          "book_type": "soft",
+          "odds": 2.3,
+          "can_ban": true
+        },
+        "Melissa Croden": {
+          "book": "Pinnacle",
+          "book_key": "pinnacle",
+          "book_type": "sharp",
+          "odds": 1.78,
+          "can_ban": false
+        }
+      }
+    },
+    {
+      "event": "Toronto FC vs Philadelphia Union",
+      "home": "Toronto FC",
+      "away": "Philadelphia Union",
+      "sport": "MLS",
+      "sport_key": "soccer_usa_mls",
+      "commence": "2026-04-22",
+      "days_until": 3.9788,
+      "net_pct": 0.001335,
+      "apr": 0.1302,
+      "has_safe_leg": true,
+      "all_safe": false,
+      "n_outcomes": 3,
+      "found_at": "2026-04-18 20:00:35",
+      "legs": {
+        "Philadelphia Union": {
+          "book": "LeoVegas",
+          "book_key": "leovegas",
+          "book_type": "soft",
+          "odds": 3.05,
+          "can_ban": true
+        },
+        "Toronto FC": {
+          "book": "Pinnacle",
+          "book_key": "pinnacle",
+          "book_type": "sharp",
+          "odds": 2.52,
+          "can_ban": false
+        },
+        "Draw": {
+          "book": "LeoVegas",
+          "book_key": "leovegas",
+          "book_type": "soft",
+          "odds": 3.65,
+          "can_ban": true
+        }
+      }
+    },
+    {
+      "event": "Chicago Fire vs Sporting Kansas City",
+      "home": "Chicago Fire",
+      "away": "Sporting Kansas City",
+      "sport": "MLS",
+      "sport_key": "soccer_usa_mls",
+      "commence": "2026-04-26",
+      "days_until": 7.0204,
+      "net_pct": 0.002194,
+      "apr": 0.1207,
+      "has_safe_leg": false,
+      "all_safe": false,
+      "n_outcomes": 3,
+      "found_at": "2026-04-18 20:00:35",
+      "legs": {
+        "Chicago Fire": {
+          "book": "Betway",
+          "book_key": "betway",
+          "book_type": "soft",
+          "odds": 1.4,
+          "can_ban": true
+        },
+        "Sporting Kansas City": {
+          "book": "BetRivers",
+          "book_key": "betrivers",
+          "book_type": "soft",
+          "odds": 9.0,
+          "can_ban": true
+        },
+        "Draw": {
+          "book": "LeoVegas",
+          "book_key": "leovegas",
+          "book_type": "soft",
+          "odds": 5.8,
+          "can_ban": true
+        }
+      }
+    },
+    {
+      "event": "Aljamain Sterling vs Youssef Zalal",
+      "home": "Aljamain Sterling",
+      "away": "Youssef Zalal",
+      "sport": "MMA",
+      "sport_key": "mma_mixed_martial_arts",
+      "commence": "2026-04-26",
+      "days_until": 5.9995,
+      "net_pct": 0.005327,
+      "apr": 0.3816,
+      "has_safe_leg": false,
+      "all_safe": false,
+      "n_outcomes": 2,
+      "found_at": "2026-04-19 20:00:46",
+      "legs": {
+        "Aljamain Sterling": {
+          "book": "DraftKings",
+          "book_key": "draftkings",
+          "book_type": "soft",
+          "odds": 2.4,
+          "can_ban": true
+        },
+        "Youssef Zalal": {
+          "book": "Betway",
+          "book_key": "betway",
+          "book_type": "soft",
+          "odds": 1.73,
+          "can_ban": true
+        }
+      }
+    },
+    {
+      "event": "Marcus Buchecha vs Ryan Spann",
+      "home": "Marcus Buchecha",
+      "away": "Ryan Spann",
+      "sport": "MMA",
+      "sport_key": "mma_mixed_martial_arts",
+      "commence": "2026-04-26",
+      "days_until": 5.9995,
+      "net_pct": 0.0,
+      "apr": 0.0,
+      "has_safe_leg": true,
+      "all_safe": false,
+      "n_outcomes": 2,
+      "found_at": "2026-04-19 20:00:46",
+      "legs": {
+        "Marcus Buchecha": {
+          "book": "Betway",
+          "book_key": "betway",
+          "book_type": "soft",
+          "odds": 1.8,
+          "can_ban": true
+        },
+        "Ryan Spann": {
+          "book": "Pinnacle",
+          "book_key": "pinnacle",
+          "book_type": "sharp",
+          "odds": 2.25,
+          "can_ban": false
+        }
+      }
+    },
+    {
+      "event": "Norma Dumont vs Joselyne Edwards",
+      "home": "Norma Dumont",
+      "away": "Joselyne Edwards",
+      "sport": "MMA",
+      "sport_key": "mma_mixed_martial_arts",
+      "commence": "2026-04-26",
+      "days_until": 4.9999,
+      "net_pct": 0.030635,
+      "apr": 8.0503,
+      "has_safe_leg": false,
+      "all_safe": false,
+      "n_outcomes": 2,
+      "found_at": "2026-04-20 20:00:09",
+      "legs": {
+        "Joselyne Edwards": {
+          "book": "LeoVegas",
+          "book_key": "leovegas",
+          "book_type": "soft",
+          "odds": 3.0,
+          "can_ban": true
+        },
+        "Norma Dumont": {
+          "book": "Betway",
+          "book_key": "betway",
+          "book_type": "soft",
+          "odds": 1.57,
+          "can_ban": true
+        }
+      }
+    },
+    {
+      "event": "Aljamain Sterling vs Youssef Zalal",
+      "home": "Aljamain Sterling",
+      "away": "Youssef Zalal",
+      "sport": "MMA",
+      "sport_key": "mma_mixed_martial_arts",
+      "commence": "2026-04-26",
+      "days_until": 4.9999,
+      "net_pct": 0.005327,
+      "apr": 0.4738,
+      "has_safe_leg": false,
+      "all_safe": false,
+      "n_outcomes": 2,
+      "found_at": "2026-04-20 20:00:09",
+      "legs": {
+        "Aljamain Sterling": {
+          "book": "BetMGM",
+          "book_key": "betmgm",
+          "book_type": "soft",
+          "odds": 2.4,
+          "can_ban": true
+        },
+        "Youssef Zalal": {
+          "book": "Betway",
+          "book_key": "betway",
+          "book_type": "soft",
+          "odds": 1.73,
+          "can_ban": true
+        }
+      }
+    },
+    {
+      "event": "Rafa Garcia vs Alex Hernandez",
+      "home": "Rafa Garcia",
+      "away": "Alex Hernandez",
+      "sport": "MMA",
+      "sport_key": "mma_mixed_martial_arts",
+      "commence": "2026-04-26",
+      "days_until": 4.9999,
+      "net_pct": 0.001942,
+      "apr": 0.1521,
+      "has_safe_leg": true,
+      "all_safe": false,
+      "n_outcomes": 2,
+      "found_at": "2026-04-20 20:00:09",
+      "legs": {
+        "Alex Hernandez": {
+          "book": "Pinnacle",
+          "book_key": "pinnacle",
+          "book_type": "sharp",
+          "odds": 1.72,
+          "can_ban": false
+        },
+        "Rafa Garcia": {
+          "book": "Betway",
+          "book_key": "betway",
+          "book_type": "soft",
+          "odds": 2.4,
+          "can_ban": true
+        }
+      }
+    },
+    {
+      "event": "FC Cincinnati vs New York Red Bulls",
+      "home": "FC Cincinnati",
+      "away": "New York Red Bulls",
+      "sport": "MLS",
+      "sport_key": "soccer_usa_mls",
+      "commence": "2026-04-25",
+      "days_until": 2.979,
+      "net_pct": 0.013692,
+      "apr": 4.2917,
+      "has_safe_leg": true,
+      "all_safe": false,
+      "n_outcomes": 3,
+      "found_at": "2026-04-22 20:00:11",
+      "legs": {
+        "FC Cincinnati": {
+          "book": "Pinnacle",
+          "book_key": "pinnacle",
+          "book_type": "sharp",
+          "odds": 2.18,
+          "can_ban": false
+        },
+        "New York Red Bulls": {
+          "book": "LeoVegas",
+          "book_key": "leovegas",
+          "book_type": "soft",
+          "odds": 3.6,
+          "can_ban": true
+        },
+        "Draw": {
+          "book": "LeoVegas",
+          "book_key": "leovegas",
+          "book_type": "soft",
+          "odds": 4.0,
+          "can_ban": true
+        }
+      }
+    },
+    {
+      "event": "Angelo Leo vs Ra'eese Aleem",
+      "home": "Angelo Leo",
+      "away": "Ra'eese Aleem",
+      "sport": "BOXING",
+      "sport_key": "boxing_boxing",
+      "commence": "2026-05-10",
+      "days_until": 17.0832,
+      "net_pct": 0.00885,
+      "apr": 0.2071,
+      "has_safe_leg": true,
+      "all_safe": false,
+      "n_outcomes": 2,
+      "found_at": "2026-04-22 20:00:11",
+      "legs": {
+        "Angelo Leo": {
+          "book": "Pinnacle",
+          "book_key": "pinnacle",
+          "book_type": "sharp",
+          "odds": 1.52,
+          "can_ban": false
+        },
+        "Ra'eese Aleem": {
+          "book": "FanDuel",
+          "book_key": "fanduel",
+          "book_type": "soft",
+          "odds": 3.0,
+          "can_ban": true
+        }
+      }
+    },
+    {
+      "event": "Shane Mosley Jr vs Serhii Bohachuk",
+      "home": "Shane Mosley Jr",
+      "away": "Serhii Bohachuk",
+      "sport": "BOXING",
+      "sport_key": "boxing_boxing",
+      "commence": "2026-05-11",
+      "days_until": 18.1249,
+      "net_pct": 0.003745,
+      "apr": 0.0782,
+      "has_safe_leg": false,
+      "all_safe": false,
+      "n_outcomes": 2,
+      "found_at": "2026-04-22 20:00:11",
+      "legs": {
+        "Serhii Bohachuk": {
+          "book": "DraftKings",
+          "book_key": "draftkings",
+          "book_type": "soft",
+          "odds": 1.34,
+          "can_ban": true
+        },
+        "Shane Mosley Jr": {
+          "book": "FanDuel",
+          "book_key": "fanduel",
+          "book_type": "soft",
+          "odds": 4.0,
+          "can_ban": true
+        }
+      }
+    },
+    {
+      "event": "Virginia Cavaliers vs NC State Wolfpack",
+      "home": "Virginia Cavaliers",
+      "away": "NC State Wolfpack",
+      "sport": "NCAAF",
+      "sport_key": "americanfootball_ncaaf",
+      "commence": "2026-08-29",
+      "days_until": 128.6665,
+      "net_pct": 0.000246,
+      "apr": 0.0007,
+      "has_safe_leg": false,
+      "all_safe": false,
+      "n_outcomes": 2,
+      "found_at": "2026-04-22 20:00:11",
+      "legs": {
+        "NC State Wolfpack": {
+          "book": "DraftKings",
+          "book_key": "draftkings",
+          "book_type": "soft",
+          "odds": 2.3,
+          "can_ban": true
+        },
+        "Virginia Cavaliers": {
+          "book": "FanDuel",
+          "book_key": "fanduel",
+          "book_type": "soft",
+          "odds": 1.77,
+          "can_ban": true
+        }
+      }
+    },
+    {
+      "event": "Austin FC vs St. Louis City SC",
+      "home": "Austin FC",
+      "away": "St. Louis City SC",
+      "sport": "MLS",
+      "sport_key": "soccer_usa_mls",
+      "commence": "2026-05-03",
+      "days_until": 9.8957,
+      "net_pct": 0.000361,
+      "apr": 0.0134,
+      "has_safe_leg": false,
+      "all_safe": false,
+      "n_outcomes": 3,
+      "found_at": "2026-04-23 20:00:09",
+      "legs": {
+        "Austin FC": {
+          "book": "LeoVegas",
+          "book_key": "leovegas",
+          "book_type": "soft",
+          "odds": 2.6,
+          "can_ban": true
+        },
+        "St. Louis City SC": {
+          "book": "Betway",
+          "book_key": "betway",
+          "book_type": "soft",
+          "odds": 3.0,
+          "can_ban": true
+        },
+        "Draw": {
+          "book": "LeoVegas",
+          "book_key": "leovegas",
+          "book_type": "soft",
+          "odds": 3.55,
+          "can_ban": true
+        }
+      }
+    },
+    {
+      "event": "Portland Trail Blazers vs San Antonio Spurs",
+      "home": "Portland Trail Blazers",
+      "away": "San Antonio Spurs",
+      "sport": "NBA",
+      "sport_key": "basketball_nba",
+      "commence": "in 2.7h",
+      "days_until": 0.111,
+      "net_pct": 0.001199,
+      "apr": 50.4538,
+      "has_safe_leg": false,
+      "all_safe": false,
+      "n_outcomes": 2,
+      "found_at": "2026-04-24 20:00:10",
+      "legs": {
+        "Portland Trail Blazers": {
+          "book": "DraftKings",
+          "book_key": "draftkings",
+          "book_type": "soft",
+          "odds": 2.5,
+          "can_ban": true
+        },
+        "San Antonio Spurs": {
+          "book": "888sport",
+          "book_key": "sport888",
+          "book_type": "soft",
+          "odds": 1.67,
+          "can_ban": true
+        }
+      }
+    },
+    {
+      "event": "New York Red Bulls vs FC Dallas",
+      "home": "New York Red Bulls",
+      "away": "FC Dallas",
+      "sport": "MLS",
+      "sport_key": "soccer_usa_mls",
+      "commence": "2026-05-02",
+      "days_until": 5.3348,
+      "net_pct": 0.002461,
+      "apr": 0.1831,
+      "has_safe_leg": false,
+      "all_safe": false,
+      "n_outcomes": 3,
+      "found_at": "2026-04-27 11:27:53",
+      "legs": {
+        "FC Dallas": {
+          "book": "LeoVegas",
+          "book_key": "leovegas",
+          "book_type": "soft",
+          "odds": 3.85,
+          "can_ban": true
+        },
+        "New York Red Bulls": {
+          "book": "FanDuel",
+          "book_key": "fanduel",
+          "book_type": "soft",
+          "odds": 2.05,
+          "can_ban": true
+        },
+        "Draw": {
+          "book": "LeoVegas",
+          "book_key": "leovegas",
+          "book_type": "soft",
+          "odds": 4.0,
+          "can_ban": true
+        }
+      }
+    },
+    {
+      "event": "Jose Armando Resendiz vs Jaime Munguia",
+      "home": "Jose Armando Resendiz",
+      "away": "Jaime Munguia",
+      "sport": "BOXING",
+      "sport_key": "boxing_boxing",
+      "commence": "2026-05-03",
+      "days_until": 5.1492,
+      "net_pct": 0.010685,
+      "apr": 1.1241,
+      "has_safe_leg": true,
+      "all_safe": false,
+      "n_outcomes": 3,
+      "found_at": "2026-04-27 20:00:09",
+      "legs": {
+        "Jaime Munguia": {
+          "book": "888sport",
+          "book_key": "sport888",
+          "book_type": "soft",
+          "odds": 1.61,
+          "can_ban": true
+        },
+        "Jose Armando Resendiz": {
+          "book": "Pinnacle",
+          "book_key": "pinnacle",
+          "book_type": "sharp",
+          "odds": 3.27,
+          "can_ban": false
+        },
+        "Draw": {
+          "book": "LeoVegas",
+          "book_key": "leovegas",
+          "book_type": "soft",
+          "odds": 16.0,
+          "can_ban": true
+        }
+      }
+    }
+  ]
+}

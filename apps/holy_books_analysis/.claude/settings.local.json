@@ -1,0 +1,24 @@
+{
+  "disableAllHooks": true,
+  "permissions": {
+    "allow": [
+      "Bash(grep -E \"\\\\.\\(html|js|css|json\\)$\")",
+      "Bash(python analyze.py)",
+      "Bash(mkdir -p \"C:\\\\Users\\\\forea\\\\Documents\\\\foreandr.github.io\\\\apps\\\\holy_books_analysis\\\\.claude\")",
+      "Bash(\"C:\\\\Users\\\\forea\\\\Documents\\\\foreandr.github.io\\\\apps\\\\holy_books_analysis\\\\.claude\\\\launch.json\")",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(find C:UsersforeaDocumentsforeandr.github.ioappstopcap_rotation -type f -name *)",
+      "Bash(grep -E \"^C:/Users/forea/Documents/foreandr.github.io/[^/]+\\\\.\\(html|js\\)$\")",
+      "Bash(python -m http.server 5051)",
+      "Bash(wc -c \"C:/Users/forea/Documents/foreandr.github.io/apps/topcap_rotation/data/real_data.json\")",
+      "Bash(tail -c 50 \"C:/Users/forea/Documents/foreandr.github.io/apps/topcap_rotation/data/real_data.json\")",
+      "Bash(python3 -c \":*)",
+      "Bash(head -c 500 \"C:/Users/forea/Documents/foreandr.github.io/apps/topcap_rotation/data/real_data.json\")",
+      "Bash(python -m http.server 5502)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5502/index.html)",
+      "Bash(curl -s -L http://localhost:5502/ -o /dev/null -w \"%{http_code} final: %{url_effective}\")",
+      "Skill(update-config)",
+      "Skill(update-config:*)"
+    ]
+  }
+}

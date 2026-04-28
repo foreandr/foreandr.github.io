@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Math Universe — Galaxy View</title>
+<link rel="icon" type="image/x-icon" href="../../images.ico">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#050a14;font-family:'Space Grotesk',sans-serif;color:#f8fafc;overflow:hidden;width:100vw;height:100vh}
+canvas{position:fixed;top:0;left:0;z-index:1}
+#ui{position:fixed;top:0;left:0;width:100%;height:100%;z-index:10;pointer-events:none}
+
+/* TOP BAR */
+#topbar{position:absolute;top:16px;left:16px;right:16px;display:flex;align-items:center;gap:12px;pointer-events:auto}
+.back-btn{text-decoration:none;color:#f8fafc;font-weight:600;font-size:0.85rem;background:rgba(15,23,42,0.8);border:1px solid rgba(255,255,255,0.1);padding:9px 16px;border-radius:999px;backdrop-filter:blur(12px);transition:all 0.2s;white-space:nowrap}
+.back-btn:hover{background:rgba(56,189,248,0.2);border-color:#38bdf8}
+#view-nav{display:flex;gap:8px}
+.view-link{text-decoration:none;color:#f8fafc;font-weight:600;font-size:0.78rem;background:rgba(15,23,42,0.7);border:1px solid rgba(255,255,255,0.1);padding:8px 12px;border-radius:999px;backdrop-filter:blur(10px)}
+.view-link.active{border-color:#38bdf8;background:rgba(56,189,248,0.2)}
+#title{font-size:1rem;font-weight:600;letter-spacing:0.06em;padding:9px 16px;background:rgba(15,23,42,0.7);border:1px solid rgba(255,255,255,0.06);border-radius:999px;backdrop-filter:blur(12px)}
+#title span{color:#94a3b8;font-weight:400;font-size:0.8rem;margin-left:8px}
+#search{margin-left:auto;background:rgba(15,23,42,0.8);border:1px solid rgba(255,255,255,0.1);color:#f8fafc;padding:9px 16px;border-radius:999px;font-family:'Space Grotesk',sans-serif;font-size:0.85rem;width:220px;backdrop-filter:blur(12px);outline:none;transition:all 0.2s}
+#search:focus{border-color:#38bdf8;width:280px}
+#search::placeholder{color:#475569}
+
+/* DOMAIN FILTERS */
+#filters{position:absolute;top:62px;left:16px;right:16px;display:flex;flex-wrap:wrap;gap:6px;pointer-events:auto}
+.domain-chip{padding:5px 12px;border-radius:999px;font-size:0.72rem;font-weight:600;letter-spacing:0.05em;cursor:pointer;border:1px solid;transition:all 0.15s;backdrop-filter:blur(8px)}
+.domain-chip.active{filter:brightness(1.3)}
+.domain-chip:not(.active){opacity:0.45}
+
+/* INFO PANEL */
+#info-panel{position:absolute;bottom:24px;right:24px;width:320px;background:rgba(8,15,30,0.92);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:22px;backdrop-filter:blur(16px);box-shadow:0 24px 60px rgba(0,0,0,0.6);transform:translateX(360px);transition:transform 0.35s cubic-bezier(0.34,1.56,0.64,1);pointer-events:auto}
+#info-panel.visible{transform:translateX(0)}
+#info-domain-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:0.72rem;font-weight:700;letter-spacing:0.06em;margin-bottom:12px;border:1px solid}
+#info-level{float:right;font-size:0.72rem;color:#64748b;margin-top:2px}
+#info-name{font-size:1.2rem;font-weight:700;line-height:1.3;margin-bottom:8px;clear:both}
+#info-axiom{font-size:0.85rem;color:#94a3b8;line-height:1.6;margin-bottom:14px}
+.info-section-label{font-size:0.7rem;font-weight:700;letter-spacing:0.1em;color:#475569;text-transform:uppercase;margin-bottom:6px}
+#info-parents,#info-children{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px}
+.rel-chip{font-size:0.72rem;padding:3px 9px;border-radius:6px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);cursor:pointer;transition:background 0.15s}
+.rel-chip:hover{background:rgba(255,255,255,0.12)}
+#info-close{position:absolute;top:14px;right:16px;background:none;border:none;color:#475569;font-size:1.1rem;cursor:pointer;padding:4px;transition:color 0.15s}
+#info-close:hover{color:#f8fafc}
+
+/* LEGEND */
+#legend{position:absolute;bottom:24px;left:24px;background:rgba(8,15,30,0.85);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:14px 16px;backdrop-filter:blur(12px);pointer-events:none}
+#legend h4{font-size:0.65rem;font-weight:700;letter-spacing:0.1em;color:#475569;text-transform:uppercase;margin-bottom:8px}
+.legend-item{display:flex;align-items:center;gap:8px;font-size:0.75rem;color:#94a3b8;margin-bottom:4px}
+.legend-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+
+/* TOOLTIP */
+#tooltip{position:fixed;background:rgba(8,15,30,0.95);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 12px;font-size:0.8rem;font-weight:600;pointer-events:none;z-index:100;opacity:0;transition:opacity 0.1s;white-space:nowrap;backdrop-filter:blur(8px)}
+
+/* NODE COUNT */
+#nodecount{position:absolute;top:110px;right:24px;font-size:0.72rem;color:#334155;pointer-events:none}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="ui">
+  <div id="topbar">
+    <a class="back-btn" href="../../index.html">← Back</a>
+    <div id="view-nav">
+      <a class="view-link" href="./index.html">Studio</a>
+      <a class="view-link" href="./explorer.html">Explorer</a>
+      <a class="view-link active" href="./galaxy.html">Galaxy</a>
+    </div>
+    <div id="title">Math Universe <span>Galaxy View — 1,025 Structures</span></div>
+    <input id="search" type="text" placeholder="Search structures...">
+  </div>
+  <div id="filters"></div>
+  <div id="nodecount"></div>
+  <div id="info-panel">
+    <button id="info-close">×</button>
+    <div id="info-domain-badge"></div>
+    <div id="info-level"></div>
+    <div id="info-name"></div>
+    <div id="info-axiom"></div>
+    <div class="info-section-label">Requires</div>
+    <div id="info-parents"></div>
+    <div class="info-section-label">Leads To</div>
+    <div id="info-children"></div>
+  </div>
+  <div id="legend">
+    <h4>Domains</h4>
+    <div id="legend-items"></div>
+  </div>
+</div>
+<div id="tooltip"></div>
+
+<script src="./data.js"></script>
+<script src="./core.js"></script>
+<script>
+if (window.MathTreeCore) {
+  rawNodes.forEach((node) => {
+    node.name = MathTreeCore.cleanText(node.name);
+    node.axiom = MathTreeCore.cleanText(node.axiom);
+  });
+}
+
+const DOMAINS = {
+  'Logic':          { color:'#f43f5e', emoji:'⊢' },
+  'Number Theory':  { color:'#fb923c', emoji:'ℕ' },
+  'Category Theory':{ color:'#818cf8', emoji:'→' },
+  'Topology':       { color:'#06b6d4', emoji:'∮' },
+  'Geometry':       { color:'#a78bfa', emoji:'△' },
+  'Analysis':       { color:'#10b981', emoji:'∫' },
+  'Algebra':        { color:'#f59e0b', emoji:'⊕' },
+  'Combinatorics':  { color:'#34d399', emoji:'⊂' },
+  'Physics':        { color:'#e879f9', emoji:'ψ' },
+  'Other':          { color:'#94a3b8', emoji:'∞' },
+};
+
+function getDomain(node) {
+  const s = (node.id + ' ' + node.name).toLowerCase();
+  if (/logic|proof|model-theory|type-theory|forcing|zfc|nbg|peano|godel|curry|lambda|turing|computab|recursion|decidab|propositional|predicate|formula|sequent|natural-deduction|realizab|proof-theory|reverse-math|subsystem|ordinal-analysis|epsilon-zero|constructive|cut-elim/.test(s)) return 'Logic';
+  if (/number-theory|prime|congruence|diophantine|riemann-zeta|l-function|modular-form|galois-extension|cyclotomic|class-field|fermat|goldbach|abc-conjec|sieve|iwasawa|langlands|arakelov|mordell|faltings|weil-con|shimura|automorphic|birch|bsd|selmer|tate-module|iwasawa|p-adic-l|frobenius|artin-map/.test(s)) return 'Number Theory';
+  if (/categ|functor|natural-transform|adjunction|topos|monad|operad|yoneda|kan-ext|abelian-categ|derived-categ|triangulated|dg-categ|infty-categ|quasicat|bicateg|enriched|site|sheaf|stack|six-functor|perverse|grothendieck-topos|factorization-system|localization-categ|model-categ|quillen|simplicial-model|homotopy-limit|complete-segal|two-categ|omega-categ/.test(s)) return 'Category Theory';
+  if (/topolog|manifold|homotopy|homolog|cohomolog|bundle|fibration|cofibr|cobord|knot|surgery|spectrum|simplicial|cw-complex|cell-complex|covering|fundamental-group|morse|floer|heegaard|dehn|lens-space|seifert|concordance|link-diagram|3-manifold|geometrization|poincare-conj|whitehead|hurewicz|van-kampen|eilenberg|postnikov|obstruction|serre-spec|steenrod|chromatic-homot|stable-homot|tmf|adams|brown-rep/.test(s)) return 'Topology';
+  if (/riemannian|kahler|calabi-yau|symplectic|contact-m|spin-m|lorentz|hyperbolic-geom|hyperbolic-space|geodesic|curvature|connection|gauge|yang-mills|chern|algebraic-variety|scheme|elliptic-curve|algebraic-curve|moduli|blow-up|minimal-model|mmp|flop|schubert|flag-variety|springer|toric|abelian-variety|jacobian|hodge|period-domain|riemann-roch|kodaira|enriques|mori|arithmetic-surface|neron|fargues|teichm|klein|fuchsian|hyperbolic-3/.test(s)) return 'Geometry';
+  if (/banach|hilbert|lp-space|sobolev|hardy-space|fourier|laplace|integral|measure|lebesgue|cauchy|differentiable|smooth-func|analytic-func|holomorphic|harmonic-func|pde|ode|distribution|operator-theory|functional-analysis|real-analysis|complex-analysis|frechet|locally-convex|nuclear-space|schwartz|dual-space|hahn-banach|open-mapping|uniform-bound|calderon|bmo|orlicz|besov|triebel|ricci-flow|mean-curvature|minimal-surface|geometric-measure|variational|fixed-point|real-number|complex-number|riemann-sphere/.test(s)) return 'Analysis';
+  if (/group|ring|field|modul|algebra|monoid|semigroup|lattice|boolean|vector-space|ideal|polynomial|tensor|clifford|hopf|lie-algebra|represent|character|weyl|dynkin|hecke|cluster|magma|quasigroup|loop|semiring|inverse-semigroup|band|semilattice|division-ring|quaternion|octonion|graded-ring|localization|completion|symmetric-algebra|exterior-algebra|brauer|central-simple|pi-algebra|free-algebra|polynomial-ring|power-series-ring|unit-group|class-group|witt-group|quadratic-form|bilinear|symplectic-form|verma|bgg|macdonald|jack|hall-littlewood|crystal-basis|canonical-basis|kazhdan-lusztig/.test(s)) return 'Algebra';
+  if (/graph|matroid|partition|young-tableau|generating-func|species|combinat|chromatic|tutte|ramsey|steiner|latin-square|code-theory|linear-code|cyclic-code|reed-solomon|ldpc|design-theory|block-design|hadamard|catalan|parking|noncrossing|associahedron|permutohedron|hyperplane-arrange|orlik-solomon|mobius-func|incidence-algebra|zeta-poly|poset-topo|symmetric-func|schur-poly|robinson-schensted|jeu-de-taquin|plethysm|expander|chromatic-symm/.test(s)) return 'Combinatorics';
+  if (/quantum|gauge-theory|yang-mills|string-theory|conformal-field|topological-qft|vertex-operator|fock-space|noncommut|spectral-triple|hamiltonian-mech|lagrangian-sub|floer-homol|fukaya|mirror-symmetry|quantum-mech|quantum-field|cstar-algebra|von-neumann-algebra|k-theory-operator|spectral-geom/.test(s)) return 'Physics';
+  return 'Other';
+}
+
+// Build node map and child lists
+const nodeMap = {};
+rawNodes.forEach(n => { nodeMap[n.id] = n; n.children = []; n.domain = getDomain(n); });
+rawNodes.forEach(n => { if (n.parents) n.parents.forEach(pid => { if (nodeMap[pid]) nodeMap[pid].children.push(n.id); }); });
+
+// Canvas setup
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+let W, H;
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+// Stars background
+const STARS = Array.from({length:300}, () => ({
+  x: Math.random(), y: Math.random(),
+  r: Math.random() * 1.2 + 0.2,
+  a: Math.random() * 0.5 + 0.1
+}));
+
+// Domain cluster centers (arranged in circle)
+const domainNames = Object.keys(DOMAINS);
+const domainCenters = {};
+domainNames.forEach((d, i) => {
+  const angle = (i / domainNames.length) * Math.PI * 2 - Math.PI/2;
+  domainCenters[d] = { x: Math.cos(angle) * 550, y: Math.sin(angle) * 380 };
+});
+
+// Physics state
+rawNodes.forEach(n => {
+  const c = domainCenters[n.domain];
+  n.px = c.x + (Math.random()-0.5)*120;
+  n.py = c.y + (Math.random()-0.5)*120;
+  n.vx = 0; n.vy = 0;
+  n.mass = 1 + (n.children.length * 0.3);
+});
+
+// Spatial grid for repulsion optimization
+function buildGrid(nodes, cellSize) {
+  const grid = new Map();
+  nodes.forEach(n => {
+    const gx = Math.floor(n.px / cellSize);
+    const gy = Math.floor(n.py / cellSize);
+    const key = `${gx},${gy}`;
+    if (!grid.has(key)) grid.set(key, []);
+    grid.get(key).push(n);
+  });
+  return { grid, cellSize };
+}
+function gridNeighbors(g, n, range) {
+  const r = Math.ceil(range / g.cellSize);
+  const gx = Math.floor(n.px / g.cellSize);
+  const gy = Math.floor(n.py / g.cellSize);
+  const result = [];
+  for (let dx=-r; dx<=r; dx++) for (let dy=-r; dy<=r; dy++) {
+    const cell = g.grid.get(`${gx+dx},${gy+dy}`);
+    if (cell) result.push(...cell);
+  }
+  return result;
+}
+
+function tick() {
+  const REPEL_DIST = 200, REPEL_STRENGTH = 900;
+  const CLUSTER_STRENGTH = 0.007;
+  const SPRING_K = 0.025, SPRING_REST = 85;
+  const DAMP = 0.87, CENTER_PULL = 0.0008;
+
+  const g = buildGrid(rawNodes, 80);
+
+  rawNodes.forEach(n => {
+    // Cluster force
+    const c = domainCenters[n.domain];
+    n.vx += (c.x - n.px) * CLUSTER_STRENGTH;
+    n.vy += (c.y - n.py) * CLUSTER_STRENGTH;
+
+    // Center pull
+    n.vx += -n.px * CENTER_PULL;
+    n.vy += -n.py * CENTER_PULL;
+
+    // Repulsion (grid-optimized)
+    const neighbors = gridNeighbors(g, n, REPEL_DIST);
+    neighbors.forEach(m => {
+      if (m === n) return;
+      const dx = n.px - m.px, dy = n.py - m.py;
+      const dist2 = dx*dx + dy*dy;
+      if (dist2 < 1) return;
+      const dist = Math.sqrt(dist2);
+      if (dist < REPEL_DIST) {
+        const f = REPEL_STRENGTH / dist2;
+        n.vx += (dx/dist) * f * 0.5;
+        n.vy += (dy/dist) * f * 0.5;
+      }
+    });
+
+    // Spring force (parent-child links)
+    if (n.parents) n.parents.forEach(pid => {
+      const p = nodeMap[pid];
+      if (!p) return;
+      const dx = p.px - n.px, dy = p.py - n.py;
+      const dist = Math.sqrt(dx*dx+dy*dy) || 1;
+      const force = (dist - SPRING_REST) * SPRING_K;
+      n.vx += (dx/dist) * force;
+      n.vy += (dy/dist) * force;
+    });
+
+    n.vx *= DAMP; n.vy *= DAMP;
+    n.px += n.vx; n.py += n.vy;
+  });
+}
+
+// Run 300 warmup ticks
+for (let i=0; i<300; i++) tick();
+
+// Camera
+let camX = 0, camY = 0, camScale = 0.7;
+let panStart = null, panCamStart = null;
+
+function worldToScreen(wx, wy) {
+  return [(wx + camX) * camScale + W/2, (wy + camY) * camScale + H/2];
+}
+function screenToWorld(sx, sy) {
+  return [(sx - W/2) / camScale - camX, (sy - H/2) / camScale - camY];
+}
+
+// Interaction state
+let selectedNode = null;
+let hoveredNode = null;
+let ancestorSet = new Set();
+let activeDomains = new Set(domainNames);
+let searchQuery = '';
+let searchMatches = new Set();
+const tooltip = document.getElementById('tooltip');
+
+function getNodeRadius(n) {
+  return Math.max(3, Math.min(12, 3 + Math.sqrt(n.children.length) * 1.4));
+}
+
+function hitTest(sx, sy) {
+  const [wx, wy] = screenToWorld(sx, sy);
+  let best = null, bestDist2 = 400;
+  rawNodes.forEach(n => {
+    if (!activeDomains.has(n.domain)) return;
+    const dx = n.px - wx, dy = n.py - wy;
+    const d2 = dx*dx + dy*dy;
+    const r = getNodeRadius(n) / camScale;
+    if (d2 < Math.max(bestDist2, r*r*4)) {
+      if (d2 < bestDist2) { bestDist2 = d2; best = n; }
+    }
+  });
+  return best;
+}
+
+function traceAncestors(node) {
+  const visited = new Set();
+  function trace(n) {
+    if (!n || visited.has(n.id)) return;
+    visited.add(n.id);
+    if (n.parents) n.parents.forEach(pid => trace(nodeMap[pid]));
+  }
+  trace(node);
+  return visited;
+}
+
+function selectNode(n) {
+  selectedNode = n;
+  ancestorSet = n ? traceAncestors(n) : new Set();
+  if (n) showInfoPanel(n);
+  else hideInfoPanel();
+}
+
+function showInfoPanel(n) {
+  const d = DOMAINS[n.domain];
+  const badge = document.getElementById('info-domain-badge');
+  badge.textContent = d.emoji + ' ' + n.domain;
+  badge.style.background = d.color + '22';
+  badge.style.color = d.color;
+  badge.style.borderColor = d.color + '55';
+  document.getElementById('info-level').textContent = 'Level ' + n.level;
+  document.getElementById('info-name').textContent = n.name;
+  document.getElementById('info-axiom').textContent = n.axiom;
+
+  const pEl = document.getElementById('info-parents');
+  pEl.innerHTML = '';
+  (n.parents || []).forEach(pid => {
+    const p = nodeMap[pid];
+    if (!p) return;
+    const chip = document.createElement('span');
+    chip.className = 'rel-chip';
+    chip.textContent = p.name;
+    chip.onclick = () => selectNode(p);
+    pEl.appendChild(chip);
+  });
+  if (!(n.parents||[]).length) pEl.innerHTML = '<span style="color:#334155;font-size:0.75rem">None (root)</span>';
+
+  const cEl = document.getElementById('info-children');
+  cEl.innerHTML = '';
+  const kids = n.children.slice(0,12);
+  kids.forEach(cid => {
+    const c = nodeMap[cid];
+    if (!c) return;
+    const chip = document.createElement('span');
+    chip.className = 'rel-chip';
+    chip.textContent = c.name;
+    chip.onclick = () => selectNode(c);
+    cEl.appendChild(chip);
+  });
+  if (n.children.length > 12) {
+    const more = document.createElement('span');
+    more.style.cssText = 'color:#334155;font-size:0.75rem';
+    more.textContent = `+${n.children.length-12} more`;
+    cEl.appendChild(more);
+  }
+  if (!n.children.length) cEl.innerHTML = '<span style="color:#334155;font-size:0.75rem">None (leaf)</span>';
+
+  document.getElementById('info-panel').classList.add('visible');
+}
+
+function hideInfoPanel() {
+  document.getElementById('info-panel').classList.remove('visible');
+}
+
+// Build UI
+function buildFilters() {
+  const el = document.getElementById('filters');
+  el.innerHTML = '';
+  domainNames.forEach(d => {
+    const c = DOMAINS[d].color;
+    const chip = document.createElement('div');
+    chip.className = 'domain-chip active';
+    chip.textContent = DOMAINS[d].emoji + ' ' + d;
+    chip.style.color = c;
+    chip.style.borderColor = c + '55';
+    chip.style.background = c + '18';
+    chip.dataset.domain = d;
+    chip.onclick = () => {
+      if (activeDomains.has(d)) activeDomains.delete(d);
+      else activeDomains.add(d);
+      chip.classList.toggle('active', activeDomains.has(d));
+    };
+    el.appendChild(chip);
+  });
+}
+buildFilters();
+
+function buildLegend() {
+  const el = document.getElementById('legend-items');
+  el.innerHTML = '';
+  domainNames.forEach(d => {
+    const item = document.createElement('div');
+    item.className = 'legend-item';
+    item.innerHTML = `<div class="legend-dot" style="background:${DOMAINS[d].color}"></div>${d}`;
+    el.appendChild(item);
+  });
+}
+buildLegend();
+
+// Search
+document.getElementById('search').addEventListener('input', e => {
+  searchQuery = e.target.value.toLowerCase().trim();
+  searchMatches.clear();
+  if (searchQuery) {
+    rawNodes.forEach(n => {
+      if (n.name.toLowerCase().includes(searchQuery) || n.id.toLowerCase().includes(searchQuery))
+        searchMatches.add(n.id);
+    });
+  }
+  document.getElementById('nodecount').textContent = searchQuery ? `${searchMatches.size} matches` : '';
+});
+
+// Events
+canvas.addEventListener('mousedown', e => {
+  if (e.button === 0) {
+    panStart = { x: e.clientX, y: e.clientY };
+    panCamStart = { x: camX, y: camY };
+    canvas.style.cursor = 'grabbing';
+  }
+});
+canvas.addEventListener('mousemove', e => {
+  if (panStart) {
+    camX = panCamStart.x + (e.clientX - panStart.x) / camScale;
+    camY = panCamStart.y + (e.clientY - panStart.y) / camScale;
+  } else {
+    const n = hitTest(e.clientX, e.clientY);
+    hoveredNode = n;
+    if (n) {
+      tooltip.style.opacity = '1';
+      tooltip.style.left = (e.clientX + 14) + 'px';
+      tooltip.style.top = (e.clientY - 10) + 'px';
+      tooltip.textContent = n.name;
+      tooltip.style.borderColor = DOMAINS[n.domain].color + '66';
+      canvas.style.cursor = 'pointer';
+    } else {
+      tooltip.style.opacity = '0';
+      canvas.style.cursor = 'grab';
+    }
+  }
+});
+canvas.addEventListener('mouseup', e => {
+  const dx = panStart ? Math.abs(e.clientX - panStart.x) : 0;
+  const dy = panStart ? Math.abs(e.clientY - panStart.y) : 0;
+  panStart = null;
+  canvas.style.cursor = hoveredNode ? 'pointer' : 'grab';
+  if (dx < 4 && dy < 4) {
+    const n = hitTest(e.clientX, e.clientY);
+    if (n) selectNode(n);
+    else selectNode(null);
+  }
+});
+canvas.addEventListener('dblclick', e => {
+  const n = hitTest(e.clientX, e.clientY);
+  if (n) {
+    camX = -n.px; camY = -n.py;
+    camScale = 1.5;
+  }
+});
+window.addEventListener('wheel', e => {
+  e.preventDefault();
+  const factor = e.deltaY > 0 ? 0.88 : 1.14;
+  camScale = Math.max(0.1, Math.min(8, camScale * factor));
+}, { passive: false });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') selectNode(null); });
+document.getElementById('info-close').onclick = () => selectNode(null);
+
+// Simulation runs continuously (slow drift)
+let simTick = 0;
+
+// DRAW
+function draw() {
+  requestAnimationFrame(draw);
+
+  // Run a few sim ticks per frame for gentle drift
+  if (simTick % 3 === 0) tick();
+  simTick++;
+
+  ctx.clearRect(0, 0, W, H);
+
+  // Background
+  const bg = ctx.createRadialGradient(W*0.3, H*0.2, 0, W*0.5, H*0.5, Math.max(W,H)*0.8);
+  bg.addColorStop(0, '#0a1628');
+  bg.addColorStop(1, '#050a14');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+
+  // Stars
+  STARS.forEach(s => {
+    ctx.beginPath();
+    ctx.arc(s.x*W, s.y*H, s.r, 0, Math.PI*2);
+    ctx.fillStyle = `rgba(255,255,255,${s.a})`;
+    ctx.fill();
+  });
+
+  ctx.save();
+  ctx.translate(W/2, H/2);
+  ctx.scale(camScale, camScale);
+  ctx.translate(camX, camY);
+
+  // Domain nebula glows
+  domainNames.forEach(d => {
+    if (!activeDomains.has(d)) return;
+    const c = domainCenters[d];
+    const col = DOMAINS[d].color;
+    const grd = ctx.createRadialGradient(c.x, c.y, 0, c.x, c.y, 220);
+    grd.addColorStop(0, col + '12');
+    grd.addColorStop(1, col + '00');
+    ctx.beginPath();
+    ctx.arc(c.x, c.y, 220, 0, Math.PI*2);
+    ctx.fillStyle = grd;
+    ctx.fill();
+  });
+
+  // Edges
+  ctx.save();
+  rawNodes.forEach(n => {
+    if (!activeDomains.has(n.domain)) return;
+    if (searchQuery && !searchMatches.has(n.id)) return;
+    if (!n.parents) return;
+    n.parents.forEach(pid => {
+      const p = nodeMap[pid];
+      if (!p || !activeDomains.has(p.domain)) return;
+      const isHighlighted = selectedNode && ancestorSet.has(n.id) && ancestorSet.has(pid);
+      ctx.beginPath();
+      ctx.moveTo(p.px, p.py);
+      ctx.lineTo(n.px, n.py);
+      if (isHighlighted) {
+        ctx.strokeStyle = '#fbbf24cc';
+        ctx.lineWidth = 1.5 / camScale;
+        ctx.setLineDash([]);
+      } else {
+        ctx.strokeStyle = DOMAINS[n.domain].color + '22';
+        ctx.lineWidth = 0.6 / camScale;
+        ctx.setLineDash([]);
+      }
+      ctx.stroke();
+    });
+  });
+  ctx.restore();
+
+  // Nodes
+  rawNodes.forEach(n => {
+    if (!activeDomains.has(n.domain)) return;
+    const col = DOMAINS[n.domain].color;
+    const r = getNodeRadius(n);
+    const isSelected = selectedNode && n.id === selectedNode.id;
+    const isAncestor = selectedNode && ancestorSet.has(n.id) && n.id !== selectedNode.id;
+    const isSearchMatch = searchQuery && searchMatches.has(n.id);
+    const isSearchMiss = searchQuery && !searchMatches.has(n.id);
+
+    ctx.save();
+    if (isSearchMiss) { ctx.globalAlpha = 0.08; }
+    else if (searchQuery && isSearchMatch) { ctx.globalAlpha = 1; }
+    else if (selectedNode && !isSelected && !isAncestor) { ctx.globalAlpha = 0.15; }
+
+    if (isSelected) {
+      ctx.shadowBlur = 30 / camScale;
+      ctx.shadowColor = '#ffffff';
+    } else if (isAncestor) {
+      ctx.shadowBlur = 20 / camScale;
+      ctx.shadowColor = '#fbbf24';
+    } else {
+      ctx.shadowBlur = 10 / camScale;
+      ctx.shadowColor = col;
+    }
+
+    ctx.beginPath();
+    ctx.arc(n.px, n.py, r, 0, Math.PI*2);
+
+    if (isSelected) {
+      ctx.fillStyle = '#ffffff';
+    } else if (isAncestor) {
+      ctx.fillStyle = '#fbbf24';
+    } else {
+      ctx.fillStyle = col + 'cc';
+    }
+    ctx.fill();
+
+    if (isSelected || isAncestor || isSearchMatch) {
+      ctx.strokeStyle = isSelected ? '#ffffff' : isAncestor ? '#fbbf24' : col;
+      ctx.lineWidth = 1.5 / camScale;
+      ctx.stroke();
+    }
+    ctx.restore();
+  });
+
+  // Domain labels (at cluster centers, visible at low zoom)
+  if (camScale < 1.2) {
+    domainNames.forEach(d => {
+      if (!activeDomains.has(d)) return;
+      const c = domainCenters[d];
+      const col = DOMAINS[d].color;
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, (1.2 - camScale) * 2);
+      ctx.font = `bold ${Math.round(18/camScale)}px Space Grotesk, sans-serif`;
+      ctx.fillStyle = col + 'aa';
+      ctx.textAlign = 'center';
+      ctx.fillText(DOMAINS[d].emoji + ' ' + d, c.x, c.y - 230);
+      ctx.restore();
+    });
+  }
+
+  ctx.restore();
+}
+
+draw();
+</script>
+</body>
+</html>

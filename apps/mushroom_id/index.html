@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Mushroom ID</title>
+<link rel="icon" type="image/x-icon" href="../../images.ico">
+<style>
+:root {
+  --bg: #060d07; --panel: #0d1a0f; --panel2: #122116;
+  --border: #1e3a22; --text: #dff0e0; --muted: #5a8060;
+  --accent: #22c55e; --accent2: #16a34a;
+  --warn: #dc2626; --warn2: #fca5a5;
+  --mono: "JetBrains Mono", ui-monospace, monospace;
+  --sans: "Segoe UI", system-ui, sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--text); font-family: var(--sans); display: flex; flex-direction: column; min-height: 100vh; }
+.topbar { display: flex; align-items: center; gap: 12px; padding: 0 16px; height: 48px; background: var(--panel); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.back { color: var(--muted); text-decoration: none; font-size: 13px; } .back:hover { color: var(--accent); }
+.app-title { font-size: 14px; font-weight: 700; color: var(--accent); } .spacer { flex: 1; }
+.main { flex: 1; display: flex; flex-direction: column; overflow-y: auto; padding: 20px 18px 40px; gap: 20px; }
+.safety-banner { background: #1a0505; border: 2px solid var(--warn); border-radius: 14px; padding: 16px 18px; display: flex; gap: 12px; align-items: flex-start; }
+.sb-icon { font-size: 28px; flex-shrink: 0; }
+.sb-text h3 { font-size: 14px; font-weight: 700; color: var(--warn2); margin-bottom: 6px; }
+.sb-text p { font-size: 12px; color: #fca5a5; line-height: 1.7; opacity: .9; }
+.form-card { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 16px; }
+.form-card h3 { font-size: 13px; font-weight: 700; color: var(--accent); letter-spacing: .5px; text-transform: uppercase; }
+.q-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.q-item { display: flex; flex-direction: column; gap: 6px; }
+.q-label { font-size: 12px; color: var(--muted); letter-spacing: .3px; }
+select { background: var(--panel2); border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 9px 10px; font-size: 13px; width: 100%; appearance: none; cursor: pointer; }
+select:focus { outline: 1px solid var(--accent); }
+.btn-identify { background: var(--accent); color: #000; border: none; border-radius: 12px; padding: 15px; font-size: 14px; font-weight: 700; cursor: pointer; width: 100%; }
+.btn-identify:hover { background: var(--accent2); color: #fff; }
+.btn-reset { background: var(--panel2); border: 1px solid var(--border); color: var(--muted); border-radius: 12px; padding: 12px; font-size: 13px; cursor: pointer; width: 100%; }
+.btn-reset:hover { border-color: var(--accent); color: var(--accent); }
+.results { display: flex; flex-direction: column; gap: 14px; }
+.results.hidden { display: none; }
+.top-match { background: var(--panel2); border: 1px solid rgba(34,197,94,.25); border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.tm-head { display: flex; gap: 14px; align-items: center; }
+.tm-icon { font-size: 42px; flex-shrink: 0; }
+.tm-info h2 { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+.badge { display: inline-flex; align-items: center; border-radius: 20px; padding: 3px 11px; font-size: 12px; font-weight: 700; font-family: var(--mono); }
+.toxic-badge { background: #dc262618; border: 1px solid #dc262644; color: var(--warn2); border-radius: 20px; padding: 3px 11px; font-size: 12px; font-weight: 700; font-family: var(--mono); }
+.tm-desc { font-size: 13px; line-height: 1.75; opacity: .88; border-top: 1px solid var(--border); padding-top: 12px; }
+.tm-warn { background: #1a0505; border: 1px solid var(--warn); border-radius: 10px; padding: 12px; font-size: 12px; color: var(--warn2); line-height: 1.6; }
+.sec-lbl { font-size: 10px; letter-spacing: 1.8px; text-transform: uppercase; color: var(--muted); }
+.cand { background: var(--panel2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; display: flex; align-items: center; gap: 12px; }
+.ci { flex: 1; min-width: 0; } .ci-name { font-size: 13px; font-weight: 600; }
+.ci-edib { font-size: 11px; margin-top: 3px; }
+.ci-match { font-size: 12px; font-family: var(--mono); color: var(--muted); min-width: 36px; text-align: right; }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <a class="back" href="../../index.html">← Back</a>
+  <span class="app-title">🍄 Mushroom ID</span>
+  <div class="spacer"></div>
+</div>
+<div class="main">
+  <div class="safety-banner">
+    <div class="sb-icon">⚠️</div>
+    <div class="sb-text">
+      <h3>SAFETY WARNING — Read before use</h3>
+      <p>This tool is for <strong>educational purposes only</strong>. NEVER eat a mushroom based on this or any app. Many deadly mushrooms closely resemble edible ones. Always consult a trained mycologist before consuming wild mushrooms.</p>
+    </div>
+  </div>
+  <div class="form-card">
+    <h3>Physical Characteristics</h3>
+    <div class="q-grid">
+      <div class="q-item">
+        <div class="q-label">Cap Shape</div>
+        <select id="qCap">
+          <option value="">— Select —</option>
+          <option value="convex">Convex / Domed</option>
+          <option value="flat">Flat / Umbonate</option>
+          <option value="funnel">Funnel / Vase-shaped</option>
+          <option value="bell">Bell / Conical</option>
+          <option value="irregular">Irregular / Wavy</option>
+          <option value="shelf">Shelf / No stem</option>
+          <option value="cup">Cup / Bowl-shaped</option>
+          <option value="egg">Egg-shaped / Puffball</option>
+        </select>
+      </div>
+      <div class="q-item">
+        <div class="q-label">Cap Color</div>
+        <select id="qColor">
+          <option value="">— Select —</option>
+          <option value="white">White / Cream</option>
+          <option value="yellow">Yellow / Pale</option>
+          <option value="orange">Orange</option>
+          <option value="red">Red / Scarlet</option>
+          <option value="brown">Brown / Tan</option>
+          <option value="gray">Gray / Smoky</option>
+          <option value="black">Black / Dark</option>
+          <option value="green">Green / Olive</option>
+          <option value="purple">Purple / Violet</option>
+        </select>
+      </div>
+      <div class="q-item">
+        <div class="q-label">Gills / Underside</div>
+        <select id="qGills">
+          <option value="">— Select —</option>
+          <option value="white_free">White gills, free from stem</option>
+          <option value="white_att">White gills, attached to stem</option>
+          <option value="pink">Pink / Salmon gills</option>
+          <option value="brown_dark">Brown / Dark gills</option>
+          <option value="orange_gill">Orange / Yellow gills</option>
+          <option value="ridges">Ridges / False gills</option>
+          <option value="pores">Pores / Sponge-like</option>
+          <option value="no_gills">No gills (puffball, cup, shelf)</option>
+        </select>
+      </div>
+      <div class="q-item">
+        <div class="q-label">Stem</div>
+        <select id="qStem">
+          <option value="">— Select —</option>
+          <option value="ring_volva">Ring + cup at base (volva)</option>
+          <option value="ring">Ring (skirt) present</option>
+          <option value="plain">Plain, no ring</option>
+          <option value="hollow">Hollow stem</option>
+          <option value="no_stem">No stem (grows directly on wood)</option>
+          <option value="net">Net-like pattern on stem</option>
+        </select>
+      </div>
+      <div class="q-item">
+        <div class="q-label">Habitat</div>
+        <select id="qHabitat">
+          <option value="">— Select —</option>
+          <option value="forest">Forest floor / Leaf litter</option>
+          <option value="wood">On wood / Tree trunks</option>
+          <option value="grass">Grass / Meadow / Lawn</option>
+          <option value="dung">Near dung / Compost</option>
+          <option value="sand">Sandy / Dune areas</option>
+          <option value="burn">Burned areas / After fire</option>
+        </select>
+      </div>
+      <div class="q-item">
+        <div class="q-label">Cap Size</div>
+        <select id="qSize">
+          <option value="">— Select —</option>
+          <option value="tiny">Tiny (under 3cm)</option>
+          <option value="small">Small (3–7cm)</option>
+          <option value="medium">Medium (7–15cm)</option>
+          <option value="large">Large (over 15cm)</option>
+        </select>
+      </div>
+    </div>
+    <div class="q-item">
+      <div class="q-label">Special Features</div>
+      <select id="qSpecial">
+        <option value="none">None observed</option>
+        <option value="ring_spots">Red cap with white spots</option>
+        <option value="blue_bruise">Bruises blue when cut/pressed</option>
+        <option value="ink">Gills dissolve into black ink</option>
+        <option value="gelatinous">Jelly-like / Rubbery texture</option>
+        <option value="coral">Coral / Branch-like shape</option>
+        <option value="smell_anise">Smells like anise / licorice</option>
+        <option value="smell_bad">Unpleasant / Fishy smell</option>
+        <option value="biolum">Glows in the dark</option>
+        <option value="reticulate">Netted/reticulate pattern on cap</option>
+      </select>
+    </div>
+    <button class="btn-identify" id="btnIdentify">🔍 Identify Mushroom</button>
+  </div>
+  <div class="results hidden" id="results">
+    <div id="topMatchEl"></div>
+    <div class="sec-lbl" id="otherLbl" style="display:none">Other possibilities</div>
+    <div id="candidatesEl"></div>
+    <div class="safety-banner" style="margin-top:8px">
+      <div class="sb-icon">☠️</div>
+      <div class="sb-text">
+        <h3>Do NOT eat based on this result</h3>
+        <p>This identification is educational only. Deadly species exist that look identical to edible ones. Consult a certified mycologist or local mushroom society before consuming any wild mushroom.</p>
+      </div>
+    </div>
+    <button class="btn-reset" id="btnReset">↺ Try again</button>
+  </div>
+</div>
+<script>
+const MUSHROOMS = [
+  { name:'Amanita muscaria', common:'Fly Agaric', icon:'🍄', edible:'deadly', color:['red','orange'], cap:['convex','flat'], gills:['white_free'], stem:['ring'], habitat:['forest'], size:['medium','large'], special:['ring_spots','none'],
+    desc:'The iconic red-and-white spotted toadstool — deadly toxic. Contains muscimol and ibotenic acid causing hallucinations, nausea, and in severe cases, death. Found under birch and pine trees. Never eat. The white spots (veil remnants) wash off in rain.' },
+  { name:'Amanita phalloides', common:'Death Cap', icon:'💀', edible:'deadly', color:['green','yellow','white'], cap:['convex','flat'], gills:['white_free'], stem:['ring_volva'], habitat:['forest'], size:['medium','large'], special:['none'],
+    desc:'Responsible for ~90% of fatal mushroom poisonings worldwide. Pale green/yellow cap with white gills and a distinctive cup (volva) at the base. Symptoms appear 6–24 hours after eating and affect the liver and kidneys. No antidote. Extremely deadly.' },
+  { name:'Amanita virosa', common:'Destroying Angel', icon:'👻', edible:'deadly', color:['white'], cap:['convex','bell'], gills:['white_free'], stem:['ring_volva'], habitat:['forest'], size:['medium','large'], special:['none'],
+    desc:'One of the most toxic mushrooms known. Pure white from cap to volva. Contains amatoxins that cause fatal liver and kidney failure. Symptoms delayed 6–24 hours. Resembles edible button mushrooms to the untrained eye. Absolutely deadly.' },
+  { name:'Cantharellus cibarius', common:'Golden Chanterelle', icon:'🟡', edible:'choice', color:['yellow','orange'], cap:['funnel','convex'], gills:['ridges'], stem:['plain'], habitat:['forest'], size:['medium','small'], special:['none','smell_anise'],
+    desc:'Prized edible mushroom with a distinctive egg-yolk yellow color and false gills (forked ridges). Fruity, apricot-like aroma. Found in forests under oaks and conifers. One of the most commercially harvested wild mushrooms. Always verify with an expert.' },
+  { name:'Boletus edulis', common:'Porcini / King Bolete', icon:'🟤', edible:'choice', color:['brown'], cap:['convex','flat'], gills:['pores'], stem:['net'], habitat:['forest'], size:['large','medium'], special:['reticulate','none'],
+    desc:'The celebrated "porcini" of Italian cuisine. Brown cap, creamy sponge-like pores (not gills), and a white net pattern on the stem. Mild, nutty flavor. Found under conifers and oaks. Beware lookalikes like Boletus satanas which have red pores.' },
+  { name:'Galerina marginata', common:'Deadly Skullcap', icon:'☠️', edible:'deadly', color:['brown','yellow'], cap:['convex','bell'], gills:['brown_dark'], stem:['ring'], habitat:['wood'], size:['tiny','small'], special:['none'],
+    desc:'A deadly small brown mushroom that contains the same lethal amatoxins as the Death Cap. Grows in clusters on decaying wood. Often mistaken for edible Honey Mushrooms. A single cap can be fatal. Never eat small brown mushrooms on wood without expert verification.' },
+  { name:'Armillaria mellea', common:'Honey Mushroom', icon:'🍯', edible:'edible', color:['yellow','brown','orange'], cap:['convex','flat'], gills:['white_att'], stem:['ring'], habitat:['wood','forest'], size:['medium','small'], special:['none'],
+    desc:'An edible species that grows in large clusters at the base of trees. Honey-colored cap with a distinctive ring. The world\'s largest living organism is an Armillaria in Oregon spanning 9 km². Edible when well-cooked, but can cause GI issues raw. Confirm ID carefully due to lookalikes.' },
+  { name:'Coprinellus micaceus', common:'Mica Ink Cap', icon:'⚫', edible:'edible', color:['brown','yellow'], cap:['bell','convex'], gills:['ink'], stem:['hollow','plain'], habitat:['wood','grass'], size:['tiny','small'], special:['ink'],
+    desc:'Small bell-shaped mushroom whose gills dissolve into black ink (autodigestion). Grows in clusters on buried wood. Edible when young before dissolving, but causes reaction when consumed with alcohol. The ink was historically used for writing.' },
+  { name:'Morchella esculenta', common:'Morel', icon:'🧅', edible:'choice', color:['brown','gray','yellow'], cap:['irregular'], gills:['no_gills'], stem:['hollow'], habitat:['forest','burn'], size:['medium','small'], special:['none'],
+    desc:'A highly prized edible with a distinctive honeycomb-pitted cap. Hollow throughout from cap to stem base. Often found near dead elms, in orchards, and after forest fires. Must be cooked before eating. False morels (Gyromitra) look similar but are toxic.' },
+  { name:'Psilocybe cubensis', common:'Magic Mushroom', icon:'🌀', edible:'hallucinogenic', color:['brown','white'], cap:['convex','bell'], gills:['brown_dark'], stem:['plain','ring'], habitat:['dung','grass'], size:['small','medium'], special:['blue_bruise'],
+    desc:'Contains psilocybin and psilocin — hallucinogenic compounds. Brown cap that may have a bluish tinge; gills turn purplish-black with spores. Bruises blue when handled due to psilocin oxidation. Controlled substance in most jurisdictions. Grows on dung in tropical areas.' },
+  { name:'Agaricus campestris', common:'Field Mushroom', icon:'⚪', edible:'edible', color:['white','brown'], cap:['convex','flat'], gills:['pink'], stem:['ring','plain'], habitat:['grass'], size:['medium','small'], special:['none'],
+    desc:'The classic wild relative of the cultivated button mushroom. White cap, pink gills that darken to chocolate brown with age, ring on stem. Found in grasslands and meadows. Edible, but beware deadly Amanitas growing in similar locations. Always check gills are pink, not white.' },
+  { name:'Laetiporus sulphureus', common:'Chicken of the Woods', icon:'🟠', edible:'choice', color:['orange','yellow'], cap:['shelf'], gills:['pores'], stem:['no_stem'], habitat:['wood'], size:['large'], special:['none'],
+    desc:'Unmistakable bright orange and yellow shelf fungus growing on trees. Pores on the underside (no gills). Young specimens are excellent edibles with a chicken-like texture and taste. Avoid specimens on conifers, locust, or eucalyptus which can cause reactions.' },
+  { name:'Macrolepiota procera', common:'Parasol Mushroom', icon:'☂️', edible:'edible', color:['brown','white'], cap:['convex','flat'], gills:['white_free'], stem:['ring','net'], habitat:['grass','forest'], size:['large'], special:['reticulate'],
+    desc:'One of the largest edible mushrooms with a tall, snakeskin-patterned stem and a moveable double ring. Cap starts egg-shaped then flattens like a parasol. White free gills. Found in open areas and woodland edges. Avoid lookalike Lepiota species which can be toxic.' },
+  { name:'Pleurotus ostreatus', common:'Oyster Mushroom', icon:'🌊', edible:'choice', color:['gray','white','brown'], cap:['shelf','funnel'], gills:['white_att'], stem:['no_stem','plain'], habitat:['wood'], size:['large','medium'], special:['none'],
+    desc:'A delicious edible with a fan or shell-shaped cap growing in overlapping clusters on dead trees. White to gray or tan. White gills running down a short, off-center stem. One of the easiest mushrooms to cultivate. Found year-round in temperate forests.' },
+  { name:'Clathrus archeri', common:'Devil\'s Fingers', icon:'👹', edible:'inedible', color:['red','orange'], cap:['irregular'], gills:['no_gills'], stem:['no_stem'], habitat:['forest','grass'], size:['medium'], special:['smell_bad'],
+    desc:'A bizarre stinkhorn mushroom from Australia/New Zealand, now invasive worldwide. Emerges from an egg-like base as 4–8 octopus-like red arms covered in dark olive spore slime. Has a foul rotting smell to attract flies for spore dispersal. Not edible but non-toxic.' },
+  { name:'Tremella mesenterica', common:'Yellow Brain / Witch\'s Butter', icon:'🧠', edible:'edible', color:['yellow','orange'], cap:['irregular'], gills:['no_gills'], stem:['no_stem'], habitat:['wood'], size:['small','medium'], special:['gelatinous'],
+    desc:'A gelatinous, brain-like yellow fungus growing on dead hardwood branches. Bright orange-yellow, jelly-like texture that dries to a hard crust and re-hydrates with rain. Actually a parasite of another fungus. Technically edible but flavorless. Non-toxic.' },
+  { name:'Hericium erinaceus', common:'Lion\'s Mane', icon:'🦁', edible:'choice', color:['white'], cap:['irregular'], gills:['no_gills'], stem:['no_stem'], habitat:['wood'], size:['large'], special:['none'],
+    desc:'A striking white, cascading mass of icicle-like spines growing on hardwood trees. Delicious edible with a seafood-like flavor, often used as a meat substitute. Also studied for potential neuroprotective benefits. Unmistakable appearance — no toxic lookalikes.' },
+  { name:'Lycoperdon perlatum', common:'Common Puffball', icon:'⚽', edible:'edible', color:['white'], cap:['egg'], gills:['no_gills'], stem:['plain'], habitat:['forest','grass'], size:['small','medium'], special:['none'],
+    desc:'A round white puffball covered in small spines that leave a netted pattern. Edible when the interior is pure white and firm throughout (slice to confirm). Becomes a mass of brown spore powder when mature. Beware: young Amanitas can look like puffballs — always slice to check.' },
+];
+
+function score(m, props) {
+  let s = 0, total = 0;
+  if (props.color) { total += 3; if (m.color.includes(props.color)) s += 3; }
+  if (props.cap) { total += 2; if (m.cap.includes(props.cap)) s += 2; }
+  if (props.gills) { total += 3; if (m.gills.includes(props.gills)) s += 3; }
+  if (props.stem) { total += 2; if (m.stem.includes(props.stem)) s += 2; }
+  if (props.habitat) { total += 2; if (m.habitat.includes(props.habitat)) s += 2; }
+  if (props.size) { total += 1; if (m.size.includes(props.size)) s += 1; }
+  if (props.special && props.special !== 'none') { total += 4; if (m.special.includes(props.special)) s += 4; }
+  return total > 0 ? s / total : 0;
+}
+
+document.getElementById('btnIdentify').addEventListener('click', () => {
+  const props = {
+    color: document.getElementById('qColor').value,
+    cap: document.getElementById('qCap').value,
+    gills: document.getElementById('qGills').value,
+    stem: document.getElementById('qStem').value,
+    habitat: document.getElementById('qHabitat').value,
+    size: document.getElementById('qSize').value,
+    special: document.getElementById('qSpecial').value,
+  };
+  const answered = Object.values(props).filter(v => v && v !== '').length;
+  if (answered < 3) { alert('Please answer at least 3 questions for a better identification.'); return; }
+
+  const scored = MUSHROOMS.map(m => ({ ...m, match: score(m, props) })).sort((a, b) => b.match - a.match);
+  const best = scored[0];
+  const others = scored.slice(1, 5).filter(m => m.match > 0);
+  const matchPct = Math.round(best.match * 100);
+  const cc = matchPct >= 60 ? '#22c55e' : matchPct >= 35 ? '#fbbf24' : '#f87171';
+  const cl = matchPct >= 60 ? 'Strong match' : matchPct >= 35 ? 'Possible match' : 'Low confidence';
+
+  const edibleColors = { choice: '#22c55e', edible: '#84cc16', hallucinogenic: '#a855f7', inedible: '#fbbf24', deadly: '#dc2626' };
+  const edibleLabels = { choice: 'Choice edible', edible: 'Edible (verify)', hallucinogenic: 'Hallucinogenic', inedible: 'Not edible', deadly: '☠ DEADLY TOXIC' };
+  const ec = edibleColors[best.edible] || '#f87171';
+  const el = edibleLabels[best.edible] || 'Unknown';
+  const isDeadly = best.edible === 'deadly';
+
+  document.getElementById('topMatchEl').innerHTML = `<div class="top-match" style="${isDeadly ? 'border-color: rgba(220,38,38,.5)' : ''}">
+    <div class="tm-head">
+      <div class="tm-icon">${best.icon}</div>
+      <div class="tm-info">
+        <h2>${best.common}</h2>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px">
+          <span class="badge" style="background:${cc}18;border:1px solid ${cc}44;color:${cc}">✓ ${matchPct}% — ${cl}</span>
+          <span class="badge" style="background:${ec}18;border:1px solid ${ec}44;color:${ec}">${el}</span>
+        </div>
+        <div style="font-size:12px;color:var(--muted);font-style:italic">${best.name}</div>
+      </div>
+    </div>
+    <div class="tm-desc">${best.desc}</div>
+    ${isDeadly ? `<div class="tm-warn">⚠ This species is <strong>DEADLY TOXIC</strong>. Even small amounts can cause fatal organ failure. Do not handle, smell, or consume. Seek medical attention immediately if ingested.</div>` : ''}
+  </div>`;
+
+  const otherLbl = document.getElementById('otherLbl');
+  const candidatesEl = document.getElementById('candidatesEl');
+  if (others.length) {
+    otherLbl.style.display = 'block';
+    candidatesEl.innerHTML = others.map(m => {
+      const pct = Math.round(m.match * 100);
+      const ec2 = edibleColors[m.edible] || '#f87171';
+      const el2 = edibleLabels[m.edible] || 'Unknown';
+      return `<div class="cand"><div class="ci"><div class="ci-name">${m.icon} ${m.common}</div><div class="ci-edib" style="color:${ec2}">${el2}</div></div><div class="ci-match">${pct}%</div></div>`;
+    }).join('');
+  } else {
+    otherLbl.style.display = 'none'; candidatesEl.innerHTML = '';
+  }
+
+  document.getElementById('results').classList.remove('hidden');
+  document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+});
+
+document.getElementById('btnReset').addEventListener('click', () => {
+  ['qCap','qColor','qGills','qStem','qHabitat','qSize'].forEach(id => { document.getElementById(id).value = ''; });
+  document.getElementById('qSpecial').value = 'none';
+  document.getElementById('results').classList.add('hidden');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Rummikub · Solved</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --bg2: #111118;
+      --card: #16161f;
+      --border: #2a2a3a;
+      --text: #e8e8f0;
+      --muted: #6b6b8a;
+      --accent: #10b981;
+      --accent2: #059669;
+      --red: #ef4444;
+      --blue: #3b82f6;
+      --yellow: #f59e0b;
+      --orange: #f97316;
+      --purple: #8b5cf6;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; min-height: 100vh; }
+    nav {
+      background: rgba(10,10,15,0.95);
+      border-bottom: 1px solid var(--border);
+      padding: 0 32px; height: 56px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    nav a { color: var(--muted); text-decoration: none; font-size: 0.875rem; }
+    nav a:hover { color: var(--text); }
+    nav .title { color: var(--text); font-weight: 700; font-size: 1rem; }
+
+    /* ── LOBBY ── */
+    #lobby {
+      display: flex; align-items: center; justify-content: center;
+      min-height: calc(100vh - 56px);
+      padding: 40px 24px;
+    }
+    .lobby-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 48px;
+      max-width: 480px;
+      width: 100%;
+      text-align: center;
+    }
+    .lobby-card h1 { font-size: 2.5rem; font-weight: 800; letter-spacing: -0.04em; margin-bottom: 8px; }
+    .lobby-card .desc { color: var(--muted); font-size: 0.9375rem; line-height: 1.6; margin-bottom: 40px; }
+    .lobby-label { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 14px; }
+    .num-selector { display: flex; gap: 12px; justify-content: center; margin-bottom: 40px; }
+    .num-btn {
+      width: 72px; height: 72px;
+      border-radius: 16px;
+      border: 2px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      font-size: 1.75rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 4px;
+    }
+    .num-btn .sub { font-size: 0.6rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+    .num-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(16,185,129,0.08); }
+    .num-btn.selected { border-color: var(--accent); background: rgba(16,185,129,0.12); color: var(--accent); }
+    .num-btn.selected .sub { color: var(--accent); }
+    .player-preview {
+      display: flex; justify-content: center; gap: 10px;
+      margin-bottom: 36px; min-height: 44px; align-items: center;
+    }
+    .player-chip {
+      display: flex; align-items: center; gap: 6px;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 20px; padding: 6px 14px;
+      font-size: 0.8125rem; font-weight: 600;
+    }
+    .chip-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .start-btn {
+      width: 100%; padding: 16px;
+      border-radius: 12px;
+      border: none;
+      background: var(--accent);
+      color: #fff;
+      font-size: 1rem; font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      letter-spacing: 0.02em;
+    }
+    .start-btn:hover { background: var(--accent2); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(16,185,129,0.3); }
+
+    /* ── GAME ── */
+    #game { display: none; }
+    .container { max-width: 1300px; margin: 0 auto; padding: 28px 24px; }
+    .page-header { display: flex; align-items: center; gap: 14px; margin-bottom: 24px; }
+    .page-header h1 { font-size: 1.75rem; font-weight: 800; letter-spacing: -0.03em; }
+    .change-players-btn {
+      padding: 6px 14px; border-radius: 8px;
+      border: 1px solid var(--border); background: var(--card);
+      color: var(--muted); font-size: 0.8125rem; font-weight: 600;
+      cursor: pointer; transition: all 0.15s;
+    }
+    .change-players-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .main-layout { display: grid; grid-template-columns: 1fr 320px; gap: 24px; }
+    .game-col { display: flex; flex-direction: column; gap: 20px; }
+    /* Table */
+    .table-area {
+      background: #0d1a12; border: 1px solid #1a3a25;
+      border-radius: 16px; padding: 20px; min-height: 240px;
+    }
+    .table-area h3 { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #3a7a50; margin-bottom: 14px; }
+    .sets-container { display: flex; flex-wrap: wrap; gap: 12px; min-height: 60px; }
+    .meld {
+      display: flex; gap: 3px;
+      background: rgba(0,0,0,0.3); border-radius: 8px;
+      padding: 6px 8px; border: 1px solid rgba(255,255,255,0.05);
+      position: relative;
+    }
+    .meld-label {
+      position: absolute; top: -9px; left: 6px;
+      font-size: 0.6rem; font-weight: 700; color: var(--muted);
+      text-transform: uppercase; background: #0d1a12; padding: 0 4px;
+    }
+    /* Tiles */
+    .tile {
+      width: 44px; height: 60px; border-radius: 6px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      font-size: 1rem; font-weight: 800; cursor: pointer; user-select: none;
+      transition: all 0.15s ease; border: 2px solid rgba(255,255,255,0.1);
+      background: #f5f0e8; box-shadow: 0 2px 6px rgba(0,0,0,0.4); position: relative;
+    }
+    .tile:hover { transform: translateY(-4px); box-shadow: 0 6px 16px rgba(0,0,0,0.5); }
+    .tile.selected { outline: 3px solid var(--accent); outline-offset: 2px; transform: translateY(-6px); }
+    .tile.joker { background: #2d1b4e; border-color: #8b5cf6; color: #c4b5fd !important; }
+    .tile[data-color="red"] { color: var(--red); }
+    .tile[data-color="blue"] { color: var(--blue); }
+    .tile[data-color="black"] { color: #1a1a2e; }
+    .tile[data-color="orange"] { color: var(--orange); }
+    .tile .num { font-size: 1.1rem; line-height: 1; }
+    .tile .col-dot { width: 6px; height: 6px; border-radius: 50%; margin-top: 2px; }
+    .tile[data-color="red"] .col-dot { background: var(--red); }
+    .tile[data-color="blue"] .col-dot { background: var(--blue); }
+    .tile[data-color="black"] .col-dot { background: #1a1a2e; }
+    .tile[data-color="orange"] .col-dot { background: var(--orange); }
+    /* Player hands */
+    .hand-section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 18px; }
+    .hand-section.active-turn { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(16,185,129,0.15); }
+    .hand-section h3 { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .player-badge {
+      display: inline-block; padding: 2px 8px; border-radius: 4px;
+      font-size: 0.7rem; font-weight: 700;
+    }
+    .hand-tiles { display: flex; flex-wrap: wrap; gap: 5px; min-height: 70px; }
+    .controls-bar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    button {
+      padding: 9px 18px; border-radius: 8px;
+      border: 1px solid var(--border); background: var(--card); color: var(--text);
+      font-size: 0.875rem; font-weight: 600; cursor: pointer; transition: all 0.15s ease;
+    }
+    button:hover { border-color: var(--accent); color: var(--accent); }
+    button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+    button.primary:hover { background: var(--accent2); border-color: var(--accent2); color: #fff; }
+    button:disabled { opacity: 0.4; cursor: default; }
+    /* Sidebar */
+    .sidebar { display: flex; flex-direction: column; gap: 16px; }
+    .panel { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 18px; }
+    .panel h3 { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 14px; }
+    .stat-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 0.875rem; }
+    .stat-row:last-child { border-bottom: none; }
+    .stat-val { font-weight: 700; }
+    .stat-val.green { color: var(--accent); }
+    .stat-val.red { color: var(--red); }
+    .stat-val.blue { color: var(--blue); }
+    .log { max-height: 220px; overflow-y: auto; font-size: 0.8rem; line-height: 1.8; color: var(--muted); }
+    .log .entry { padding: 1px 0; }
+    .log .entry .tag { font-weight: 700; }
+    .turn-indicator {
+      display: inline-block; width: 10px; height: 10px; border-radius: 50%;
+      background: var(--accent); animation: blink 1s ease infinite;
+    }
+    @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+    .algo-info { font-size: 0.8rem; color: var(--muted); line-height: 1.8; }
+    .algo-info b { color: var(--text); }
+    .scores-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .score-mini {
+      border-radius: 8px; padding: 8px 10px;
+      font-size: 0.8rem; display: flex; flex-direction: column; gap: 2px;
+    }
+    .score-mini .sname { font-weight: 700; font-size: 0.7rem; text-transform: uppercase; }
+    .score-mini .sval { font-size: 1.25rem; font-weight: 800; }
+    @media (max-width: 900px) { .main-layout { grid-template-columns: 1fr; } }
+    @media (max-width: 600px) { .lobby-card { padding: 32px 20px; } .num-btn { width: 60px; height: 60px; font-size: 1.5rem; } }
+  </style>
+</head>
+<body>
+<nav>
+  <a href="index.html">← Solved Games</a>
+  <span class="title">Rummikub</span>
+  <a href="../../index.html">Home</a>
+</nav>
+
+<!-- LOBBY -->
+<div id="lobby">
+  <div class="lobby-card">
+    <h1>Rummikub</h1>
+    <p class="desc">Tile-rummy with an optimal solver. You always play first. Choose how many players.</p>
+
+    <div class="lobby-label">Number of Players</div>
+    <div class="num-selector">
+      <div class="num-btn" data-n="1" onclick="selectPlayers(1)">
+        1<div class="sub">Solo</div>
+      </div>
+      <div class="num-btn selected" data-n="2" onclick="selectPlayers(2)">
+        2<div class="sub">1v1</div>
+      </div>
+      <div class="num-btn" data-n="3" onclick="selectPlayers(3)">
+        3<div class="sub">3-Way</div>
+      </div>
+      <div class="num-btn" data-n="4" onclick="selectPlayers(4)">
+        4<div class="sub">Full</div>
+      </div>
+    </div>
+
+    <div class="player-preview" id="player-preview"></div>
+
+    <button class="start-btn" onclick="startGame()">Start Game →</button>
+  </div>
+</div>
+
+<!-- GAME -->
+<div id="game">
+  <div class="container">
+    <div class="page-header">
+      <h1>Rummikub</h1>
+      <button class="change-players-btn" onclick="goToLobby()">← Change Players</button>
+      <button class="primary" onclick="newGame()" style="margin-left:auto">New Game</button>
+    </div>
+
+    <div class="main-layout">
+      <div class="game-col">
+        <!-- Table -->
+        <div class="table-area">
+          <h3>Table — Active Melds</h3>
+          <div class="sets-container" id="table-melds">
+            <div style="color:#3a7a50;font-size:0.85rem;align-self:center">No melds yet — play tiles to start</div>
+          </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls-bar">
+          <button id="btn-play" onclick="humanPlaySelected()">Play Selected</button>
+          <button id="btn-draw" onclick="humanDraw()">Draw Tile</button>
+          <button onclick="autoFinish()">Auto-Finish Game</button>
+          <button onclick="showSolution()">Show Optimal Play</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:0.8rem;color:var(--muted)">
+          <span style="font-weight:600;white-space:nowrap">Turn speed:</span>
+          <span>Fast</span>
+          <input type="range" id="rum-speed" min="0" max="600" value="80" step="20" style="flex:1;accent-color:var(--accent)" oninput="document.getElementById('rum-speed-lbl').textContent=this.value+'ms'">
+          <span>Slow</span>
+          <span id="rum-speed-lbl" style="color:var(--text);font-weight:700;min-width:44px">80ms</span>
+        </div>
+
+        <!-- Player hands rendered dynamically -->
+        <div id="all-hands"></div>
+      </div>
+
+      <div class="sidebar">
+        <div class="panel">
+          <h3>Game State</h3>
+          <div class="stat-row"><span>Draw Pile</span><span class="stat-val blue" id="pile-count">—</span></div>
+          <div class="stat-row"><span>Turn #</span><span class="stat-val" id="turn-num">1</span></div>
+          <div class="stat-row"><span>Current Player</span><span class="stat-val" id="cur-player">—</span></div>
+          <div class="stat-row"><span>Tiles on Table</span><span class="stat-val" id="table-count">0</span></div>
+        </div>
+
+        <div class="panel">
+          <h3>Scores</h3>
+          <div class="scores-grid" id="scores-grid"></div>
+        </div>
+
+        <div class="panel">
+          <h3>Session Stats</h3>
+          <div class="stat-row"><span>Games Played</span><span class="stat-val" id="sess-played">0</span></div>
+          <div class="stat-row"><span>Your Wins</span><span class="stat-val green" id="sess-wins">0</span></div>
+          <div class="stat-row"><span>AI Wins</span><span class="stat-val red" id="sess-ai-wins">0</span></div>
+        </div>
+
+        <div class="panel">
+          <h3>Algorithm Info</h3>
+          <div class="algo-info">
+            <b>Strategy:</b> Greedy Set-Cover<br>
+            <b>Phase 1:</b> Find all valid runs &amp; groups<br>
+            <b>Phase 2:</b> DP to maximize tiles played<br>
+            <b>Tiles solved:</b> <span id="algo-solved">0</span><br>
+            <b>Sets found:</b> <span id="algo-sets">0</span><br>
+            <b>Initial meld:</b> Sum ≥ 30 required
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3>Game Log</h3>
+          <div class="log" id="game-log"><div style="color:var(--muted)">Game not started.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// CONFIG
+// ============================================================
+const COLORS = ['red','blue','black','orange'];
+const COLOR_NAMES = {red:'R', blue:'B', black:'K', orange:'O'};
+const PLAYER_COLORS_CSS = ['#3b82f6','#ef4444','#10b981','#f59e0b'];
+const PLAYER_NAMES_BASE = ['You','AI-1','AI-2','AI-3'];
+
+let numPlayers = 2;
+
+// ── LOBBY ──
+function selectPlayers(n) {
+  numPlayers = n;
+  document.querySelectorAll('.num-btn').forEach(btn => {
+    btn.classList.toggle('selected', parseInt(btn.dataset.n) === n);
+  });
+  renderPreview();
+}
+
+function renderPreview() {
+  const el = document.getElementById('player-preview');
+  const names = getPlayerNames();
+  el.innerHTML = names.map((name, i) => `
+    <div class="player-chip">
+      <div class="chip-dot" style="background:${PLAYER_COLORS_CSS[i]}"></div>
+      ${name}
+    </div>`).join('');
+}
+
+function getPlayerNames() {
+  const names = ['You'];
+  for (let i = 1; i < numPlayers; i++) names.push(`AI-${i}`);
+  return names;
+}
+
+function startGame() {
+  document.getElementById('lobby').style.display = 'none';
+  document.getElementById('game').style.display = 'block';
+  newGame();
+}
+
+function goToLobby() {
+  document.getElementById('game').style.display = 'none';
+  document.getElementById('lobby').style.display = 'flex';
+  renderPreview();
+}
+
+// Init preview
+renderPreview();
+
+// ── RUMMIKUB ENGINE ──
+function createDeck() {
+  const deck = [];
+  for (let copy = 0; copy < 2; copy++) {
+    for (const c of COLORS) {
+      for (let n = 1; n <= 13; n++) {
+        deck.push({ color: c, num: n, id: `${c}-${n}-${copy}`, joker: false });
+      }
+    }
+    deck.push({ color: 'joker', num: 0, id: `joker-${copy}`, joker: true });
+  }
+  return deck;
+}
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function isValidRun(tiles) {
+  if (tiles.length < 3) return false;
+  const nonJokers = tiles.filter(t => !t.joker);
+  if (nonJokers.length === 0) return false;
+  const colors = [...new Set(nonJokers.map(t => t.color))];
+  if (colors.length !== 1) return false;
+  const nums = nonJokers.map(t => t.num).sort((a,b) => a-b);
+  const min = nums[0], max = nums[nums.length-1];
+  if (max - min + 1 > tiles.length) return false;
+  return new Set(nums).size === nonJokers.length;
+}
+
+function isValidGroup(tiles) {
+  if (tiles.length < 3 || tiles.length > 4) return false;
+  const nonJokers = tiles.filter(t => !t.joker);
+  if (nonJokers.length === 0) return false;
+  if ([...new Set(nonJokers.map(t => t.num))].length !== 1) return false;
+  const colors = nonJokers.map(t => t.color);
+  return new Set(colors).size === colors.length;
+}
+
+function isValidMeld(tiles) { return isValidRun(tiles) || isValidGroup(tiles); }
+function tileValue(tile) { return tile.joker ? 30 : tile.num; }
+
+function findBestPlay(hand, tableMelds, hasInitialMeld) {
+  // Cap hand size for search performance — take top 16 tiles by value
+  const searchHand = hand.length > 16
+    ? [...hand].sort((a,b) => tileValue(b) - tileValue(a)).slice(0, 16)
+    : hand;
+  const possible = [];
+  const n = searchHand.length;
+  // Only try subsets up to length 9 to keep it fast
+  function combine(start, current) {
+    if (current.length >= 3 && isValidMeld(current)) possible.push([...current]);
+    if (current.length >= 9 || possible.length > 300) return;
+    for (let i = start; i < n; i++) {
+      current.push(searchHand[i]);
+      combine(i + 1, current);
+      current.pop();
+    }
+  }
+  combine(0, []);
+  if (possible.length === 0) return null;
+  let best = null, bestCount = 0, bestSum = 0;
+  let searchCalls = 0;
+  function search(remaining, chosen, used, depth) {
+    if (depth > 12 || ++searchCalls > 5000) return;
+    const totalTiles = chosen.reduce((s,m) => s + m.length, 0);
+    const totalSum = chosen.reduce((s,m) => s + m.reduce((ss,t) => ss + tileValue(t), 0), 0);
+    if (totalTiles > bestCount || (totalTiles === bestCount && totalSum > bestSum)) {
+      bestCount = totalTiles; bestSum = totalSum; best = chosen.map(m => [...m]);
+    }
+    for (let i = 0; i < remaining.length; i++) {
+      const meld = remaining[i];
+      const ids = new Set(meld.map(t => t.id));
+      let overlap = false;
+      for (const id of ids) if (used.has(id)) { overlap = true; break; }
+      if (overlap) continue;
+      search(remaining.slice(i+1), [...chosen, meld], new Set([...used, ...ids]), depth+1);
+    }
+  }
+  possible.sort((a,b) => b.length - a.length || b.reduce((s,t) => s+tileValue(t),0) - a.reduce((s,t) => s+tileValue(t),0));
+  search(possible.slice(0, 30), [], new Set(), 0);
+  if (!best || best.length === 0) return null;
+  if (!hasInitialMeld) {
+    const sum = best.reduce((s,m) => s + m.reduce((ss,t) => ss+tileValue(t),0), 0);
+    if (sum < 30) return null;
+  }
+  return { melds: best, tilesCount: bestCount };
+}
+
+// ── GAME STATE ──
+let G = {};
+let selectedTiles = new Set();
+let sessionStats = { played: 0, wins: 0, aiWins: 0 };
+
+function logEntry(playerIdx, msg) {
+  const el = document.getElementById('game-log');
+  const col = PLAYER_COLORS_CSS[playerIdx] || '#aaa';
+  const name = playerIdx === -1 ? '⚙' : getPlayerNames()[playerIdx];
+  const div = document.createElement('div');
+  div.className = 'entry';
+  div.innerHTML = `<span class="tag" style="color:${col};font-weight:700">${name}:</span> ${msg}`;
+  if (el.querySelector('div') && el.querySelector('div').textContent.includes('Game not started')) el.innerHTML = '';
+  el.appendChild(div);
+  el.scrollTop = el.scrollHeight;
+}
+
+function newGame() {
+  selectedTiles.clear();
+  const deck = shuffle(createDeck());
+  const names = getPlayerNames();
+  G = {
+    deck,
+    deckIdx: 0,
+    hands: Array.from({length: numPlayers}, () => []),
+    initialMeld: Array(numPlayers).fill(false),
+    scores: Array(numPlayers).fill(0),
+    tableMelds: [],
+    currentPlayer: 0,
+    turnNum: 1,
+    over: false,
+    autoRunning: false,
+  };
+  for (let p = 0; p < numPlayers; p++)
+    for (let i = 0; i < 14; i++) G.hands[p].push(drawTile());
+  document.getElementById('game-log').innerHTML = '';
+  logEntry(-1, `New ${numPlayers}-player game started!`);
+  buildHandsDOM();
+  buildScoresDOM();
+  render();
+}
+
+function drawTile() {
+  if (G.deckIdx >= G.deck.length) return null;
+  return G.deck[G.deckIdx++];
+}
+
+function buildHandsDOM() {
+  const el = document.getElementById('all-hands');
+  el.innerHTML = '';
+  const names = getPlayerNames();
+  for (let p = 0; p < numPlayers; p++) {
+    const section = document.createElement('div');
+    section.className = 'hand-section';
+    section.id = `hand-section-${p}`;
+    const h3 = document.createElement('h3');
+    const badge = document.createElement('span');
+    badge.className = 'player-badge';
+    badge.style.background = PLAYER_COLORS_CSS[p] + '22';
+    badge.style.color = PLAYER_COLORS_CSS[p];
+    badge.textContent = p === 0 ? 'You' : 'AI';
+    h3.appendChild(badge);
+    h3.append(` ${names[p]}'s Hand `);
+    const count = document.createElement('span');
+    count.id = `hand-count-${p}`;
+    count.style.color = 'var(--muted)';
+    count.textContent = '(14 tiles)';
+    h3.appendChild(count);
+    if (p === 0) {
+      const dot = document.createElement('span');
+      dot.id = 'human-turn-dot';
+      dot.className = 'turn-indicator';
+      h3.appendChild(dot);
+    }
+    section.appendChild(h3);
+    const tiles = document.createElement('div');
+    tiles.className = 'hand-tiles';
+    tiles.id = `hand-tiles-${p}`;
+    section.appendChild(tiles);
+    el.appendChild(section);
+  }
+}
+
+function buildScoresDOM() {
+  const el = document.getElementById('scores-grid');
+  const names = getPlayerNames();
+  el.innerHTML = '';
+  for (let p = 0; p < numPlayers; p++) {
+    const card = document.createElement('div');
+    card.className = 'score-mini';
+    card.style.background = PLAYER_COLORS_CSS[p] + '18';
+    card.style.color = PLAYER_COLORS_CSS[p];
+    card.innerHTML = `<div class="sname">${names[p]}</div><div class="sval" id="score-${p}">0</div>`;
+    el.appendChild(card);
+  }
+}
+
+function render() {
+  if (!G.deck) return;
+  for (let p = 0; p < numPlayers; p++) renderHand(p);
+  renderTable();
+  updateStats();
+  const dot = document.getElementById('human-turn-dot');
+  if (dot) dot.style.display = G.currentPlayer === 0 && !G.over ? 'inline-block' : 'none';
+  const isHumanTurn = G.currentPlayer === 0 && !G.over;
+  document.getElementById('btn-play').disabled = !isHumanTurn;
+  document.getElementById('btn-draw').disabled = !isHumanTurn;
+  // Highlight active hand
+  for (let p = 0; p < numPlayers; p++) {
+    const s = document.getElementById(`hand-section-${p}`);
+    if (s) s.classList.toggle('active-turn', p === G.currentPlayer && !G.over);
+  }
+}
+
+function renderHand(p) {
+  const hand = G.hands[p];
+  const el = document.getElementById(`hand-tiles-${p}`);
+  if (!el) return;
+  el.innerHTML = '';
+  hand.forEach(tile => {
+    const div = document.createElement('div');
+    div.className = 'tile' + (p === 0 && selectedTiles.has(tile.id) ? ' selected' : '');
+    if (tile.joker) {
+      div.classList.add('joker');
+      div.innerHTML = '<div class="num">★</div><div class="col-dot" style="background:#8b5cf6"></div>';
+    } else {
+      div.dataset.color = tile.color;
+      div.innerHTML = `<div class="num">${tile.num}</div><div class="col-dot"></div>`;
+    }
+    if (p === 0) {
+      div.style.cursor = 'pointer';
+      div.onclick = () => toggleSelect(tile.id);
+    } else {
+      div.style.cursor = 'default';
+      div.style.opacity = '0.5';
+      // Show AI tiles face-down hint via reduced opacity
+    }
+    el.appendChild(div);
+  });
+  const cnt = document.getElementById(`hand-count-${p}`);
+  if (cnt) cnt.textContent = `(${hand.length} tiles)`;
+}
+
+function renderTable() {
+  const el = document.getElementById('table-melds');
+  if (G.tableMelds.length === 0) {
+    el.innerHTML = '<div style="color:#3a7a50;font-size:0.85rem;align-self:center">No melds yet — play tiles to start</div>';
+    return;
+  }
+  el.innerHTML = '';
+  G.tableMelds.forEach(meld => {
+    const div = document.createElement('div');
+    div.className = 'meld';
+    const lbl = document.createElement('span');
+    lbl.className = 'meld-label';
+    lbl.textContent = isValidRun(meld) ? 'Run' : 'Group';
+    div.appendChild(lbl);
+    meld.forEach(tile => {
+      const t = document.createElement('div');
+      t.className = 'tile';
+      if (tile.joker) { t.classList.add('joker'); t.innerHTML = '<div class="num" style="font-size:0.9rem">★</div>'; }
+      else { t.dataset.color = tile.color; t.innerHTML = `<div class="num">${tile.num}</div><div class="col-dot"></div>`; }
+      t.style.cursor = 'default'; t.style.width = '38px'; t.style.height = '52px';
+      div.appendChild(t);
+    });
+    el.appendChild(div);
+  });
+}
+
+function updateStats() {
+  document.getElementById('pile-count').textContent = G.deck.length - G.deckIdx;
+  document.getElementById('turn-num').textContent = G.turnNum;
+  document.getElementById('cur-player').textContent = getPlayerNames()[G.currentPlayer] || '—';
+  document.getElementById('table-count').textContent = G.tableMelds.reduce((s,m) => s + m.length, 0);
+  document.getElementById('sess-played').textContent = sessionStats.played;
+  document.getElementById('sess-wins').textContent = sessionStats.wins;
+  document.getElementById('sess-ai-wins').textContent = sessionStats.aiWins;
+  for (let p = 0; p < numPlayers; p++) {
+    const el = document.getElementById(`score-${p}`);
+    if (el) el.textContent = G.scores[p];
+  }
+}
+
+function toggleSelect(id) {
+  if (G.over || G.currentPlayer !== 0) return;
+  if (selectedTiles.has(id)) selectedTiles.delete(id);
+  else selectedTiles.add(id);
+  renderHand(0);
+}
+
+function humanPlaySelected() {
+  if (G.over || G.currentPlayer !== 0) return;
+  const tiles = G.hands[0].filter(t => selectedTiles.has(t.id));
+  if (tiles.length < 3) { logEntry(-1, 'Select at least 3 tiles to form a meld.'); return; }
+  if (!isValidMeld(tiles)) { logEntry(-1, 'Selected tiles don\'t form a valid run or group.'); return; }
+  const sum = tiles.reduce((s,t) => s + tileValue(t), 0);
+  if (!G.initialMeld[0]) {
+    if (sum < 30) { logEntry(-1, `Initial meld needs sum ≥ 30 (yours: ${sum}).`); return; }
+    G.initialMeld[0] = true;
+    logEntry(0, `Initial meld! Sum: ${sum}. ✓`);
+  } else {
+    logEntry(0, `Played ${tiles.length} tiles (${tiles.map(t => t.joker?'★':t.num+COLOR_NAMES[t.color]).join(', ')}). +${sum} pts`);
+  }
+  G.scores[0] += sum;
+  G.tableMelds.push(tiles);
+  G.hands[0] = G.hands[0].filter(t => !selectedTiles.has(t.id));
+  selectedTiles.clear();
+  checkWin(0);
+  if (!G.over) advanceTurn();
+}
+
+function humanDraw() {
+  if (G.over || G.currentPlayer !== 0) return;
+  const tile = drawTile();
+  if (!tile) { logEntry(-1, 'Draw pile is empty!'); }
+  else { G.hands[0].push(tile); logEntry(0, `Drew a tile (${tile.joker ? '★' : tile.num + ' ' + tile.color}).`); }
+  advanceTurn();
+}
+
+function advanceTurn() {
+  G.currentPlayer = (G.currentPlayer + 1) % numPlayers;
+  G.turnNum++;
+  render();
+  if (G.currentPlayer !== 0 && !G.over) {
+    setTimeout(doAITurn, 600);
+  } else if (!G.over) {
+    logEntry(-1, `--- Turn ${G.turnNum}: Your turn ---`);
+  }
+}
+
+function doAITurn() {
+  if (G.over) return;
+  const p = G.currentPlayer;
+  const result = findBestPlay(G.hands[p], G.tableMelds, G.initialMeld[p]);
+  document.getElementById('algo-sets').textContent = result ? result.melds.length : 0;
+  document.getElementById('algo-solved').textContent = result ? result.tilesCount : 0;
+
+  if (result && result.melds.length > 0) {
+    const allPlayed = result.melds.flat();
+    const sum = allPlayed.reduce((s,t) => s + tileValue(t), 0);
+    if (!G.initialMeld[p]) {
+      if (sum < 30) {
+        const tile = drawTile();
+        if (tile) { G.hands[p].push(tile); logEntry(p, 'No valid initial meld (need ≥30). Drew a tile.'); }
+        else logEntry(p, 'No valid initial meld. Draw pile empty.');
+        advanceTurn(); return;
+      }
+      G.initialMeld[p] = true;
+      logEntry(p, `Initial meld! ${result.melds.length} meld(s), ${allPlayed.length} tiles. Sum: ${sum}. ✓`);
+    } else {
+      logEntry(p, `Played ${allPlayed.length} tiles across ${result.melds.length} meld(s). +${sum} pts`);
+    }
+    G.scores[p] += sum;
+    result.melds.forEach(m => G.tableMelds.push(m));
+    const pids = new Set(allPlayed.map(t => t.id));
+    G.hands[p] = G.hands[p].filter(t => !pids.has(t.id));
+    checkWin(p);
+  } else {
+    const tile = drawTile();
+    if (tile) { G.hands[p].push(tile); logEntry(p, 'No playable melds. Drew a tile.'); }
+    else logEntry(p, 'No playable melds. Draw pile empty.');
+  }
+  if (!G.over) advanceTurn();
+}
+
+function checkWin(p) {
+  const names = getPlayerNames();
+  if (G.hands[p].length === 0) {
+    G.over = true;
+    if (p === 0) { logEntry(-1, '🎉 YOU WIN! Hand empty!'); sessionStats.wins++; }
+    else { logEntry(-1, `🤖 ${names[p]} WINS! Hand empty!`); sessionStats.aiWins++; }
+    sessionStats.played++;
+    render(); return;
+  }
+  if (G.deckIdx >= G.deck.length) {
+    G.over = true;
+    const tileCounts = G.hands.map(h => h.reduce((s,t) => s + tileValue(t), 0));
+    const minPts = Math.min(...tileCounts);
+    const winner = tileCounts.indexOf(minPts);
+    logEntry(-1, `Draw pile exhausted! ${names.map((n,i) => `${n}: ${tileCounts[i]} pts`).join(' | ')}`);
+    if (winner === 0) { logEntry(-1, '🎉 YOU WIN (lowest pts)!'); sessionStats.wins++; }
+    else { logEntry(-1, `🤖 ${names[winner]} WINS (lowest pts)!`); sessionStats.aiWins++; }
+    sessionStats.played++;
+    render();
+  }
+}
+
+async function autoFinish() {
+  if (G.over || G.autoRunning) return;
+  G.autoRunning = true;
+
+  function getRumSpeed() {
+    const sl = document.getElementById('rum-speed');
+    return sl ? parseInt(sl.value) : 80;
+  }
+
+  async function doOneTurn() {
+    if (G.over || !G.autoRunning) { G.autoRunning = false; return; }
+    const p = G.currentPlayer;
+    const result = findBestPlay(G.hands[p], G.tableMelds, G.initialMeld[p]);
+    if (result && result.melds.length > 0) {
+      const allPlayed = result.melds.flat();
+      const sum = allPlayed.reduce((s,t) => s + tileValue(t), 0);
+      if (!G.initialMeld[p] && sum < 30) {
+        const t = drawTile(); if (t) G.hands[p].push(t);
+      } else {
+        if (!G.initialMeld[p]) G.initialMeld[p] = true;
+        G.scores[p] += sum;
+        result.melds.forEach(m => G.tableMelds.push(m));
+        const pids = new Set(allPlayed.map(t => t.id));
+        G.hands[p] = G.hands[p].filter(t => !pids.has(t.id));
+        if (p === 0) logEntry(0, `Auto-played ${allPlayed.length} tiles. +${sum} pts`);
+        else logEntry(p, `Played ${allPlayed.length} tiles. +${sum} pts`);
+        checkWin(p);
+      }
+    } else {
+      const t = drawTile();
+      if (t) G.hands[p].push(t);
+    }
+    if (!G.over) {
+      G.currentPlayer = (G.currentPlayer + 1) % numPlayers;
+      G.turnNum++;
+    }
+    render();
+    const spd = getRumSpeed();
+    if (spd === 0) {
+      // Instant — use microtask to avoid blocking UI completely
+      if (!G.over) setTimeout(doOneTurn, 0);
+      else G.autoRunning = false;
+    } else {
+      if (!G.over) setTimeout(doOneTurn, spd);
+      else G.autoRunning = false;
+    }
+  }
+
+  doOneTurn();
+}
+
+function showSolution() {
+  if (!G.deck || G.currentPlayer !== 0) { logEntry(-1, 'Hint only available on your turn.'); return; }
+  const result = findBestPlay(G.hands[0], G.tableMelds, G.initialMeld[0]);
+  if (!result) { logEntry(-1, 'No playable melds found in your hand right now.'); return; }
+  logEntry(-1, `Optimal play: ${result.melds.length} meld(s), ${result.tilesCount} tiles → ${result.melds.map(m => '['+m.map(t => t.joker?'★':t.num+COLOR_NAMES[t.color]).join(',')+']').join(' ')}`);
+}
+</script>
+</body>
+</html>

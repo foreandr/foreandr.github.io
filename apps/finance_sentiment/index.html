@@ -1,0 +1,1313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reddit Sentiment Radar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet">
+<link rel="icon" type="image/x-icon" href="../../images.ico">
+<style>
+/* --- DEMO DATA (remove when real sentiment_data.js is generated) --- */
+
+:root {
+    --bg-deep: #0a0c10;
+    --bg-card: #12151c;
+    --bg-card-hover: #181c26;
+    --bg-surface: #1a1e28;
+    --border: #252a36;
+    --border-light: #2f3545;
+    --text-primary: #e8eaf0;
+    --text-secondary: #8b90a0;
+    --text-muted: #5c6070;
+    --accent-green: #22c55e;
+    --accent-green-dim: #166534;
+    --accent-green-glow: rgba(34, 197, 94, 0.15);
+    --accent-red: #ef4444;
+    --accent-red-dim: #7f1d1d;
+    --accent-red-glow: rgba(239, 68, 68, 0.15);
+    --accent-yellow: #eab308;
+    --accent-yellow-dim: #713f12;
+    --accent-blue: #3b82f6;
+    --accent-blue-dim: #1e3a5f;
+    --accent-purple: #a855f7;
+    --accent-orange: #f97316;
+    --sector-crypto: #f59e0b;
+    --sector-equities: #3b82f6;
+    --sector-materials: #10b981;
+    --sector-realestate: #8b5cf6;
+    --sector-fixedincome: #ec4899;
+    --sector-personalfinance: #06b6d4;
+    --sector-techai: #f43f5e;
+    --sector-geopolitics: #64748b;
+    --radius: 8px;
+    --radius-lg: 14px;
+    --font-mono: 'DM Mono', 'Fira Code', monospace;
+    --font-serif: 'Instrument Serif', Georgia, serif;
+    --font-sans: 'Space Grotesk', system-ui, sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    background: var(--bg-deep);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* --- LOADING SCREEN --- */
+#loading-screen {
+    position: fixed;
+    inset: 0;
+    background: var(--bg-deep);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+
+#loading-screen.hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.loading-content {
+    text-align: center;
+}
+
+.loading-logo {
+    font-family: var(--font-serif);
+    font-size: 48px;
+    font-weight: 400;
+    letter-spacing: -0.5px;
+    margin-bottom: 24px;
+}
+
+.loading-logo span {
+    font-style: italic;
+    background: linear-gradient(135deg, var(--accent-green), var(--accent-blue));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.loading-spinner {
+    width: 48px;
+    height: 48px;
+    margin: 0 auto 24px;
+    position: relative;
+}
+
+.loading-spinner::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent-green);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.loading-text {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.loading-dots::after {
+    content: '';
+    animation: dots 1.5s steps(4, end) infinite;
+}
+
+@keyframes dots {
+    0%, 20% { content: ''; }
+    40% { content: '.'; }
+    60% { content: '..'; }
+    80%, 100% { content: '...'; }
+}
+
+/* Subtle grid background */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+        linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.app { position: relative; z-index: 1; }
+
+/* --- HEADER --- */
+.back-button {
+    display: inline-block;
+    padding: 6px 16px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--accent-green);
+    border: 1px solid var(--accent-green);
+    border-radius: 5px;
+    transition: all 0.2s;
+    white-space: nowrap;
+    align-self: center;
+}
+.back-button:hover {
+    background: var(--accent-green);
+    color: var(--bg-deep);
+}
+
+.header {
+    padding: 40px 48px 32px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.header-left h1 {
+    font-family: var(--font-serif);
+    font-size: 42px;
+    font-weight: 400;
+    letter-spacing: -0.5px;
+    line-height: 1;
+    margin-bottom: 8px;
+}
+
+.header-left h1 span {
+    font-style: italic;
+    background: linear-gradient(135deg, var(--accent-green), var(--accent-blue));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.header-left .subtitle {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.header-meta {
+    display: flex;
+    gap: 28px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.header-meta .stat-val {
+    font-size: 22px;
+    font-family: var(--font-sans);
+    font-weight: 600;
+    color: var(--text-primary);
+    display: block;
+    margin-bottom: 2px;
+}
+
+/* --- NAV BREADCRUMB --- */
+.nav-bar {
+    padding: 16px 48px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+}
+
+.nav-bar .crumb {
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: color 0.2s;
+}
+.nav-bar .crumb:hover { color: var(--accent-blue); }
+.nav-bar .crumb.active { color: var(--text-primary); cursor: default; }
+.nav-bar .sep { color: var(--text-muted); margin: 0 4px; }
+
+/* --- MAIN CONTENT --- */
+.content { padding: 32px 48px 64px; }
+
+/* --- SECTOR CARDS (overview) --- */
+.sectors-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 20px;
+    margin-bottom: 40px;
+}
+
+.sector-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    cursor: default;
+    transition: all 0.25s;
+}
+
+.sector-card:hover {
+    background: var(--bg-card-hover);
+    border-color: var(--border-light);
+}
+
+.sector-card .sector-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.sector-card .sector-name {
+    font-family: var(--font-serif);
+    font-size: 26px;
+    font-weight: 400;
+}
+
+.sector-card .sector-badge {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 99px;
+    letter-spacing: 0.5px;
+}
+
+.badge-crypto { background: rgba(245, 158, 11, 0.15); color: var(--sector-crypto); }
+.badge-equities { background: rgba(59, 130, 246, 0.15); color: var(--sector-equities); }
+.badge-materials { background: rgba(16, 185, 129, 0.15); color: var(--sector-materials); }
+.badge-real-estate { background: rgba(139, 92, 246, 0.15); color: var(--sector-realestate); }
+.badge-fixed-income-macro { background: rgba(236, 72, 153, 0.15); color: var(--sector-fixedincome); }
+.badge-personal-finance { background: rgba(6, 182, 212, 0.15); color: var(--sector-personalfinance); }
+.badge-tech-ai { background: rgba(244, 63, 94, 0.15); color: var(--sector-techai); }
+.badge-geopolitics { background: rgba(100, 116, 139, 0.15); color: var(--sector-geopolitics); }
+
+.sector-card .sector-sentiment {
+    font-size: 36px;
+    font-weight: 700;
+    font-family: var(--font-mono);
+    margin-bottom: 6px;
+}
+
+.sector-card .sector-details {
+    font-size: 12px;
+    font-family: var(--font-mono);
+    color: var(--text-muted);
+    display: flex;
+    gap: 16px;
+}
+
+/* --- SUBREDDIT TABLE --- */
+.section-title {
+    font-family: var(--font-serif);
+    font-size: 28px;
+    font-weight: 400;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.section-title .count-badge {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-muted);
+    background: var(--bg-surface);
+    padding: 3px 10px;
+    border-radius: 99px;
+    border: 1px solid var(--border);
+}
+
+/* Filter tabs */
+.filter-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 6px 14px;
+    border-radius: 99px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.filter-btn:hover { border-color: var(--text-secondary); color: var(--text-primary); }
+.filter-btn.active {
+    background: var(--text-primary);
+    color: var(--bg-deep);
+    border-color: var(--text-primary);
+}
+
+.sub-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.sub-table th {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-muted);
+    text-align: left;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+}
+.sub-table th.right { text-align: right; }
+
+.sub-table tr.sub-row {
+    cursor: pointer;
+    transition: background 0.15s;
+}
+.sub-table tr.sub-row:hover { background: var(--bg-card-hover); }
+
+.sub-table td {
+    padding: 14px;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+    vertical-align: middle;
+}
+
+.sub-table .rank-cell {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-muted);
+    width: 40px;
+}
+
+.sub-name {
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sub-name .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.sentiment-cell {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    font-size: 15px;
+    text-align: right;
+}
+
+.bar-cell { width: 160px; }
+.sentiment-bar-track {
+    height: 6px;
+    background: var(--bg-surface);
+    border-radius: 3px;
+    overflow: hidden;
+    position: relative;
+}
+
+.sentiment-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.6s ease;
+}
+
+.stat-cell {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-secondary);
+    text-align: right;
+}
+
+.pct-cell {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-align: right;
+}
+
+.pct-positive { color: var(--accent-green); }
+.pct-negative { color: var(--accent-red); }
+
+.arrow-cell {
+    color: var(--text-muted);
+    text-align: right;
+    width: 30px;
+    font-size: 16px;
+}
+
+/* --- WORD CLOUD SECTION --- */
+.word-cloud-section {
+    margin-top: 40px;
+}
+
+.word-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: baseline;
+    padding: 24px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+}
+
+.word-tag {
+    font-family: var(--font-mono);
+    padding: 4px 12px;
+    border-radius: 6px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    transition: all 0.2s;
+    cursor: default;
+}
+.word-tag:hover {
+    border-color: var(--accent-blue);
+    color: var(--text-primary);
+}
+
+/* --- DETAIL VIEW (subreddit drill-down) --- */
+.detail-view { display: none; }
+.detail-view.visible { display: block; }
+
+.detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+}
+
+.detail-title {
+    font-family: var(--font-serif);
+    font-size: 36px;
+    font-weight: 400;
+    margin-bottom: 4px;
+}
+
+.detail-sector-tag {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 99px;
+    display: inline-block;
+    margin-bottom: 8px;
+}
+
+.detail-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+}
+
+.detail-stat-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+}
+
+.detail-stat-card .stat-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+}
+
+.detail-stat-card .stat-value {
+    font-family: var(--font-mono);
+    font-size: 22px;
+    font-weight: 600;
+}
+
+/* Sentiment distribution bar */
+.dist-bar {
+    display: flex;
+    height: 10px;
+    border-radius: 5px;
+    overflow: hidden;
+    margin-bottom: 6px;
+}
+.dist-bar .seg-pos { background: var(--accent-green); }
+.dist-bar .seg-neu { background: var(--accent-yellow); }
+.dist-bar .seg-neg { background: var(--accent-red); }
+
+.dist-labels {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--font-mono);
+    font-size: 10px;
+}
+
+/* Detail word frequency */
+.detail-words {
+    margin-bottom: 32px;
+}
+
+.detail-word-bars {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 8px;
+}
+
+.word-bar-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+}
+
+.word-bar-item .word-label {
+    width: 80px;
+    text-align: right;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+}
+
+.word-bar-item .word-bar-track {
+    flex: 1;
+    height: 4px;
+    background: var(--bg-surface);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.word-bar-item .word-bar-fill {
+    height: 100%;
+    background: var(--accent-blue);
+    border-radius: 2px;
+}
+
+.word-bar-item .word-count {
+    color: var(--text-muted);
+    width: 40px;
+    flex-shrink: 0;
+}
+
+/* --- COMMENTS TABLE --- */
+.comments-section { margin-top: 24px; }
+
+.comment-search {
+    width: 100%;
+    max-width: 400px;
+    padding: 10px 16px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text-primary);
+    outline: none;
+    margin-bottom: 16px;
+    transition: border-color 0.2s;
+}
+.comment-search:focus { border-color: var(--accent-blue); }
+.comment-search::placeholder { color: var(--text-muted); }
+
+.comment-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.comment-item {
+    display: grid;
+    grid-template-columns: 80px 1fr 80px 100px;
+    gap: 16px;
+    padding: 14px 16px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 13px;
+    align-items: start;
+    transition: background 0.15s;
+}
+.comment-item:hover { background: var(--bg-card-hover); }
+
+.comment-sentiment-badge {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 6px;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.comment-body-text {
+    color: var(--text-secondary);
+    line-height: 1.5;
+    word-break: break-word;
+}
+
+.comment-body-text a {
+    color: var(--accent-blue);
+    text-decoration: none;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    display: inline-block;
+    margin-top: 4px;
+}
+.comment-body-text a:hover { text-decoration: underline; }
+
+.comment-upvotes {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-muted);
+    text-align: right;
+}
+
+.comment-date {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-muted);
+    text-align: right;
+}
+
+/* Pagination */
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 24px;
+}
+
+.page-btn {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 6px 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-card);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.page-btn:hover { border-color: var(--text-secondary); color: var(--text-primary); }
+.page-btn.active { background: var(--text-primary); color: var(--bg-deep); border-color: var(--text-primary); }
+.page-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+/* Sorting controls */
+.sort-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+    align-items: center;
+}
+
+.sort-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* --- BACK BUTTON --- */
+.back-btn {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 8px 18px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.back-btn:hover { border-color: var(--text-primary); color: var(--text-primary); }
+
+/* --- LOADING STATE --- */
+.no-data-msg {
+    text-align: center;
+    padding: 80px 20px;
+    font-family: var(--font-mono);
+    font-size: 14px;
+    color: var(--text-muted);
+}
+.no-data-msg h2 {
+    font-family: var(--font-serif);
+    font-size: 32px;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+    font-weight: 400;
+}
+
+/* --- RESPONSIVE --- */
+@media (max-width: 768px) {
+    .header, .nav-bar, .content { padding-left: 20px; padding-right: 20px; }
+    .header-left h1 { font-size: 28px; }
+    .header-meta { flex-direction: column; gap: 12px; }
+    .comment-item { grid-template-columns: 60px 1fr; }
+    .comment-upvotes, .comment-date { display: none; }
+    .sub-table .bar-cell, .sub-table .pct-cell { display: none; }
+}
+
+/* Fade-in animation */
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.animate-in { animation: fadeUp 0.4s ease forwards; }
+.stagger-1 { animation-delay: 0.05s; opacity: 0; }
+.stagger-2 { animation-delay: 0.1s; opacity: 0; }
+.stagger-3 { animation-delay: 0.15s; opacity: 0; }
+</style>
+</head>
+<body>
+<!-- LOADING SCREEN -->
+<div id="loading-screen">
+    <div class="loading-content">
+        <div class="loading-logo">Sentiment <span>Radar</span></div>
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Loading data<span class="loading-dots"></span></div>
+    </div>
+</div>
+
+<div class="app">
+    <!-- HEADER -->
+    <header class="header">
+        <div class="header-left">
+            <h1>Sentiment <span>Radar</span></h1>
+            <div class="subtitle" id="subtitle">Reddit Analysis</div>
+        </div>
+        <div class="header-meta" id="header-meta"></div>
+        <a class="back-button" href="../../index.html">← Back to Home</a>
+    </header>
+
+    <!-- NAV -->
+    <nav class="nav-bar" id="nav-bar">
+        <span class="crumb active" id="crumb-overview">Overview</span>
+    </nav>
+
+    <!-- CONTENT -->
+    <main class="content">
+        <!-- OVERVIEW VIEW -->
+        <div id="overview-view">
+            <div class="sectors-grid" id="sectors-grid"></div>
+
+            <div class="section-title">
+                Subreddit Rankings <span class="count-badge" id="sub-count"></span>
+            </div>
+
+            <div class="filter-bar" id="filter-bar"></div>
+
+            <table class="sub-table" id="sub-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Subreddit</th>
+                        <th class="right">Avg Sentiment</th>
+                        <th class="bar-cell"></th>
+                        <th class="right">Posts</th>
+                        <th class="right">Comments</th>
+                        <th class="pct-cell right">+/-</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="sub-tbody"></tbody>
+            </table>
+
+            <div class="word-cloud-section">
+                <div class="section-title">Top Words Across All Subreddits</div>
+                <div class="word-cloud" id="global-word-cloud"></div>
+            </div>
+        </div>
+
+        <!-- DETAIL VIEW -->
+        <div id="detail-view" class="detail-view">
+            <button class="back-btn" onclick="showOverview()">← Back to Overview</button>
+
+            <div class="detail-header" id="detail-header"></div>
+            <div class="detail-stats-grid" id="detail-stats"></div>
+
+            <div id="detail-dist"></div>
+
+            <div class="detail-words" id="detail-words"></div>
+
+            <div class="comments-section">
+                <div class="section-title">
+                    Comments <span class="count-badge" id="comment-count"></span>
+                </div>
+                <div class="sort-bar">
+                    <span class="sort-label">Sort:</span>
+                    <div class="filter-bar" id="sort-filter"></div>
+                </div>
+                <input type="text" class="comment-search" id="comment-search" placeholder="Search comments...">
+                <div class="comment-list" id="comment-list"></div>
+                <div class="pagination" id="comment-pagination"></div>
+            </div>
+        </div>
+
+        <!-- NO DATA -->
+        <div class="no-data-msg" id="no-data" style="display:none;">
+            <h2>No Data Yet</h2>
+            <p>Run <code>python reddit_sentiment.py</code> to collect data,<br>
+            then place <code>sentiment_data.js</code> alongside this HTML file.</p>
+        </div>
+    </main>
+</div>
+
+<!-- DATA FILE - generated by reddit_sentiment.py -->
+<script src="sentiment_data.js"></script>
+
+<script>
+// ============================================================
+//  APP STATE
+// ============================================================
+let currentFilter = 'All';
+let currentSort = 'sentiment-desc';
+let commentPage = 0;
+const COMMENTS_PER_PAGE = 50;
+let commentSearchTerm = '';
+
+// ============================================================
+//  HELPERS
+// ============================================================
+function sentimentColor(val) {
+    if (val > 0.1) return 'var(--accent-green)';
+    if (val < -0.1) return 'var(--accent-red)';
+    return 'var(--accent-yellow)';
+}
+
+function sentimentBg(val) {
+    if (val > 0.1) return 'var(--accent-green-glow)';
+    if (val < -0.1) return 'var(--accent-red-glow)';
+    return 'rgba(234, 179, 8, 0.12)';
+}
+
+function sectorColorVar(sector) {
+    const map = {
+        'Crypto': 'var(--sector-crypto)',
+        'Equities': 'var(--sector-equities)',
+        'Materials': 'var(--sector-materials)',
+        'Real Estate': 'var(--sector-realestate)',
+        'Fixed Income & Macro': 'var(--sector-fixedincome)',
+        'Personal Finance': 'var(--sector-personalfinance)',
+        'Tech & AI': 'var(--sector-techai)',
+        'Geopolitics': 'var(--sector-geopolitics)',
+    };
+    return map[sector] || 'var(--text-secondary)';
+}
+
+function sectorBadgeClass(sector) {
+    const map = {
+        'Crypto': 'badge-crypto',
+        'Equities': 'badge-equities',
+        'Materials': 'badge-materials',
+        'Real Estate': 'badge-real-estate',
+        'Fixed Income & Macro': 'badge-fixed-income-macro',
+        'Personal Finance': 'badge-personal-finance',
+        'Tech & AI': 'badge-tech-ai',
+        'Geopolitics': 'badge-geopolitics',
+    };
+    return map[sector] || '';
+}
+
+function formatDate(isoStr) {
+    if (!isoStr) return '—';
+    const d = new Date(isoStr);
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function formatDateShort(isoStr) {
+    if (!isoStr) return '—';
+    const d = new Date(isoStr);
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+// ============================================================
+//  INIT
+// ============================================================
+function init() {
+    if (typeof SENTIMENT_DATA === 'undefined' || !SENTIMENT_DATA.report) {
+        document.getElementById('overview-view').style.display = 'none';
+        document.getElementById('no-data').style.display = 'block';
+        document.getElementById('loading-screen').classList.add('hidden');
+        return;
+    }
+
+    const report = SENTIMENT_DATA.report;
+    const summary = report.summary;
+
+    // Header meta
+    document.getElementById('header-meta').innerHTML = `
+        <div><span class="stat-val">${summary.total_subreddits}</span>Subreddits</div>
+        <div><span class="stat-val">${summary.total_posts.toLocaleString()}</span>Posts</div>
+        <div><span class="stat-val">${summary.total_comments.toLocaleString()}</span>Comments</div>
+        <div><span class="stat-val" style="color:${sentimentColor(summary.overall_avg_sentiment)}">${summary.overall_avg_sentiment >= 0 ? '+' : ''}${summary.overall_avg_sentiment.toFixed(4)}</span>Overall Sentiment</div>
+    `;
+
+    document.getElementById('subtitle').textContent = `Reddit Sector Analysis · ${formatDate(report.generated_at)}`;
+
+    renderSectors(report.sector_stats);
+    renderSubreddits(report.subreddit_stats);
+    renderGlobalWords(summary.global_top_words);
+    buildFilters(report.subreddit_stats);
+    
+    // Hide loading screen after everything is rendered
+    setTimeout(() => {
+        document.getElementById('loading-screen').classList.add('hidden');
+    }, 300);
+}
+
+// ============================================================
+//  OVERVIEW: SECTORS
+// ============================================================
+function renderSectors(sectors) {
+    const grid = document.getElementById('sectors-grid');
+    grid.innerHTML = sectors.map((s, i) => `
+        <div class="sector-card animate-in stagger-${i+1}">
+            <div class="sector-header">
+                <div class="sector-name">${s.sector}</div>
+                <div class="sector-badge ${sectorBadgeClass(s.sector)}">${s.num_subreddits} subs</div>
+            </div>
+            <div class="sector-sentiment" style="color:${sentimentColor(s.avg_sentiment)}">
+                ${s.avg_sentiment >= 0 ? '+' : ''}${s.avg_sentiment.toFixed(4)}
+            </div>
+            <div class="sector-details">
+                <span>Median: ${s.median_sentiment >= 0 ? '+' : ''}${s.median_sentiment.toFixed(4)}</span>
+                <span>${s.num_posts} posts</span>
+                <span>${s.num_comments} comments</span>
+            </div>
+        </div>
+    `).join('');
+}
+
+// ============================================================
+//  OVERVIEW: SUBREDDIT TABLE
+// ============================================================
+function renderSubreddits(stats) {
+    let filtered = currentFilter === 'All' ? stats : stats.filter(s => s.sector === currentFilter);
+    document.getElementById('sub-count').textContent = `${filtered.length}`;
+
+    const maxAbs = Math.max(...filtered.map(s => Math.abs(s.avg_sentiment)), 0.01);
+
+    const tbody = document.getElementById('sub-tbody');
+    tbody.innerHTML = filtered.map((s, i) => {
+        const pct = Math.abs(s.avg_sentiment) / maxAbs * 100;
+        const barColor = sentimentColor(s.avg_sentiment);
+        const isPositive = s.avg_sentiment >= 0;
+        return `
+        <tr class="sub-row" onclick="showDetail('${s.subreddit}')">
+            <td class="rank-cell">${i+1}</td>
+            <td>
+                <div class="sub-name">
+                    <span class="dot" style="background:${sectorColorVar(s.sector)}"></span>
+                    r/${s.subreddit}
+                </div>
+            </td>
+            <td class="sentiment-cell" style="color:${barColor}">${isPositive ? '+' : ''}${s.avg_sentiment.toFixed(4)}</td>
+            <td class="bar-cell">
+                <div class="sentiment-bar-track">
+                    <div class="sentiment-bar-fill" style="width:${pct}%;background:${barColor}"></div>
+                </div>
+            </td>
+            <td class="stat-cell">${s.num_posts}</td>
+            <td class="stat-cell">${s.num_comments}</td>
+            <td class="pct-cell">
+                <span class="pct-positive">+${s.positive_comment_pct}%</span> /
+                <span class="pct-negative">-${s.negative_comment_pct}%</span>
+            </td>
+            <td class="arrow-cell">→</td>
+        </tr>
+        `;
+    }).join('');
+}
+
+function buildFilters(stats) {
+    const sectors = ['All', ...new Set(stats.map(s => s.sector))];
+    const bar = document.getElementById('filter-bar');
+    bar.innerHTML = sectors.map(s =>
+        `<button class="filter-btn ${s === currentFilter ? 'active' : ''}" onclick="setFilter('${s}')">${s}</button>`
+    ).join('');
+}
+
+function setFilter(sector) {
+    currentFilter = sector;
+    const report = SENTIMENT_DATA.report;
+    buildFilters(report.subreddit_stats);
+    renderSubreddits(report.subreddit_stats);
+}
+
+// ============================================================
+//  OVERVIEW: GLOBAL WORD CLOUD
+// ============================================================
+function renderGlobalWords(words) {
+    const cloud = document.getElementById('global-word-cloud');
+    if (!words || !words.length) { cloud.innerHTML = '<span style="color:var(--text-muted)">No word data</span>'; return; }
+    const maxCount = words[0].count;
+    cloud.innerHTML = words.map(w => {
+        const size = 11 + (w.count / maxCount) * 16;
+        const opacity = 0.4 + (w.count / maxCount) * 0.6;
+        return `<span class="word-tag" style="font-size:${size}px;opacity:${opacity}" title="${w.count} uses">${w.word}</span>`;
+    }).join('');
+}
+
+// ============================================================
+//  DETAIL VIEW
+// ============================================================
+function showDetail(subreddit) {
+    const report = SENTIMENT_DATA.report;
+    const stat = report.subreddit_stats.find(s => s.subreddit === subreddit);
+    if (!stat) return;
+
+    commentPage = 0;
+    commentSearchTerm = '';
+
+    // Nav
+    document.getElementById('nav-bar').innerHTML = `
+        <span class="crumb" onclick="showOverview()">Overview</span>
+        <span class="sep">/</span>
+        <span class="crumb active">r/${subreddit}</span>
+    `;
+
+    // Header
+    document.getElementById('detail-header').innerHTML = `
+        <div>
+            <span class="detail-sector-tag ${sectorBadgeClass(stat.sector)}">${stat.sector}</span>
+            <div class="detail-title">r/${stat.subreddit}</div>
+            <div style="font-family:var(--font-mono);font-size:12px;color:var(--text-muted)">
+                ${formatDate(stat.least_recent)} — ${formatDate(stat.most_recent)}
+            </div>
+        </div>
+        <div style="text-align:right">
+            <div style="font-family:var(--font-mono);font-size:42px;font-weight:700;color:${sentimentColor(stat.avg_sentiment)}">
+                ${stat.avg_sentiment >= 0 ? '+' : ''}${stat.avg_sentiment.toFixed(4)}
+            </div>
+            <div style="font-family:var(--font-mono);font-size:12px;color:var(--text-muted)">avg sentiment</div>
+        </div>
+    `;
+
+    // Stats cards
+    document.getElementById('detail-stats').innerHTML = `
+        <div class="detail-stat-card">
+            <div class="stat-label">Median</div>
+            <div class="stat-value" style="color:${sentimentColor(stat.median_sentiment)}">${stat.median_sentiment >= 0 ? '+' : ''}${stat.median_sentiment.toFixed(4)}</div>
+        </div>
+        <div class="detail-stat-card">
+            <div class="stat-label">Std Dev</div>
+            <div class="stat-value">${stat.std_sentiment.toFixed(4)}</div>
+        </div>
+        <div class="detail-stat-card">
+            <div class="stat-label">Min</div>
+            <div class="stat-value" style="color:var(--accent-red)">${stat.min_sentiment.toFixed(4)}</div>
+        </div>
+        <div class="detail-stat-card">
+            <div class="stat-label">Max</div>
+            <div class="stat-value" style="color:var(--accent-green)">+${stat.max_sentiment.toFixed(4)}</div>
+        </div>
+        <div class="detail-stat-card">
+            <div class="stat-label">Posts</div>
+            <div class="stat-value">${stat.num_posts}</div>
+        </div>
+        <div class="detail-stat-card">
+            <div class="stat-label">Comments</div>
+            <div class="stat-value">${stat.num_comments}</div>
+        </div>
+        <div class="detail-stat-card">
+            <div class="stat-label">Avg Upvotes</div>
+            <div class="stat-value">${stat.avg_post_upvotes.toFixed(0)}</div>
+        </div>
+        <div class="detail-stat-card">
+            <div class="stat-label">Comment Median</div>
+            <div class="stat-value" style="color:${sentimentColor(stat.median_comment_sentiment)}">${stat.median_comment_sentiment >= 0 ? '+' : ''}${stat.median_comment_sentiment.toFixed(4)}</div>
+        </div>
+    `;
+
+    // Distribution bar
+    document.getElementById('detail-dist').innerHTML = `
+        <div style="margin-bottom:32px;max-width:500px;">
+            <div style="font-family:var(--font-mono);font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Comment Sentiment Distribution</div>
+            <div class="dist-bar">
+                <div class="seg-pos" style="width:${stat.positive_comment_pct}%"></div>
+                <div class="seg-neu" style="width:${stat.neutral_comment_pct}%"></div>
+                <div class="seg-neg" style="width:${stat.negative_comment_pct}%"></div>
+            </div>
+            <div class="dist-labels">
+                <span style="color:var(--accent-green)">Positive ${stat.positive_comment_pct}%</span>
+                <span style="color:var(--accent-yellow)">Neutral ${stat.neutral_comment_pct}%</span>
+                <span style="color:var(--accent-red)">Negative ${stat.negative_comment_pct}%</span>
+            </div>
+        </div>
+    `;
+
+    // Word frequency bars
+    const words = stat.top_words || [];
+    if (words.length) {
+        const maxW = words[0].count;
+        document.getElementById('detail-words').innerHTML = `
+            <div class="section-title">Top Words</div>
+            <div class="detail-word-bars">
+                ${words.map(w => `
+                    <div class="word-bar-item">
+                        <span class="word-label">${w.word}</span>
+                        <div class="word-bar-track">
+                            <div class="word-bar-fill" style="width:${(w.count/maxW*100)}%"></div>
+                        </div>
+                        <span class="word-count">${w.count}</span>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    } else {
+        document.getElementById('detail-words').innerHTML = '';
+    }
+
+    // Comment sort buttons
+    document.getElementById('sort-filter').innerHTML = `
+        <button class="filter-btn ${currentSort==='sentiment-desc'?'active':''}" onclick="setSort('sentiment-desc')">Most Positive</button>
+        <button class="filter-btn ${currentSort==='sentiment-asc'?'active':''}" onclick="setSort('sentiment-asc')">Most Negative</button>
+        <button class="filter-btn ${currentSort==='date-desc'?'active':''}" onclick="setSort('date-desc')">Newest</button>
+        <button class="filter-btn ${currentSort==='upvotes-desc'?'active':''}" onclick="setSort('upvotes-desc')">Most Upvoted</button>
+    `;
+
+    // Comments
+    document.getElementById('comment-search').value = '';
+    renderComments(subreddit);
+
+    // Search handler
+    document.getElementById('comment-search').oninput = function() {
+        commentSearchTerm = this.value.toLowerCase();
+        commentPage = 0;
+        renderComments(subreddit);
+    };
+
+    // Show/hide
+    document.getElementById('overview-view').style.display = 'none';
+    document.getElementById('detail-view').classList.add('visible');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function renderComments(subreddit) {
+    const comments = SENTIMENT_DATA.comments.filter(c => c.subreddit === subreddit);
+
+    // Filter by search
+    let filtered = comments;
+    if (commentSearchTerm) {
+        filtered = comments.filter(c => c.comment_body.toLowerCase().includes(commentSearchTerm) ||
+                                         c.post_title.toLowerCase().includes(commentSearchTerm));
+    }
+
+    // Sort
+    filtered.sort((a, b) => {
+        if (currentSort === 'sentiment-desc') return b.comment_sentiment - a.comment_sentiment;
+        if (currentSort === 'sentiment-asc') return a.comment_sentiment - b.comment_sentiment;
+        if (currentSort === 'date-desc') return new Date(b.comment_date) - new Date(a.comment_date);
+        if (currentSort === 'upvotes-desc') return (b.comment_upvotes || 0) - (a.comment_upvotes || 0);
+        return 0;
+    });
+
+    document.getElementById('comment-count').textContent = filtered.length;
+
+    // Paginate
+    const totalPages = Math.max(1, Math.ceil(filtered.length / COMMENTS_PER_PAGE));
+    if (commentPage >= totalPages) commentPage = totalPages - 1;
+    const start = commentPage * COMMENTS_PER_PAGE;
+    const pageComments = filtered.slice(start, start + COMMENTS_PER_PAGE);
+
+    const list = document.getElementById('comment-list');
+    if (!pageComments.length) {
+        list.innerHTML = '<div style="padding:24px;text-align:center;color:var(--text-muted);font-family:var(--font-mono);font-size:13px;">No comments found</div>';
+    } else {
+        list.innerHTML = pageComments.map(c => {
+            const color = sentimentColor(c.comment_sentiment);
+            const bg = sentimentBg(c.comment_sentiment);
+            return `
+            <div class="comment-item">
+                <div>
+                    <span class="comment-sentiment-badge" style="color:${color};background:${bg}">
+                        ${c.comment_sentiment >= 0 ? '+' : ''}${c.comment_sentiment.toFixed(3)}
+                    </span>
+                </div>
+                <div class="comment-body-text">
+                    ${escapeHtml(c.comment_body)}
+                    <br><a href="${c.comment_url}" target="_blank" rel="noopener">View on Reddit ↗</a>
+                </div>
+                <div class="comment-upvotes">${c.comment_upvotes ?? '—'} ↑</div>
+                <div class="comment-date">${formatDateShort(c.comment_date)}</div>
+            </div>
+            `;
+        }).join('');
+    }
+
+    // Pagination
+    const pag = document.getElementById('comment-pagination');
+    if (totalPages <= 1) { pag.innerHTML = ''; return; }
+    let pagHtml = `<button class="page-btn" onclick="goPage(${commentPage-1},'${subreddit}')" ${commentPage===0?'disabled':''}>← Prev</button>`;
+    const maxShow = 7;
+    let startP = Math.max(0, commentPage - 3);
+    let endP = Math.min(totalPages, startP + maxShow);
+    if (endP - startP < maxShow) startP = Math.max(0, endP - maxShow);
+    for (let i = startP; i < endP; i++) {
+        pagHtml += `<button class="page-btn ${i===commentPage?'active':''}" onclick="goPage(${i},'${subreddit}')">${i+1}</button>`;
+    }
+    pagHtml += `<button class="page-btn" onclick="goPage(${commentPage+1},'${subreddit}')" ${commentPage>=totalPages-1?'disabled':''}>Next →</button>`;
+    pag.innerHTML = pagHtml;
+}
+
+function goPage(page, subreddit) {
+    commentPage = page;
+    renderComments(subreddit);
+    document.getElementById('comment-search').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function setSort(sort) {
+    currentSort = sort;
+    // Re-read which subreddit we're on from the nav
+    const crumbs = document.querySelectorAll('.crumb.active');
+    const activeCrumb = crumbs[crumbs.length - 1];
+    const sub = activeCrumb.textContent.replace('r/', '');
+    commentPage = 0;
+    showDetail(sub);
+}
+
+function showOverview() {
+    document.getElementById('overview-view').style.display = 'block';
+    document.getElementById('detail-view').classList.remove('visible');
+    document.getElementById('nav-bar').innerHTML = '<span class="crumb active">Overview</span>';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// ============================================================
+//  BOOT
+// ============================================================
+init();
+</script>
+</body>
+</html>

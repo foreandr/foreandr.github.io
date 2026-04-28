@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Peano Compiler</title>
+  <link rel="icon" type="image/x-icon" href="../../images.ico">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+
+  <header>
+    <div class="header-inner">
+      <div>
+        <a class="back-btn" href="../../index.html">← Back Home</a>
+        <span class="eyebrow">Foundations of Mathematics</span>
+        <h1>Peano Compiler</h1>
+        <p class="header-sub">Compile rationals through reals, integers, naturals, down to Peano axioms.</p>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="split">
+
+      <!-- ── LEFT: input + tier buttons ── -->
+      <div class="split-left">
+        <div class="panel panel-input">
+          <div class="panel-label">Tier I &mdash; Expression</div>
+          <textarea id="expr-input" rows="3" spellcheck="false" placeholder="e.g. 1/2 + 1/3 = 5/6"></textarea>
+          <div class="error-msg" id="expr-error"></div>
+          <div class="tier-btns">
+            <button class="tier-btn" id="btn-t1" data-tier="1">
+              <span class="tier-btn-num">II</span>
+              <span class="tier-btn-label">Reals</span>
+              <span class="tier-btn-sub">Cauchy sequences over ℚ</span>
+            </button>
+            <button class="tier-btn" id="btn-t2" data-tier="2">
+              <span class="tier-btn-num">III</span>
+              <span class="tier-btn-label">Rationals</span>
+              <span class="tier-btn-sub">equiv. classes of ℤ pairs</span>
+            </button>
+            <button class="tier-btn" id="btn-t3" data-tier="3">
+              <span class="tier-btn-num">IV</span>
+              <span class="tier-btn-label">Integers</span>
+              <span class="tier-btn-sub">equiv. classes of ℕ pairs</span>
+            </button>
+            <button class="tier-btn" id="btn-t4" data-tier="4">
+              <span class="tier-btn-num">V</span>
+              <span class="tier-btn-label">Peano</span>
+              <span class="tier-btn-sub">successor functions + axioms</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── RIGHT: output panel ── -->
+      <div class="split-right">
+        <div class="panel panel-output" id="output-panel">
+          <div class="panel-label" id="output-label">Output</div>
+          <div class="output-empty" id="output-empty">
+            <span>Select a tier →</span>
+          </div>
+          <div id="output-body" class="output-body hidden"></div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script src="./compiler.js"></script>
+</body>
+</html>

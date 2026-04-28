@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Graph Explorer</title>
+    <script type="text/javascript" src="./vis-network.js"></script>
+    <link rel="stylesheet" href="./style.css" />
+    <link rel="icon" type="image/x-icon" href="../../images.ico">
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="nav-wrap">
+    <a href="../../index.html" class="nav-brand">← Back to Portfolio</a>
+    <div class="nav-title">Social Graph Explorer</div>
+  </div>
+</nav>
+
+<button id="sidebar-toggle" class="sidebar-toggle" aria-label="Toggle sidebar">
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <path d="M3 12h18M3 6h18M3 18h18"/>
+  </svg>
+</button>
+
+<aside id="sidebar" class="sidebar">
+  <div class="sidebar-header">
+    <h2>Available Graphs</h2>
+    <button id="sidebar-close" class="sidebar-close" aria-label="Close sidebar">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M18 6L6 18M6 6l12 12"/>
+      </svg>
+    </button>
+  </div>
+  
+  <div class="sidebar-content">
+    <div class="graph-list">
+      <button class="graph-item active" data-graph="podcast_data.js">
+        <div class="graph-icon">🎙️</div>
+        <div class="graph-info">
+          <div class="graph-name">Podcast Network</div>
+          <div class="graph-desc">Guests & Connections</div>
+        </div>
+      </button>
+
+      <button class="graph-item " data-graph="combat_data.js">
+        <div class="graph-icon">🥊</div>
+        <div class="graph-info">
+          <div class="graph-name">Combat Sports</div>
+          <div class="graph-desc">UFC, PFL, Bellator, etc..</div>
+        </div>
+      </button>
+
+      <button class="graph-item" data-graph="epstein_data.js" disabled>
+        <div class="graph-icon">🕵️</div>
+        <div class="graph-info">
+          <div class="graph-name">Epstein</div>
+          <div class="graph-desc"></div>
+        </div>
+      </button>
+    </div>
+  </div>
+  
+  <div class="sidebar-footer">
+    <div class="stats">
+      <div class="stat-item">
+        <span class="stat-label">Nodes:</span>
+        <span class="stat-value" id="node-count">-</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Edges:</span>
+        <span class="stat-value" id="edge-count">-</span>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<div id="status-overlay" class="status-overlay visible">
+  <div class="status-content">
+    <div class="spinner"></div>
+    <div class="status-text" id="status-text">Loading graph...</div>
+    <div class="status-detail" id="status-detail">Initializing...</div>
+    <div class="status-progress" id="status-progress"></div>
+  </div>
+</div>
+
+<div id="mynetwork" class="network-container"></div>
+
+<script type="text/javascript" src="network.js"></script>
+
+</body>
+</html>

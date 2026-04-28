@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Subreddit Analytics Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="icon" type="image/x-icon" href="../../images.ico">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --bg-deep: #0a0c10;
+    --bg-card: #12151c;
+    --bg-card-hover: #181c26;
+    --bg-surface: #1a1e28;
+    --border: #252a36;
+    --border-light: #2f3545;
+    --text-primary: #e8eaf0;
+    --text-secondary: #8b90a0;
+    --text-muted: #5c6070;
+    --accent-purple: #a855f7;
+    --accent-purple-dim: #581c87;
+    --accent-pink: #ec4899;
+    --accent-blue: #3b82f6;
+    --accent-green: #22c55e;
+    --accent-orange: #f97316;
+    --accent-yellow: #eab308;
+    --radius: 8px;
+    --radius-lg: 14px;
+    --font-mono: 'DM Mono', 'Fira Code', monospace;
+    --font-serif: 'Instrument Serif', Georgia, serif;
+    --font-sans: 'Space Grotesk', system-ui, sans-serif;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    background: var(--bg-deep);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+/* Grid background */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+        linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+}
+.app { position: relative; z-index: 1; }
+/* --- LOADING SCREEN --- */
+#loading-screen {
+    position: fixed;
+    inset: 0;
+    background: var(--bg-deep);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+#loading-screen.hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+.loading-logo {
+    font-family: var(--font-serif);
+    font-size: 48px;
+    font-weight: 400;
+    letter-spacing: -0.5px;
+    margin-bottom: 24px;
+    background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.loading-spinner {
+    width: 48px;
+    height: 48px;
+    margin: 0 auto 24px;
+    position: relative;
+}
+.loading-spinner::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent-purple);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+/* --- HEADER --- */
+.back-button {
+    display: inline-block;
+    padding: 6px 16px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--accent-purple);
+    border: 1px solid var(--accent-purple);
+    border-radius: 5px;
+    transition: all 0.2s;
+    white-space: nowrap;
+    align-self: center;
+}
+.back-button:hover {
+    background: var(--accent-purple);
+    color: white;
+}
+.header {
+    padding: 40px 48px 32px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+.header-left {
+    flex: 1;
+}
+.header h1 {
+    font-family: var(--font-serif);
+    font-size: 42px;
+    font-weight: 400;
+    letter-spacing: -0.5px;
+    line-height: 1;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.header .subtitle {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+}
+.header-stats {
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+}
+.stat-item {
+    font-family: var(--font-mono);
+}
+.stat-val {
+    font-size: 28px;
+    font-family: var(--font-sans);
+    font-weight: 600;
+    color: var(--text-primary);
+    display: block;
+    margin-bottom: 4px;
+}
+.stat-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+/* --- CONTENT --- */
+.content {
+    padding: 32px 48px 64px;
+}
+/* --- SEARCH & FILTERS --- */
+.controls {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+.search-box {
+    flex: 1;
+    min-width: 300px;
+    max-width: 500px;
+    padding: 12px 18px;
+    font-family: var(--font-mono);
+    font-size: 14px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text-primary);
+    outline: none;
+    transition: border-color 0.2s;
+}
+.search-box:focus {
+    border-color: var(--accent-purple);
+}
+.search-box::placeholder {
+    color: var(--text-muted);
+}
+.sort-select {
+    padding: 12px 18px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text-primary);
+    cursor: pointer;
+    outline: none;
+}
+.result-count {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-muted);
+    padding: 12px 0;
+}
+/* --- SUBREDDIT TABLE --- */
+.sub-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.sub-table th {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-muted);
+    text-align: left;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: var(--bg-deep);
+    z-index: 10;
+}
+.sub-table th.right { text-align: right; }
+.sub-table tr.sub-row {
+    transition: background 0.15s;
+    cursor: pointer;
+}
+.sub-table tr.sub-row:hover {
+    background: var(--bg-card-hover);
+}
+.sub-table td {
+    padding: 14px;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+    vertical-align: middle;
+}
+.rank-cell {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-muted);
+    width: 50px;
+}
+.name-cell {
+    font-weight: 500;
+}
+.name-cell a {
+    color: var(--text-primary);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.name-cell a:hover {
+    color: var(--accent-purple);
+}
+.badge-18 {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+.subscribers-cell {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    font-size: 15px;
+    text-align: right;
+    color: var(--accent-purple);
+}
+.bar-cell {
+    width: 200px;
+}
+.subscriber-bar {
+    height: 6px;
+    background: var(--bg-surface);
+    border-radius: 3px;
+    overflow: hidden;
+}
+.subscriber-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-purple), var(--accent-pink));
+    border-radius: 3px;
+    transition: width 0.6s ease;
+}
+.keywords-cell {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-muted);
+}
+.keyword-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    margin: 2px;
+    transition: all 0.2s;
+}
+.keyword-tag:hover {
+    border-color: var(--accent-purple);
+    color: var(--accent-purple);
+}
+/* --- PAGINATION --- */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-top: 32px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+}
+.pagination button {
+    padding: 8px 16px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.pagination button:hover:not(:disabled) {
+    background: var(--bg-card-hover);
+    border-color: var(--accent-purple);
+}
+.pagination button:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+.pagination button.active {
+    background: var(--accent-purple);
+    border-color: var(--accent-purple);
+    color: white;
+}
+.pagination .page-info {
+    color: var(--text-muted);
+    padding: 0 16px;
+}
+/* --- NO DATA --- */
+.no-data {
+    text-align: center;
+    padding: 80px 20px;
+}
+.no-data h2 {
+    font-family: var(--font-serif);
+    font-size: 32px;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+    font-weight: 400;
+}
+.no-data p {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    color: var(--text-muted);
+}
+/* --- RESPONSIVE --- */
+@media (max-width: 768px) {
+    .header, .content {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+    .header h1 { font-size: 28px; }
+    .bar-cell, .keywords-cell { display: none; }
+    .controls { flex-direction: column; }
+    .search-box { min-width: 100%; }
+}
+/* --- ANIMATIONS --- */
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.animate-in {
+    animation: fadeUp 0.4s ease forwards;
+}
+</style>
+</head>
+<body>
+
+<!-- PASSWORD GATE -->
+<style>
+  #rft-gate { position:fixed;inset:0;background:#08090f;display:flex;align-items:center;justify-content:center;z-index:99999; }
+  #rft-gate.hidden { display:none; }
+  .rft-gate-box { background:#0e1018;border:1px solid rgba(255,255,255,.09);border-radius:18px;padding:44px 44px 36px;width:100%;max-width:360px;text-align:center;display:flex;flex-direction:column;align-items:center; }
+  .rft-gate-icon { font-size:36px;line-height:1;margin-bottom:16px; }
+  .rft-gate-title { font-size:19px;font-weight:700;letter-spacing:.01em;color:#e8eaf0;margin-bottom:5px; }
+  .rft-gate-sub { font-size:12px;color:rgba(255,255,255,.35);margin-bottom:28px;font-family:system-ui,sans-serif; }
+  .rft-gate-input { width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:10px 10px 0 0;color:#e2e4ec;font-size:14px;padding:13px 16px;outline:none;text-align:center;letter-spacing:.12em;transition:border-color .15s,background .15s;font-family:inherit; }
+  .rft-gate-input:focus { border-color:rgba(99,102,241,.55);background:rgba(99,102,241,.04); }
+  .rft-gate-input.error { border-color:rgba(239,68,68,.5); }
+  .rft-gate-input.shake { animation:rft-shake .32s ease; }
+  @keyframes rft-shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-7px)} 60%{transform:translateX(7px)} 80%{transform:translateX(-3px)} }
+  .rft-gate-btn { width:100%;background:#3730a3;border:1px solid rgba(99,102,241,.35);border-top:none;color:#c7d2fe;font-size:14px;font-weight:600;padding:13px;border-radius:0 0 10px 10px;cursor:pointer;transition:background .15s;font-family:inherit;letter-spacing:.02em;margin-bottom:12px; }
+  .rft-gate-btn:hover { background:#4338ca; }
+  .rft-gate-error { font-size:11px;color:#f87171;height:16px;margin-bottom:20px; }
+  .rft-gate-back { font-size:11px;color:rgba(255,255,255,.25);text-decoration:none;transition:color .15s; }
+  .rft-gate-back:hover { color:rgba(255,255,255,.55); }
+</style>
+<div id="rft-gate">
+  <div class="rft-gate-box">
+    <div class="rft-gate-icon">🔞</div>
+    <div class="rft-gate-title">Reddit NSFW Analytics</div>
+    <div class="rft-gate-sub">Private — enter password to continue</div>
+    <input type="password" id="rft-pw" class="rft-gate-input" placeholder="password" autocomplete="off" spellcheck="false">
+    <button class="rft-gate-btn" id="rft-btn">Enter</button>
+    <div class="rft-gate-error" id="rft-error"></div>
+    <a href="../../index.html" class="rft-gate-back">← Back to portfolio</a>
+  </div>
+</div>
+
+<!-- LOADING SCREEN -->
+<div id="loading-screen">
+    <div class="loading-logo">Subreddit Analytics</div>
+    <div class="loading-spinner"></div>
+</div>
+<div class="app">
+    <!-- HEADER -->
+    <header class="header">
+        <div class="header-left">
+            <h1>Subreddit Analytics</h1>
+            <div class="subtitle" id="subtitle">Research Dashboard</div>
+            <div class="header-stats" id="header-stats"></div>
+        </div>
+        <a class="back-button" href="../../index.html">← Back to Home</a>
+    </header>
+    <!-- CONTENT -->
+    <main class="content">
+        <div class="controls">
+            <input type="text" class="search-box" id="search-subs" 
+                   placeholder="Search subreddits...">
+            <select class="sort-select" id="sort-subs" onchange="renderSubreddits()">
+                <option value="rank">Rank (Subscribers)</option>
+                <option value="name">Name (A-Z)</option>
+            </select>
+        </div>
+        <div class="result-count" id="sub-count"></div>
+        
+        <table class="sub-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Subreddit</th>
+                    <th class="right">Subscribers</th>
+                    <th class="bar-cell"></th>
+                    <th class="keywords-cell">Matched Keywords</th>
+                </tr>
+            </thead>
+            <tbody id="sub-tbody"></tbody>
+        </table>
+        
+        <div class="pagination" id="pagination"></div>
+        
+        <!-- NO DATA MESSAGE -->
+        <div class="no-data" id="no-data" style="display:none;">
+            <h2>No Data Available</h2>
+            <p>Run <code>python fetch_subreddit_stats.py</code> to collect data,<br>
+            then place <code>subreddit_stats.js</code> alongside this HTML file.</p>
+        </div>
+    </main>
+</div>
+<!-- DATA FILE -->
+<script src="subreddit_stats.js"></script>
+<script>
+// ============================================================
+//  STATE
+// ============================================================
+let allSubreddits = [];
+let searchSubTerm = '';
+let currentPage = 1;
+const itemsPerPage = 50;
+
+// ============================================================
+//  INIT
+// ============================================================
+function init() {
+    if (typeof SUBREDDIT_DATA === 'undefined' || !SUBREDDIT_DATA) {
+        document.getElementById('no-data').style.display = 'block';
+        document.getElementById('loading-screen').classList.add('hidden');
+        return;
+    }
+    const data = SUBREDDIT_DATA;
+    
+    allSubreddits = Array.isArray(data.subreddits) ? data.subreddits : [];
+    
+    // Calculate total subscribers from the actual data
+    const totalSubscribers = allSubreddits.reduce((sum, sub) => sum + (sub.subscribers || 0), 0);
+    const totalSubs = allSubreddits.length;
+    const generatedAt = data.generated_at ?? null;
+    
+    // Header stats
+    document.getElementById('header-stats').innerHTML = `
+        <div class="stat-item">
+            <span class="stat-val">${totalSubs.toLocaleString()}</span>
+            <span class="stat-label">Subreddits</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-val">${totalSubscribers.toLocaleString()}</span>
+            <span class="stat-label">Total Subscribers</span>
+        </div>
+    `;
+    
+    document.getElementById('subtitle').textContent = 
+        generatedAt ? `Generated ${formatDate(generatedAt)}` : 'Data loaded';
+    
+    // Search listener
+    document.getElementById('search-subs').addEventListener('input', function(e) {
+        searchSubTerm = e.target.value.toLowerCase();
+        currentPage = 1; // Reset to first page on search
+        renderSubreddits();
+    });
+    
+    // Initial render
+    renderSubreddits();
+    
+    // Hide loading
+    setTimeout(() => {
+        document.getElementById('loading-screen').classList.add('hidden');
+    }, 300);
+}
+
+// ============================================================
+//  SUBREDDITS RENDER WITH PAGINATION
+// ============================================================
+function renderSubreddits() {
+    let filtered = allSubreddits;
+    
+    // Apply search filter
+    if (searchSubTerm) {
+        filtered = filtered.filter(s => 
+            (s.name || '').toLowerCase().includes(searchSubTerm) ||
+            (s.title || '').toLowerCase().includes(searchSubTerm) ||
+            (s.matched_keywords || []).some(kw => (kw || '').includes(searchSubTerm))
+        );
+    }
+    
+    // Apply sorting
+    const sortBy = document.getElementById('sort-subs').value;
+    filtered.sort((a, b) => {
+        if (sortBy === 'rank') return (a.rank || 9999) - (b.rank || 9999);
+        if (sortBy === 'name') return (a.name || '').localeCompare(b.name || '');
+        return 0;
+    });
+    
+    // Calculate pagination
+    const totalPages = Math.ceil(filtered.length / itemsPerPage);
+    const startIdx = (currentPage - 1) * itemsPerPage;
+    const endIdx = startIdx + itemsPerPage;
+    const pageData = filtered.slice(startIdx, endIdx);
+    
+    // Update count
+    document.getElementById('sub-count').textContent = 
+        `Showing ${startIdx + 1}-${Math.min(endIdx, filtered.length)} of ${filtered.length.toLocaleString()} subreddits`;
+    
+    // Render table
+    const maxSubs = Math.max(...allSubreddits.map(s => s.subscribers || 0), 1);
+    const tbody = document.getElementById('sub-tbody');
+    tbody.innerHTML = pageData.map(s => {
+        const barWidth = ((s.subscribers || 0) / maxSubs) * 100;
+        return `
+        <tr class="sub-row" onclick="window.open('${s.url || '#'}', '_blank')">
+            <td class="rank-cell">${s.rank ?? '—'}</td>
+            <td class="name-cell">
+                <a href="${s.url || '#'}" target="_blank" onclick="event.stopPropagation()">
+                    r/${s.name || 'unknown'}
+                    ${s.over18 ? '<span class="badge-18">18+</span>' : ''}
+                </a>
+            </td>
+            <td class="subscribers-cell">${(s.subscribers || 0).toLocaleString()}</td>
+            <td class="bar-cell">
+                <div class="subscriber-bar">
+                    <div class="subscriber-bar-fill" style="width:${barWidth}%"></div>
+                </div>
+            </td>
+            <td class="keywords-cell">
+                ${(s.matched_keywords || []).map(kw => 
+                    `<span class="keyword-tag">${kw}</span>`
+                ).join('')}
+            </td>
+        </tr>
+        `;
+    }).join('');
+    
+    // Render pagination
+    renderPagination(totalPages, filtered.length);
+}
+
+// ============================================================
+//  PAGINATION RENDER
+// ============================================================
+function renderPagination(totalPages, totalItems) {
+    const pag = document.getElementById('pagination');
+    
+    if (totalItems === 0) {
+        pag.innerHTML = '';
+        return;
+    }
+    
+    let html = '';
+    
+    // Previous button
+    html += `<button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>← Prev</button>`;
+    
+    // Page numbers (show max 7 pages)
+    const maxVisible = 7;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+    
+    if (endPage - startPage < maxVisible - 1) {
+        startPage = Math.max(1, endPage - maxVisible + 1);
+    }
+    
+    if (startPage > 1) {
+        html += `<button onclick="changePage(1)">1</button>`;
+        if (startPage > 2) html += `<span class="page-info">...</span>`;
+    }
+    
+    for (let i = startPage; i <= endPage; i++) {
+        html += `<button onclick="changePage(${i})" class="${i === currentPage ? 'active' : ''}">${i}</button>`;
+    }
+    
+    if (endPage < totalPages) {
+        if (endPage < totalPages - 1) html += `<span class="page-info">...</span>`;
+        html += `<button onclick="changePage(${totalPages})">${totalPages}</button>`;
+    }
+    
+    // Next button
+    html += `<button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>Next →</button>`;
+    
+    pag.innerHTML = html;
+}
+
+// ============================================================
+//  PAGE CHANGE
+// ============================================================
+function changePage(page) {
+    currentPage = page;
+    renderSubreddits();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ============================================================
+//  HELPERS
+// ============================================================
+function formatDate(isoStr) {
+    if (!isoStr) return '—';
+    const d = new Date(isoStr);
+    return d.toLocaleDateString('en-US', { 
+        month: 'short', 
+        day: 'numeric', 
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+}
+
+// ============================================================
+//  START
+// ============================================================
+init();
+</script>
+
+<script>
+(function() {
+  const CORRECT = 'cooldood';
+  const KEY = 'rft_unlocked';
+  const gate = document.getElementById('rft-gate');
+  const inp  = document.getElementById('rft-pw');
+  const err  = document.getElementById('rft-error');
+
+  function unlock() { gate.classList.add('hidden'); sessionStorage.setItem(KEY,'1'); }
+
+  function attempt() {
+    if (inp.value === CORRECT) { unlock(); return; }
+    inp.classList.remove('shake','error');
+    void inp.offsetWidth;
+    inp.classList.add('shake','error');
+    err.textContent = 'Incorrect password.';
+    inp.value = '';
+    setTimeout(() => inp.classList.remove('shake'), 400);
+  }
+
+  if (sessionStorage.getItem(KEY) === '1') unlock();
+  document.getElementById('rft-btn').addEventListener('click', attempt);
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') attempt(); });
+})();
+</script>
+</body>
+</html>

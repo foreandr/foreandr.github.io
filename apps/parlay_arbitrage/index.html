@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Parlay Arbitrage Dashboard</title>
+  <link rel="icon" type="image/x-icon" href="../../images.ico">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b1118;
+      --bg-elev: #111a24;
+      --bg-soft: #141f2c;
+      --bg-card: #151f2b;
+      --ink: #e5eef8;
+      --muted: #93a5b7;
+      --accent: #5eead4;
+      --accent-2: #60a5fa;
+      --accent-3: #f59e0b;
+      --danger: #f97316;
+      --border: rgba(148, 163, 184, 0.2);
+      --shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+      --radius: 18px;
+      --radius-sm: 12px;
+      --font-body: "Avenir Next", "Optima", "Segoe UI", sans-serif;
+      --font-display: "Bodoni MT", "Didot", "Garamond", serif;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: var(--font-body);
+      background: radial-gradient(circle at 10% 10%, rgba(96, 165, 250, 0.16), transparent 40%),
+                  radial-gradient(circle at 90% 0%, rgba(94, 234, 212, 0.18), transparent 45%),
+                  var(--bg);
+      color: var(--ink);
+      min-height: 100vh;
+    }
+    .app {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+    }
+    header {
+      display: grid;
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+    header h1 {
+      font-family: var(--font-display);
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      margin: 0;
+      font-size: clamp(2rem, 4vw, 3rem);
+    }
+    header p {
+      margin: 0;
+      color: var(--muted);
+      max-width: 720px;
+      line-height: 1.6;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+    .panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow);
+    }
+    .panel h2 {
+      margin: 0 0 12px;
+      font-size: 1.1rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .controls {
+      display: grid;
+      gap: 18px;
+    }
+    .control {
+      display: grid;
+      gap: 8px;
+    }
+    .control label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.95rem;
+    }
+    .control output {
+      font-weight: 600;
+      color: var(--accent);
+    }
+    input[type="range"] {
+      appearance: none;
+      width: 100%;
+      height: 6px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--ink);
+      border: 2px solid var(--accent);
+      cursor: pointer;
+      box-shadow: 0 0 0 6px rgba(94, 234, 212, 0.15);
+    }
+    .metrics {
+      display: grid;
+      gap: 16px;
+    }
+    .metric-card {
+      background: var(--bg-soft);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      border: 1px solid var(--border);
+      display: grid;
+      gap: 6px;
+    }
+    .metric-card span {
+      color: var(--muted);
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .metric-card strong {
+      font-size: 1.5rem;
+    }
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      border: 1px solid transparent;
+      width: fit-content;
+    }
+    .status.good {
+      color: #0f172a;
+      background: var(--accent);
+      border-color: rgba(94, 234, 212, 0.5);
+    }
+    .status.warn {
+      color: #1f1300;
+      background: var(--danger);
+      border-color: rgba(249, 115, 22, 0.5);
+    }
+    .formula {
+      font-family: "Courier New", monospace;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      background: #0c141d;
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      border: 1px solid var(--border);
+      overflow-x: auto;
+    }
+    .chart-wrap {
+      height: 280px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+    th, td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+    }
+    th {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+    }
+    tbody tr.active {
+      background: rgba(94, 234, 212, 0.12);
+    }
+    .table-wrap {
+      max-height: 360px;
+      overflow: auto;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+    }
+    .outcome {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .outcome span {
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+    .outcome .win { background: rgba(94, 234, 212, 0.2); color: var(--accent); }
+    .outcome .loss { background: rgba(248, 113, 113, 0.2); color: #fca5a5; }
+    .note {
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin-top: 8px;
+    }
+    @media (max-width: 900px) {
+      .chart-wrap { height: 220px; }
+      th, td { padding: 8px 10px; }
+    }
+  .back-btn {
+    position: fixed; top: 16px; left: 20px; z-index: 100;
+    display: inline-flex; align-items: center; gap: 6px;
+    color: #888; font-size: 0.65rem; letter-spacing: 2px;
+    text-transform: uppercase; text-decoration: none;
+    transition: color 0.2s;
+  }
+  .back-btn:hover { color: #fff; }
+  </style>
+</head>
+<body>
+  <a class="back-btn" href="../../index.html">← Back Home</a>
+  <main class="app">
+    <header>
+      <h1>Parlay Arbitrage Lab</h1>
+      <p>Start with real decimal odds for each side of a binary market. We compute the single-leg arb
+      percentage, then extend it to an N-leg parlay that covers all 2ⁿ outcomes using dutched stakes.</p>
+    </header>
+
+    <section class="grid">
+      <div class="panel">
+        <h2>Inputs</h2>
+        <div class="controls">
+          <div class="control">
+            <label>Decimal odds (Side A) <output id="oddsAValue">1.81</output></label>
+            <input id="oddsA" type="range" min="1.01" max="5.00" value="1.81" step="0.01" />
+          </div>
+          <div class="control">
+            <label>Decimal odds (Side B) <output id="oddsBValue">2.10</output></label>
+            <input id="oddsB" type="range" min="1.01" max="5.00" value="2.10" step="0.01" />
+          </div>
+          <div class="control">
+            <label>Number of legs (n) <output id="legsValue">4</output></label>
+            <input id="legs" type="range" min="1" max="10" value="4" step="1" />
+          </div>
+          <div class="control">
+            <label>Total stake ($) <output id="stakeValue">$1,000</output></label>
+            <input id="stake" type="range" min="100" max="50000" value="1000" step="100" />
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Live Metrics</h2>
+        <div class="metrics">
+          <div class="metric-card">
+            <span>Guaranteed ROI</span>
+            <strong id="roiValue">0.00%</strong>
+          </div>
+          <div class="metric-card">
+            <span>Guaranteed Profit</span>
+            <strong id="profitValue">$0</strong>
+          </div>
+          <div class="metric-card">
+            <span>Total Bets Needed</span>
+            <strong id="betsValue">16</strong>
+          </div>
+          <div class="metric-card">
+            <span>Avg Stake per Bet</span>
+            <strong id="stakePerBetValue">$62.50</strong>
+          </div>
+          <div id="arbStatus" class="status good">Arb Exists</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid" style="margin-top: 20px;">
+      <div class="panel">
+        <h2>Formula Walkthrough</h2>
+        <div id="formulaBox" class="formula"></div>
+        <div class="note">Assumes the same two-way market odds for every leg; dutching allocates stake
+          proportional to 1/parlay odds for each outcome combination.</div>
+      </div>
+      <div class="panel">
+        <h2>ROI vs Legs</h2>
+        <div class="chart-wrap">
+          <canvas id="roiChart"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid" style="margin-top: 20px;">
+      <div class="panel">
+        <h2>Compounding Table (Legs 1–10)</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Legs</th>
+                <th>Total Bets</th>
+                <th>Guaranteed ROI</th>
+                <th>Guaranteed Profit</th>
+                <th>Stake / Bet</th>
+              </tr>
+            </thead>
+            <tbody id="compoundingBody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="panel">
+        <h2>Truth Table (2ⁿ Outcomes)</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Outcome</th>
+                <th>Parlay Odds</th>
+                <th>Stake / Bet</th>
+                <th>Payout</th>
+              </tr>
+            </thead>
+            <tbody id="truthBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const oddsASlider = document.getElementById("oddsA");
+    const oddsBSlider = document.getElementById("oddsB");
+    const legsSlider = document.getElementById("legs");
+    const stakeSlider = document.getElementById("stake");
+    const oddsAValue = document.getElementById("oddsAValue");
+    const oddsBValue = document.getElementById("oddsBValue");
+    const legsValue = document.getElementById("legsValue");
+    const stakeValue = document.getElementById("stakeValue");
+    const roiValue = document.getElementById("roiValue");
+    const profitValue = document.getElementById("profitValue");
+    const betsValue = document.getElementById("betsValue");
+    const stakePerBetValue = document.getElementById("stakePerBetValue");
+    const formulaBox = document.getElementById("formulaBox");
+    const compoundingBody = document.getElementById("compoundingBody");
+    const truthBody = document.getElementById("truthBody");
+    const arbStatus = document.getElementById("arbStatus");
+
+    const fmtMoney = (value) =>
+      value.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 });
+    const fmtPercent = (value) => `${(value * 100).toFixed(2)}%`;
+    const fmtNumber = (value) => value.toLocaleString("en-US");
+
+    const chartCtx = document.getElementById("roiChart");
+    const roiChart = new Chart(chartCtx, {
+      type: "bar",
+      data: {
+        labels: [],
+        datasets: [
+          {
+            label: "Guaranteed ROI",
+            data: [],
+            backgroundColor: [],
+            borderRadius: 8,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => `ROI: ${fmtPercent(ctx.parsed.y)}`,
+            },
+          },
+        },
+        scales: {
+          y: {
+            ticks: {
+              callback: (value) => `${value * 100}%`,
+              color: "#94a3b8",
+            },
+            grid: { color: "rgba(148, 163, 184, 0.15)" },
+          },
+          x: {
+            ticks: { color: "#94a3b8" },
+            grid: { display: false },
+          },
+        },
+      },
+    });
+
+    function computeMetrics(oddsA, oddsB, n, stake) {
+      const invSum = 1 / oddsA + 1 / oddsB;
+      const arbPct = Math.pow(invSum, n);
+      const payout = stake / arbPct;
+      const profit = payout - stake;
+      const roi = profit / stake;
+      const totalBets = Math.pow(2, n);
+      const stakePerBet = stake / totalBets;
+      return { invSum, arbPct, payout, profit, roi, totalBets, stakePerBet };
+    }
+
+    function updateFormula(oddsA, oddsB, n, stake, metrics) {
+      const invSum = metrics.invSum.toFixed(6);
+      const perLegRoi = (1 / metrics.invSum - 1);
+      const perLegRoiPct = (perLegRoi * 100).toFixed(2);
+      const arbPct = metrics.arbPct.toFixed(6);
+      const payout = metrics.payout.toFixed(2);
+      const roi = (metrics.roi * 100).toFixed(2);
+      const parlayFactor = Math.pow(1 + perLegRoi, n).toFixed(6);
+      formulaBox.innerHTML = `
+        1) Single-leg arb % = (1 / oddsA) + (1 / oddsB) = (1 / ${oddsA.toFixed(2)}) + (1 / ${oddsB.toFixed(2)}) = ${invSum}<br/>
+        2) Single-leg ROI = (1 / arb %) − 1 = (1 / ${invSum}) − 1 = ${perLegRoiPct}%<br/>
+        3) N-leg arb % = (single-leg arb %)ⁿ = ${invSum}<sup>${n}</sup> = ${arbPct}<br/>
+        4) Guaranteed payout = total stake / arb % = ${fmtMoney(stake)} / ${arbPct} = ${fmtMoney(Number(payout))}<br/>
+        5) Guaranteed ROI = payout / stake − 1 = ${roi}%<br/>
+        6) Compounding thesis: (1 + Rₙ) = (1 + R₁)ⁿ = ${parlayFactor}
+      `;
+    }
+
+    function updateCompounding(oddsA, oddsB, stake, activeN) {
+      compoundingBody.innerHTML = "";
+      for (let n = 1; n <= 10; n += 1) {
+        const metrics = computeMetrics(oddsA, oddsB, n, stake);
+        const row = document.createElement("tr");
+        if (n === activeN) row.classList.add("active");
+        row.innerHTML = `
+          <td>${n}</td>
+          <td>${fmtNumber(metrics.totalBets)}</td>
+          <td>${fmtPercent(metrics.roi)}</td>
+          <td>${fmtMoney(metrics.profit)}</td>
+          <td>${fmtMoney(metrics.stakePerBet)}</td>
+        `;
+        compoundingBody.appendChild(row);
+      }
+    }
+
+    function updateTruthTable(oddsA, oddsB, n, metrics) {
+      const totalRows = metrics.totalBets;
+      const payout = fmtMoney(metrics.payout);
+      const sumWeights = metrics.arbPct;
+      truthBody.innerHTML = "";
+      for (let i = 0; i < totalRows; i += 1) {
+        const bits = i.toString(2).padStart(n, "0").split("");
+        const winsA = bits.filter((bit) => bit === "1").length;
+        const winsB = n - winsA;
+        const parlayOdds = Math.pow(oddsA, winsA) * Math.pow(oddsB, winsB);
+        const stakeForOutcome = (1 / parlayOdds) / sumWeights * Number(stakeSlider.value);
+        const outcomes = bits
+          .map((bit) => `<span class="${bit === "1" ? "win" : "loss"}">${bit === "1" ? "W" : "L"}</span>`)
+          .join("");
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td><div class="outcome">${outcomes}</div></td>
+          <td>${parlayOdds.toFixed(4)}</td>
+          <td>${fmtMoney(stakeForOutcome)}</td>
+          <td>${payout}</td>
+        `;
+        truthBody.appendChild(row);
+      }
+    }
+
+    function updateChart(oddsA, oddsB, activeN) {
+      const labels = [];
+      const data = [];
+      const colors = [];
+      for (let n = 1; n <= 10; n += 1) {
+        labels.push(String(n));
+        const metrics = computeMetrics(oddsA, oddsB, n, 1);
+        data.push(metrics.roi);
+        colors.push(n === activeN ? "rgba(94, 234, 212, 0.9)" : "rgba(96, 165, 250, 0.45)");
+      }
+      roiChart.data.labels = labels;
+      roiChart.data.datasets[0].data = data;
+      roiChart.data.datasets[0].backgroundColor = colors;
+      roiChart.update();
+    }
+
+    function updateDashboard() {
+      const oddsA = Number(oddsASlider.value);
+      const oddsB = Number(oddsBSlider.value);
+      const n = Number(legsSlider.value);
+      const stake = Number(stakeSlider.value);
+      const metrics = computeMetrics(oddsA, oddsB, n, stake);
+
+      oddsAValue.textContent = oddsA.toFixed(2);
+      oddsBValue.textContent = oddsB.toFixed(2);
+      legsValue.textContent = n;
+      stakeValue.textContent = fmtMoney(stake);
+      roiValue.textContent = fmtPercent(metrics.roi);
+      profitValue.textContent = fmtMoney(metrics.profit);
+      betsValue.textContent = fmtNumber(metrics.totalBets);
+      stakePerBetValue.textContent = fmtMoney(metrics.stakePerBet);
+
+      if (metrics.arbPct < 1) {
+        arbStatus.textContent = "Arb Exists";
+        arbStatus.classList.remove("warn");
+        arbStatus.classList.add("good");
+      } else {
+        arbStatus.textContent = "No Arb (arb % ≥ 1)";
+        arbStatus.classList.remove("good");
+        arbStatus.classList.add("warn");
+      }
+
+      updateFormula(oddsA, oddsB, n, stake, metrics);
+      updateCompounding(oddsA, oddsB, stake, n);
+      updateTruthTable(oddsA, oddsB, n, metrics);
+      updateChart(oddsA, oddsB, n);
+    }
+
+    [oddsASlider, oddsBSlider, legsSlider, stakeSlider].forEach((slider) =>
+      slider.addEventListener("input", updateDashboard)
+    );
+
+    updateDashboard();
+  </script>
+</body>
+</html>

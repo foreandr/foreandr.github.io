@@ -1,0 +1,1148 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Drone Show Studio</title>
+  <link rel="icon" type="image/x-icon" href="../../images.ico">
+  <style>
+    :root {
+      --panel: #13161e;
+      --border: rgba(255,255,255,0.08);
+      --accent: #6366f1;
+      --accent2: #4cc9f0;
+      --fg: #e8eef5;
+      --muted: #8892a4;
+      --panel-w: 290px;
+      --timeline-h: 62px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; height: 100%; overflow: hidden; background: #f8f9fa; color: var(--fg); font-family: "Space Grotesk","Segoe UI",system-ui,sans-serif; font-size: 13px; }
+    #app { display: flex; width: 100vw; height: 100vh; }
+
+    /* ── LEFT PANEL ── */
+    #left-panel { width: var(--panel-w); min-width: var(--panel-w); height: 100%; background: var(--panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; z-index: 2; box-shadow: 4px 0 20px rgba(0,0,0,0.3); }
+    #panel-header { padding: 14px 16px 12px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+    .back-link { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); text-decoration: none; font-size: 11px; border: 1px solid var(--border); padding: 4px 9px; border-radius: 999px; background: rgba(255,255,255,0.04); }
+    .back-link:hover { background: rgba(255,255,255,0.09); color: var(--fg); }
+    #panel-header h1 { margin-top: 10px; font-size: 15px; font-weight: 600; letter-spacing: 0.3px; }
+    #panel-header .sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    #panel-scroll { flex: 1; overflow-y: auto; padding: 12px 14px; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.1) transparent; }
+    ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+    .section { margin-bottom: 14px; }
+    .sec-title { font-size: 10px; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+    .row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; gap: 6px; }
+    .row label { color: var(--muted); white-space: nowrap; flex-shrink: 0; min-width: 44px; font-size: 12px; }
+    .row input[type=range] { flex: 1; accent-color: var(--accent); cursor: pointer; min-width: 0; }
+    .val { color: var(--accent2); min-width: 38px; text-align: right; font-size: 11px; font-variant-numeric: tabular-nums; flex-shrink: 0; }
+    input[type=text], input[type=number] { background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: var(--fg); border-radius: 6px; padding: 4px 8px; font-size: 12px; outline: none; }
+    input[type=text]:focus, input[type=number]:focus { border-color: var(--accent); }
+    select { background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: var(--fg); border-radius: 6px; padding: 5px 8px; font-size: 12px; outline: none; cursor: pointer; width: 100%; }
+    select:focus { border-color: var(--accent); }
+    select option { background: #13161e; }
+
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 4px; padding: 6px 11px; border-radius: 7px; font-size: 12px; font-weight: 500; cursor: pointer; border: 1px solid var(--border); background: rgba(255,255,255,0.06); color: var(--fg); transition: background 0.15s; white-space: nowrap; }
+    .btn:hover { background: rgba(255,255,255,0.12); }
+    .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .btn.primary:hover { background: #4f46e5; }
+    .btn.danger { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.25); color: #fca5a5; }
+    .btn.danger:hover { background: rgba(239,68,68,0.2); }
+    .btn.sm { padding: 3px 8px; font-size: 11px; border-radius: 5px; }
+    .btn-row { display: flex; gap: 5px; flex-wrap: wrap; }
+    .sep { height: 1px; background: var(--border); margin: 12px 0; }
+
+    /* Drone list */
+    #drone-list { display: flex; flex-direction: column; gap: 0; }
+    .drone-expand { background: rgba(99,102,241,0.06); border: 1px solid rgba(99,102,241,0.22); border-top: none; border-radius: 0 0 8px 8px; padding: 10px 12px 12px; margin-bottom: 4px; }
+    .drone-row { display: flex; align-items: center; gap: 7px; padding: 5px 8px; border-radius: 6px; border: 1px solid var(--border); background: rgba(255,255,255,0.03); cursor: pointer; transition: background 0.12s, border-color 0.12s; }
+    .drone-row:hover { background: rgba(255,255,255,0.07); }
+    .drone-row.active { border-color: var(--accent); background: rgba(99,102,241,0.1); }
+    .drone-swatch { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+    .drone-name { flex: 1; font-size: 12px; color: var(--fg); }
+    .del-btn { color: #fca5a5; font-size: 16px; line-height: 1; padding: 0 2px; background: none; border: none; cursor: pointer; opacity: 0.4; flex-shrink: 0; }
+    .del-btn:hover { opacity: 1; }
+
+    /* Keyframe list — compact */
+    #kf-list { display: flex; flex-direction: column; gap: 2px; overflow-y: auto; }
+    #kf-list.compact { max-height: 140px; }
+    .kf-row { padding: 4px 7px; border-radius: 5px; font-size: 11px; font-variant-numeric: tabular-nums; cursor: pointer; color: var(--muted); border: 1px solid transparent; }
+    .kf-row:hover { background: rgba(255,255,255,0.05); color: var(--fg); }
+    .kf-row.active { background: rgba(99,102,241,0.12); border-color: rgba(99,102,241,0.3); color: var(--fg); }
+    /* Keyframe edit cards */
+    .kf-card { background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; margin-bottom: 5px; }
+    .kf-card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 7px; }
+    .kf-card-label { font-size: 11px; font-weight: 600; color: var(--accent2); font-variant-numeric: tabular-nums; }
+    .kf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px 8px; }
+    .kf-field { display: flex; align-items: center; gap: 4px; font-size: 11px; }
+    .kf-field-lbl { font-weight: 700; min-width: 14px; color: var(--muted); }
+    .kf-num { width: 58px; background: rgba(255,255,255,0.06); border: 1px solid var(--border); color: var(--fg); border-radius: 5px; padding: 3px 5px; font-size: 11px; outline: none; font-variant-numeric: tabular-nums; }
+    .kf-num:focus { border-color: var(--accent); background: rgba(99,102,241,0.1); }
+    .kf-unit { color: var(--muted); font-size: 10px; }
+
+    /* Validation */
+    #warnings-list { display: flex; flex-direction: column; gap: 4px; }
+    .w-item { padding: 5px 8px; border-radius: 6px; font-size: 11px; line-height: 1.5; }
+    .w-item.err  { background: rgba(239,68,68,0.1);  border: 1px solid rgba(239,68,68,0.2);  color: #fca5a5; }
+    .w-item.warn { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.2); color: #fcd34d; }
+    .w-item.ok   { background: rgba(34,197,94,0.1);  border: 1px solid rgba(34,197,94,0.2);  color: #86efac; }
+
+    /* ── MAIN ── */
+    #main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    #viewport { flex: 1; position: relative; overflow: hidden; cursor: default; }
+    #viewport.dragging { cursor: grabbing; }
+    #three-canvas { display: block; width: 100%; height: 100%; }
+
+    /* HUD chips */
+    #hud-tr { position: absolute; top: 12px; right: 12px; display: flex; flex-direction: column; gap: 5px; pointer-events: none; }
+    .hud-chip { padding: 5px 10px; border-radius: 8px; background: rgba(19,22,30,0.82); border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(8px); font-size: 11px; color: var(--muted); }
+    .hud-chip span { color: var(--fg); font-weight: 500; }
+    #aud-badge { display: none; background: rgba(99,102,241,0.2); border-color: rgba(99,102,241,0.5); color: #a5b4fc; }
+    #aud-badge.on { display: block; pointer-events: all; cursor: pointer; }
+
+    #hud-bl { position: absolute; bottom: 10px; left: 10px; pointer-events: none; }
+    .hint-chip { padding: 4px 9px; border-radius: 6px; background: rgba(19,22,30,0.72); border: 1px solid rgba(255,255,255,0.07); font-size: 10px; color: var(--muted); backdrop-filter: blur(6px); }
+
+    /* ── TIMELINE ── */
+    #timeline { height: var(--timeline-h); background: var(--panel); border-top: 1px solid var(--border); display: flex; align-items: center; gap: 8px; padding: 0 14px; flex-shrink: 0; z-index: 2; box-shadow: 0 -4px 16px rgba(0,0,0,0.2); }
+    .tbtn { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.06); border: 1px solid var(--border); color: var(--fg); cursor: pointer; font-size: 12px; flex-shrink: 0; }
+    .tbtn:hover { background: rgba(255,255,255,0.13); }
+    #btn-play { background: var(--accent); border-color: var(--accent); color: #fff; width: 36px; height: 36px; font-size: 14px; }
+    #btn-play:hover { background: #4f46e5; }
+    #seek-bar { flex: 1; height: 4px; border-radius: 2px; -webkit-appearance: none; appearance: none; background: rgba(255,255,255,0.12); cursor: pointer; outline: none; min-width: 0; }
+    #seek-bar::-webkit-slider-thumb { -webkit-appearance: none; width: 13px; height: 13px; border-radius: 50%; background: var(--fg); cursor: pointer; }
+    #seek-bar::-moz-range-thumb { width: 13px; height: 13px; border-radius: 50%; background: var(--fg); cursor: pointer; border: none; }
+    #time-disp { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; flex-shrink: 0; }
+    #time-disp b { color: var(--fg); font-weight: 600; }
+    .spd { padding: 3px 6px; border-radius: 5px; font-size: 11px; font-weight: 600; background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: var(--muted); cursor: pointer; flex-shrink: 0; }
+    .spd.active, .spd:hover { background: rgba(99,102,241,0.15); border-color: var(--accent); color: var(--accent); }
+    .spd-group { display: flex; gap: 3px; }
+    #file-input { display: none; }
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ═══ LEFT PANEL ═══ -->
+  <div id="left-panel">
+    <div id="panel-header">
+      <a class="back-link" href="../../index.html">&#8592; Portfolio</a>
+      <h1>Drone Show Studio</h1>
+      <div class="sub">3D formation planner &amp; simulator</div>
+    </div>
+    <div id="panel-scroll">
+
+      <!-- PROJECT -->
+      <div class="section">
+        <div class="sec-title">Project</div>
+        <div class="row">
+          <label>Name</label>
+          <input type="text" id="proj-name" value="Untitled Show" style="flex:1;min-width:0">
+        </div>
+        <div class="row">
+          <label>Duration</label>
+          <input type="range" id="proj-dur" min="5" max="120" value="30">
+          <span class="val" id="proj-dur-val">30s</span>
+        </div>
+      </div>
+      <div class="sep"></div>
+
+      <!-- ENVIRONMENT -->
+      <div class="section">
+        <div class="sec-title">Environment</div>
+        <div class="row">
+          <label>Wind</label>
+          <input type="range" id="wind-speed" min="0" max="20" value="0" step="0.5">
+          <span class="val" id="wind-val">0 m/s</span>
+        </div>
+        <div class="row">
+          <label>Dir°</label>
+          <input type="range" id="wind-dir" min="0" max="359" value="0">
+          <span class="val" id="wind-dir-val">0°</span>
+        </div>
+        <div class="row">
+          <label>Safety</label>
+          <input type="range" id="safety-dist" min="0.5" max="10" value="2" step="0.5">
+          <span class="val" id="safety-val">2m</span>
+        </div>
+      </div>
+      <div class="sep"></div>
+
+      <!-- DRONES -->
+      <div class="section">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <div class="sec-title" style="margin:0">Drones (<span id="drone-count-disp">0</span>)</div>
+          <div style="display:flex;gap:5px;align-items:center">
+            <input type="color" id="new-color" value="#00bfff" style="width:26px;height:22px;border:none;border-radius:4px;cursor:pointer;padding:0;background:none">
+            <button class="btn sm" id="add-drone-btn">+ Add</button>
+          </div>
+        </div>
+        <div id="drone-list"></div>
+      </div>
+      <div class="sep"></div>
+
+      <!-- FORMATION -->
+      <div class="section">
+        <div class="sec-title">Apply Formation</div>
+        <div class="row" style="margin-bottom:6px">
+          <label style="min-width:42px">Count</label>
+          <input type="range" id="form-count" min="1" max="100" value="20">
+          <span class="val" id="form-count-val">20</span>
+        </div>
+        <select id="form-type" style="margin-bottom:6px">
+          <option value="circle">Circle</option>
+          <option value="grid">Grid</option>
+          <option value="line">Line</option>
+          <option value="vshape">V-Shape</option>
+          <option value="sphere">Sphere</option>
+          <option value="star">Star</option>
+          <option value="diamond">Diamond</option>
+          <option value="spiral">Spiral</option>
+          <option value="helix">Helix</option>
+          <option value="land">Land (Return)</option>
+        </select>
+        <div class="row">
+          <label>Altitude</label>
+          <input type="range" id="form-alt" min="1" max="60" value="15">
+          <span class="val" id="form-alt-val">15m</span>
+        </div>
+        <div class="row">
+          <label>Scale</label>
+          <input type="range" id="form-scale" min="2" max="50" value="12">
+          <span class="val" id="form-scale-val">12m</span>
+        </div>
+        <button class="btn primary" id="apply-form-btn" style="width:100%;margin-top:6px">Apply at Current Time</button>
+      </div>
+      <div class="sep"></div>
+
+      <!-- VALIDATION -->
+      <div class="section">
+        <div class="sec-title">Validation</div>
+        <div id="warnings-list"></div>
+      </div>
+      <div class="sep"></div>
+
+      <!-- AUDIENCE VIEW -->
+      <div class="section">
+        <div class="sec-title">Views</div>
+        <button class="btn" id="aud-btn" style="width:100%">&#x1F441; Audience View &nbsp;<kbd style="font-size:10px;opacity:0.6">V</kbd></button>
+      </div>
+      <div class="sep"></div>
+
+      <!-- FILE -->
+      <div class="section">
+        <div class="sec-title">File</div>
+        <div class="btn-row">
+          <button class="btn" id="import-btn">&#x1F4C2; Import</button>
+          <button class="btn" id="export-btn">&#x1F4BE; Export</button>
+          <button class="btn danger" id="clear-btn">&#x2715; Clear</button>
+        </div>
+        <input type="file" id="file-input" accept=".json" style="display:none">
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══ MAIN ═══ -->
+  <div id="main">
+    <div id="viewport">
+      <canvas id="three-canvas"></canvas>
+      <div id="hud-tr">
+        <div class="hud-chip">Drones: <span id="hud-drones">0</span></div>
+        <div class="hud-chip">Wind: <span id="hud-wind">0 m/s</span></div>
+        <div class="hud-chip" id="aud-badge">&#x1F441; Audience View &mdash; press V to exit</div>
+      </div>
+      <div id="hud-bl">
+        <div class="hint-chip">V = audience view &nbsp;&bull;&nbsp; click drone to select &nbsp;&bull;&nbsp; drag to reposition in XZ</div>
+      </div>
+    </div>
+    <div id="timeline">
+      <button class="tbtn" id="btn-rewind" title="Rewind">&#x23EE;</button>
+      <button class="tbtn" id="btn-play"   title="Play/Pause">&#x25B6;</button>
+      <button class="tbtn" id="btn-stop"   title="Stop">&#x23F9;</button>
+      <div class="spd-group">
+        <button class="spd" data-spd="0.1">0.1x</button>
+        <button class="spd" data-spd="0.25">¼x</button>
+        <button class="spd" data-spd="0.5">½x</button>
+        <button class="spd active" data-spd="1">1x</button>
+        <button class="spd" data-spd="2">2x</button>
+        <button class="spd" data-spd="4">4x</button>
+      </div>
+      <input type="range" id="seek-bar" min="0" max="10000" value="0">
+      <div id="time-disp"><b id="time-cur">0.0</b> / <span id="time-total">30.0</span>s</div>
+    </div>
+  </div>
+</div>
+
+<script type="importmap">
+{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+/* ════════════════════════════════════════════════════════
+   STATE  —  per-drone keyframe model
+════════════════════════════════════════════════════════ */
+const S = {
+  proj: { name: "Untitled Show", duration: 30 },
+  env:  { windSpeed: 0, windDir: 0, safetyDist: 2 },
+  drones: [],          // [{ id, color, keyframes:[{t,x,y,z}] }]
+  selId:   null,       // selected drone id
+  selKf:   null,       // selected keyframe index
+  pb:   { playing: false, time: 0, speed: 1 },
+  audienceMode: false,
+  inspExpanded: false, // keyframe edit mode toggle
+  _did: 1,
+};
+
+/* ════════════════════════════════════════════════════════
+   FORMATION GENERATORS
+════════════════════════════════════════════════════════ */
+const TAU = Math.PI * 2;
+function genLaunch(n) {
+  const c = Math.ceil(Math.sqrt(n)), sp = 3;
+  const ox = (c-1)*sp/2, oz = (Math.ceil(n/c)-1)*sp/2;
+  return Array.from({length:n},(_,i) => [(i%c)*sp-ox, 0.5, Math.floor(i/c)*sp-oz]);
+}
+function genCircle(n,r,h)  { return Array.from({length:n},(_,i)=>{const a=(i/n)*TAU;return[Math.cos(a)*r,h,Math.sin(a)*r];}); }
+function genGrid(n,sp,h)   { const c=Math.ceil(Math.sqrt(n)),r=Math.ceil(n/c),ox=(c-1)*sp/2,oz=(r-1)*sp/2;return Array.from({length:n},(_,i)=>[(i%c)*sp-ox,h,Math.floor(i/c)*sp-oz]); }
+function genLine(n,sp,h)   { const half=(n-1)*sp/2;return Array.from({length:n},(_,i)=>[i*sp-half,h,0]); }
+function genVShape(n,s,h)  { const hh=Math.ceil(n/2);return Array.from({length:n},(_,i)=>{const sd=i<hh?-1:1,idx=i<hh?i:i-hh;return[sd*idx*(s/hh),h,idx*(s/hh)*0.8];}); }
+function genSphere(n,r,h)  { const phi=Math.PI*(3-Math.sqrt(5));return Array.from({length:n},(_,i)=>{const y=1-(i/(n-1||1))*2,rad=Math.sqrt(Math.max(0,1-y*y)),t=phi*i;return[Math.cos(t)*rad*r,h+y*r,Math.sin(t)*rad*r];}); }
+function genStar(n,r1,r2,h){ return Array.from({length:n},(_,i)=>{const a=(i/n)*TAU,r=i%2===0?r1:r2;return[Math.cos(a)*r,h,Math.sin(a)*r];}); }
+function genDiamond(n,r,h) { const hh=Math.ceil(n/2);return Array.from({length:n},(_,i)=>{const top=i>=hh,cnt=top?n-hh:hh,idx=top?i-hh:i,a=(idx/cnt)*TAU,rr=top?r*0.45:r;return[Math.cos(a)*rr,top?h+10:h,Math.sin(a)*rr];}); }
+function genSpiral(n,r,h)  { return Array.from({length:n},(_,i)=>{const t=i/n;return[Math.cos(t*Math.PI*6)*t*r,h+t*14,Math.sin(t*Math.PI*6)*t*r];}); }
+function genHelix(n,r,h)   { return Array.from({length:n},(_,i)=>{const t=i/n,a=t*Math.PI*4;return[Math.cos(a)*r,h+t*18,Math.sin(a)*r];}); }
+function genLand(n)        { return genLaunch(n).map(p=>[p[0],0.5,p[2]]); }
+
+function makeFormation(type, n, alt, scale) {
+  switch(type) {
+    case'circle':  return genCircle(n, scale, alt);
+    case'grid':    return genGrid(n, Math.max(2, scale/Math.sqrt(n)), alt);
+    case'line':    return genLine(n, Math.max(1.5, scale/n*1.8), alt);
+    case'vshape':  return genVShape(n, scale, alt);
+    case'sphere':  return genSphere(n, scale*0.7, alt);
+    case'star':    return genStar(n, scale, scale*0.38, alt);
+    case'diamond': return genDiamond(n, scale, alt);
+    case'spiral':  return genSpiral(n, scale, alt);
+    case'helix':   return genHelix(n, scale*0.7, alt);
+    case'land':    return genLand(n);
+    default:       return genCircle(n, scale, alt);
+  }
+}
+
+/* ════════════════════════════════════════════════════════
+   PER-DRONE INTERPOLATION
+════════════════════════════════════════════════════════ */
+function eio(t) { return t < 0.5 ? 2*t*t : -1+(4-2*t)*t; }
+
+function dronePos(drone, t) {
+  const kf = drone.keyframes.slice().sort((a,b) => a.t-b.t);
+  if (!kf.length)       return [0, 0.5, 0];
+  if (t <= kf[0].t)     return [kf[0].x, kf[0].y, kf[0].z];
+  if (t >= kf.at(-1).t) return [kf.at(-1).x, kf.at(-1).y, kf.at(-1).z];
+  for (let i = 0; i < kf.length-1; i++) {
+    const a = kf[i], b = kf[i+1];
+    if (t >= a.t && t <= b.t) {
+      const u = eio((t-a.t)/(b.t-a.t));
+      return [a.x+(b.x-a.x)*u, a.y+(b.y-a.y)*u, a.z+(b.z-a.z)*u];
+    }
+  }
+  return [kf[0].x, kf[0].y, kf[0].z];
+}
+
+function setKf(drone, t, x, y, z) {
+  t = +t.toFixed(2);
+  const i = drone.keyframes.findIndex(k => Math.abs(k.t-t) < 0.05);
+  if (i >= 0) drone.keyframes[i] = {t,x,y,z};
+  else { drone.keyframes.push({t,x,y,z}); drone.keyframes.sort((a,b)=>a.t-b.t); }
+}
+
+/* ════════════════════════════════════════════════════════
+   THREE.JS — light/white CAD viewport
+════════════════════════════════════════════════════════ */
+const cv    = document.getElementById('three-canvas');
+const sc3   = new THREE.Scene();
+sc3.background = new THREE.Color(0xf8f9fa);
+
+const cam = new THREE.PerspectiveCamera(55, 1, 0.1, 2000);
+cam.position.set(32, 28, 42);
+
+const EDIT_POS = new THREE.Vector3(32, 28, 42);
+const EDIT_TGT = new THREE.Vector3(0, 6, 0);
+const AUD_POS  = new THREE.Vector3(0, 3, 75);
+const AUD_TGT  = new THREE.Vector3(0, 15, 0);
+
+const renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+
+const orb = new OrbitControls(cam, renderer.domElement);
+orb.target.copy(EDIT_TGT);
+orb.enableDamping = true;
+orb.dampingFactor = 0.08;
+orb.minDistance = 3;
+orb.maxDistance = 400;
+
+// Lighting (bright for white bg)
+sc3.add(new THREE.AmbientLight(0xffffff, 0.75));
+const dirL = new THREE.DirectionalLight(0xffffff, 0.7);
+dirL.position.set(30, 60, 20);
+dirL.castShadow = true;
+dirL.shadow.mapSize.set(2048,2048);
+Object.assign(dirL.shadow.camera, {far:250,left:-80,right:80,top:80,bottom:-80});
+sc3.add(dirL);
+const fillL = new THREE.DirectionalLight(0xffffff, 0.2);
+fillL.position.set(-10, -20, -10);
+sc3.add(fillL);
+
+/* ════════════════════════════════════════════════════════
+   LABELED GRID — Desmos style
+════════════════════════════════════════════════════════ */
+function makeLabel(text, cssColor) {
+  const c = document.createElement('canvas');
+  c.width = 128; c.height = 52;
+  const ctx = c.getContext('2d');
+  ctx.font = 'bold 22px Arial,sans-serif';
+  ctx.fillStyle = cssColor;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(text, 64, 26);
+  const spr = new THREE.Sprite(new THREE.SpriteMaterial({
+    map: new THREE.CanvasTexture(c), transparent: true, depthTest: false, depthWrite: false
+  }));
+  spr.scale.set(3.2, 1.3, 1);
+  return spr;
+}
+
+(function buildGrid() {
+  const g = new THREE.Group();
+  const SIZE = 60, MINOR = 5, MAJOR = 10;
+  const verts = [], cols = [];
+
+  for (let i = -SIZE; i <= SIZE; i += MINOR) {
+    const major = i % MAJOR === 0;
+    const col = new THREE.Color(major ? 0x999aaa : 0xccccdd);
+    // X-parallel line
+    verts.push(-SIZE,0.005,i, SIZE,0.005,i);
+    cols.push(col.r,col.g,col.b, col.r,col.g,col.b);
+    // Z-parallel line
+    verts.push(i,0.005,-SIZE, i,0.005,SIZE);
+    cols.push(col.r,col.g,col.b, col.r,col.g,col.b);
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
+  geo.setAttribute('color',    new THREE.Float32BufferAttribute(cols,  3));
+  g.add(new THREE.LineSegments(geo, new THREE.LineBasicMaterial({vertexColors:true})));
+
+  // Axis lines
+  function axisLine(from, to, color) {
+    const ag = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(...from), new THREE.Vector3(...to)]);
+    return new THREE.Line(ag, new THREE.LineBasicMaterial({color}));
+  }
+  g.add(axisLine([-SIZE,0.01,0],[SIZE,0.01,0],  0xdd1111));  // X = red
+  g.add(axisLine([0,0.01,-SIZE],[0,0.01,SIZE],  0x1144dd));  // Z = blue
+  g.add(axisLine([0,0,0],[0,60,0],              0x119933));  // Y = green
+
+  // X axis tick labels
+  for (let x = -50; x <= 50; x += 10) {
+    if (x === 0) continue;
+    const s = makeLabel(x+'m', '#cc1111');
+    s.position.set(x, 0.3, 3.5);
+    g.add(s);
+  }
+  // Z axis tick labels
+  for (let z = -50; z <= 50; z += 10) {
+    if (z === 0) continue;
+    const s = makeLabel(z+'m', '#1144cc');
+    s.position.set(-3.5, 0.3, z);
+    g.add(s);
+  }
+  // Y (altitude) tick labels + subtle rings
+  for (let y = 10; y <= 50; y += 10) {
+    const s = makeLabel(y+'m', '#119933');
+    s.position.set(-4, y, 0);
+    g.add(s);
+    // Altitude ring
+    const rPts = Array.from({length:33},(_,i)=>{const a=(i/32)*TAU;return new THREE.Vector3(Math.cos(a),0,Math.sin(a));});
+    const ring = new THREE.LineLoop(
+      new THREE.BufferGeometry().setFromPoints(rPts),
+      new THREE.LineBasicMaterial({color:0xbbbbcc, transparent:true, opacity:0.3})
+    );
+    ring.position.y = y;
+    ring.scale.setScalar(2);
+    g.add(ring);
+  }
+
+  // Axis tip labels
+  const xTip = makeLabel('X', '#cc1111'); xTip.position.set(SIZE+4, 0.3, 0); g.add(xTip);
+  const zTip = makeLabel('Z', '#1144cc'); zTip.position.set(0, 0.3, SIZE+4); g.add(zTip);
+  const yTip = makeLabel('Y', '#119933'); yTip.position.set(-4.5, 55, 0);    g.add(yTip);
+  const orig = makeLabel('0', '#666677'); orig.position.set(2.5, 0.3, 2.5);  g.add(orig);
+
+  sc3.add(g);
+})();
+
+/* ════════════════════════════════════════════════════════
+   DRONE MESH SYSTEM
+════════════════════════════════════════════════════════ */
+const droneGroup = new THREE.Group();
+sc3.add(droneGroup);
+const meshMap = new Map(); // id → { group, dl }
+
+function buildMesh(id, color) {
+  const col = new THREE.Color(color);
+  const g   = new THREE.Group();
+  g.userData.droneId = id;
+
+  const bodyMat  = new THREE.MeshLambertMaterial({color: 0x1a1d28});
+  const rotorMat = new THREE.MeshLambertMaterial({color: col});
+  const ledMat   = new THREE.MeshBasicMaterial({color: col, transparent:true, opacity:0.95});
+
+  const body = new THREE.Mesh(new THREE.BoxGeometry(0.5,0.18,0.5), bodyMat);
+  body.castShadow = true;
+  g.add(body);
+
+  [[-0.38,0,-0.38],[0.38,0,-0.38],[-0.38,0,0.38],[0.38,0,0.38]].forEach(o => {
+    const armGeo = new THREE.CylinderGeometry(0.02,0.02,0.36,5);
+    const arm = new THREE.Mesh(armGeo, new THREE.MeshLambertMaterial({color:0x1a1d28}));
+    arm.rotation.z = Math.PI/2; arm.position.set(o[0]*0.5,0.05,o[2]*0.5);
+    g.add(arm);
+    const rotor = new THREE.Mesh(new THREE.CylinderGeometry(0.16,0.16,0.04,10), rotorMat);
+    rotor.position.set(o[0],0.08,o[2]);
+    g.add(rotor);
+  });
+
+  const led = new THREE.Mesh(new THREE.SphereGeometry(0.08,8,6), ledMat);
+  led.position.set(0,0.14,0);
+  g.add(led);
+
+  droneGroup.add(g);
+
+  // Drop line (altitude shadow)
+  const dlBuf = new Float32Array(6);
+  const dlGeo = new THREE.BufferGeometry();
+  dlGeo.setAttribute('position', new THREE.BufferAttribute(dlBuf,3));
+  const dl = { line: new THREE.Line(dlGeo, new THREE.LineBasicMaterial({color:0x4466bb,transparent:true,opacity:0.35})), attr: dlGeo.attributes.position };
+  sc3.add(dl.line);
+
+  meshMap.set(id, {group:g, dl, rotorMat, ledMat});
+}
+
+function removeMesh(id) {
+  const e = meshMap.get(id);
+  if (!e) return;
+  droneGroup.remove(e.group);
+  sc3.remove(e.dl.line);
+  meshMap.delete(id);
+}
+
+function updateMeshColor(id, color) {
+  const e = meshMap.get(id);
+  if (!e) return;
+  const col = new THREE.Color(color);
+  e.rotorMat.color.copy(col);
+  e.ledMat.color.copy(col);
+}
+
+function updateMesh(drone, t) {
+  const e = meshMap.get(drone.id);
+  if (!e) return;
+  const [x,y,z] = dronePos(drone, t);
+
+  // Wind drift
+  const wr  = (S.env.windDir * Math.PI) / 180;
+  const wst = S.env.windSpeed * 0.007 * (y/15+0.1);
+  const wx  = Math.cos(wr)*wst, wz = Math.sin(wr)*wst;
+  const px  = x+wx, pz = z+wz;
+
+  e.group.position.set(px, y, pz);
+  const tilt = Math.min(Math.atan2(S.env.windSpeed*0.018,1)*(y/15+0.1), Math.PI/5);
+  e.group.rotation.z = -tilt*Math.cos(wr);
+  e.group.rotation.x =  tilt*Math.sin(wr);
+
+  // Selection highlight
+  const sel = S.selId === drone.id;
+  e.group.children.forEach(c => {
+    if (c.material?.emissive) {
+      c.material.emissive.set(sel ? 0x4466ff : 0x000000);
+      c.material.emissiveIntensity = sel ? 0.55 : 0;
+    }
+  });
+
+  // Drop line
+  e.dl.attr.array.set([px,y,pz, px,0,pz]);
+  e.dl.attr.needsUpdate = true;
+}
+
+// Wind arrow
+let windArrow = null;
+function refreshWindArrow() {
+  if (windArrow) { sc3.remove(windArrow); windArrow = null; }
+  if (S.env.windSpeed < 0.5) return;
+  const r = (S.env.windDir*Math.PI)/180;
+  windArrow = new THREE.ArrowHelper(new THREE.Vector3(Math.cos(r),0,Math.sin(r)), new THREE.Vector3(0,1,0), Math.min(S.env.windSpeed*2,26), 0x2244cc, 3, 2);
+  sc3.add(windArrow);
+}
+
+/* ════════════════════════════════════════════════════════
+   AUDIENCE VIEW
+════════════════════════════════════════════════════════ */
+function setAudienceMode(on) {
+  S.audienceMode = on;
+  cam.position.copy(on ? AUD_POS : EDIT_POS);
+  orb.target.copy(on ? AUD_TGT : EDIT_TGT);
+  orb.enabled = !on;
+  orb.update();
+  document.getElementById('aud-badge').classList.toggle('on', on);
+}
+
+document.getElementById('aud-btn').addEventListener('click', () => setAudienceMode(!S.audienceMode));
+document.getElementById('aud-badge').addEventListener('click', () => setAudienceMode(false));
+document.addEventListener('keydown', e => {
+  if ((e.key==='v'||e.key==='V') && document.activeElement.tagName !== 'INPUT') setAudienceMode(!S.audienceMode);
+});
+
+/* ════════════════════════════════════════════════════════
+   MOUSE — SELECT & DRAG
+════════════════════════════════════════════════════════ */
+const rayc      = new THREE.Raycaster();
+const ndcV      = new THREE.Vector2();
+const dragPlane = new THREE.Plane();
+const dragPt    = new THREE.Vector3();
+let drag = { on: false, id: null, y0: 0 };
+let mdPos = null;  // mousedown position for click-vs-drag detection
+
+function getNDC(e) {
+  const r = cv.getBoundingClientRect();
+  return new THREE.Vector2(((e.clientX-r.left)/r.width)*2-1, -((e.clientY-r.top)/r.height)*2+1);
+}
+
+cv.addEventListener('mousedown', e => {
+  if (e.button !== 0 || S.audienceMode) return;
+  mdPos = {x:e.clientX, y:e.clientY};
+  const ndc = getNDC(e);
+  rayc.setFromCamera(ndc, cam);
+  const meshes = [...meshMap.values()].map(v=>v.group);
+  const hits = rayc.intersectObjects(meshes, true);
+  if (!hits.length) return;
+  let obj = hits[0].object;
+  while (obj.parent && !meshes.includes(obj)) obj = obj.parent;
+  const id = obj.userData.droneId;
+  if (id == null) return;
+  const drone = S.drones.find(d=>d.id===id);
+  if (!drone) return;
+  const p = dronePos(drone, S.pb.time);
+  drag.on = true; drag.id = id; drag.y0 = p[1];
+  dragPlane.set(new THREE.Vector3(0,1,0), -p[1]);
+  orb.enabled = false;
+  document.getElementById('viewport').classList.add('dragging');
+});
+
+cv.addEventListener('mousemove', e => {
+  if (!drag.on) return;
+  rayc.setFromCamera(getNDC(e), cam);
+  if (rayc.ray.intersectPlane(dragPlane, dragPt)) {
+    const drone = S.drones.find(d=>d.id===drag.id);
+    if (drone) { setKf(drone, S.pb.time, dragPt.x, drag.y0, dragPt.z); refreshKfList(drone); }
+  }
+});
+
+function endDrag(e) {
+  if (!drag.on) return;
+  drag.on = false;
+  orb.enabled = !S.audienceMode;
+  document.getElementById('viewport').classList.remove('dragging');
+  // Pure click (no movement) = toggle selection
+  if (mdPos && Math.hypot(e.clientX-mdPos.x, e.clientY-mdPos.y) < 5) {
+    rayc.setFromCamera(getNDC(e), cam);
+    const meshes = [...meshMap.values()].map(v=>v.group);
+    const hits = rayc.intersectObjects(meshes, true);
+    if (hits.length) {
+      let obj = hits[0].object;
+      while (obj.parent && !meshes.includes(obj)) obj = obj.parent;
+      const id = obj.userData.droneId;
+      S.selId = S.selId===id ? null : id;
+      S.selKf = null;
+    } else {
+      S.selId = null; S.selKf = null;
+    }
+    refreshDroneList(); refreshInspector();
+  }
+  mdPos = null;
+}
+cv.addEventListener('mouseup',    endDrag);
+cv.addEventListener('mouseleave', endDrag);
+
+/* ════════════════════════════════════════════════════════
+   RESIZE
+════════════════════════════════════════════════════════ */
+function onResize() {
+  const vp = document.getElementById('viewport');
+  const w = vp.clientWidth, h = vp.clientHeight;
+  cam.aspect = w/h; cam.updateProjectionMatrix();
+  renderer.setSize(w, h);
+}
+new ResizeObserver(onResize).observe(document.getElementById('viewport'));
+onResize();
+
+/* ════════════════════════════════════════════════════════
+   RENDER LOOP
+════════════════════════════════════════════════════════ */
+let _lt = null;
+(function loop(ts) {
+  requestAnimationFrame(loop);
+  if (!_lt) _lt = ts;
+  const dt = Math.min((ts-_lt)/1000, 0.1); _lt = ts;
+
+  if (S.pb.playing) {
+    S.pb.time += dt * S.pb.speed;
+    if (S.pb.time >= S.proj.duration) {
+      S.pb.time = S.proj.duration; S.pb.playing = false;
+      document.getElementById('btn-play').textContent = '▶';
+    }
+    syncSeek();
+  }
+
+  S.drones.forEach(d => updateMesh(d, S.pb.time));
+  if (drag.on || S.selId != null) refreshInspector();
+
+  orb.update();
+  renderer.render(sc3, cam);
+})(0);
+
+/* ════════════════════════════════════════════════════════
+   TRANSPORT
+════════════════════════════════════════════════════════ */
+function syncSeek() {
+  const pct = S.pb.time / S.proj.duration;
+  document.getElementById('seek-bar').value = Math.round(pct*10000);
+  document.getElementById('time-cur').textContent = S.pb.time.toFixed(1);
+}
+
+document.getElementById('btn-play').addEventListener('click', () => {
+  if (S.pb.time >= S.proj.duration) S.pb.time = 0;
+  S.pb.playing = !S.pb.playing;
+  document.getElementById('btn-play').textContent = S.pb.playing ? '⏸' : '▶';
+});
+document.getElementById('btn-stop').addEventListener('click', () => {
+  S.pb.playing = false; S.pb.time = 0;
+  document.getElementById('btn-play').textContent = '▶'; syncSeek();
+});
+document.getElementById('btn-rewind').addEventListener('click', () => {
+  S.pb.playing = false; S.pb.time = 0;
+  document.getElementById('btn-play').textContent = '▶'; syncSeek();
+});
+document.getElementById('seek-bar').addEventListener('input', function() {
+  S.pb.time = (this.value/10000)*S.proj.duration;
+  document.getElementById('time-cur').textContent = S.pb.time.toFixed(1);
+});
+document.querySelectorAll('.spd').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('.spd').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');
+  S.pb.speed = +b.dataset.spd;
+}));
+
+/* ════════════════════════════════════════════════════════
+   PROJECT / ENV BINDINGS
+════════════════════════════════════════════════════════ */
+document.getElementById('proj-name').addEventListener('input', e => S.proj.name = e.target.value);
+document.getElementById('proj-dur').addEventListener('input', function() {
+  S.proj.duration = +this.value;
+  document.getElementById('proj-dur-val').textContent = this.value+'s';
+  document.getElementById('time-total').textContent   = (+this.value).toFixed(1);
+});
+document.getElementById('wind-speed').addEventListener('input', function() {
+  S.env.windSpeed = +this.value;
+  document.getElementById('wind-val').textContent = this.value+' m/s';
+  document.getElementById('hud-wind').textContent = this.value+' m/s';
+  refreshWindArrow(); runValidation();
+});
+document.getElementById('wind-dir').addEventListener('input', function() {
+  S.env.windDir = +this.value;
+  document.getElementById('wind-dir-val').textContent = this.value+'°';
+  refreshWindArrow();
+});
+document.getElementById('safety-dist').addEventListener('input', function() {
+  S.env.safetyDist = +this.value;
+  document.getElementById('safety-val').textContent = this.value+'m';
+  runValidation();
+});
+document.getElementById('form-alt').addEventListener('input',   function() { document.getElementById('form-alt-val').textContent   = this.value+'m'; });
+document.getElementById('form-scale').addEventListener('input', function() { document.getElementById('form-scale-val').textContent = this.value+'m'; });
+document.getElementById('form-count').addEventListener('input', function() { document.getElementById('form-count-val').textContent = this.value; });
+
+/* ════════════════════════════════════════════════════════
+   DRONE MANAGEMENT
+════════════════════════════════════════════════════════ */
+function addDrone(color, keyframes) {
+  const id = S._did++;
+  const dur = S.proj.duration;
+  const drone = {
+    id, color: color||'#00bfff',
+    keyframes: keyframes || [
+      {t:0,   x:(Math.random()-0.5)*4, y:0.5, z:(Math.random()-0.5)*4},
+      {t:dur, x:(Math.random()-0.5)*4, y:0.5, z:(Math.random()-0.5)*4},
+    ],
+  };
+  S.drones.push(drone);
+  buildMesh(id, drone.color);
+  refreshDroneList();
+  document.getElementById('hud-drones').textContent = S.drones.length;
+  runValidation();
+  return drone;
+}
+
+function removeDrone(id) {
+  const i = S.drones.findIndex(d=>d.id===id);
+  if (i<0) return;
+  removeMesh(id);
+  S.drones.splice(i,1);
+  if (S.selId===id) { S.selId=null; S.selKf=null; }
+  refreshDroneList(); refreshInspector();
+  document.getElementById('hud-drones').textContent = S.drones.length;
+  runValidation();
+}
+
+document.getElementById('add-drone-btn').addEventListener('click', () => {
+  const color = document.getElementById('new-color').value;
+  const d = addDrone(color);
+  S.selId = d.id; S.selKf = null;
+  refreshDroneList(); refreshInspector();
+});
+
+
+/* ════════════════════════════════════════════════════════
+   DRONE LIST UI
+════════════════════════════════════════════════════════ */
+function refreshDroneList() {
+  const list = document.getElementById('drone-list');
+  document.getElementById('drone-count-disp').textContent = S.drones.length;
+  if (!S.drones.length) {
+    list.innerHTML = '<div style="font-size:11px;color:var(--muted);text-align:center;padding:6px 0">No drones — add one or apply a formation.</div>';
+    return;
+  }
+  list.innerHTML = S.drones.map((d,i) => {
+    const sel = S.selId === d.id;
+    const p   = sel ? dronePos(d, S.pb.time) : null;
+    const row = `
+      <div class="drone-row${sel?' active':''}" data-id="${d.id}" style="${sel?'border-radius:8px 8px 0 0;border-bottom-color:rgba(99,102,241,0.22)':'border-radius:6px;margin-bottom:3px'}">
+        <span class="drone-swatch" style="background:${d.color}"></span>
+        <span class="drone-name">Drone ${i+1}</span>
+        <span style="font-size:10px;color:var(--muted);flex:1;text-align:right;padding-right:5px">${d.keyframes.length} kf</span>
+        <span style="font-size:10px;color:var(--muted);margin-right:4px">${sel?'▲':'▼'}</span>
+        <button class="del-btn" data-id="${d.id}" title="Remove drone">×</button>
+      </div>`;
+    if (!sel) return row;
+    const expand = `
+      <div class="drone-expand">
+        <div class="row" style="margin-bottom:7px">
+          <label>LED Color</label>
+          <input type="color" id="insp-color" value="${d.color}" style="width:44px;height:23px;border:none;border-radius:5px;cursor:pointer;padding:1px;background:rgba(255,255,255,0.06);border:1px solid var(--border)">
+          <button class="btn danger sm" id="remove-btn" style="margin-left:auto">✕ Remove</button>
+        </div>
+        <div style="font-size:10px;color:var(--muted);margin-bottom:2px">Live pos @ <b id="insp-time">${S.pb.time.toFixed(1)}</b>s:</div>
+        <div id="insp-pos" style="font-size:12px;font-variant-numeric:tabular-nums;color:var(--fg);margin-bottom:7px">X ${p[0].toFixed(2)}m &nbsp; Y ${p[1].toFixed(2)}m &nbsp; Z ${p[2].toFixed(2)}m</div>
+        <div class="row" style="margin-bottom:10px">
+          <label>Set Alt</label>
+          <input type="number" id="insp-alt" value="${p[1].toFixed(1)}" min="0" max="200" step="0.5" style="width:62px">
+          <button class="btn sm" id="insp-alt-set" style="flex-shrink:0">Set Y</button>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
+          <div class="sec-title" style="margin:0">Keyframes <span id="kf-count" style="color:var(--accent2)">(${d.keyframes.length})</span></div>
+          <div class="btn-row">
+            <button class="btn sm" id="insp-toggle">${S.inspExpanded?'✕ Done':'✏ Edit'}</button>
+            <button class="btn sm" id="kf-add-btn">+ Add</button>
+            <button class="btn danger sm" id="kf-del-btn">Del</button>
+          </div>
+        </div>
+        <div id="kf-list" class="${S.inspExpanded?'':'compact'}"></div>
+        <div id="insp-hint" style="font-size:10px;color:var(--muted);margin-top:6px;line-height:1.5;display:${S.inspExpanded?'none':'block'}">
+          Drag drone in viewport to move XZ. Use Set Y for altitude.
+        </div>
+      </div>`;
+    return row + expand;
+  }).join('');
+
+  // Row clicks — toggle accordion
+  list.querySelectorAll('.drone-row').forEach(el => {
+    el.addEventListener('click', e => {
+      if (e.target.classList.contains('del-btn')) return;
+      const id = +el.dataset.id;
+      if (S.selId === id) { S.selId = null; S.inspExpanded = false; }
+      else { S.selId = id; S.selKf = null; }
+      refreshDroneList();
+    });
+  });
+  list.querySelectorAll('.del-btn').forEach(b => b.addEventListener('click', () => removeDrone(+b.dataset.id)));
+
+  // Wire up expanded panel controls if one is open
+  const drone = S.drones.find(d => d.id === S.selId);
+  if (!drone) return;
+
+  document.getElementById('remove-btn').addEventListener('click', () => removeDrone(drone.id));
+
+  document.getElementById('insp-color').addEventListener('input', function() {
+    drone.color = this.value;
+    updateMeshColor(drone.id, this.value);
+    list.querySelector(`.drone-row[data-id="${drone.id}"] .drone-swatch`).style.background = this.value;
+  });
+
+  document.getElementById('insp-alt-set').addEventListener('click', () => {
+    const newY = +document.getElementById('insp-alt').value;
+    const p = dronePos(drone, S.pb.time);
+    setKf(drone, S.pb.time, p[0], newY, p[2]);
+    refreshKfList(drone);
+  });
+
+  document.getElementById('insp-toggle').addEventListener('click', () => {
+    S.inspExpanded = !S.inspExpanded;
+    document.getElementById('insp-toggle').textContent = S.inspExpanded ? '✕ Done' : '✏ Edit';
+    document.getElementById('insp-hint').style.display = S.inspExpanded ? 'none' : 'block';
+    refreshKfList(drone);
+  });
+
+  document.getElementById('kf-add-btn').addEventListener('click', () => {
+    const p = dronePos(drone, S.pb.time);
+    setKf(drone, S.pb.time, p[0], p[1], p[2]);
+    refreshKfList(drone);
+    document.getElementById('kf-count').textContent = `(${drone.keyframes.length})`;
+  });
+
+  document.getElementById('kf-del-btn').addEventListener('click', () => {
+    if (S.selKf == null || drone.keyframes.length <= 1) return;
+    drone.keyframes.splice(S.selKf, 1); S.selKf = null;
+    refreshKfList(drone);
+    document.getElementById('kf-count').textContent = `(${drone.keyframes.length})`;
+  });
+
+  refreshKfList(drone);
+}
+
+/* ════════════════════════════════════════════════════════
+   INSPECTOR & KEYFRAMES
+════════════════════════════════════════════════════════ */
+// Lightweight live-update — only patches text, never re-renders the list structure
+function refreshInspector() {
+  if (S.selId == null) return;
+  const drone = S.drones.find(d => d.id === S.selId);
+  if (!drone) return;
+  const p = dronePos(drone, S.pb.time);
+  const tEl  = document.getElementById('insp-time');
+  const pEl  = document.getElementById('insp-pos');
+  const aEl  = document.getElementById('insp-alt');
+  if (tEl) tEl.textContent = S.pb.time.toFixed(1);
+  if (pEl) pEl.textContent = `X ${p[0].toFixed(2)}m \u00a0 Y ${p[1].toFixed(2)}m \u00a0 Z ${p[2].toFixed(2)}m`;
+  if (aEl && document.activeElement !== aEl) aEl.value = p[1].toFixed(1);
+}
+
+function refreshKfList(drone) {
+  if (!drone) drone = S.drones.find(d=>d.id===S.selId);
+  if (!drone) return;
+  const list = document.getElementById('kf-list');
+
+  if (!S.inspExpanded) {
+    /* ── COMPACT: clickable read-only rows ── */
+    list.className = 'compact';
+    list.innerHTML = drone.keyframes.map((kf,i) => `
+      <div class="kf-row${i===S.selKf?' active':''}" data-i="${i}">
+        <b>${kf.t.toFixed(2)}s</b> &nbsp;
+        X ${kf.x.toFixed(1)} &nbsp; Y ${kf.y.toFixed(1)} &nbsp; Z ${kf.z.toFixed(1)}
+      </div>
+    `).join('');
+    list.querySelectorAll('.kf-row').forEach(r => r.addEventListener('click', () => {
+      S.selKf = +r.dataset.i;
+      const kf = drone.keyframes[S.selKf];
+      if (kf) { S.pb.time = kf.t; syncSeek(); }
+      refreshKfList(drone);
+    }));
+  } else {
+    /* ── EXPANDED: editable cards per keyframe ── */
+    list.className = '';
+    list.innerHTML = drone.keyframes.map((kf,i) => `
+      <div class="kf-card" data-i="${i}">
+        <div class="kf-card-head">
+          <span class="kf-card-label">KF ${i+1} &mdash; ${kf.t.toFixed(2)}s</span>
+          <button class="btn danger sm kf-card-del" data-i="${i}" style="padding:1px 6px;font-size:13px" title="Delete this keyframe">×</button>
+        </div>
+        <div class="kf-grid">
+          <div class="kf-field">
+            <span class="kf-field-lbl" style="color:#4cc9f0">t</span>
+            <input class="kf-num" type="number" data-i="${i}" data-f="t" value="${kf.t.toFixed(2)}" step="0.1" min="0">
+            <span class="kf-unit">s</span>
+          </div>
+          <div class="kf-field">
+            <span class="kf-field-lbl" style="color:#cc1111">X</span>
+            <input class="kf-num" type="number" data-i="${i}" data-f="x" value="${kf.x.toFixed(2)}" step="0.1">
+            <span class="kf-unit">m</span>
+          </div>
+          <div class="kf-field">
+            <span class="kf-field-lbl" style="color:#119933">Y</span>
+            <input class="kf-num" type="number" data-i="${i}" data-f="y" value="${kf.y.toFixed(2)}" step="0.1" min="0">
+            <span class="kf-unit">m</span>
+          </div>
+          <div class="kf-field">
+            <span class="kf-field-lbl" style="color:#1144cc">Z</span>
+            <input class="kf-num" type="number" data-i="${i}" data-f="z" value="${kf.z.toFixed(2)}" step="0.1">
+            <span class="kf-unit">m</span>
+          </div>
+        </div>
+      </div>
+    `).join('');
+
+    // Live-edit: update keyframe on every change
+    list.querySelectorAll('.kf-num').forEach(inp => {
+      inp.addEventListener('change', () => {
+        const i = +inp.dataset.i, f = inp.dataset.f, v = +inp.value;
+        if (isNaN(v)) return;
+        drone.keyframes[i][f] = v;
+        if (f === 't') {
+          drone.keyframes.sort((a,b) => a.t-b.t);
+          // Update card label without full re-render
+          const card = inp.closest('.kf-card');
+          if (card) card.querySelector('.kf-card-label').textContent = `KF ${i+1} — ${v.toFixed(2)}s`;
+        }
+      });
+    });
+
+    // Per-card delete button
+    list.querySelectorAll('.kf-card-del').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const i = +btn.dataset.i;
+        if (drone.keyframes.length <= 1) return;
+        drone.keyframes.splice(i, 1);
+        refreshKfList(drone);
+        document.getElementById('kf-count').textContent = `(${drone.keyframes.length})`;
+      });
+    });
+  }
+}
+
+// ↑ All inspector event listeners are now bound inside refreshDroneList()
+
+/* ════════════════════════════════════════════════════════
+   APPLY FORMATION
+════════════════════════════════════════════════════════ */
+document.getElementById('apply-form-btn').addEventListener('click', () => {
+  const type  = document.getElementById('form-type').value;
+  const alt   = +document.getElementById('form-alt').value;
+  const scale = +document.getElementById('form-scale').value;
+  const count = +document.getElementById('form-count').value;
+  const t     = S.pb.time;
+
+  // Auto-add drones if needed
+  const color = document.getElementById('new-color').value;
+  while (S.drones.length < count) addDrone(color);
+
+  const positions = makeFormation(type, count, alt, scale);
+  positions.forEach((pos, i) => {
+    if (i < S.drones.length) setKf(S.drones[i], t, pos[0], pos[1], pos[2]);
+  });
+  refreshDroneList(); refreshInspector(); runValidation();
+});
+
+/* ════════════════════════════════════════════════════════
+   VALIDATION
+════════════════════════════════════════════════════════ */
+function runValidation() {
+  const warns = [];
+  const { windSpeed, safetyDist } = S.env;
+  const n = S.drones.length;
+
+  if (!n) { warns.push({t:'warn', msg:'No drones. Add some or apply a formation.'}); }
+  if (windSpeed > 12) warns.push({t:'err',  msg:`Wind ${windSpeed} m/s exceeds safe limit (12 m/s)`});
+  else if (windSpeed > 8) warns.push({t:'warn', msg:`Wind ${windSpeed} m/s — expect noticeable drift`});
+
+  // Sample time points for collision check
+  const SAMPLES = 24;
+  let colls = 0;
+  for (let s = 0; s <= SAMPLES; s++) {
+    const t = (s/SAMPLES)*S.proj.duration;
+    const pos = S.drones.map(d => dronePos(d, t));
+    for (let i = 0; i < pos.length; i++)
+      for (let j = i+1; j < pos.length; j++) {
+        const a=pos[i],b=pos[j];
+        if (Math.hypot(a[0]-b[0],a[1]-b[1],a[2]-b[2]) < safetyDist) colls++;
+      }
+  }
+  if (colls > 0) warns.push({t:'err', msg:`${colls} proximity violation${colls>1?'s':''} detected`});
+  if (!warns.length) warns.push({t:'ok', msg:'All checks passed ✓'});
+
+  document.getElementById('warnings-list').innerHTML =
+    warns.map(w=>`<div class="w-item ${w.t}">${w.msg}</div>`).join('');
+}
+
+/* ════════════════════════════════════════════════════════
+   IMPORT / EXPORT
+════════════════════════════════════════════════════════ */
+document.getElementById('export-btn').addEventListener('click', () => {
+  const data = { metadata:{...S.proj}, environment:{...S.env}, drones: S.drones.map(d=>({...d,keyframes:[...d.keyframes]})) };
+  const url = URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));
+  Object.assign(document.createElement('a'),{href:url,download:(S.proj.name.replace(/\s+/g,'_')||'show')+'.json'}).click();
+  URL.revokeObjectURL(url);
+});
+document.getElementById('import-btn').addEventListener('click', () => document.getElementById('file-input').click());
+document.getElementById('file-input').addEventListener('change', function() {
+  const file = this.files[0]; if (!file) return;
+  new Promise((res,rej)=>{const r=new FileReader();r.onload=e=>res(e.target.result);r.onerror=rej;r.readAsText(file);})
+    .then(txt => {
+      const data = JSON.parse(txt);
+      S.drones.forEach(d=>removeMesh(d.id)); S.drones=[]; S.selId=null; S.selKf=null;
+      if (data.metadata)    Object.assign(S.proj, data.metadata);
+      if (data.environment) Object.assign(S.env,  data.environment);
+      if (data.drones) {
+        S._did = 1;
+        data.drones.forEach(d => {
+          const id = S._did++;
+          S.drones.push({id, color:d.color, keyframes:d.keyframes});
+          buildMesh(id, d.color);
+        });
+      }
+      // Sync UI fields
+      [['proj-name','value',S.proj.name],['proj-dur','value',S.proj.duration],['proj-dur-val','textContent',S.proj.duration+'s'],
+       ['time-total','textContent',S.proj.duration.toFixed(1)],['wind-speed','value',S.env.windSpeed],
+       ['wind-val','textContent',S.env.windSpeed+' m/s'],['wind-dir','value',S.env.windDir],
+       ['wind-dir-val','textContent',S.env.windDir+'°'],['safety-dist','value',S.env.safetyDist],
+       ['safety-val','textContent',S.env.safetyDist+'m'],['hud-drones','textContent',S.drones.length],
+      ].forEach(([id,prop,val]) => { const el=document.getElementById(id); if(el) el[prop]=val; });
+      S.pb.time=0; syncSeek(); refreshDroneList(); refreshInspector(); refreshWindArrow(); runValidation();
+    })
+    .catch(err => alert('Invalid JSON: '+err.message));
+  this.value='';
+});
+document.getElementById('clear-btn').addEventListener('click', () => {
+  if (!confirm('Clear all drones and keyframes?')) return;
+  S.drones.forEach(d=>removeMesh(d.id)); S.drones=[]; S.selId=null; S.selKf=null;
+  S.pb.time=0; S.pb.playing=false;
+  document.getElementById('btn-play').textContent='▶';
+  syncSeek(); refreshDroneList(); refreshInspector(); runValidation();
+  document.getElementById('hud-drones').textContent=0;
+});
+
+/* ════════════════════════════════════════════════════════
+   INIT — default show (20 drones, rainbow colors)
+════════════════════════════════════════════════════════ */
+const N = 20;
+for (let i = 0; i < N; i++) {
+  addDrone(`hsl(${Math.round(i/N*360)},75%,55%)`);
+}
+// Stamp keyframes for a default 5-act show
+[
+  {t:0,  type:'land',   alt:0.5, scale:12},
+  {t:8,  type:'circle', alt:14,  scale:14},
+  {t:16, type:'sphere', alt:18,  scale:10},
+  {t:23, type:'star',   alt:14,  scale:15},
+  {t:30, type:'land',   alt:0.5, scale:12},
+].forEach(({t,type,alt,scale}) => {
+  makeFormation(type, N, alt, scale).forEach((pos, i) => {
+    if (i < S.drones.length) setKf(S.drones[i], t, pos[0], pos[1], pos[2]);
+  });
+});
+
+refreshDroneList();
+runValidation();
+syncSeek();
+</script>
+</body>
+</html>

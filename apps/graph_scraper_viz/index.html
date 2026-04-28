@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Graph HTML Scraper — Visualizer</title>
+  <link rel="icon" type="image/x-icon" href="../../images.ico">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+<div class="page">
+
+  <header class="topbar">
+    <a class="back-btn" href="../../index.html">← Back Home</a>
+    <div class="title-wrap">
+      <h1>Graph HTML Scraper — Visualizer</h1>
+      <p>How do you scrape Craigslist, Kijiji, or eBay without writing XPath selectors?
+         Parse the HTML into a <em>graph</em>, then find the container whose children have the
+         most <em>homogeneous, substantial</em> metadata — that's your listing grid.</p>
+    </div>
+  </header>
+
+  <!-- ── File upload bar ── -->
+  <div class="upload-bar" id="upload-bar">
+    <div class="upload-label">
+      <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="17 8 12 3 7 8"/>
+        <line x1="12" y1="3" x2="12" y2="15"/>
+      </svg>
+      <span class="upload-title">Or upload an HTML file</span>
+      <span class="upload-hint">Drag &amp; drop any .html page here, or</span>
+    </div>
+    <label class="upload-pick-btn" for="html-file-input">
+      Choose file
+      <input type="file" id="html-file-input" accept=".html,.htm,text/html" style="display:none;">
+    </label>
+    <div class="upload-drop-zone" id="upload-drop-zone" aria-label="Drop HTML file here">
+      <span class="drop-zone-text" id="drop-zone-text">Drop .html file anywhere in this bar</span>
+    </div>
+    <div class="upload-status" id="upload-status"></div>
+  </div>
+
+  <div class="layout">
+
+    <!-- ── Left sidebar ── -->
+    <aside class="sidebar-panel">
+
+      <div class="sidebar-section">
+        <h3>What's happening</h3>
+        <p>The algorithm converts HTML into a NetworkX-style directed graph. Every element is a
+           node; its serialized metadata (tag, class, text, attrs) has a character length.
+           It then finds the node whose <em>children</em> have the most consistent,
+           substantial lengths — that node is almost always the listing container.</p>
+      </div>
+
+      <div class="sidebar-section">
+        <h3>Config</h3>
+        <div class="config-row"><span>CHARS_MIN</span><strong>80</strong></div>
+        <div class="config-row"><span>CHARS_MAX</span><strong>800</strong></div>
+        <div class="config-row"><span>MIN_CHILDREN</span><strong>3</strong></div>
+      </div>
+
+      <div class="sidebar-section">
+        <h3>Filter steps</h3>
+        <div id="filter-steps"></div>
+      </div>
+
+      <div class="sidebar-section">
+        <h3>Result</h3>
+        <div id="winner-summary" style="font-size:0.8rem; color:var(--c-winner); font-weight:600; line-height:1.5;"></div>
+      </div>
+
+      <div class="sidebar-section">
+        <h3>Legend</h3>
+        <div class="legend-row"><div class="legend-dot" style="background:var(--c-winner)"></div>Winner</div>
+        <div class="legend-row"><div class="legend-dot" style="background:var(--c-candidate)"></div>Candidate</div>
+        <div class="legend-row"><div class="legend-dot" style="background:var(--c-filtered)"></div>Filtered out</div>
+        <div class="legend-row"><div class="legend-dot" style="background:var(--c-skipped)"></div>Skipped (head/body)</div>
+      </div>
+
+      <button class="regen-btn" id="regen-btn">↺ Regenerate</button>
+
+    </aside>
+
+    <!-- ── Main viz panel ── -->
+    <main class="viz-panel">
+
+      <!-- Section 1: HTML Tree -->
+      <section class="viz-section">
+        <div class="section-header">
+          <span class="section-num">Step 1</span>
+          <div>
+            <h2>HTML → Graph</h2>
+            <p>The page's DOM is parsed into a directed graph. Every element becomes a node with
+               serialized metadata. Color shows its fate in the algorithm.</p>
+          </div>
+        </div>
+        <div class="tree-controls">
+          <button class="tree-btn" id="expand-all-btn">Expand all</button>
+          <button class="tree-btn" id="collapse-all-btn">Collapse all</button>
+        </div>
+        <div id="tree-container"></div>
+      </section>
+
+      <!-- Section 2: vis.js DOM Graph -->
+      <section class="viz-section">
+        <div class="section-header">
+          <span class="section-num">Step 2</span>
+          <div>
+            <h2>DOM as a Graph</h2>
+            <p>Every element is a node; edges connect parent → child. Color shows each node's fate:
+               <span style="color:#22c55e">green = winner</span>,
+               <span style="color:#3b82f6">blue = candidate</span>,
+               <span style="color:#ef4444">red = filtered out</span>,
+               <span style="color:#6b7280">gray = skipped</span>.
+               Node size reflects metadata length.</p>
+          </div>
+        </div>
+        <div id="vis-graph-container" style="width:100%; height:520px; background:#0a0b10; border-radius:8px; border:1px solid #1e2030;"></div>
+      </section>
+
+      <!-- Section 3: Dot Plot -->
+      <section class="viz-section">
+        <div class="section-header">
+          <span class="section-num">Step 3</span>
+          <div>
+            <h2>Candidate Analysis — Children Metadata Lengths</h2>
+            <p>Each row is a candidate node that survived filtering. Each dot is one of its children, plotted at its metadata char length.
+               The shaded band is ±1 std dev around the mean. The listing container stands out: <em>many dots, tightly clustered, at a high value.</em></p>
+          </div>
+        </div>
+        <div class="dot-plot-wrap">
+          <div id="dot-plot-container"></div>
+        </div>
+        <div class="plot-legend">
+          <span>● dot = one child element</span>
+          <span>━ vertical tick = mean (μ)</span>
+          <span>▬ shaded band = ±1 std dev (σ)</span>
+          <span>╌ dashed line = min–max range</span>
+        </div>
+      </section>
+
+      <!-- Section 4: Scoring Table -->
+      <section class="viz-section">
+        <div class="section-header">
+          <span class="section-num">Step 4</span>
+          <div>
+            <h2>Scoring Breakdown</h2>
+            <p>Each of 7 criteria awards 1 point to the best candidate. The node with the most points wins.
+               ★ marks the winner of each criterion.</p>
+          </div>
+        </div>
+        <div id="score-table-container"></div>
+      </section>
+
+      <!-- Section 5: Extracted Results -->
+      <section class="viz-section">
+        <div class="section-header">
+          <span class="section-num">Step 5</span>
+          <div>
+            <h2>Extracted Listings</h2>
+            <p>The winner node's children are the listing cards. Their text fields contain the actual product data —
+               pulled out without writing a single XPath or CSS selector.</p>
+          </div>
+        </div>
+        <div class="extracted-header" id="extracted-header"></div>
+        <div class="cards-grid" id="cards-grid"></div>
+      </section>
+
+    </main>
+  </div>
+</div>
+<script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+<script src="./script.js"></script>
+</body>
+</html>

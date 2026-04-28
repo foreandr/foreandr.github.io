@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>World Data Bundle</title>
+  <link rel="icon" type="image/x-icon" href="../../images.ico">
+  <link rel="stylesheet" href="./styles.css" />
+  <script src="./static/js/three.min.js"></script>
+  <link rel="icon" type="image/x-icon" href="../../images.ico">
+</head>
+
+<body>
+  <!-- Navigation -->
+  <nav class="site-nav">
+    <div class="nav-wrap">
+      <a href="../../index.html" class="nav-brand">← Back to Portfolio</a>
+      <div class="nav-title">World Data Bundle</div>
+    </div>
+  </nav>
+
+  <!-- Globe Container -->
+  <div id="globe-container"></div>
+
+  <!-- Controls Bar -->
+  <div class="controls-bar">
+    <div class="control-item">
+      <span class="control-label">Rotation</span>
+      <label class="switch">
+        <input id="rotation-toggle" type="checkbox" checked />
+        <span class="slider"></span>
+      </label>
+    </div>
+  </div>
+
+  <!-- Left Panel - Dataset Browser -->
+  <div id="left-intelligence-panel" class="side-panel left-panel">
+    <div class="panel-header">
+      <h3>Datasets</h3>
+    </div>
+    
+    <div class="search-container">
+      <input id="data-search" type="text" placeholder="Search datasets..." />
+    </div>
+
+    <div id="folder-system" class="folder-system"></div>
+  </div>
+
+  <!-- Right Panel - Data Display -->
+  <div id="rhs-data-container" class="side-panel right-panel">
+    <div class="panel-header">
+      <h3>Data View</h3>
+    </div>
+
+    <div class="data-section">
+      <div class="data-label">Status</div>
+      <div id="active-stream" class="data-value">IDLE</div>
+    </div>
+
+    <div class="data-section">
+      <div class="data-label">Source</div>
+      <div id="rhs-source" class="data-value secondary">—</div>
+    </div>
+
+    <div class="data-divider"></div>
+
+    <div class="data-section">
+      <div class="data-label">Country</div>
+      <div id="rhs-country" class="data-value">—</div>
+    </div>
+
+    <div id="time-controls" class="data-section">
+      <div class="time-header">
+        <div class="data-label">Time Period</div>
+        <button id="time-play-btn" type="button" title="Play / Pause" disabled>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M8 5v14l11-7z"/>
+          </svg>
+        </button>
+      </div>
+
+      <div id="time-year-label" class="data-value secondary">—</div>
+      <input id="time-slider" type="range" min="0" max="0" step="1" value="0" disabled />
+    </div>
+
+    <div class="data-divider"></div>
+
+    <div class="data-section">
+      <div class="data-label">Value</div>
+      <div id="rhs-value" class="data-value">—</div>
+    </div>
+
+    <div class="data-section">
+      <div class="data-label">Rank</div>
+      <div id="rhs-rank" class="data-value secondary">—</div>
+    </div>
+    <!--
+    <div class="data-section">
+      <div class="data-label">Score</div>
+      <div id="rhs-score" class="data-value secondary">—</div>
+    </div>
+    -->
+  </div>
+
+  <!-- All original scripts in same order -->
+  <script src="./static/js/db_utils.js"></script>
+  <script src="./static/js/dataEngine_01_core.js"></script>
+  <script src="./static/js/dataEngine_02_catalog.js"></script>
+  <script src="./static/js/dataEngine_03_years.js"></script>
+  <script src="./static/js/dataEngine_04_values.js"></script>
+  <script src="./static/js/dataEngine_05_heatmap.js"></script>
+  <script src="./static/js/dataEngine_06_calculate.js"></script>
+  <script src="./static/js/dataEngine_07_sidebar.js"></script>
+  <script src="./static/js/dataEngine.js"></script>
+  <script src="./static/js/globe.js"></script>
+  <script src="./static/datasets/00_manifest.js"></script>
+  <script src="./static/js/main.js"></script>
+</body>
+</html>

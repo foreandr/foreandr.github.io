@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Power Series & Recurrence Relation Deriver</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="./target_constants.js"></script>
+<script defer src="./script.js"></script>
+<link rel="icon" type="image/x-icon" href="../../images.ico">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+
+    onload="renderAll()"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./styles.css">
+
+</head>
+<body>
+<div class="container">
+
+  <div class="top-actions">
+    <a class="btn-secondary" href="../../index.html">Back Home</a>
+  </div>
+
+  <div class="header">
+    <h1>Power Series Recurrence Deriver</h1>
+    <p>Pick a target constant to auto-build an ODE, or enter a first-order linear ODE directly.</p>
+  </div>
+
+  <!-- Reverse engineering card -->
+  <div class="card">
+    <label class="input-label" for="target-constant-trigger">Reverse Engineer ODE from Target Constant</label>
+    <div class="reverse-grid reverse-grid-3">
+      <div>
+        <div class="reverse-label">Target constant K</div>
+        <div class="math-select" id="target-constant-ui">
+          <button type="button" class="eq-input math-select-trigger" id="target-constant-trigger" aria-haspopup="listbox" aria-expanded="false">
+            Loading constants...
+          </button>
+          <div class="math-select-menu hidden" id="target-constant-menu" role="listbox" aria-label="Target constants"></div>
+        </div>
+        <select class="eq-input hidden-native-select" id="target-constant" aria-hidden="true" tabindex="-1">
+          <option value="loading">Loading constants...</option>
+        </select>
+      </div>
+      <div id="target-custom-wrap" class="hidden">
+        <div class="reverse-label">Custom K</div>
+        <input class="eq-input" id="target-custom" type="text" value="3.141592653589793" spellcheck="false">
+      </div>
+      <div id="target-ln-wrap" class="hidden">
+        <div class="reverse-label">n for ln(n)</div>
+        <input class="eq-input" id="target-ln-n" type="text" value="2" spellcheck="false">
+      </div>
+    </div>
+    <div class="reverse-grid reverse-grid-3">
+      <div>
+        <div class="reverse-label">Derivation engine</div>
+        <select class="eq-input" id="derivation-mode">
+          <option value="scaled_first_order">Scaled First-Order</option>
+          <option value="transcendental_higher_order" selected>Transcendental Higher-Order</option>
+        </select>
+      </div>
+      <div>
+        <div class="reverse-label">Target x-value x*</div>
+        <input class="eq-input" id="target-x" type="text" value="1" spellcheck="false">
+      </div>
+      <div>
+        <div class="reverse-label">Initial value a_0</div>
+        <input class="eq-input" id="target-a0" type="text" value="1" spellcheck="false">
+      </div>
+      <div id="ode-mode-cell">
+        <div class="reverse-label">ODE mode</div>
+        <select class="eq-input" id="ode-mode">
+          <option value="canonical" selected>canonical (B=1)</option>
+          <option value="rational_int">creative rational integers</option>
+          <option value="scaled_b">scaled B (custom B)</option>
+        </select>
+      </div>
+    </div>
+    <div class="reverse-grid reverse-grid-3" id="first-order-row">
+      <div id="mode-den-wrap" class="hidden">
+        <div class="reverse-label">Max denominator (rational mode)</div>
+        <input class="eq-input" id="mode-max-den" type="text" value="200" spellcheck="false">
+      </div>
+      <div id="mode-scale-wrap" class="hidden">
+        <div class="reverse-label">B value (scaled mode)</div>
+        <input class="eq-input" id="mode-scale-b" type="text" value="10" spellcheck="false">
+      </div>
+      <div>
+        <div class="reverse-label">Common x-power m</div>
+        <input class="eq-input" id="common-x-power" type="text" value="0" spellcheck="false">
+      </div>
+    </div>
+    <div class="reverse-grid reverse-grid-3" id="gamma-row-main">
+      <div>
+        <div class="reverse-label">Gamma Lift</div>
+        <select class="eq-input" id="gamma-lift-mode">
+          <option value="on" selected>on (hypergeometric)</option>
+          <option value="off">off (pure ODE)</option>
+        </select>
+      </div>
+      <div>
+        <div class="reverse-label">alpha-shifts (comma list)</div>
+        <input class="eq-input" id="gamma-alpha-list" type="text" value="1/2" spellcheck="false">
+      </div>
+      <div>
+        <div class="reverse-label">beta-shifts (comma list)</div>
+        <input class="eq-input" id="gamma-beta-list" type="text" value="3/2" spellcheck="false">
+      </div>
+    </div>
+    <div class="reverse-grid reverse-grid-3" id="gamma-row-scale">
+      <div>
+        <div class="reverse-label">Gamma lift scale c</div>
+        <input class="eq-input" id="gamma-scale" type="text" value="1" spellcheck="false">
+      </div>
+    </div>
+    <button class="btn-primary" onclick="buildODEFromTarget()">Build ODE and Derive</button>
+    <div class="prose" id="reverse-prose"></div>
+    <div class="math-box" id="reverse-math"></div>
+  </div>
+
+  <!-- Input card -->
+  <div class="card">
+    <label class="input-label" for="ode-input">Differential Equation</label>
+    <input class="eq-input" id="ode-input"
+           type="text"
+           value="y' + y = 0"
+           spellcheck="false">
+    <div class="input-hint">
+      Use <code>y'</code> for y&prime; and <code>y</code> for y. Coefficients can be constants or monomials in <code>x</code>.<br>
+      Examples: &nbsp;<code>y' + y = 0</code> &nbsp;|&nbsp; <code>xy' + 10y = 0</code> &nbsp;|&nbsp; <code>x^2y' - 3xy = 0</code>
+    </div>
+    <button class="btn-primary" onclick="derive()">Derive Recurrence Relation</button>
+    <div id="error-box"></div>
+  </div>
+
+  <!-- Output -->
+  <div id="output">
+
+    <div class="card">
+      <div class="step-block">
+        <div class="step-label">Step 1 — Assume a Power Series Solution</div>
+        <div class="prose">We look for a solution of the form of a power series centered at \(x = 0\):</div>
+        <div class="math-box" id="s1-series"></div>
+      </div>
+
+      <hr class="divider">
+
+      <div class="step-block">
+        <div class="step-label">Step 2 — Differentiate Term by Term</div>
+        <div class="prose">Differentiating the series:</div>
+        <div class="math-box" id="s2-deriv"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="step-block">
+        <div class="step-label">Step 3 — Substitute into the ODE</div>
+        <div class="prose" id="s3-prose"></div>
+        <div class="math-box" id="s3-sub"></div>
+      </div>
+
+      <hr class="divider">
+
+      <div class="step-block">
+        <div class="step-label">Step 4 — Re-index to Align Powers of x</div>
+        <div class="prose" id="s4-prose"></div>
+        <div class="math-box" id="s4-reindex"></div>
+      </div>
+
+      <hr class="divider">
+
+      <div class="step-block">
+        <div class="step-label">Step 5 — Set Each Coefficient Equal to Zero</div>
+        <div class="prose">Since the series equals zero for all \(x\), every coefficient of \(x^n\) must vanish:</div>
+        <div class="math-box" id="s5-coeff"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="step-block">
+        <div class="step-label">Step 6 — Recurrence Relation</div>
+        <div class="prose" id="s6-prose"></div>
+        <div class="math-box result" id="s6-result"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="step-block">
+        <div class="step-label">Step 7 - Special Function Forms</div>
+        <div class="prose" id="s7-prose"></div>
+        <div class="math-box result" id="s7-result"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="step-block">
+        <div class="step-label">Step 8 - Final Series Representation</div>
+        <div class="prose" id="s8-prose"></div>
+        <div class="math-box result" id="s8-result"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="step-block">
+        <div class="step-label">Step 9 - Target Constant Closure</div>
+        <div class="prose" id="s9-prose"></div>
+        <div class="math-box result" id="s9-result"></div>
+      </div>
+    </div>
+
+  </div><!-- /output -->
+
+</div><!-- /container -->
+</body>
+</html>

@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Live Arb Feed</title>
+<link rel="icon" type="image/x-icon" href="../../images.ico">
+<style>
+:root {
+  --bg:      #f0f4f8;
+  --panel:   #ffffff;
+  --panel2:  #f8fafc;
+  --border:  #d1dce8;
+  --text:    #0f172a;
+  --muted:   #64748b;
+  --green:   #16a34a;
+  --green-bg: rgba(22,163,74,.1);
+  --green-bd: rgba(22,163,74,.3);
+  --accent:  #ea580c;
+  --accent-bg: rgba(234,88,12,.08);
+  --blue:    #0284c7;
+  --mono:    "JetBrains Mono", ui-monospace, monospace;
+  --sans:    "Segoe UI", system-ui, sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; display: flex; flex-direction: column; font-size: 16px; }
+
+/* topbar */
+.topbar {
+  display: flex; align-items: center; gap: 16px; padding: 0 24px; height: 56px;
+  background: var(--panel); border-bottom: 1px solid var(--border);
+  flex-shrink: 0; position: sticky; top: 0; z-index: 10;
+  box-shadow: 0 1px 4px rgba(0,0,0,.06);
+}
+.back { color: var(--muted); text-decoration: none; font-size: 14px; transition: color .2s; }
+.back:hover { color: var(--accent); }
+.app-title { font-size: 17px; font-weight: 700; }
+.topbar-spacer { flex: 1; }
+.last-scan { font-size: 12px; color: var(--muted); font-family: var(--mono); }
+
+/* load screen */
+.load-screen {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 20px; padding: 48px;
+}
+.load-box {
+  background: var(--panel); border: 2px dashed var(--border); border-radius: 16px;
+  padding: 56px 64px; text-align: center; cursor: pointer; transition: all .2s;
+  position: relative; max-width: 420px; width: 100%;
+  box-shadow: 0 2px 8px rgba(0,0,0,.06);
+}
+.load-box:hover, .load-box.drag { border-color: var(--accent); background: var(--accent-bg); }
+.load-box input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+.load-icon { font-size: 2.8rem; margin-bottom: 14px; }
+.load-box h2 { font-size: 19px; margin-bottom: 8px; color: var(--text); }
+.load-box p  { font-size: 14px; color: var(--muted); }
+.load-hint { font-size: 13px; color: var(--muted); text-align: center; max-width: 420px; line-height: 1.7; }
+.load-hint code { color: var(--accent); font-family: var(--mono); background: var(--panel2); padding: 1px 5px; border-radius: 4px; border: 1px solid var(--border); }
+
+/* main */
+.main { display: none; flex: 1; flex-direction: column; }
+.main.active { display: flex; }
+
+/* filter bar */
+.filter-bar {
+  padding: 12px 24px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  background: var(--panel);
+}
+.filter-label { font-size: 13px; color: var(--muted); white-space: nowrap; font-weight: 500; }
+.filter-btn {
+  background: var(--panel2); border: 1px solid var(--border); color: var(--muted);
+  border-radius: 6px; padding: 6px 14px; font-size: 13px; cursor: pointer; transition: all .15s; font-weight: 500;
+}
+.filter-btn:hover { border-color: var(--accent); color: var(--accent); }
+.filter-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 700; }
+.filter-spacer { flex: 1; }
+.load-new-btn {
+  background: var(--panel2); border: 1px solid var(--border); color: var(--muted);
+  border-radius: 6px; padding: 6px 14px; font-size: 13px; cursor: pointer;
+  transition: all .15s; position: relative; white-space: nowrap; font-weight: 500;
+}
+.load-new-btn input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+.load-new-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* content */
+.content { flex: 1; overflow-y: auto; padding: 24px; }
+.content::-webkit-scrollbar { width: 6px; }
+.content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* explainer banner */
+.explainer {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+  padding: 16px 20px; margin-bottom: 20px; font-size: 14px; color: var(--muted); line-height: 1.7;
+  box-shadow: 0 1px 3px rgba(0,0,0,.04);
+}
+.explainer strong { color: var(--text); }
+
+/* stats */
+.stats-row { display: flex; gap: 14px; margin-bottom: 22px; flex-wrap: wrap; }
+.stat-card {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 12px; padding: 16px 22px; flex: 1; min-width: 130px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.04);
+}
+.stat-card .val { font-size: 26px; font-weight: 700; font-family: var(--mono); }
+.stat-card .lbl { font-size: 12px; color: var(--muted); margin-top: 4px; font-weight: 500; }
+.stat-card.green .val { color: var(--green); }
+.stat-card.accent .val { color: var(--accent); }
+
+/* arb cards */
+.arb-list { display: flex; flex-direction: column; gap: 14px; }
+.arb-card {
+  background: var(--panel); border: 1px solid var(--border);
+  border-left: 4px solid var(--green);
+  border-radius: 12px; overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0,0,0,.06);
+  transition: box-shadow .2s;
+}
+.arb-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,.1); }
+
+/* ── collapsed header ── */
+.arb-head {
+  padding: 16px 20px; cursor: pointer; user-select: none;
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: start;
+  gap: 16px;
+}
+.arb-head:hover { background: #f8fafc; }
+
+.arb-event {
+  font-size: 17px; font-weight: 700;
+  margin-bottom: 5px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.arb-meta {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+  margin-bottom: 10px;
+}
+.sport-badge {
+  background: var(--panel2); border: 1px solid var(--border);
+  border-radius: 5px; padding: 2px 9px; font-size: 12px;
+  font-family: var(--mono); color: var(--muted); font-weight: 600;
+}
+.arb-date { font-size: 13px; color: var(--muted); }
+
+/* bookie display — visible without clicking */
+.bookie-row {
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+}
+.bookie-pill {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--panel2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 5px 12px;
+  font-size: 13px; font-weight: 600;
+}
+.bookie-pill .bk-name { color: var(--text); }
+.bookie-pill .bk-odds { color: var(--accent); font-family: var(--mono); font-size: 14px; font-weight: 700; }
+.bookie-pill .bk-implied { color: var(--muted); font-size: 11px; font-family: var(--mono); }
+.bookie-vs { color: var(--muted); font-size: 13px; font-weight: 600; }
+
+/* right side of header */
+.arb-right {
+  display: flex; flex-direction: column; align-items: flex-end; gap: 6px;
+  flex-shrink: 0;
+}
+.profit-pill {
+  background: var(--green-bg); border: 1px solid var(--green-bd);
+  color: var(--green); border-radius: 20px; padding: 5px 14px;
+  font-size: 15px; font-weight: 700; white-space: nowrap;
+}
+.arb-found { font-size: 11px; color: var(--muted); font-family: var(--mono); }
+.expand-icon { font-size: 13px; color: var(--muted); transition: transform .2s; margin-top: 4px; }
+.arb-card.open .expand-icon { transform: rotate(180deg); }
+
+/* expanded body */
+.arb-body { display: none; border-top: 1px solid var(--border); padding: 20px; background: var(--panel2); }
+.arb-card.open .arb-body { display: block; }
+
+.how-to { font-size: 14px; color: var(--muted); margin-bottom: 14px; line-height: 1.6; }
+.how-to strong { color: var(--text); }
+
+.legs-grid { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+.leg-row {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 10px; padding: 14px 16px;
+  display: flex; align-items: center; gap: 14px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.04);
+}
+.leg-number {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--accent); color: #fff; font-weight: 700; font-size: 13px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.leg-info { flex: 1; min-width: 0; }
+.leg-action { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
+.leg-action .outcome { color: var(--text); }
+.leg-action .book-name { color: var(--accent); }
+.leg-odds-wrap { text-align: right; flex-shrink: 0; }
+.leg-decimal { font-size: 20px; font-weight: 700; font-family: var(--mono); color: var(--text); display: block; }
+.leg-american { font-size: 12px; color: var(--muted); font-family: var(--mono); display: block; }
+
+/* calculator */
+.calc-box {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 12px; padding: 16px 18px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.04);
+}
+.calc-title { font-size: 15px; font-weight: 700; margin-bottom: 14px; }
+.calc-input-row { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+.calc-input-label { font-size: 14px; color: var(--muted); }
+.calc-input {
+  background: var(--panel2); border: 1px solid var(--border); color: var(--text);
+  border-radius: 8px; padding: 9px 14px; font-size: 20px; font-family: var(--mono);
+  font-weight: 700; width: 140px; outline: none; transition: border-color .15s;
+}
+.calc-input:focus { border-color: var(--accent); }
+.calc-legs { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.calc-leg-row {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 14px; padding: 7px 0; border-bottom: 1px solid var(--border);
+}
+.calc-leg-row:last-child { border-bottom: none; }
+.calc-leg-label { color: var(--muted); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 8px; }
+.calc-leg-stake { color: var(--accent); font-weight: 700; font-family: var(--mono); white-space: nowrap; font-size: 15px; }
+.calc-result {
+  background: var(--green-bg); border: 1px solid var(--green-bd);
+  border-radius: 10px; padding: 14px 16px; text-align: center;
+}
+.calc-result-label { font-size: 13px; color: var(--muted); margin-bottom: 5px; }
+.calc-result-profit { font-size: 30px; font-weight: 700; color: var(--green); font-family: var(--mono); }
+.calc-result-sub { font-size: 13px; color: var(--muted); margin-top: 5px; }
+
+/* empty */
+.empty-msg { color: var(--muted); font-size: 15px; text-align: center; padding: 60px; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a class="back" href="../../index.html">← Back</a>
+  <span class="app-title">📡 Live Arb Feed</span>
+  <div class="topbar-spacer"></div>
+  <span class="last-scan" id="lastScan"></span>
+</div>
+
+<div class="load-screen" id="loadScreen">
+  <div class="load-box" id="loadBox">
+    <input type="file" accept=".json" id="fileInput">
+    <div class="load-icon">📂</div>
+    <h2>Load your scan results</h2>
+    <p>Drop <strong>arbitrages.json</strong> here, or click to browse</p>
+  </div>
+  <p class="load-hint">
+    First time? Run <code>python scan.py</code> inside the <code>found_arbitrages</code> folder to generate the file, then load it here.
+  </p>
+</div>
+
+<div class="main" id="mainView">
+
+  <div class="filter-bar">
+    <span class="filter-label">Sport:</span>
+    <button class="filter-btn active" data-sport="all">All</button>
+    <div id="sportFilters"></div>
+    <div class="filter-spacer"></div>
+    <div class="load-new-btn">
+      <input type="file" accept=".json" id="fileInputNew"> Load new file
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="explainer">
+      <strong>What is this?</strong> An arbitrage means the bookmakers' odds don't agree — so you can bet on <em>every possible outcome</em> across different sites and be <strong>guaranteed to make money no matter who wins</strong>. Click any row to see exactly where to bet and how much.
+    </div>
+    <div class="stats-row" id="statsRow"></div>
+    <div class="arb-list" id="arbList"></div>
+  </div>
+</div>
+
+<script>
+let allArbs = [], scanData = null, filterSport = 'all';
+
+const loadScreen   = document.getElementById('loadScreen');
+const loadBox      = document.getElementById('loadBox');
+const fileInput    = document.getElementById('fileInput');
+const fileInputNew = document.getElementById('fileInputNew');
+const mainView     = document.getElementById('mainView');
+const lastScan     = document.getElementById('lastScan');
+const sportFilters = document.getElementById('sportFilters');
+const statsRow     = document.getElementById('statsRow');
+const arbList      = document.getElementById('arbList');
+
+// ── Odds helpers ──────────────────────────────────────────────────────────────
+function toDecimal(o) {
+  if (typeof o === 'string') {
+    o = o.trim();
+    if (o.startsWith('+')) return 1 + parseInt(o) / 100;
+    if (o.startsWith('-')) return 1 + 100 / Math.abs(parseInt(o));
+  }
+  if (Number.isInteger(o) && Math.abs(o) >= 100) {
+    return o > 0 ? 1 + o / 100 : 1 + 100 / Math.abs(o);
+  }
+  return parseFloat(o);
+}
+
+function toAmerican(dec) {
+  if (dec >= 2.0) return '+' + Math.round((dec - 1) * 100);
+  return '-' + Math.round(100 / (dec - 1));
+}
+
+function fmtPct(v) { return (v * 100).toFixed(1) + '%'; }
+
+// ── File loading ──────────────────────────────────────────────────────────────
+function loadJson(text) {
+  try {
+    const data = JSON.parse(text);
+    if (!data.arbs) throw new Error('Not a valid scan file (missing "arbs").');
+    scanData = data;
+    allArbs  = data.arbs.filter(a => a.net_pct > 0);
+    allArbs.forEach(a => {
+      Object.values(a.legs).forEach(leg => { leg.odds = toDecimal(leg.odds); });
+    });
+    renderAll();
+    loadScreen.style.display = 'none';
+    mainView.classList.add('active');
+  } catch (e) { alert('Could not read file: ' + e.message); }
+}
+
+function readFile(f) {
+  if (!f) return;
+  const r = new FileReader();
+  r.onload = e => loadJson(e.target.result);
+  r.readAsText(f);
+}
+
+fileInput.addEventListener('change', () => readFile(fileInput.files[0]));
+fileInputNew.addEventListener('change', () => readFile(fileInputNew.files[0]));
+loadBox.addEventListener('dragover', e => { e.preventDefault(); loadBox.classList.add('drag'); });
+loadBox.addEventListener('dragleave', () => loadBox.classList.remove('drag'));
+loadBox.addEventListener('drop', e => { e.preventDefault(); loadBox.classList.remove('drag'); readFile(e.dataTransfer.files[0]); });
+
+fetch('./arbitrages.json')
+  .then(r => { if (!r.ok) throw 0; return r.text(); })
+  .then(loadJson).catch(() => {});
+
+// ── Filters ───────────────────────────────────────────────────────────────────
+function setFilterSport(s) {
+  filterSport = s;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.dataset.sport === s));
+  renderArbs();
+}
+
+// ── Render ────────────────────────────────────────────────────────────────────
+function renderAll() {
+  lastScan.textContent = scanData.last_scanned ? 'Last scan: ' + scanData.last_scanned : '';
+  const sports = [...new Set(allArbs.map(a => a.sport))].sort();
+  sportFilters.innerHTML = '';
+  sports.forEach(s => {
+    const b = document.createElement('button');
+    b.className = 'filter-btn'; b.dataset.sport = s; b.textContent = s;
+    b.addEventListener('click', () => setFilterSport(s));
+    sportFilters.appendChild(b);
+  });
+  renderArbs();
+}
+
+function renderArbs() {
+  let arbs = [...allArbs];
+  if (filterSport !== 'all') arbs = arbs.filter(a => a.sport === filterSport);
+
+  const best  = arbs.length ? Math.max(...arbs.map(a => a.net_pct)) : 0;
+  const scans = (scanData.scan_history || []).length;
+
+  statsRow.innerHTML = `
+    <div class="stat-card green">
+      <div class="val">${arbs.length}</div>
+      <div class="lbl">Opportunities found</div>
+    </div>
+    <div class="stat-card accent">
+      <div class="val">${best > 0 ? '+' + (best*100).toFixed(2) + '%' : '—'}</div>
+      <div class="lbl">Best profit margin</div>
+    </div>
+    <div class="stat-card">
+      <div class="val">${scans}</div>
+      <div class="lbl">Times scanned</div>
+    </div>`;
+
+  if (!arbs.length) {
+    arbList.innerHTML = '<div class="empty-msg">No opportunities found yet.<br>Run <code style="color:var(--accent)">python scan.py</code> and load the file.</div>';
+    return;
+  }
+
+  arbList.innerHTML = '';
+  [...arbs].reverse().forEach(a => arbList.appendChild(buildCard(a)));
+}
+
+// ── Card builder ──────────────────────────────────────────────────────────────
+function buildCard(a) {
+  const card = document.createElement('div');
+  card.className = 'arb-card';
+
+  const outcomes  = Object.keys(a.legs);
+  const oddsArr   = outcomes.map(o => a.legs[o].odds);
+  const impArr    = oddsArr.map(o => 1 / o);
+  const impSum    = impArr.reduce((s, v) => s + v, 0);
+  const profitPct = (a.net_pct * 100).toFixed(2);
+
+  // Bookie pills — shown without clicking
+  const bookiePillsHtml = outcomes.map((o, i) => {
+    const leg = a.legs[o];
+    const imp = (impArr[i] * 100).toFixed(1);
+    return `<div class="bookie-pill">
+      <span class="bk-name">${leg.book}</span>
+      <span class="bk-odds">${leg.odds.toFixed(3)}</span>
+      <span class="bk-implied">${imp}%</span>
+    </div>`;
+  });
+  const bookiesHtml = bookiePillsHtml.join('<span class="bookie-vs">vs</span>');
+
+  // Expanded leg rows
+  const legRowsHtml = outcomes.map((o, i) => {
+    const leg = a.legs[o];
+    return `<div class="leg-row">
+      <div class="leg-number">${i + 1}</div>
+      <div class="leg-info">
+        <div class="leg-action">Bet <span class="outcome">"${o}"</span> at <span class="book-name">${leg.book}</span></div>
+      </div>
+      <div class="leg-odds-wrap">
+        <span class="leg-decimal">${leg.odds.toFixed(3)}</span>
+        <span class="leg-american">${toAmerican(leg.odds)} American</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  card.innerHTML = `
+    <div class="arb-head">
+      <div class="arb-left">
+        <div class="arb-event">${a.event}</div>
+        <div class="arb-meta">
+          <span class="sport-badge">${a.sport}</span>
+          <span class="arb-date">📅 ${a.commence}</span>
+        </div>
+        <div class="bookie-row">${bookiesHtml}</div>
+      </div>
+      <div class="arb-right">
+        <div class="profit-pill">✅ +${profitPct}%</div>
+        ${a.found_at ? `<div class="arb-found">Found ${a.found_at}</div>` : ''}
+      </div>
+      <span class="expand-icon">▾</span>
+    </div>
+    <div class="arb-body">
+      <p class="how-to">
+        <strong>Place all ${outcomes.length} bets below at the same time.</strong>
+        No matter who wins, you walk away with more than you put in.
+      </p>
+      <div class="legs-grid">${legRowsHtml}</div>
+      <div class="calc-box">
+        <div class="calc-title">💰 How much will you make?</div>
+        <div class="calc-input-row">
+          <span class="calc-input-label">I want to invest $</span>
+          <input class="calc-input" type="number" min="1" value="100">
+          <span class="calc-input-label">total</span>
+        </div>
+        <div class="calc-legs"></div>
+        <div class="calc-result"></div>
+      </div>
+    </div>`;
+
+  card.querySelector('.arb-head').addEventListener('click', () => card.classList.toggle('open'));
+
+  const input    = card.querySelector('.calc-input');
+  const calcLegs = card.querySelector('.calc-legs');
+  const calcRes  = card.querySelector('.calc-result');
+
+  function calc() {
+    const total = parseFloat(input.value) || 0;
+    if (total <= 0) { calcLegs.innerHTML = ''; calcRes.innerHTML = ''; return; }
+    const stakes    = impArr.map(imp => (imp / impSum) * total);
+    const returns   = stakes.map((s, i) => s * oddsArr[i]);
+    const guaranteed = returns.reduce((a, b) => a + b) / returns.length;
+    const profit    = guaranteed - total;
+    calcLegs.innerHTML = outcomes.map((o, i) =>
+      `<div class="calc-leg-row">
+        <span class="calc-leg-label">Bet "${o}" @ ${a.legs[o].book}</span>
+        <span class="calc-leg-stake">$${stakes[i].toFixed(2)}</span>
+      </div>`
+    ).join('');
+    calcRes.innerHTML = `
+      <div class="calc-result-label">No matter who wins, your guaranteed profit is:</div>
+      <div class="calc-result-profit">+$${profit.toFixed(2)}</div>
+      <div class="calc-result-sub">You put in $${total.toFixed(2)} → you get back $${guaranteed.toFixed(2)}</div>`;
+  }
+
+  input.addEventListener('input', calc);
+  calc();
+  return card;
+}
+</script>
+</body>
+</html>

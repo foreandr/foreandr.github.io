@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EM Waves — Electromagnetic Wave Visualizer</title>
+  <link rel="icon" type="image/x-icon" href="../../images.ico">
+  <style>
+    :root {
+      --bg:#0d1117; --bg2:#161b22; --bg3:#21262d; --bdr:#30363d;
+      --txt:#e6edf3; --mu:#8b949e;
+      --E:#ff6b6b; --B:#58a6ff; --k:#3fb950; --pu:#bc8cff; --ye:#e3b341; --or:#f78166;
+      --panel-w:260px;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font-family:"IBM Plex Mono","Fira Code",monospace}
+
+    /* TOPBAR */
+    #topbar{
+      display:flex;align-items:center;gap:10px;padding:0 12px;height:42px;
+      background:var(--bg2);border-bottom:1px solid var(--bdr);flex-shrink:0;
+    }
+    .topname{font-size:.82rem;font-weight:700;letter-spacing:.06em;color:var(--pu)}
+    .vsep{width:1px;height:20px;background:var(--bdr)}
+    .tctl{display:flex;align-items:center;gap:6px}
+    .tctl label{font-size:.67rem;color:var(--mu)}
+    button.tb{background:var(--bg3);border:1px solid var(--bdr);color:var(--txt);border-radius:5px;padding:3px 10px;font-size:.7rem;font-family:inherit;cursor:pointer;white-space:nowrap;transition:background .15s}
+    button.tb:hover{background:var(--bdr)}
+    button.tb.on{background:var(--pu);color:#000;border-color:var(--pu)}
+    select{background:var(--bg3);border:1px solid var(--bdr);color:var(--txt);border-radius:4px;padding:2px 6px;font-size:.7rem;font-family:inherit;cursor:pointer}
+    #panel-toggle{background:var(--bg3);border:1px solid var(--bdr);color:var(--txt);border-radius:5px;padding:3px 9px;font-size:.75rem;cursor:pointer;font-family:inherit;flex-shrink:0}
+    #panel-toggle:hover{background:var(--bdr)}
+    #panel-toggle.open{background:var(--pu);border-color:var(--pu);color:#000}
+
+    /* LAYOUT */
+    #workspace{display:flex;flex:1;height:calc(100vh - 42px)}
+
+    /* LEFT PANEL */
+    #lpanel{
+      width:var(--panel-w);flex-shrink:0;background:var(--bg2);border-right:1px solid var(--bdr);
+      display:flex;flex-direction:column;overflow:hidden;transition:width .2s ease;
+    }
+    #lpanel.closed{width:0;border-right:none}
+    #lpanel-inner{width:var(--panel-w);flex:1;overflow-y:auto;overflow-x:hidden}
+
+    .sec{padding:9px 11px;border-bottom:1px solid var(--bdr)}
+    .sec-title{font-size:.62rem;color:var(--pu);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;font-weight:700}
+    .row{display:flex;align-items:center;gap:5px;margin-bottom:5px}
+    .row label{font-size:.65rem;color:var(--mu);flex-shrink:0;width:50px}
+    .row input[type=range]{flex:1;accent-color:var(--pu)}
+    .row .val{font-size:.65rem;color:var(--txt);min-width:40px;text-align:right}
+    .row select{flex:1}
+    .row button{flex:1;background:var(--bg3);border:1px solid var(--bdr);color:var(--txt);border-radius:4px;padding:4px;font-size:.65rem;font-family:inherit;cursor:pointer}
+    .row button:hover{background:var(--bdr)}
+    .row button.on{background:var(--pu);color:#000;border-color:var(--pu)}
+
+    /* SPECTRUM BAR */
+    .spectrum-bar{
+      height:18px;border-radius:3px;margin:5px 0;
+      background:linear-gradient(to right,#ff0000,#ff7700,#ffff00,#00ff00,#0000ff,#8b00ff);
+      position:relative;cursor:pointer;border:1px solid var(--bdr);
+    }
+    .spectrum-needle{
+      position:absolute;top:0;bottom:0;width:2px;background:#fff;transform:translateX(-50%);pointer-events:none;
+    }
+    .spectrum-labels{display:flex;justify-content:space-between;font-size:.55rem;color:var(--mu);margin-top:2px}
+
+    /* LEGEND */
+    .legend{display:flex;flex-direction:column;gap:4px;padding:9px 11px}
+    .leg-row{display:flex;align-items:center;gap:7px;font-size:.67rem}
+    .leg-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+
+    /* MAIN CANVAS AREA */
+    #main{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative}
+    #canvas3d{display:block;width:100%;height:100%}
+
+    /* INFO OVERLAY */
+    #info-overlay{
+      position:absolute;top:10px;right:12px;background:rgba(22,27,34,.85);
+      border:1px solid var(--bdr);border-radius:8px;padding:10px 14px;
+      font-size:.68rem;line-height:1.8;min-width:180px;
+      pointer-events:none;
+    }
+    #info-overlay span{color:var(--mu)}
+    #info-overlay strong{color:var(--txt)}
+
+    /* SPECTRUM SECTION BELOW CANVAS */
+    #spectrum-strip{
+      height:56px;background:var(--bg2);border-top:1px solid var(--bdr);
+      display:flex;align-items:center;padding:0 16px;gap:12px;flex-shrink:0;
+    }
+    .strip-label{font-size:.65rem;color:var(--mu);white-space:nowrap}
+    .strip-bar{
+      flex:1;height:22px;border-radius:4px;cursor:pointer;
+      background:linear-gradient(to right,
+        #9b59b6 0%,       /* gamma */
+        #8e44ad 5%,       /* x-ray */
+        #7d3c98 9%,       /* UV */
+        #7b68ee 12%,      /* near UV */
+        #6495ed 16%,      /* violet */
+        #4169e1 18%,      /* indigo */
+        #0000ff 20%,      /* blue */
+        #00ff00 24%,      /* green */
+        #ffff00 28%,      /* yellow */
+        #ff7f00 31%,      /* orange */
+        #ff0000 35%,      /* red */
+        #cc0000 40%,      /* near IR */
+        #880000 55%,      /* IR */
+        #550000 70%,      /* microwave */
+        #330000 85%,      /* radio */
+        #111111 100%      /* long radio */
+      );
+      border:1px solid var(--bdr);position:relative;
+    }
+    .strip-needle{
+      position:absolute;top:-4px;bottom:-4px;width:3px;background:#fff;border-radius:2px;
+      transform:translateX(-50%);pointer-events:none;box-shadow:0 0 6px rgba(255,255,255,.7);
+    }
+    .strip-regions{display:flex;position:absolute;top:0;left:0;right:0;bottom:0;font-size:.5rem;color:rgba(255,255,255,.5);align-items:center}
+    .strip-region{flex:1;text-align:center;white-space:nowrap;overflow:hidden;padding:0 2px}
+  </style>
+</head>
+<body>
+  <!-- TOPBAR -->
+  <div id="topbar">
+    <button id="panel-toggle" class="open">▣ Panel</button>
+    <div class="vsep"></div>
+    <span class="topname">⚡ EM WAVES</span>
+    <div class="vsep"></div>
+    <div class="tctl">
+      <button class="tb on" id="btn-play">▶ Play</button>
+    </div>
+    <div class="tctl">
+      <label>View</label>
+      <select id="sel-view">
+        <option value="3d">3D Perspective</option>
+        <option value="efield">E-Field Cross-Section</option>
+        <option value="bfield">B-Field Cross-Section</option>
+        <option value="both">E+B Overlay</option>
+      </select>
+    </div>
+    <div class="tctl">
+      <label>Pol.</label>
+      <select id="sel-pol">
+        <option value="linear-x">Linear X</option>
+        <option value="linear-y">Linear Y</option>
+        <option value="circular-r">Circular R</option>
+        <option value="circular-l">Circular L</option>
+        <option value="elliptical">Elliptical</option>
+      </select>
+    </div>
+    <div class="tctl">
+      <button class="tb" id="btn-show-vectors">Vectors</button>
+      <button class="tb on" id="btn-show-wave">Wave</button>
+    </div>
+  </div>
+
+  <div id="workspace">
+    <!-- LEFT PANEL -->
+    <div id="lpanel">
+      <div id="lpanel-inner">
+
+        <div class="sec">
+          <div class="sec-title">Wave Properties</div>
+          <div class="row">
+            <label>Freq.</label>
+            <input type="range" id="sl-freq" min="0" max="100" value="50" step="0.5">
+            <span class="val" id="val-freq"></span>
+          </div>
+          <div class="row">
+            <label>Amp.</label>
+            <input type="range" id="sl-amp" min="5" max="100" value="60" step="1">
+            <span class="val" id="val-amp"></span>
+          </div>
+          <div class="row">
+            <label>Speed</label>
+            <input type="range" id="sl-speed" min="0.1" max="5" value="1" step="0.05">
+            <span class="val" id="val-speed"></span>
+          </div>
+          <div class="row">
+            <label>λ count</label>
+            <input type="range" id="sl-waves" min="1" max="6" value="3" step="0.5">
+            <span class="val" id="val-waves"></span>
+          </div>
+        </div>
+
+        <div class="sec">
+          <div class="sec-title">EM Spectrum</div>
+          <div class="spectrum-bar" id="spec-bar">
+            <div class="spectrum-needle" id="spec-needle"></div>
+          </div>
+          <div class="spectrum-labels">
+            <span>Gamma</span><span>UV</span><span>Vis</span><span>IR</span><span>Radio</span>
+          </div>
+          <div class="row" style="margin-top:6px">
+            <label style="width:auto;flex:1;color:var(--txt)" id="spec-name">Visible Light</label>
+          </div>
+          <div class="row">
+            <label>λ</label>
+            <span class="val" style="text-align:left;color:var(--ye)" id="spec-lambda"></span>
+          </div>
+          <div class="row">
+            <label>f</label>
+            <span class="val" style="text-align:left;color:var(--ye)" id="spec-freq-disp"></span>
+          </div>
+          <div class="row">
+            <label>E</label>
+            <span class="val" style="text-align:left;color:var(--ye)" id="spec-energy"></span>
+          </div>
+        </div>
+
+        <div class="sec">
+          <div class="sec-title">Presets</div>
+          <div class="row">
+            <button id="pre-radio">📻 Radio</button>
+            <button id="pre-micro">〰 Microwave</button>
+          </div>
+          <div class="row">
+            <button id="pre-ir">🔴 Infrared</button>
+            <button id="pre-vis">🌈 Visible</button>
+          </div>
+          <div class="row">
+            <button id="pre-uv">🔵 UV</button>
+            <button id="pre-xray">☢ X-Ray</button>
+          </div>
+        </div>
+
+        <div class="sec">
+          <div class="sec-title">Display</div>
+          <div class="row">
+            <label>E col.</label>
+            <button id="btn-e-toggle" class="on">E-Field</button>
+          </div>
+          <div class="row">
+            <label>B col.</label>
+            <button id="btn-b-toggle" class="on">B-Field</button>
+          </div>
+          <div class="row">
+            <label>Grid</label>
+            <button id="btn-grid" class="on">Grid</button>
+          </div>
+          <div class="row">
+            <label>Glow</label>
+            <button id="btn-glow" class="on">Glow</button>
+          </div>
+          <div class="row">
+            <label>3D rot.</label>
+            <input type="range" id="sl-rot" min="-60" max="60" value="20" step="1">
+            <span class="val" id="val-rot">20°</span>
+          </div>
+          <div class="row">
+            <label>Tilt</label>
+            <input type="range" id="sl-tilt" min="5" max="60" value="28" step="1">
+            <span class="val" id="val-tilt">28°</span>
+          </div>
+        </div>
+
+        <div class="legend">
+          <div class="sec-title">Legend</div>
+          <div class="leg-row"><div class="leg-dot" style="background:var(--E)"></div><span>E-field (electric)</span></div>
+          <div class="leg-row"><div class="leg-dot" style="background:var(--B)"></div><span>B-field (magnetic)</span></div>
+          <div class="leg-row"><div class="leg-dot" style="background:var(--k)"></div><span>k (propagation)</span></div>
+          <div class="leg-row" style="margin-top:4px;font-size:.6rem;color:var(--mu)">E ⊥ B ⊥ k always</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- MAIN CANVAS -->
+    <div id="main">
+      <canvas id="canvas3d"></canvas>
+      <div id="info-overlay">
+        <span>Frequency:</span> <strong id="ov-freq">—</strong><br>
+        <span>Wavelength:</span> <strong id="ov-lambda">—</strong><br>
+        <span>Period:</span> <strong id="ov-period">—</strong><br>
+        <span>E-field amp:</span> <strong id="ov-eamp">—</strong><br>
+        <span>B-field amp:</span> <strong id="ov-bamp">—</strong><br>
+        <span>Polarization:</span> <strong id="ov-pol">Linear X</strong>
+      </div>
+
+      <!-- SPECTRUM STRIP -->
+      <div id="spectrum-strip">
+        <span class="strip-label">EM Spectrum</span>
+        <div class="strip-bar" id="strip-bar">
+          <div class="strip-regions">
+            <div class="strip-region">γ</div>
+            <div class="strip-region">X-ray</div>
+            <div class="strip-region">UV</div>
+            <div class="strip-region">Vis</div>
+            <div class="strip-region">IR</div>
+            <div class="strip-region">Microwave</div>
+            <div class="strip-region">Radio</div>
+          </div>
+          <div class="strip-needle" id="strip-needle"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+<script>
+// ─── State ──────────────────────────────────────────────────────────────────
+const state = {
+  playing: true,
+  t: 0,
+  freq: 50,       // 0-100 slider, mapped to visual frequency
+  amp: 60,
+  speed: 1,
+  waves: 3,
+  rot: 20,        // degrees azimuth
+  tilt: 28,       // degrees elevation
+  polarization: 'linear-x',
+  showE: true,
+  showB: true,
+  showGrid: true,
+  showGlow: true,
+  showVectors: false,
+  showWave: true,
+  view: '3d',
+  specPos: 0.5,   // 0=gamma 1=radio
+};
+
+// ─── Canvas setup ────────────────────────────────────────────────────────────
+const canvas = document.getElementById('canvas3d');
+const ctx = canvas.getContext('2d');
+
+function resize() {
+  const main = document.getElementById('main');
+  canvas.width = main.clientWidth;
+  canvas.height = main.clientHeight - 56; // minus spectrum strip
+}
+window.addEventListener('resize', resize);
+resize();
+
+// ─── 3D projection ───────────────────────────────────────────────────────────
+function project(x, y, z, rotDeg, tiltDeg) {
+  const rot = rotDeg * Math.PI / 180;
+  const tilt = tiltDeg * Math.PI / 180;
+  // Rotate around Z axis (azimuth)
+  const xr = x * Math.cos(rot) - y * Math.sin(rot);
+  const yr = x * Math.sin(rot) + y * Math.cos(rot);
+  const zr = z;
+  // Rotate around X axis (elevation)
+  const xe = xr;
+  const ye = yr * Math.cos(tilt) - zr * Math.sin(tilt);
+  const ze = yr * Math.sin(tilt) + zr * Math.cos(tilt);
+  // Perspective
+  const fov = 600;
+  const pz = ze + fov;
+  const px = xe * fov / pz + canvas.width / 2;
+  const py = -ye * fov / pz + canvas.height / 2;
+  return [px, py, ze];
+}
+
+// ─── Draw arrow ──────────────────────────────────────────────────────────────
+function drawArrow3D(ox, oy, oz, dx, dy, dz, color, width, glow, rotDeg, tiltDeg) {
+  const [px1, py1] = project(ox, oy, oz, rotDeg, tiltDeg);
+  const [px2, py2] = project(ox + dx, oy + dy, oz + dz, rotDeg, tiltDeg);
+
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = width;
+  if (glow) {
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 8;
+  }
+  ctx.beginPath();
+  ctx.moveTo(px1, py1);
+  ctx.lineTo(px2, py2);
+  ctx.stroke();
+
+  // Arrowhead
+  const angle = Math.atan2(py2 - py1, px2 - px1);
+  const len = 8;
+  ctx.beginPath();
+  ctx.moveTo(px2, py2);
+  ctx.lineTo(px2 - len * Math.cos(angle - 0.4), py2 - len * Math.sin(angle - 0.4));
+  ctx.moveTo(px2, py2);
+  ctx.lineTo(px2 - len * Math.cos(angle + 0.4), py2 - len * Math.sin(angle + 0.4));
+  ctx.stroke();
+  ctx.restore();
+}
+
+// ─── Draw wave curve ─────────────────────────────────────────────────────────
+function drawWaveCurve3D(axis, color, points, width, glow, rotDeg, tiltDeg) {
+  if (points.length < 2) return;
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = width;
+  if (glow) {
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 12;
+  }
+  ctx.beginPath();
+  const [sx, sy] = project(points[0][0], points[0][1], points[0][2], rotDeg, tiltDeg);
+  ctx.moveTo(sx, sy);
+  for (let i = 1; i < points.length; i++) {
+    const [px, py] = project(points[i][0], points[i][1], points[i][2], rotDeg, tiltDeg);
+    ctx.lineTo(px, py);
+  }
+  ctx.stroke();
+  ctx.restore();
+}
+
+// ─── EM Spectrum data ─────────────────────────────────────────────────────────
+const spectrumBands = [
+  { name: 'Gamma Ray',   lambdaMin: 1e-13, lambdaMax: 1e-11 },
+  { name: 'X-Ray',       lambdaMin: 1e-11, lambdaMax: 1e-8  },
+  { name: 'Ultraviolet', lambdaMin: 1e-8,  lambdaMax: 4e-7  },
+  { name: 'Visible',     lambdaMin: 4e-7,  lambdaMax: 7e-7  },
+  { name: 'Infrared',    lambdaMin: 7e-7,  lambdaMax: 1e-3  },
+  { name: 'Microwave',   lambdaMin: 1e-3,  lambdaMax: 0.1   },
+  { name: 'Radio',       lambdaMin: 0.1,   lambdaMax: 1e4   },
+];
+
+// Logarithmic mapping: pos 0=gamma(1e-13), pos 1=radio(1e4)
+const logMin = Math.log10(1e-13);
+const logMax = Math.log10(1e4);
+function posToLambda(pos) {
+  return Math.pow(10, logMin + pos * (logMax - logMin));
+}
+function lambdaToPos(lambda) {
+  return (Math.log10(lambda) - logMin) / (logMax - logMin);
+}
+function lambdaToFreq(lambda) { return 3e8 / lambda; }
+function freqToEnergy(f) { return 6.626e-34 * f; }
+function formatSI(val, unit) {
+  if (val === 0) return '0 ' + unit;
+  const exp = Math.floor(Math.log10(Math.abs(val)));
+  const prefixes = {'-15':'f','-12':'p','-9':'n','-6':'µ','-3':'m','0':'','3':'k','6':'M','9':'G','12':'T','15':'P'};
+  const e3 = Math.floor(exp / 3) * 3;
+  const key = String(e3);
+  const prefix = prefixes[key] !== undefined ? prefixes[key] : ('e'+e3);
+  return (val / Math.pow(10, e3)).toPrecision(3) + ' ' + prefix + unit;
+}
+
+function getBandName(lambda) {
+  for (const b of spectrumBands) {
+    if (lambda >= b.lambdaMin && lambda <= b.lambdaMax) return b.name;
+  }
+  return '—';
+}
+
+function updateSpectrumInfo(pos) {
+  const lambda = posToLambda(pos);
+  const freq = lambdaToFreq(lambda);
+  const energy = freqToEnergy(freq);
+  document.getElementById('spec-name').textContent = getBandName(lambda);
+  document.getElementById('spec-lambda').textContent = formatSI(lambda, 'm');
+  document.getElementById('spec-freq-disp').textContent = formatSI(freq, 'Hz');
+  document.getElementById('spec-energy').textContent = formatSI(energy, 'J');
+  // Move needles
+  document.getElementById('spec-needle').style.left = (pos * 100) + '%';
+  document.getElementById('strip-needle').style.left = (pos * 100) + '%';
+}
+
+// ─── Visual freq from slider ─────────────────────────────────────────────────
+function getVisualFreq() {
+  return 0.5 + (state.freq / 100) * 4.5; // 0.5 to 5.0 cycles across canvas
+}
+
+// ─── Polarization helpers ────────────────────────────────────────────────────
+function getPolarization(t, kx) {
+  const phase = kx - t * state.speed * 2;
+  const pol = state.polarization;
+  const A = state.amp;
+  if (pol === 'linear-x') return [A * Math.sin(phase), 0];
+  if (pol === 'linear-y') return [0, A * Math.sin(phase)];
+  if (pol === 'circular-r') return [A * Math.sin(phase), A * Math.cos(phase)];
+  if (pol === 'circular-l') return [A * Math.sin(phase), -A * Math.cos(phase)];
+  if (pol === 'elliptical') return [A * Math.sin(phase), A * 0.5 * Math.cos(phase)];
+  return [A * Math.sin(phase), 0];
+}
+
+// ─── Main draw ───────────────────────────────────────────────────────────────
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  const W = canvas.width;
+  const H = canvas.height;
+  const rot = state.rot;
+  const tilt = state.tilt;
+  const A = state.amp;
+  const vf = getVisualFreq();
+  const numWaves = state.waves;
+
+  // Draw grid / axes
+  if (state.showGrid) {
+    ctx.save();
+    ctx.strokeStyle = 'rgba(48,54,61,0.8)';
+    ctx.lineWidth = 1;
+
+    // K-axis (propagation direction: along X in 3D)
+    const halfLen = 280;
+    const [gx1, gy1] = project(-halfLen, 0, 0, rot, tilt);
+    const [gx2, gy2] = project(halfLen, 0, 0, rot, tilt);
+    ctx.beginPath(); ctx.moveTo(gx1, gy1); ctx.lineTo(gx2, gy2); ctx.stroke();
+
+    // E-axis (Y direction)
+    const [ex1, ey1] = project(0, -A * 1.3, 0, rot, tilt);
+    const [ex2, ey2] = project(0, A * 1.3, 0, rot, tilt);
+    ctx.strokeStyle = 'rgba(255,107,107,0.25)';
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath(); ctx.moveTo(ex1, ey1); ctx.lineTo(ex2, ey2); ctx.stroke();
+
+    // B-axis (Z direction)
+    const [bx1, by1] = project(0, 0, -A * 1.3, rot, tilt);
+    const [bx2, by2] = project(0, 0, A * 1.3, rot, tilt);
+    ctx.strokeStyle = 'rgba(88,166,255,0.25)';
+    ctx.beginPath(); ctx.moveTo(bx1, by1); ctx.lineTo(bx2, by2); ctx.stroke();
+
+    ctx.setLineDash([]);
+    ctx.restore();
+
+    // Axis labels
+    ctx.save();
+    ctx.font = '600 11px IBM Plex Mono, monospace';
+    ctx.fillStyle = '#3fb950';
+    const [klx, kly] = project(halfLen + 15, 0, 0, rot, tilt);
+    ctx.fillText('k', klx, kly);
+    ctx.fillStyle = 'rgba(255,107,107,0.8)';
+    const [elx, ely] = project(0, A * 1.4, 0, rot, tilt);
+    ctx.fillText('E', elx, ely);
+    ctx.fillStyle = 'rgba(88,166,255,0.8)';
+    const [blx, bly] = project(0, 0, A * 1.4, rot, tilt);
+    ctx.fillText('B', blx, bly);
+    ctx.restore();
+  }
+
+  const N = 200; // points per wave
+  const kStep = (numWaves * 2 * Math.PI) / N;
+  const xRange = 260;
+
+  // Build wave points
+  const ePoints = [], bPoints = [], kPoints = [];
+  for (let i = 0; i <= N; i++) {
+    const kx = -xRange / 2 + (i / N) * xRange;
+    const phase = (i / N) * numWaves * 2 * Math.PI - state.t * state.speed * 2;
+    const [ey, ez_ignored] = getPolarization(state.t, (i / N) * numWaves * 2 * Math.PI);
+    const bz = state.showB ? (state.amp * Math.sin(phase + (state.polarization.startsWith('circular') ? Math.PI/2 : 0))) : 0;
+    ePoints.push([kx, ey, 0]);
+    bPoints.push([kx, 0, bz]);
+    kPoints.push([kx, 0, 0]);
+  }
+
+  // Draw wave curves
+  if (state.showWave) {
+    if (state.showE) {
+      drawWaveCurve3D('E', 'rgba(255,107,107,0.9)', ePoints, 2.5, state.showGlow, rot, tilt);
+    }
+    if (state.showB) {
+      drawWaveCurve3D('B', 'rgba(88,166,255,0.9)', bPoints, 2.5, state.showGlow, rot, tilt);
+    }
+  }
+
+  // Draw field vectors at intervals
+  if (state.showVectors) {
+    const vecStep = Math.floor(N / 18);
+    for (let i = 0; i <= N; i += vecStep) {
+      const kx = -xRange / 2 + (i / N) * xRange;
+      const phase = (i / N) * numWaves * 2 * Math.PI - state.t * state.speed * 2;
+      const [ey] = getPolarization(state.t, (i / N) * numWaves * 2 * Math.PI);
+      const bz = state.amp * Math.sin(phase + (state.polarization.startsWith('circular') ? Math.PI/2 : 0));
+
+      if (state.showE && Math.abs(ey) > 1) {
+        drawArrow3D(kx, 0, 0, 0, ey, 0, 'rgba(255,107,107,0.85)', 1.5, false, rot, tilt);
+      }
+      if (state.showB && Math.abs(bz) > 1) {
+        drawArrow3D(kx, 0, 0, 0, 0, bz, 'rgba(88,166,255,0.85)', 1.5, false, rot, tilt);
+      }
+    }
+  }
+
+  // Draw propagation arrow
+  const [ka1x, ka1y] = project(200, 0, 0, rot, tilt);
+  const [ka2x, ka2y] = project(240, 0, 0, rot, tilt);
+  ctx.save();
+  ctx.strokeStyle = '#3fb950';
+  ctx.lineWidth = 2;
+  ctx.shadowColor = '#3fb950';
+  ctx.shadowBlur = 6;
+  ctx.beginPath();
+  ctx.moveTo(ka1x, ka1y);
+  ctx.lineTo(ka2x, ka2y);
+  const ang = Math.atan2(ka2y - ka1y, ka2x - ka1x);
+  ctx.moveTo(ka2x, ka2y);
+  ctx.lineTo(ka2x - 10 * Math.cos(ang - 0.4), ka2y - 10 * Math.sin(ang - 0.4));
+  ctx.moveTo(ka2x, ka2y);
+  ctx.lineTo(ka2x - 10 * Math.cos(ang + 0.4), ka2y - 10 * Math.sin(ang + 0.4));
+  ctx.stroke();
+  ctx.restore();
+
+  // Update overlays
+  const visFreqDisp = (getVisualFreq() * state.speed).toFixed(2);
+  const lambdaDisp = (1 / getVisualFreq()).toFixed(2);
+  document.getElementById('ov-freq').textContent = visFreqDisp + ' (vis)';
+  document.getElementById('ov-lambda').textContent = lambdaDisp + ' (vis)';
+  document.getElementById('ov-period').textContent = (1 / (getVisualFreq() * state.speed + 0.001)).toFixed(2) + 's';
+  document.getElementById('ov-eamp').textContent = state.amp.toFixed(0) + ' V/m';
+  document.getElementById('ov-bamp').textContent = (state.amp / 3e8).toExponential(1) + ' T';
+  document.getElementById('ov-pol').textContent = document.getElementById('sel-pol').selectedOptions[0].text;
+}
+
+// ─── Animation loop ──────────────────────────────────────────────────────────
+let rafId;
+function animate() {
+  if (state.playing) state.t += 0.025;
+  draw();
+  rafId = requestAnimationFrame(animate);
+}
+animate();
+
+// ─── Controls ────────────────────────────────────────────────────────────────
+function bindSlider(id, valId, stateKey, fmt) {
+  const sl = document.getElementById(id);
+  const vl = document.getElementById(valId);
+  function update() {
+    state[stateKey] = parseFloat(sl.value);
+    if (vl) vl.textContent = fmt(state[stateKey]);
+  }
+  sl.addEventListener('input', update);
+  update();
+}
+
+bindSlider('sl-freq', 'val-freq', 'freq', v => {
+  const lam = posToLambda(v / 100);
+  const name = getBandName(lam).split(' ')[0];
+  state.specPos = v / 100;
+  updateSpectrumInfo(v / 100);
+  return name;
+});
+bindSlider('sl-amp', 'val-amp', 'amp', v => v.toFixed(0));
+bindSlider('sl-speed', 'val-speed', 'speed', v => v.toFixed(2) + 'x');
+bindSlider('sl-waves', 'val-waves', 'waves', v => v.toFixed(1));
+bindSlider('sl-rot', 'val-rot', 'rot', v => v.toFixed(0) + '°');
+bindSlider('sl-tilt', 'val-tilt', 'tilt', v => v.toFixed(0) + '°');
+
+// Init spectrum display
+updateSpectrumInfo(0.5);
+
+// Play toggle
+const btnPlay = document.getElementById('btn-play');
+btnPlay.addEventListener('click', () => {
+  state.playing = !state.playing;
+  btnPlay.textContent = state.playing ? '▶ Play' : '⏸ Pause';
+  btnPlay.classList.toggle('on', state.playing);
+});
+
+// View
+document.getElementById('sel-view').addEventListener('change', e => {
+  state.view = e.target.value;
+  if (state.view === 'efield') { state.rot = 0; state.tilt = 0; document.getElementById('sl-rot').value = 0; document.getElementById('sl-tilt').value = 0; document.getElementById('val-rot').textContent = '0°'; document.getElementById('val-tilt').textContent = '0°'; }
+  if (state.view === '3d') { state.rot = 20; state.tilt = 28; document.getElementById('sl-rot').value = 20; document.getElementById('sl-tilt').value = 28; }
+});
+
+// Polarization
+document.getElementById('sel-pol').addEventListener('change', e => { state.polarization = e.target.value; });
+
+// Toggles
+function makeToggle(btnId, stateKey) {
+  const btn = document.getElementById(btnId);
+  btn.addEventListener('click', () => {
+    state[stateKey] = !state[stateKey];
+    btn.classList.toggle('on', state[stateKey]);
+  });
+}
+makeToggle('btn-show-vectors', 'showVectors');
+makeToggle('btn-show-wave', 'showWave');
+makeToggle('btn-e-toggle', 'showE');
+makeToggle('btn-b-toggle', 'showB');
+makeToggle('btn-grid', 'showGrid');
+makeToggle('btn-glow', 'showGlow');
+
+// Panel toggle
+const lpanel = document.getElementById('lpanel');
+document.getElementById('panel-toggle').addEventListener('click', function() {
+  lpanel.classList.toggle('closed');
+  this.classList.toggle('open');
+  setTimeout(resize, 220);
+});
+
+// Spectrum bar click
+const specBar = document.getElementById('spec-bar');
+specBar.addEventListener('click', e => {
+  const rect = specBar.getBoundingClientRect();
+  const pos = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+  state.specPos = pos;
+  state.freq = pos * 100;
+  document.getElementById('sl-freq').value = pos * 100;
+  updateSpectrumInfo(pos);
+});
+
+// Strip bar click
+const stripBar = document.getElementById('strip-bar');
+stripBar.addEventListener('click', e => {
+  const rect = stripBar.getBoundingClientRect();
+  const pos = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+  state.specPos = pos;
+  state.freq = pos * 100;
+  document.getElementById('sl-freq').value = pos * 100;
+  updateSpectrumInfo(pos);
+});
+
+// Presets
+const presets = {
+  'pre-radio':  0.98,
+  'pre-micro':  0.85,
+  'pre-ir':     0.65,
+  'pre-vis':    0.50,
+  'pre-uv':     0.35,
+  'pre-xray':   0.15,
+};
+for (const [id, pos] of Object.entries(presets)) {
+  document.getElementById(id).addEventListener('click', () => {
+    state.specPos = pos;
+    state.freq = pos * 100;
+    document.getElementById('sl-freq').value = pos * 100;
+    updateSpectrumInfo(pos);
+  });
+}
+</script>
+</body>
+</html>

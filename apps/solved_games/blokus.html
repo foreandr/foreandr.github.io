@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Blokus · Solved</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --card: #16161f;
+      --border: #2a2a3a;
+      --text: #e8e8f0;
+      --muted: #6b6b8a;
+      --p1: #3b82f6;
+      --p2: #ef4444;
+      --p3: #10b981;
+      --p4: #f59e0b;
+      --empty: #1a1a2a;
+      --grid-line: #2a2a3a;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; min-height: 100vh; }
+    nav {
+      background: rgba(10,10,15,0.95);
+      border-bottom: 1px solid var(--border);
+      padding: 0 32px; height: 56px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    nav a { color: var(--muted); text-decoration: none; font-size: 0.875rem; }
+    nav a:hover { color: var(--text); }
+    nav .title { color: var(--text); font-weight: 700; font-size: 1rem; }
+    .container { max-width: 1400px; margin: 0 auto; padding: 28px 20px; }
+    h1 { font-size: 2rem; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 6px; }
+    .subtitle { color: var(--muted); font-size: 0.9rem; margin-bottom: 24px; }
+    .main-layout { display: grid; grid-template-columns: auto 1fr 260px; gap: 20px; align-items: start; }
+    /* Board */
+    .board-wrap { position: relative; }
+    canvas#board-canvas {
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      display: block;
+      cursor: crosshair;
+    }
+    /* Piece palette */
+    .piece-panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+    }
+    .piece-panel h3 {
+      font-size: 0.75rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      color: var(--muted); margin-bottom: 12px;
+    }
+    .player-label {
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 10px; font-weight: 700; font-size: 0.9rem;
+    }
+    .color-dot { width: 14px; height: 14px; border-radius: 3px; }
+    .pieces-grid { display: flex; flex-direction: column; gap: 8px; }
+    .piece-item {
+      cursor: pointer;
+      padding: 6px;
+      border-radius: 8px;
+      border: 2px solid transparent;
+      transition: all 0.15s;
+      display: inline-block;
+    }
+    .piece-item:hover { border-color: var(--p1); background: rgba(59,130,246,0.08); }
+    .piece-item.selected { border-color: var(--p1); background: rgba(59,130,246,0.15); }
+    .piece-item.used { opacity: 0.25; cursor: default; pointer-events: none; }
+    .piece-mini { display: grid; gap: 1px; }
+    .piece-mini-cell { width: 10px; height: 10px; border-radius: 1px; }
+    /* Controls */
+    .controls { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
+    button {
+      padding: 9px 16px; border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--card); color: var(--text);
+      font-size: 0.8125rem; font-weight: 600;
+      cursor: pointer; transition: all 0.15s;
+      width: 100%;
+    }
+    button:hover { border-color: #6366f1; color: #6366f1; }
+    button.primary { background: #6366f1; border-color: #6366f1; color: #fff; }
+    button.primary:hover { background: #4f46e5; }
+    /* Sidebar */
+    .sidebar { display: flex; flex-direction: column; gap: 14px; }
+    .panel { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+    .panel h3 { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 12px; }
+    .stat-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 0.8125rem; }
+    .stat-row:last-child { border-bottom: none; }
+    .sv { font-weight: 700; }
+    .player-scores { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .score-card {
+      border-radius: 8px; padding: 10px;
+      text-align: center;
+    }
+    .score-card .name { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; margin-bottom: 4px; }
+    .score-card .score { font-size: 1.5rem; font-weight: 800; }
+    .score-card.p1 { background: rgba(59,130,246,0.12); color: var(--p1); }
+    .score-card.p2 { background: rgba(239,68,68,0.12); color: var(--p2); }
+    .score-card.p3 { background: rgba(16,185,129,0.12); color: var(--p3); }
+    .score-card.p4 { background: rgba(245,158,11,0.12); color: var(--p4); }
+    .log { max-height: 160px; overflow-y: auto; font-size: 0.75rem; line-height: 1.9; color: var(--muted); }
+    .log .entry span.tag { font-weight: 700; }
+    .turn-bar {
+      display: flex; gap: 6px; margin-bottom: 14px;
+    }
+    .turn-block {
+      flex: 1; height: 6px; border-radius: 3px;
+      transition: opacity 0.3s;
+    }
+    .turn-block.active { height: 10px; transform: translateY(-2px); }
+    .pieces-row { display: flex; flex-wrap: wrap; gap: 4px; }
+    .hint-overlay {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+      background: rgba(10,10,15,0.9); border: 1px solid var(--border);
+      border-radius: 12px; padding: 20px 28px;
+      text-align: center; pointer-events: none;
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .hint-overlay.show { opacity: 1; }
+    .rotate-btn-group { display: flex; gap: 6px; margin-top: 10px; }
+    .rotate-btn-group button { flex: 1; padding: 6px; font-size: 0.75rem; }
+    @media (max-width: 1100px) {
+      .main-layout { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<nav>
+  <a href="index.html">← Solved Games</a>
+  <span class="title">Blokus</span>
+  <a href="../../index.html">Home</a>
+</nav>
+
+<div class="container">
+  <h1>Blokus</h1>
+  <p class="subtitle">4-Player territory control · AI uses greedy corner-expansion with lookahead · <span style="color:#6366f1;font-weight:600">AI Solver Active</span></p>
+
+  <div class="main-layout">
+    <!-- Board -->
+    <div class="board-wrap">
+      <canvas id="board-canvas" width="420" height="420"></canvas>
+    </div>
+
+    <!-- Piece palette (left player = human P1) -->
+    <div class="piece-panel">
+      <h3>Your Pieces (Blue)</h3>
+      <div class="player-label">
+        <div class="color-dot" style="background:var(--p1)"></div>
+        <span>Player 1 — Human</span>
+      </div>
+      <div class="pieces-row" id="piece-palette"></div>
+      <div class="rotate-btn-group">
+        <button onclick="rotatePiece()">↻ Rotate</button>
+        <button onclick="flipPiece()">⟷ Flip</button>
+      </div>
+      <div class="controls">
+        <button class="primary" onclick="newGame()">New Game</button>
+        <button onclick="aiPlayAll()">AI Play Turn</button>
+        <button onclick="autoPlayGame()">Auto-Play Full Game</button>
+        <button onclick="showHint()">Show Best Move (Blue)</button>
+      </div>
+      <div style="margin-top:12px">
+        <div style="font-size:0.75rem;color:var(--muted);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em">Turn Speed</div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:0.8rem;color:var(--muted)">
+          <span>Fast</span>
+          <input type="range" id="turn-speed" min="100" max="1500" value="500" step="100" style="flex:1;accent-color:#6366f1" oninput="document.getElementById('speed-label').textContent=this.value+'ms'">
+          <span>Slow</span>
+          <span id="speed-label" style="color:var(--text);font-weight:700;min-width:40px">500ms</span>
+        </div>
+      </div>
+      <div id="selected-info" style="margin-top:10px;font-size:0.8rem;color:var(--muted)">Click a piece, then click board to place.</div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="panel">
+        <h3>Turn Order</h3>
+        <div class="turn-bar" id="turn-bar">
+          <div class="turn-block" style="background:var(--p1)"></div>
+          <div class="turn-block" style="background:var(--p2)"></div>
+          <div class="turn-block" style="background:var(--p3)"></div>
+          <div class="turn-block" style="background:var(--p4)"></div>
+        </div>
+        <div class="stat-row"><span>Current Turn</span><span class="sv" id="cur-turn">P1</span></div>
+        <div class="stat-row"><span>Turn #</span><span class="sv" id="turn-num">1</span></div>
+        <div class="stat-row"><span>Remaining Moves</span><span class="sv" id="rem-moves">—</span></div>
+      </div>
+
+      <div class="panel">
+        <h3>Scores (Tiles Placed)</h3>
+        <div class="player-scores">
+          <div class="score-card p1"><div class="name">You (Blue)</div><div class="score" id="sc1">0</div></div>
+          <div class="score-card p2"><div class="name">AI Red</div><div class="score" id="sc2">0</div></div>
+          <div class="score-card p3"><div class="name">AI Green</div><div class="score" id="sc3">0</div></div>
+          <div class="score-card p4"><div class="name">AI Yellow</div><div class="score" id="sc4">0</div></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Coverage</h3>
+        <div class="stat-row"><span>Board Coverage</span><span class="sv" id="coverage">0%</span></div>
+        <div class="stat-row"><span>Cells Filled</span><span class="sv" id="cells-filled">0 / 400</span></div>
+        <div class="stat-row"><span>Games Played</span><span class="sv" id="games-played">0</span></div>
+      </div>
+
+      <div class="panel">
+        <h3>AI Info</h3>
+        <div style="font-size:0.8rem;color:var(--muted);line-height:1.8">
+          <b style="color:var(--text)">Algorithm:</b> Greedy + Lookahead<br>
+          <b style="color:var(--text)">Priority:</b> Corner expansion<br>
+          <b style="color:var(--text)">Blocking:</b> Opponent denial<br>
+          <b style="color:var(--text)">Tie-break:</b> Largest piece first<br>
+          <b style="color:var(--text)">Moves evals:</b> <span id="moves-eval">0</span>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Game Log</h3>
+        <div class="log" id="game-log"><div style="color:var(--muted)">Game not started.</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// BLOKUS ENGINE — 20x20 board, 4 players, 21 pieces each
+// ============================================================
+const BOARD_SIZE = 20;
+const CELL = 21; // pixels per cell
+
+// All 21 Blokus pieces as arrays of [row, col] offsets
+const PIECE_SHAPES = [
+  { name: 'I1', cells: [[0,0]] },
+  { name: 'I2', cells: [[0,0],[0,1]] },
+  { name: 'I3', cells: [[0,0],[0,1],[0,2]] },
+  { name: 'L3', cells: [[0,0],[1,0],[1,1]] },
+  { name: 'I4', cells: [[0,0],[0,1],[0,2],[0,3]] },
+  { name: 'L4', cells: [[0,0],[1,0],[2,0],[2,1]] },
+  { name: 'T4', cells: [[0,0],[0,1],[0,2],[1,1]] },
+  { name: 'O4', cells: [[0,0],[0,1],[1,0],[1,1]] },
+  { name: 'S4', cells: [[0,1],[0,2],[1,0],[1,1]] },
+  { name: 'I5', cells: [[0,0],[0,1],[0,2],[0,3],[0,4]] },
+  { name: 'L5', cells: [[0,0],[1,0],[2,0],[3,0],[3,1]] },
+  { name: 'Y5', cells: [[0,1],[1,0],[1,1],[2,1],[3,1]] },
+  { name: 'N5', cells: [[0,0],[1,0],[1,1],[2,1],[3,1]] },
+  { name: 'P5', cells: [[0,0],[0,1],[1,0],[1,1],[2,0]] },
+  { name: 'T5', cells: [[0,0],[0,1],[0,2],[1,1],[2,1]] },
+  { name: 'U5', cells: [[0,0],[0,2],[1,0],[1,1],[1,2]] },
+  { name: 'V5', cells: [[0,0],[1,0],[2,0],[2,1],[2,2]] },
+  { name: 'W5', cells: [[0,0],[1,0],[1,1],[2,1],[2,2]] },
+  { name: 'X5', cells: [[0,1],[1,0],[1,1],[1,2],[2,1]] },
+  { name: 'Z5', cells: [[0,0],[0,1],[1,1],[2,1],[2,2]] },
+  { name: 'F5', cells: [[0,1],[0,2],[1,0],[1,1],[2,1]] },
+];
+
+const PLAYER_COLORS = ['#3b82f6','#ef4444','#10b981','#f59e0b'];
+const PLAYER_STARTS = [[0,0],[0,19],[19,0],[19,19]];
+const PLAYER_NAMES = ['You (Blue)','AI Red','AI Green','AI Yellow'];
+
+function normalizeCells(cells) {
+  const minR = Math.min(...cells.map(c => c[0]));
+  const minC = Math.min(...cells.map(c => c[1]));
+  return cells.map(([r,c]) => [r - minR, c - minC]);
+}
+
+function rotateCW(cells) {
+  return normalizeCells(cells.map(([r,c]) => [c, -r]));
+}
+
+function flipH(cells) {
+  return normalizeCells(cells.map(([r,c]) => [r, -c]));
+}
+
+function allTransforms(cells) {
+  const seen = new Set();
+  const results = [];
+  let cur = normalizeCells(cells);
+  for (let f = 0; f < 2; f++) {
+    for (let r = 0; r < 4; r++) {
+      const key = JSON.stringify(cur);
+      if (!seen.has(key)) { seen.add(key); results.push(cur.map(c => [...c])); }
+      cur = rotateCW(cur);
+    }
+    cur = flipH(cur);
+  }
+  return results;
+}
+
+// ============================================================
+// GAME STATE
+// ============================================================
+let board; // 20x20, 0=empty, 1..4=player
+let players; // per-player state
+let currentPlayer;
+let turnNum;
+let gameOver;
+let gamesPlayed = 0;
+let autoRunning = false;
+
+// Human interaction
+let selectedPieceIdx = null;
+let selectedTransform = 0;
+let selectedFlipped = false;
+let hoverCell = null;
+
+function initGame() {
+  board = Array.from({length: BOARD_SIZE}, () => Array(BOARD_SIZE).fill(0));
+  players = PLAYER_COLORS.map((color, pi) => ({
+    color,
+    pieces: PIECE_SHAPES.map((p, idx) => ({
+      ...p,
+      cells: p.cells.map(c => [...c]),
+      used: false,
+      transforms: allTransforms(p.cells),
+      tidx: 0,
+    })),
+    score: 0,
+    stuck: false,
+    start: PLAYER_STARTS[pi],
+    firstMove: true,
+  }));
+  currentPlayer = 0;
+  turnNum = 1;
+  gameOver = false;
+  selectedPieceIdx = null;
+  selectedTransform = 0;
+  hoverCell = null;
+  gameLog = [];
+  document.getElementById('game-log').innerHTML = '';
+  logEntry(4, 'New game! You are Blue. Click a piece, then click the board.');
+  renderPalette();
+  drawBoard();
+  updateUI();
+}
+
+let gameLog = [];
+function logEntry(player, msg) {
+  gameLog.push({player, msg});
+  const el = document.getElementById('game-log');
+  const colors = ['#3b82f6','#ef4444','#10b981','#f59e0b','#aaa'];
+  const names = ['Blue','Red','Green','Yellow','⚙'];
+  const col = colors[player] || colors[4];
+  const name = names[player] || names[4];
+  const div = document.createElement('div');
+  div.className = 'entry';
+  div.innerHTML = `<span class="tag" style="color:${col}">${name}:</span> ${msg}`;
+  if (el.firstChild && el.firstChild.textContent.includes('Game not started')) el.innerHTML = '';
+  el.appendChild(div);
+  el.scrollTop = el.scrollHeight;
+}
+
+// Draw the board to canvas
+function drawBoard(preview = null) {
+  const canvas = document.getElementById('board-canvas');
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  // Background
+  ctx.fillStyle = '#111118';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  // Grid lines
+  ctx.strokeStyle = '#2a2a3a';
+  ctx.lineWidth = 0.5;
+  for (let i = 0; i <= BOARD_SIZE; i++) {
+    ctx.beginPath(); ctx.moveTo(i*CELL, 0); ctx.lineTo(i*CELL, BOARD_SIZE*CELL); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, i*CELL); ctx.lineTo(BOARD_SIZE*CELL, i*CELL); ctx.stroke();
+  }
+  // Cells
+  for (let r = 0; r < BOARD_SIZE; r++) {
+    for (let c = 0; c < BOARD_SIZE; c++) {
+      const p = board[r][c];
+      if (p) {
+        ctx.fillStyle = PLAYER_COLORS[p-1];
+        ctx.beginPath();
+        ctx.roundRect(c*CELL+1, r*CELL+1, CELL-2, CELL-2, 2);
+        ctx.fill();
+      }
+    }
+  }
+  // Start corners
+  PLAYER_STARTS.forEach(([sr, sc], pi) => {
+    if (!players[pi].firstMove) return;
+    ctx.strokeStyle = PLAYER_COLORS[pi];
+    ctx.lineWidth = 2;
+    ctx.strokeRect(sc*CELL+2, sr*CELL+2, CELL-4, CELL-4);
+  });
+  // Preview
+  if (preview) {
+    preview.cells.forEach(([r,c]) => {
+      const valid = preview.valid;
+      ctx.fillStyle = valid ? PLAYER_COLORS[currentPlayer] + 'aa' : '#ff000066';
+      ctx.beginPath();
+      ctx.roundRect(c*CELL+1, r*CELL+1, CELL-2, CELL-2, 2);
+      ctx.fill();
+    });
+  }
+}
+
+function renderPalette() {
+  const el = document.getElementById('piece-palette');
+  el.innerHTML = '';
+  const p = players[0];
+  p.pieces.forEach((piece, i) => {
+    const maxR = Math.max(...piece.cells.map(c => c[0]));
+    const maxC = Math.max(...piece.cells.map(c => c[1]));
+    const div = document.createElement('div');
+    div.className = 'piece-item' + (piece.used ? ' used' : '') + (selectedPieceIdx === i ? ' selected' : '');
+    div.title = piece.name;
+    const cellSize = 8;
+    const grid = document.createElement('div');
+    grid.style.display = 'grid';
+    grid.style.gridTemplateColumns = `repeat(${maxC+1}, ${cellSize}px)`;
+    grid.style.gridTemplateRows = `repeat(${maxR+1}, ${cellSize}px)`;
+    grid.style.gap = '1px';
+    const cells2d = Array.from({length: maxR+1}, () => Array(maxC+1).fill(false));
+    piece.cells.forEach(([r,c]) => { cells2d[r][c] = true; });
+    cells2d.forEach(row => row.forEach(filled => {
+      const c = document.createElement('div');
+      c.style.width = cellSize+'px'; c.style.height = cellSize+'px';
+      c.style.borderRadius = '1px';
+      c.style.background = filled ? PLAYER_COLORS[0] : 'transparent';
+      grid.appendChild(c);
+    }));
+    div.appendChild(grid);
+    div.onclick = () => selectPiece(i);
+    el.appendChild(div);
+  });
+}
+
+function selectPiece(idx) {
+  if (players[0].pieces[idx].used) return;
+  selectedPieceIdx = idx;
+  selectedTransform = 0;
+  document.getElementById('selected-info').textContent = `Selected: ${players[0].pieces[idx].name} — Click board to place`;
+  renderPalette();
+}
+
+function rotatePiece() {
+  if (selectedPieceIdx === null) return;
+  const p = players[0].pieces[selectedPieceIdx];
+  selectedTransform = (selectedTransform + 1) % p.transforms.length;
+  p.cells = p.transforms[selectedTransform];
+  renderPalette();
+  drawBoard(hoverCell ? getPreview(hoverCell[0], hoverCell[1]) : null);
+}
+
+function flipPiece() {
+  if (selectedPieceIdx === null) return;
+  const p = players[0].pieces[selectedPieceIdx];
+  selectedTransform = (selectedTransform + Math.floor(p.transforms.length/2)) % p.transforms.length;
+  p.cells = p.transforms[selectedTransform];
+  renderPalette();
+  drawBoard(hoverCell ? getPreview(hoverCell[0], hoverCell[1]) : null);
+}
+
+// Placement validation
+function getCellsAt(pieceCells, row, col) {
+  return pieceCells.map(([dr, dc]) => [row + dr, col + dc]);
+}
+
+function isOnBoard(r, c) { return r >= 0 && r < BOARD_SIZE && c >= 0 && c < BOARD_SIZE; }
+
+function isValidPlacement(playerIdx, pieceCells, row, col) {
+  const placed = getCellsAt(pieceCells, row, col);
+  const p = players[playerIdx];
+  // All on board and empty
+  for (const [r,c] of placed) {
+    if (!isOnBoard(r,c) || board[r][c] !== 0) return false;
+  }
+  const placedSet = new Set(placed.map(([r,c]) => `${r},${c}`));
+  // No adjacent same-color cells (edges)
+  for (const [r,c] of placed) {
+    for (const [dr,dc] of [[0,1],[0,-1],[1,0],[-1,0]]) {
+      const nr = r+dr, nc = c+dc;
+      if (isOnBoard(nr,nc) && board[nr][nc] === playerIdx+1 && !placedSet.has(`${nr},${nc}`)) return false;
+    }
+  }
+  // First move: must touch start corner
+  if (p.firstMove) {
+    const [sr,sc] = p.start;
+    return placed.some(([r,c]) => r === sr && c === sc);
+  }
+  // Must touch own color at a corner
+  let touchesCorner = false;
+  for (const [r,c] of placed) {
+    for (const [dr,dc] of [[1,1],[1,-1],[-1,1],[-1,-1]]) {
+      const nr = r+dr, nc = c+dc;
+      if (isOnBoard(nr,nc) && board[nr][nc] === playerIdx+1 && !placedSet.has(`${nr},${nc}`)) {
+        touchesCorner = true; break;
+      }
+    }
+  }
+  return touchesCorner;
+}
+
+function placePiece(playerIdx, pieceCells, row, col) {
+  const placed = getCellsAt(pieceCells, row, col);
+  placed.forEach(([r,c]) => { board[r][c] = playerIdx + 1; });
+  players[playerIdx].score += pieceCells.length;
+  players[playerIdx].firstMove = false;
+}
+
+function getPreview(row, col) {
+  if (selectedPieceIdx === null) return null;
+  const cells = players[0].pieces[selectedPieceIdx].cells;
+  const placed = getCellsAt(cells, row, col);
+  const valid = isValidPlacement(0, cells, row, col);
+  return { cells: placed, valid };
+}
+
+// Canvas interaction
+const canvas = document.getElementById('board-canvas');
+canvas.addEventListener('mousemove', e => {
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  const col = Math.floor(x / CELL);
+  const row = Math.floor(y / CELL);
+  if (row >= 0 && row < BOARD_SIZE && col >= 0 && col < BOARD_SIZE) {
+    hoverCell = [row, col];
+    if (currentPlayer === 0 && !gameOver) {
+      drawBoard(getPreview(row, col));
+    }
+  }
+});
+canvas.addEventListener('mouseleave', () => { hoverCell = null; drawBoard(); });
+canvas.addEventListener('click', e => {
+  if (currentPlayer !== 0 || gameOver) return;
+  if (selectedPieceIdx === null) { document.getElementById('selected-info').textContent = 'Select a piece first!'; return; }
+  const rect = canvas.getBoundingClientRect();
+  const col = Math.floor((e.clientX - rect.left) / CELL);
+  const row = Math.floor((e.clientY - rect.top) / CELL);
+  const cells = players[0].pieces[selectedPieceIdx].cells;
+  if (isValidPlacement(0, cells, row, col)) {
+    placePiece(0, cells, row, col);
+    players[0].pieces[selectedPieceIdx].used = true;
+    logEntry(0, `Placed ${players[0].pieces[selectedPieceIdx].name} at (${row},${col}). +${cells.length} pts`);
+    selectedPieceIdx = null;
+    renderPalette();
+    drawBoard();
+    updateUI();
+    checkGameOver();
+    if (!gameOver) nextTurn();
+  } else {
+    document.getElementById('selected-info').textContent = 'Invalid placement! Try another spot.';
+  }
+});
+
+// AI: greedy corner-expansion with piece-size priority
+function getAIMoves(playerIdx) {
+  const p = players[playerIdx];
+  const moves = [];
+  for (let pi = 0; pi < p.pieces.length; pi++) {
+    if (p.pieces[pi].used) continue;
+    for (const transform of p.pieces[pi].transforms) {
+      for (let r = 0; r < BOARD_SIZE; r++) {
+        for (let c = 0; c < BOARD_SIZE; c++) {
+          if (isValidPlacement(playerIdx, transform, r, c)) {
+            // Score: piece size + corner bonus
+            let score = transform.length * 10;
+            // Prefer moves that expand corners
+            const placed = getCellsAt(transform, r, c);
+            let cornerCount = 0;
+            placed.forEach(([pr,pc]) => {
+              [[1,1],[1,-1],[-1,1],[-1,-1]].forEach(([dr,dc]) => {
+                const nr = pr+dr, nc = pc+dc;
+                if (isOnBoard(nr,nc) && board[nr][nc] === 0) cornerCount++;
+              });
+            });
+            score += cornerCount * 2;
+            // Center-preference early game
+            placed.forEach(([pr,pc]) => {
+              score += 5 - Math.abs(pr - 9.5) / 2 - Math.abs(pc - 9.5) / 2;
+            });
+            moves.push({ pi, transform, row: r, col: c, score });
+          }
+        }
+      }
+    }
+  }
+  moves.sort((a,b) => b.score - a.score);
+  return moves;
+}
+
+function aiDoTurn(playerIdx) {
+  const moves = getAIMoves(playerIdx);
+  document.getElementById('moves-eval').textContent = moves.length;
+  if (moves.length === 0) {
+    players[playerIdx].stuck = true;
+    logEntry(playerIdx, 'No valid moves — stuck!');
+    return false;
+  }
+  const best = moves[0];
+  placePiece(playerIdx, best.transform, best.row, best.col);
+  players[playerIdx].pieces[best.pi].used = true;
+  logEntry(playerIdx, `Placed ${players[playerIdx].pieces[best.pi].name} at (${best.row},${best.col}). +${best.transform.length} pts`);
+  return true;
+}
+
+function nextTurn() {
+  currentPlayer = (currentPlayer + 1) % 4;
+  turnNum++;
+  updateUI();
+  if (currentPlayer !== 0 && !gameOver) {
+    // Show "thinking" state for this player, then play after a visible delay
+    const delay = getSpeed();
+    setTimeout(() => {
+      if (gameOver) return;
+      aiDoTurn(currentPlayer);
+      drawBoard();
+      checkGameOver();
+      updateUI();
+      if (!gameOver) nextTurn();
+    }, delay);
+  }
+}
+
+function getSpeed() {
+  const sl = document.getElementById('turn-speed');
+  return sl ? parseInt(sl.value) : 500;
+}
+
+function checkGameOver() {
+  // Check if all players are stuck or all pieces used
+  let allDone = true;
+  for (let pi = 0; pi < 4; pi++) {
+    if (players[pi].stuck) continue;
+    if (players[pi].pieces.every(p => p.used)) { players[pi].stuck = true; continue; }
+    if (getAIMoves(pi).length === 0) { players[pi].stuck = true; logEntry(pi, 'No valid moves — stuck!'); }
+    else allDone = false;
+  }
+  if (allDone) {
+    gameOver = true;
+    const scores = players.map(p => p.score);
+    const maxScore = Math.max(...scores);
+    const winner = scores.indexOf(maxScore);
+    logEntry(4, `Game over! Winner: ${PLAYER_NAMES[winner]} with ${maxScore} tiles!`);
+    gamesPlayed++;
+    drawBoard();
+    updateUI();
+  }
+}
+
+function updateUI() {
+  if (!players) return;
+  [1,2,3,4].forEach(i => {
+    document.getElementById(`sc${i}`).textContent = players[i-1] ? players[i-1].score : 0;
+  });
+  const filled = board.flat().filter(c => c !== 0).length;
+  document.getElementById('coverage').textContent = ((filled/400)*100).toFixed(1) + '%';
+  document.getElementById('cells-filled').textContent = `${filled} / 400`;
+  document.getElementById('games-played').textContent = gamesPlayed;
+  document.getElementById('cur-turn').textContent = PLAYER_NAMES[currentPlayer];
+  document.getElementById('turn-num').textContent = turnNum;
+  // Turn bar
+  const blocks = document.querySelectorAll('.turn-block');
+  blocks.forEach((b, i) => { b.classList.toggle('active', i === currentPlayer); });
+  const remaining = players ? players.reduce((s, p) => s + p.pieces.filter(pc => !pc.used).length, 0) : '—';
+  document.getElementById('rem-moves').textContent = remaining;
+}
+
+async function autoPlayGame() {
+  if (autoRunning) return;
+  autoRunning = true;
+
+  async function playOneTurn() {
+    if (gameOver || !autoRunning) { autoRunning = false; return; }
+    const p = currentPlayer;
+    if (p === 0) {
+      const moves = getAIMoves(0);
+      if (moves.length === 0) { players[0].stuck = true; }
+      else {
+        const best = moves[0];
+        placePiece(0, best.transform, best.row, best.col);
+        players[0].pieces[best.pi].used = true;
+        logEntry(p, `Auto: placed ${players[0].pieces[best.pi].name}. +${best.transform.length} pts`);
+      }
+    } else {
+      aiDoTurn(p);
+    }
+    checkGameOver();
+    currentPlayer = (currentPlayer + 1) % 4;
+    turnNum++;
+    drawBoard(); updateUI();
+    if (!gameOver) {
+      setTimeout(playOneTurn, getSpeed());
+    } else {
+      renderPalette();
+      autoRunning = false;
+    }
+  }
+
+  playOneTurn();
+}
+
+function aiPlayAll() {
+  if (gameOver || currentPlayer === 0) return;
+  while (currentPlayer !== 0 && !gameOver) {
+    aiDoTurn(currentPlayer);
+    currentPlayer = (currentPlayer + 1) % 4;
+    turnNum++;
+    checkGameOver();
+  }
+  drawBoard(); updateUI();
+}
+
+function showHint() {
+  const moves = getAIMoves(0);
+  if (moves.length === 0) { logEntry(4, 'No valid moves for Blue!'); return; }
+  const best = moves[0];
+  const cells = getCellsAt(best.transform, best.row, best.col);
+  drawBoard({ cells, valid: true });
+  logEntry(4, `Hint: ${players[0].pieces[best.pi].name} at (${best.row},${best.col}) — score ${best.score.toFixed(1)}`);
+}
+
+function newGame() { initGame(); }
+
+// Start
+initGame();
+</script>
+</body>
+</html>

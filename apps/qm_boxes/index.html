@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QM magic boxes — correlations & what you can say</title>
+  <link rel="icon" type="image/x-icon" href="../../images.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&family=Source+Sans+3:wght@400;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+<div class="page">
+  <header class="hero">
+    <a class="back" href="../../index.html">← Back</a>
+    <div class="hero-text">
+      <h1>Magic boxes</h1>
+      <p class="lede">A toy model of the lecture idea: <strong>no phenomenon until it is an observed phenomenon</strong> (Wheeler). Buttons are questions; the light is the only answer you get. Two-box and many-copy setups behave differently — the same “common sense” about hidden cards cannot fit both.</p>
+    </div>
+  </header>
+
+  <nav class="scenario-tabs" role="tablist" aria-label="Scenario">
+    <button type="button" class="tab active" data-scenario="two" role="tab" aria-selected="true">Two boxes — all three buttons correlated</button>
+    <button type="button" class="tab" data-scenario="many" role="tab" aria-selected="false">Many copies — only <em>one</em> button perfectly correlated</button>
+    <button type="button" class="tab" data-scenario="bell" role="tab" aria-selected="false">Classical cards vs. the ¾ odds</button>
+  </nav>
+
+  <div class="grid">
+    <section class="stage" aria-live="polite">
+      <div class="stage-head">
+        <h2 id="stage-title">Two entangled boxes</h2>
+        <div class="stage-actions">
+          <button type="button" class="btn primary" id="btn-new-run">New pair / new batch</button>
+          <button type="button" class="btn" id="btn-reset-view" hidden>Clear lights</button>
+        </div>
+      </div>
+      <div class="boxes-row" id="boxes-row"></div>
+      <p class="stage-caption" id="stage-caption"></p>
+    </section>
+
+    <aside class="sidebar">
+      <div class="panel operational" id="panel-operational">
+        <h3>Operational log</h3>
+        <p class="wheeler" id="wheeler-quote">“There is no phenomenon until it is an observed phenomenon.” — Wheeler (shorthand for: don’t treat unmeasured ‘what’s inside’ as if it were already a fact.)</p>
+        <ul class="log" id="event-log"></ul>
+      </div>
+
+      <div class="panel" id="panel-know">
+        <h3>What you can say now</h3>
+        <div class="know-body" id="know-body"></div>
+      </div>
+
+      <div class="panel predictions" id="panel-predictions">
+        <h3>Predictions & tests</h3>
+        <div id="predictions-body"></div>
+      </div>
+    </aside>
+  </div>
+
+  <section class="footer-note">
+    <p>This is a <strong>pedagogical simulation</strong>, not a quantum device. It encodes the <em>story</em> Feynman tells: with two boxes you can arrange perfect agreement on three questions; with three (or more) copies correlated on “the left button” only, you cannot also demand perfect agreement on <em>all</em> questions — the counting argument (pairs that match) clashes with ¼ vs ¾ statistics. Bell’s theorem sharpens that clash mathematically; here you only meet the flavor.</p>
+  </section>
+</div>
+<script src="./sim.js"></script>
+</body>
+</html>

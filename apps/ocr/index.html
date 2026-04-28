@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>OCR - PDF Extractor</title>
+<link rel="icon" type="image/x-icon" href="../../images.ico">
+<script src="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --border: #222230;
+    --accent: #00e5ff;
+    --accent2: #ff3cac;
+    --text: #e8e8f0;
+    --muted: #555570;
+    --green: #00ff88;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 20px 80px;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,229,255,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,255,0.025) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page { position: relative; z-index: 1; width: 100%; max-width: 1100px; }
+
+  .back-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    color: var(--muted); font-size: 0.65rem; letter-spacing: 2px;
+    text-transform: uppercase; text-decoration: none;
+    margin-bottom: 24px; transition: color 0.2s;
+  }
+  .back-btn:hover { color: var(--accent); }
+
+  header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  header h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    font-weight: 800;
+    letter-spacing: -2px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  header p {
+    color: var(--muted);
+    font-size: 0.65rem;
+    margin-top: 8px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+
+  /* Drop zone */
+  .drop-zone {
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    padding: 80px 24px;
+    text-align: center;
+    cursor: pointer;
+    position: relative;
+    background: var(--surface);
+    transition: all 0.2s;
+  }
+  .drop-zone:hover, .drop-zone.drag-over {
+    border-color: var(--accent);
+    background: rgba(0,229,255,0.04);
+  }
+  .drop-zone input[type=file] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+  }
+  .drop-icon { font-size: 3rem; margin-bottom: 16px; }
+  .drop-zone h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .drop-zone p { color: var(--muted); font-size: 0.65rem; letter-spacing: 2px; text-transform: uppercase; }
+
+  /* Processing layout: two columns */
+  .processing {
+    display: none;
+    gap: 24px;
+    margin-top: 0;
+  }
+  .processing.active { display: grid; grid-template-columns: 1fr 1fr; }
+  @media (max-width: 700px) { .processing.active { grid-template-columns: 1fr; } }
+
+  /* Left: page viewer */
+  .page-viewer {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .panel-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.6rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .panel-header strong { color: var(--text); font-size: 0.7rem; }
+
+  .canvas-wrap {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #000;
+    min-height: 360px;
+    padding: 12px;
+  }
+  #page-canvas {
+    max-width: 100%;
+    max-height: 500px;
+    border-radius: 4px;
+    display: block;
+    object-fit: contain;
+  }
+  .scanning-overlay {
+    position: relative;
+  }
+  .scan-line {
+    position: absolute;
+    left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    top: 0;
+    animation: scanDown 1.8s linear infinite;
+    opacity: 0;
+  }
+  .scan-line.active { opacity: 1; }
+  @keyframes scanDown {
+    0% { top: 0%; }
+    100% { top: 100%; }
+  }
+
+  /* Progress bar */
+  .progress-section {
+    padding: 16px 18px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .progress-bar-wrap {
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 2px;
+    width: 0%;
+    transition: width 0.3s ease;
+  }
+  .progress-stats {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.62rem;
+    letter-spacing: 1px;
+    color: var(--muted);
+  }
+  .progress-stats .page-count { color: var(--accent); font-weight: 700; font-size: 0.72rem; }
+  .progress-stats .eta { color: var(--muted); }
+  .progress-stats .pct { color: var(--text); }
+
+  /* Right: text output */
+  .text-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .text-output {
+    flex: 1;
+    padding: 18px;
+    font-size: 0.78rem;
+    line-height: 1.85;
+    color: var(--text);
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow-y: auto;
+    min-height: 440px;
+    max-height: 600px;
+    background: #000;
+  }
+  .text-output::-webkit-scrollbar { width: 4px; }
+  .text-output::-webkit-scrollbar-track { background: transparent; }
+  .text-output::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* page separator inside text output */
+  .page-sep {
+    display: block;
+    color: var(--muted);
+    font-size: 0.6rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin: 14px 0 8px;
+    border-top: 1px solid var(--border);
+    padding-top: 10px;
+  }
+  .page-sep:first-child { border-top: none; margin-top: 0; padding-top: 0; }
+
+  .empty-hint {
+    color: var(--muted);
+    font-size: 0.62rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    text-align: center;
+    margin-top: 40%;
+    opacity: 0.5;
+  }
+
+  .text-actions {
+    padding: 12px 16px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .btn {
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-transform: uppercase;
+    border: 1px solid var(--border);
+  }
+  .btn-accent { background: var(--accent); color: #000; border-color: var(--accent); font-weight: 700; }
+  .btn-accent:hover { filter: brightness(1.15); }
+  .btn-ghost { background: transparent; color: var(--muted); }
+  .btn-ghost:hover { color: var(--text); border-color: var(--muted); }
+  .btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+  /* status dot */
+  .status-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--muted);
+    display: inline-block;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+  .status-dot.running {
+    background: var(--accent);
+    animation: pulse 1s ease-in-out infinite;
+  }
+  .status-dot.done { background: var(--green); animation: none; }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  /* Done banner */
+  .done-banner {
+    display: none;
+    background: rgba(0,255,136,0.07);
+    border: 1px solid rgba(0,255,136,0.25);
+    border-radius: 10px;
+    padding: 14px 20px;
+    margin-top: 16px;
+    font-size: 0.7rem;
+    letter-spacing: 1px;
+    color: var(--green);
+    text-align: center;
+    text-transform: uppercase;
+  }
+  .done-banner.visible { display: block; }
+</style>
+</head>
+<body>
+<div class="page">
+  <a class="back-btn" href="../../index.html">- Back</a>
+  <header>
+    <h1>OCR</h1>
+    <p>PDF - page by page text extraction</p>
+  </header>
+
+  <!-- Drop Zone -->
+  <div class="drop-zone" id="drop-zone">
+    <input type="file" accept="application/pdf,image/*" id="file-input"/>
+    <div class="drop-icon">📄</div>
+    <h2>Drop a PDF or image here</h2>
+    <p>PDF · PNG · JPG · WEBP · BMP · TIFF</p>
+  </div>
+
+  <!-- Processing UI -->
+  <div class="processing" id="processing">
+
+    <!-- Left: current page preview -->
+    <div class="page-viewer">
+      <div class="panel-header">
+        <span><span class="status-dot" id="status-dot"></span><span id="status-label">Waiting</span></span>
+        <strong id="page-label">-</strong>
+      </div>
+      <div class="canvas-wrap">
+        <div class="scanning-overlay">
+          <canvas id="page-canvas"></canvas>
+          <div class="scan-line" id="scan-line"></div>
+        </div>
+      </div>
+      <div class="progress-section">
+        <div class="progress-bar-wrap">
+          <div class="progress-bar-fill" id="progress-fill"></div>
+        </div>
+        <div class="progress-stats">
+          <span class="page-count" id="page-count-disp">Page 0 / 0</span>
+          <span class="pct" id="pct-disp">0%</span>
+          <span class="eta" id="eta-disp">Estimating...</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: extracted text output -->
+    <div class="text-panel">
+      <div class="panel-header">
+        <span>Extracted text</span>
+        <span id="char-count" style="color:var(--muted)">0 chars</span>
+      </div>
+      <div class="text-output" id="text-output">
+        <div class="empty-hint" id="empty-hint">Text will appear here as pages complete</div>
+      </div>
+      <div class="text-actions">
+        <button class="btn btn-accent" id="copy-btn" onclick="copyAll()" disabled>Copy all</button>
+        <button class="btn btn-ghost" id="dl-btn" onclick="downloadTxt()" disabled>Download .txt</button>
+        <button class="btn btn-ghost" onclick="resetAll()">New PDF</button>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="done-banner" id="done-banner">
+    Done - all pages extracted
+  </div>
+</div>
+
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+
+const dropZone   = document.getElementById('drop-zone');
+const fileInput  = document.getElementById('file-input');
+const processing = document.getElementById('processing');
+const canvas     = document.getElementById('page-canvas');
+const ctx        = canvas.getContext('2d');
+const scanLine   = document.getElementById('scan-line');
+const statusDot  = document.getElementById('status-dot');
+const statusLabel= document.getElementById('status-label');
+const pageLabel  = document.getElementById('page-label');
+const pageCntDisp= document.getElementById('page-count-disp');
+const pctDisp    = document.getElementById('pct-disp');
+const etaDisp    = document.getElementById('eta-disp');
+const textOutput = document.getElementById('text-output');
+const charCount  = document.getElementById('char-count');
+const emptyHint  = document.getElementById('empty-hint');
+const doneBanner = document.getElementById('done-banner');
+const copyBtn    = document.getElementById('copy-btn');
+const dlBtn      = document.getElementById('dl-btn');
+
+let allText = '';
+let currentFilename = 'ocr';
+let running = false;
+
+/* ---- Drop / file input ---- */
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('drag-over');
+  const f = e.dataTransfer.files[0];
+  if (f && (f.type === 'application/pdf' || f.type.startsWith('image/'))) start(f);
+});
+fileInput.addEventListener('change', () => {
+  const f = fileInput.files[0];
+  if (f) start(f);
+});
+
+/* ---- Main ---- */
+async function start(file) {
+  if (running) return;
+  running = true;
+
+  currentFilename = file.name.replace(/\.[^.]+$/, '') || 'ocr';
+  allText = '';
+  textOutput.innerHTML = '';
+  emptyHint && emptyHint.remove();
+  doneBanner.classList.remove('visible');
+  copyBtn.disabled = true;
+  dlBtn.disabled = true;
+
+  dropZone.style.display = 'none';
+  processing.classList.add('active');
+
+  const isImage = file.type.startsWith('image/');
+
+  if (isImage) {
+    await startImage(file);
+  } else {
+    await startPdf(file);
+  }
+}
+
+async function startImage(file) {
+  const total = 1;
+  pageLabel.textContent = 'Image';
+  pageCntDisp.textContent = 'Image (1 page)';
+  setProgress(0);
+  setStatus('running', 'Loading OCR engine...');
+
+  /* Draw image to canvas so the scan animation works */
+  const url = URL.createObjectURL(file);
+  await new Promise((res, rej) => {
+    const img = new Image();
+    img.onload = () => {
+      canvas.width  = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      ctx.drawImage(img, 0, 0);
+      URL.revokeObjectURL(url);
+      res();
+    };
+    img.onerror = rej;
+    img.src = url;
+  });
+
+  await loadScript('https://unpkg.com/tesseract.js@5.1.1/dist/tesseract.min.js');
+  const worker = await Tesseract.createWorker('eng', 1, { logger: () => {} });
+
+  setStatus('running', 'Running OCR...');
+  scanLine.classList.add('active');
+  const result = await worker.recognize(canvas);
+  const text = cleanOcrText(result.data.text || '');
+  scanLine.classList.remove('active');
+  await worker.terminate();
+
+  if (text) {
+    allText = text;
+    const sep = document.createElement('span');
+    sep.className = 'page-sep';
+    sep.textContent = 'Image';
+    textOutput.appendChild(sep);
+    textOutput.appendChild(document.createTextNode(text));
+    charCount.textContent = allText.length.toLocaleString() + ' chars';
+    copyBtn.disabled = false;
+    dlBtn.disabled = false;
+  }
+
+  setProgress(100);
+  setStatus('done', 'Complete');
+  pageLabel.textContent = '1 / 1';
+  pageCntDisp.textContent = 'Done';
+  etaDisp.textContent = '';
+  doneBanner.classList.add('visible');
+  running = false;
+}
+
+async function startPdf(file) {
+  setStatus('running', 'Loading PDF...');
+  const buf = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+  const total = pdf.numPages;
+  const pageTimes = [];
+  let worker = null;
+
+  for (let i = 1; i <= total; i++) {
+    const pageStart = Date.now();
+
+    setStatus('running', 'Reading page ' + i + '...');
+    pageLabel.textContent = 'Page ' + i + ' / ' + total;
+    pageCntDisp.textContent = 'Page ' + i + ' / ' + total;
+    setProgress(Math.round(((i - 1) / total) * 100));
+
+    const page = await pdf.getPage(i);
+    const vp = page.getViewport({ scale: 2.0 });
+    canvas.width  = vp.width;
+    canvas.height = vp.height;
+    await page.render({ canvasContext: ctx, viewport: vp }).promise;
+
+    scanLine.classList.add('active');
+
+    /* Try PDF text layer first */
+    let text = await extractPdfTextLayer(page);
+    if (text) {
+      text = cleanOcrText(text);
+      setStatus('running', 'Page ' + i + ' (text layer)');
+    } else {
+      if (!worker) {
+        setStatus('running', 'Loading OCR engine...');
+        await loadScript('https://unpkg.com/tesseract.js@5.1.1/dist/tesseract.min.js');
+        worker = await Tesseract.createWorker('eng', 1, { logger: () => {} });
+      }
+      setStatus('running', 'OCR page ' + i + '...');
+      const result = await worker.recognize(canvas);
+      text = cleanOcrText(result.data.text || '');
+    }
+
+    scanLine.classList.remove('active');
+
+    if (text) {
+      allText += (allText ? '\n\n' : '') + text;
+      const sep = document.createElement('span');
+      sep.className = 'page-sep';
+      sep.textContent = 'Page ' + i;
+      textOutput.appendChild(sep);
+      textOutput.appendChild(document.createTextNode(text));
+      textOutput.scrollTop = textOutput.scrollHeight;
+      charCount.textContent = allText.length.toLocaleString() + ' chars';
+      copyBtn.disabled = false;
+      dlBtn.disabled = false;
+    }
+
+    const elapsed = Date.now() - pageStart;
+    pageTimes.push(elapsed);
+    const avgMs = pageTimes.reduce((a, b) => a + b, 0) / pageTimes.length;
+    etaDisp.textContent = i < total ? fmtTime(avgMs * (total - i)) + ' left' : '';
+    setProgress(Math.round((i / total) * 100));
+  }
+
+  if (worker) await worker.terminate();
+
+  setStatus('done', 'Complete');
+  pageLabel.textContent = total + ' / ' + total + ' pages';
+  pageCntDisp.textContent = 'All ' + total + ' pages done';
+  pctDisp.textContent = '100%';
+  etaDisp.textContent = '';
+  setProgress(100);
+  doneBanner.classList.add('visible');
+  running = false;
+}
+
+function setStatus(state, label) {
+  statusDot.className = 'status-dot' + (state === 'running' ? ' running' : state === 'done' ? ' done' : '');
+  statusLabel.textContent = label;
+}
+
+function setProgress(pct) {
+  document.getElementById('progress-fill').style.width = pct + '%';
+  pctDisp.textContent = pct + '%';
+}
+
+function isGarbageLine(line) {
+  if (!line) return false;
+  if (/PHOTO:/i.test(line)) return true;
+  if (/NATIONAL LIBRARY/i.test(line)) return true;
+  if (/ARCHIVE OF.*ZAPFFE/i.test(line)) return true;
+  if (/ALL PHOTOGRAPHS/i.test(line)) return true;
+  if (/OpenAirPhilosophy/i.test(line)) return true;
+  if (/PRIVATE COLLECTION/i.test(line)) return true;
+  if (/~~/.test(line)) return true;
+  if (/\u2014{2,}|———/.test(line)) return true;
+  if (/^[^a-zA-Z]{0,4}[o\|\\&]{1,2}[-\u2014]{2,}/.test(line)) return true;
+  const tokens = line.split(/\s+/).filter(Boolean);
+  if (tokens.length >= 4) {
+    const single = tokens.filter(t => t.length === 1).length;
+    if (single / tokens.length > 0.45) return true;
+  }
+  const alphanum = (line.match(/[a-zA-Z0-9]/g) || []).length;
+  if (alphanum / line.length < 0.45 && line.length < 80) return true;
+  if (/(\b\S\b\s){3,}/.test(line)) return true;
+  return false;
+}
+
+async function extractPdfTextLayer(page) {
+  try {
+    const tc = await page.getTextContent();
+    const items = tc.items.filter(it => it.str && it.str.trim());
+    if (items.length < 10) return null;
+    const unscaled = page.getViewport({ scale: 1 });
+    const midX = unscaled.width / 2;
+    const left  = items.filter(it => it.transform[4] <  midX);
+    const right = items.filter(it => it.transform[4] >= midX);
+    function colToText(group) {
+      if (!group.length) return '';
+      group.sort((a, b) => {
+        const dy = b.transform[5] - a.transform[5];
+        if (Math.abs(dy) > 3) return dy;
+        return a.transform[4] - b.transform[4];
+      });
+      const lines = [];
+      let cur = [group[0].str];
+      let lastY = group[0].transform[5];
+      for (let k = 1; k < group.length; k++) {
+        const it = group[k];
+        if (Math.abs(it.transform[5] - lastY) > 3) {
+          lines.push(cur.join(''));
+          cur = [];
+          lastY = it.transform[5];
+        }
+        cur.push(it.str);
+      }
+      if (cur.length) lines.push(cur.join(''));
+      return lines.join('\n');
+    }
+    const leftText  = colToText(left);
+    const rightText = right.length > 15 ? colToText(right) : '';
+    const combined  = rightText ? leftText + '\n\n' + rightText : leftText;
+    if ((combined.match(/\b[a-zA-Z]{3,}\b/g) || []).length < 20) return null;
+    return combined.trim();
+  } catch (e) {
+    return null;
+  }
+}
+
+function cleanOcrText(raw) {
+  const lines = raw.split('\n');
+  const cleaned = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    let line = lines[i].trim();
+    if (!line) { cleaned.push(''); continue; }
+    if (isGarbageLine(line)) continue;
+    const alphanum = (line.match(/[a-zA-Z0-9]/g) || []).length;
+    if (alphanum <= 2) continue;
+    if (line.endsWith('-') && i + 1 < lines.length) {
+      const next = lines[i + 1].trim();
+      if (next && /^[a-z]/.test(next) && !isGarbageLine(next)) {
+        line = line.slice(0, -1) + next;
+        i++;
+      }
+    }
+    if (isGarbageLine(line)) continue;
+    cleaned.push(line);
+  }
+
+  const rejoined = [];
+  for (let i = 0; i < cleaned.length; i++) {
+    const line = cleaned[i];
+    if (line === '') { rejoined.push(''); continue; }
+    const next = cleaned[i + 1];
+    if (!next || next === '' || /[.!?:;"\u201d\u2019]$/.test(line)) {
+      rejoined.push(line);
+    } else {
+      cleaned[i + 1] = line + ' ' + next;
+    }
+  }
+
+  return rejoined
+    .filter(line => line === '' || !isGarbageLine(line))
+    .join('\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .replace(/ {2,}/g, ' ')
+    // Strip lone single-letter tokens that aren't real English words (a, i)
+    .replace(/(?<!\S)([b-hj-z])(?!\S)/gi, (match, letter) =>
+      /^[aiAI]$/.test(letter) ? match : ''
+    )
+    .replace(/ {2,}/g, ' ')
+    .trim();
+}
+
+function fmtTime(ms) {
+  const s = Math.round(ms / 1000);
+  if (s < 60) return s + 's';
+  const m = Math.floor(s / 60);
+  const r = s % 60;
+  return m + 'm ' + (r < 10 ? '0' : '') + r + 's';
+}
+
+function copyAll() {
+  if (!allText) return;
+  navigator.clipboard.writeText(allText).then(() => {
+    copyBtn.textContent = 'Copied!';
+    setTimeout(() => copyBtn.textContent = 'Copy all', 1600);
+  });
+}
+
+function downloadTxt() {
+  if (!allText) return;
+  const a = document.createElement('a');
+  a.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(allText);
+  a.download = currentFilename + '.txt';
+  a.click();
+}
+
+function resetAll() {
+  running = false;
+  allText = '';
+  dropZone.style.display = '';
+  processing.classList.remove('active');
+  doneBanner.classList.remove('visible');
+  textOutput.innerHTML = '';
+  fileInput.value = '';
+  charCount.textContent = '0 chars';
+  copyBtn.disabled = true;
+  dlBtn.disabled = true;
+  setProgress(0);
+  setStatus('', 'Waiting');
+  pageLabel.textContent = '-';
+  pageCntDisp.textContent = 'Page 0 / 0';
+  etaDisp.textContent = 'Estimating...';
+}
+
+function loadScript(src) {
+  return new Promise((res, rej) => {
+    if (document.querySelector(`script[src="${src}"]`)) return res();
+    const s = document.createElement('script');
+    s.src = src; s.onload = res; s.onerror = rej;
+    document.head.appendChild(s);
+  });
+}
+</script>
+</body>
+</html>

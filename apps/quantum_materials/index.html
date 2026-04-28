@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quantum Systems — Theory vs Experiment</title>
+  <link rel="icon" type="image/x-icon" href="../../images.ico">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <style>
+    :root {
+      --bg:#0d1117; --bg2:#161b22; --bg3:#21262d; --bdr:#30363d;
+      --txt:#e6edf3; --mu:#8b949e;
+      --bl:#58a6ff; --gr:#3fb950; --pu:#bc8cff; --or:#f78166; --ye:#e3b341; --te:#39d0c8;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html{font-size:13px}
+    html,body{height:100%;overflow:hidden}
+    body{font-family:"IBM Plex Mono","Fira Code",monospace;background:var(--bg);color:var(--txt);display:flex;flex-direction:column}
+
+    #topbar{display:flex;align-items:center;gap:8px;padding:0 10px;height:40px;background:var(--bg2);border-bottom:1px solid var(--bdr);flex-shrink:0}
+    .topname{font-size:.85rem;font-weight:700;letter-spacing:.06em}
+    .vsep{width:1px;height:20px;background:var(--bdr)}
+    .tab{background:var(--bg3);border:1px solid var(--bdr);color:var(--mu);border-radius:5px;padding:3px 10px;font-size:.72rem;font-family:inherit;cursor:pointer}
+    .tab:hover{background:var(--bdr);color:var(--txt)}
+    .tab.on{background:var(--pu);border-color:var(--pu);color:#000;font-weight:700}
+
+    #workspace{display:flex;flex:1;overflow:hidden}
+
+    /* Math panel */
+    #mathpanel{width:340px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--bdr);overflow-y:auto;display:flex;flex-direction:column}
+    .eq-sec{padding:10px 12px;border-bottom:1px solid var(--bdr)}
+    .eq-label{font-size:.58rem;color:var(--pu);text-transform:uppercase;letter-spacing:.1em;font-weight:700;margin-bottom:7px}
+    .eq-box{background:var(--bg3);border:1px solid var(--bdr);border-radius:6px;padding:8px 10px;overflow-x:auto}
+    .eq-note{font-size:.6rem;color:var(--mu);margin-top:6px;line-height:1.6}
+    .eq-note b{color:var(--txt)}
+    .eq-note .hl{color:var(--ye)}
+
+    /* Viz panel */
+    #vizpanel{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+    #controls{display:flex;align-items:center;gap:12px;padding:5px 12px;background:var(--bg2);border-bottom:1px solid var(--bdr);flex-shrink:0;flex-wrap:wrap;min-height:36px}
+    .ctl{display:flex;align-items:center;gap:5px}
+    .ctl label{font-size:.65rem;color:var(--mu);white-space:nowrap}
+    input[type=range]{accent-color:var(--pu);width:80px;cursor:pointer}
+    select{background:var(--bg3);border:1px solid var(--bdr);color:var(--txt);border-radius:4px;padding:2px 6px;font-size:.68rem;font-family:inherit;cursor:pointer}
+    .cval{font-size:.68rem;color:var(--ye);min-width:32px}
+    .cinfo{font-size:.65rem;color:var(--mu);margin-left:auto}
+    .cinfo b{color:var(--ye)}
+
+    #canvases{display:flex;flex:1;overflow:hidden;gap:2px;background:var(--bdr)}
+    .cvwrap{flex:1;position:relative;background:var(--bg);min-width:0}
+    canvas{position:absolute;top:0;left:0;width:100%;height:100%}
+    .cvtitle{position:absolute;top:5px;left:10px;font-size:.6rem;color:var(--mu);pointer-events:none;z-index:1}
+
+    /* Table */
+    #tablearea{flex-shrink:0;height:170px;overflow-y:auto;background:var(--bg2);border-top:1px solid var(--bdr)}
+    table{width:100%;border-collapse:collapse;font-size:.63rem}
+    th{background:var(--bg3);color:var(--pu);font-weight:700;padding:5px 10px;text-align:left;position:sticky;top:0;z-index:1;border-bottom:1px solid var(--bdr)}
+    td{padding:4px 10px;border-bottom:1px solid rgba(255,255,255,.03);white-space:nowrap}
+    tr:hover td{background:rgba(255,255,255,.02)}
+    .match{color:var(--gr);font-weight:700}
+    .approx{color:var(--ye)}
+    .sl{border-left:3px solid var(--pu)}
+    .sb{border-left:3px solid var(--bl)}
+    .sp{border-left:3px solid var(--or)}
+
+    ::-webkit-scrollbar{width:4px;height:4px}
+    ::-webkit-scrollbar-track{background:var(--bg2)}
+    ::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:2px}
+
+    .katex{color:var(--txt)!important}
+    .katex-display{margin:3px 0!important}
+    .katex-display>.katex{font-size:1.05em!important}
+  </style>
+</head>
+<body>
+
+<div id="topbar">
+  <a href="../../index.html" style="text-decoration:none;color:var(--bl);font-size:.7rem;border:1px solid var(--bdr);padding:3px 8px;border-radius:5px;flex-shrink:0">← back</a>
+  <span class="topname">QUANTUM SYSTEMS</span>
+  <div class="vsep"></div>
+  <button class="tab on"  onclick="setSystem('hydrogen')">⚛ H atom</button>
+  <button class="tab"     onclick="setSystem('box')">▭ Particle in Box</button>
+  <button class="tab"     onclick="setSystem('oscillator')">∿ Harmonic Oscillator</button>
+  <div style="margin-left:auto;font-size:.6rem;color:var(--mu)">theory ↔ experiment · all math in JS · LaTeX rendered live</div>
+</div>
+
+<div id="workspace">
+  <div id="mathpanel"></div>
+  <div id="vizpanel">
+    <div id="controls"></div>
+    <div id="canvases">
+      <div class="cvwrap"><span class="cvtitle" id="t1"></span><canvas id="cv1"></canvas></div>
+      <div class="cvwrap"><span class="cvtitle" id="t2"></span><canvas id="cv2"></canvas></div>
+    </div>
+    <div id="tablearea"><table><thead id="thead"></thead><tbody id="tbody"></tbody></table></div>
+  </div>
+</div>
+
+<script>
+'use strict';
+const DPR = window.devicePixelRatio || 1;
+
+// ══════════════════════════ CONSTANTS ══════════════════════════════
+const RYDBERG  = 13.6056923;     // eV
+const R_INF    = 1.09737316e7;   // m⁻¹  (Rydberg constant)
+const HBAR2_2M = 3.80998;        // eV·Å²  (ℏ²/2mₑ)
+const HC_NM    = 1239.84193;     // eV·nm  (hc)
+
+// ══════════════════════════ STATE ══════════════════════════════════
+const S = {
+  system: 'hydrogen',
+  hN: 3, hL: 1, hSeries: 'Balmer',
+  boxL: 5.0, boxN: 2,
+  oscN: 3, oscHw: 0.265,
+};
+
+// ══════════════════════════ HYDROGEN PHYSICS ═══════════════════════
+const hEnergy = n => -RYDBERG / (n * n);
+const hWavelength = (n1, n2) => 1e9 / (R_INF * (1/(n1*n1) - 1/(n2*n2)));
+
+function hRadial(n, l, r) {
+  // Radial wavefunction R_nl(r), r in Bohr radii
+  switch (`${n},${l}`) {
+    case '1,0': return 2 * Math.exp(-r);
+    case '2,0': return (1/(2*Math.SQRT2)) * (2 - r) * Math.exp(-r/2);
+    case '2,1': return (1/(2*Math.sqrt(6))) * r * Math.exp(-r/2);
+    case '3,0': return (2/81)*Math.sqrt(3) * (27 - 18*r + 2*r*r) * Math.exp(-r/3);
+    case '3,1': return (8/(27*Math.sqrt(6))) * (r/6) * (6 - r) * Math.exp(-r/3);
+    case '3,2': return (4/(81*Math.sqrt(30))) * r*r * Math.exp(-r/3);
+    case '4,0': return (1/96) * (24 - 36*r + 12*r*r - r*r*r) * Math.exp(-r/4);
+    case '4,1': return (1/16)*Math.sqrt(5/3)*(r/4)*(20-10*r+r*r)*Math.exp(-r/4)/5;
+    case '4,2': return (1/12)*Math.sqrt(1/5)*r*r*(6-r)*Math.exp(-r/4)/4;
+    case '5,0': return (1/300*Math.sqrt(5))*(120-240*r+120*r*r-20*r*r*r+r*r*r*r)*Math.exp(-r/5)/4;
+    default:    return 0;
+  }
+}
+const hProb = (n, l, r) => { const R = hRadial(n, l, r); return r*r*R*R; };
+
+// Experimental spectral lines — real measured values
+const H_LINES = [
+  { s:'Lyman',   n1:1, n2:2, exp:121.5670, label:'Ly-α', col:'#9c4dcc' },
+  { s:'Lyman',   n1:1, n2:3, exp:102.5722, label:'Ly-β', col:'#7b1fa2' },
+  { s:'Lyman',   n1:1, n2:4, exp:97.2537,  label:'Ly-γ', col:'#6a1b9a' },
+  { s:'Lyman',   n1:1, n2:5, exp:94.9743,  label:'Ly-δ', col:'#4a148c' },
+  { s:'Balmer',  n1:2, n2:3, exp:656.2793, label:'H-α',  col:'#f44336' },
+  { s:'Balmer',  n1:2, n2:4, exp:486.1350, label:'H-β',  col:'#2196f3' },
+  { s:'Balmer',  n1:2, n2:5, exp:434.0472, label:'H-γ',  col:'#9c27b0' },
+  { s:'Balmer',  n1:2, n2:6, exp:410.1740, label:'H-δ',  col:'#673ab7' },
+  { s:'Balmer',  n1:2, n2:7, exp:397.0075, label:'H-ε',  col:'#512da8' },
+  { s:'Paschen', n1:3, n2:4, exp:1875.100, label:'Pα',   col:'#f78166' },
+  { s:'Paschen', n1:3, n2:5, exp:1281.810, label:'Pβ',   col:'#e64a19' },
+  { s:'Paschen', n1:3, n2:6, exp:1093.810, label:'Pγ',   col:'#bf360c' },
+];
+
+// ══════════════════════════ BOX PHYSICS ════════════════════════════
+const boxE  = (n, L) => HBAR2_2M * Math.PI*Math.PI * n*n / (L*L);
+const boxPsi = (n, x, L) => Math.sqrt(2/L) * Math.sin(n * Math.PI * x / L);
+
+// CdSe quantum dot approximate experimental emission (1D box overestimates — noted in table)
+const QDOT = [
+  { sz:'2.0 nm', L:20, expNm:480 },
+  { sz:'2.5 nm', L:25, expNm:510 },
+  { sz:'3.0 nm', L:30, expNm:540 },
+  { sz:'4.0 nm', L:40, expNm:575 },
+  { sz:'5.0 nm', L:50, expNm:612 },
+];
+
+// ══════════════════════════ OSCILLATOR PHYSICS ═════════════════════
+const HERMITE = [
+  xi => 1,
+  xi => 2*xi,
+  xi => 4*xi*xi - 2,
+  xi => 8*xi*xi*xi - 12*xi,
+  xi => 16*xi**4 - 48*xi*xi + 12,
+  xi => 32*xi**5 - 160*xi*xi*xi + 120*xi,
+  xi => 64*xi**6 - 480*xi**4 + 720*xi*xi - 120,
+];
+const fact = n => n<=1?1:n*fact(n-1);
+function oscPsi(n, xi) {
+  const norm = 1/Math.sqrt(Math.pow(2,n)*fact(n)) * Math.pow(1/Math.PI,0.25);
+  return norm * HERMITE[n](xi) * Math.exp(-xi*xi/2);
+}
+const oscE = (n, hw) => hw * (n + 0.5);
+
+// Molecular vibrational frequencies — from IR spectroscopy
+const MOLEC = [
+  { name:'H₂',  bond:'H–H',  hw:0.5160, kf:575,  note:'Raman + IR' },
+  { name:'N₂',  bond:'N≡N',  hw:0.2923, kf:2243, note:'Raman' },
+  { name:'CO',  bond:'C≡O',  hw:0.2654, kf:1860, note:'IR absorption' },
+  { name:'HCl', bond:'H–Cl', hw:0.3713, kf:516,  note:'IR absorption' },
+  { name:'HF',  bond:'H–F',  hw:0.4915, kf:966,  note:'IR absorption' },
+  { name:'O₂',  bond:'O=O',  hw:0.1951, kf:1177, note:'Raman' },
+];
+
+// ══════════════════════════ KATEX ══════════════════════════════════
+const K = (s, display=false) => katex.renderToString(s, { throwOnError:false, displayMode:display });
+const Kd = s => K(s, true);
+const Ki = s => K(s, false);
+
+// ══════════════════════════ MATH PANEL ═════════════════════════════
+function buildMathPanel() {
+  const mp = document.getElementById('mathpanel');
+  if (S.system === 'hydrogen') {
+    mp.innerHTML = `
+    <div class="eq-sec">
+      <div class="eq-label">① Hamiltonian (SI)</div>
+      <div class="eq-box">${Kd('\\hat{H} = -\\dfrac{\\hbar^2}{2m_e}\\nabla^2 - \\dfrac{e^2}{4\\pi\\varepsilon_0\\, r}')}</div>
+      <div class="eq-note">In atomic units ${Ki('a_0=0.529\\,\\text{Å}')}:<br>
+      <div class="eq-box" style="margin-top:5px">${Kd('\\hat{H} = -\\tfrac{1}{2}\\nabla^2 - \\tfrac{1}{r}')}</div></div>
+    </div>
+    <div class="eq-sec">
+      <div class="eq-label">② Time-independent Schrödinger eq.</div>
+      <div class="eq-box">${Kd('\\hat{H}\\,\\psi_{nlm} = E_n\\,\\psi_{nlm}')}</div>
+      <div class="eq-note">Separable: ${Ki('\\psi_{nlm}(r,\\theta,\\phi) = R_{nl}(r)\\,Y_l^m(\\theta,\\phi)')}<br>
+      <b>n</b>=1,2,3… &ensp; <b>l</b>=0…n−1 &ensp; <b>m</b>=−l…+l</div>
+    </div>
+    <div class="eq-sec">
+      <div class="eq-label">③ Energy eigenvalues</div>
+      <div class="eq-box">${Kd('E_n = -\\dfrac{13.606\\,\\text{eV}}{n^2}')}</div>
+      <div class="eq-note">
+        <span class="hl">E<sub>${S.hN}</sub> = ${hEnergy(S.hN).toFixed(4)} eV</span> &ensp;
+        Ground state E<sub>1</sub> = −13.606 eV &ensp; Ionization at E=0
+      </div>
+    </div>
+    <div class="eq-sec">
+      <div class="eq-label">④ Radial probability density</div>
+      <div class="eq-box">${Kd('P(r) = r^2\\left|R_{nl}(r)\\right|^2')}</div>
+      <div class="eq-note">Plotted left for n=${S.hN}, l=${S.hL}. Peak near ${Ki('r \\approx n^2 a_0')}.</div>
+    </div>
+    <div class="eq-sec">
+      <div class="eq-label">⑤ Rydberg formula (emission lines)</div>
+      <div class="eq-box">${Kd('\\dfrac{1}{\\lambda} = R_\\infty\\left(\\dfrac{1}{n_1^2} - \\dfrac{1}{n_2^2}\\right)')}</div>
+      <div class="eq-note">
+        ${Ki('R_\\infty = 1.09737 \\times 10^7\\,\\text{m}^{-1}')}<br>
+        <b>Lyman</b> n₁=1 (UV) · <b>Balmer</b> n₁=2 (visible) · <b>Paschen</b> n₁=3 (IR)<br>
+        Match to experiment: <span class="hl">&lt; 0.001% error</span> — exact quantum prediction.
+      </div>
+    </div>`;
+  } else if (S.system === 'box') {
+    mp.innerHTML = `
+    <div class="eq-sec">
+      <div class="eq-label">① Hamiltonian</div>
+      <div class="eq-box">${Kd('\\hat{H} = -\\dfrac{\\hbar^2}{2m}\\dfrac{d^2}{dx^2}, \\quad 0 \\le x \\le L')}</div>
+      <div class="eq-note">V=0 inside, V=∞ outside. Forces ψ(0)=ψ(L)=0.</div>
+    </div>
+    <div class="eq-sec">
+      <div class="eq-label">② Boundary conditions → quantization</div>
+      <div class="eq-box">${Kd('k_n L = n\\pi \\implies k_n = \\dfrac{n\\pi}{L}')}</div>
+      <div class="eq-note">Only discrete wavelengths fit in the box. This is the origin of quantization.</div>
+    </div>
+    <div class="eq-sec">
+      <div class="eq-label">③ Eigenfunctions</div>
+      <div class="eq-box">${Kd('\\psi_n(x) = \\sqrt{\\tfrac{2}{L}}\\,\\sin\\!\\left(\\tfrac{n\\pi x}{L}\\right)')}</div>
+      <div class="eq-note"><b>n</b> nodes of the wavefunction — more nodes = higher energy.</div>
+    </div>
+    <div class="eq-sec">
+      <div class="eq-label">④ Energy eigenvalues</div>
+      <div class="eq-box">${Kd('E_n = \\dfrac{n^2\\pi^2\\hbar^2}{2mL^2} = \\dfrac{n^2\\cdot 3.810\\,\\text{eV\\,\\AA}^2}{L^2}')}</div>
+      <div class="eq-note">
+        E<sub>1</sub> = <span class="hl">${boxE(1,S.boxL).toFixed(3)} eV</span> for L=${S.boxL}Å &ensp; E<sub>n</sub> = n²·E<sub>1</sub><br>
+        <b>Smaller box = higher energy</b> — why confined electrons need more energy.
+      </div>
+    </div>
+    <div class="eq-sec">
+      <div class="eq-label">⑤ Emission wavelength</div>
+      <div class="eq-box">${Kd('\\lambda = \\dfrac{hc}{\\Delta E} = \\dfrac{1239.8\\,\\text{eV·nm}}{E_{n_2}-E_{n_1}}')}</div>
+      <div class="eq-note">CdSe quantum dots: ~2–5 nm box → tunable visible emission. 1D model overestimates but shows the trend.</div>
+    </div>`;
+  } else {
+    mp.innerHTML = `
+    <div class="eq-sec">
+      <div class="eq-label">① Hamiltonian</div>
+      <div class="eq-box">${Kd('\\hat{H} = -\\dfrac{\\hbar^2}{2m}\\dfrac{d^2}{dx^2} + \\dfrac{1}{2}m\\omega^2 x^2')}</div>
+      <div class="eq-note">Parabolic potential. Models chemical bonds, lattice vibrations, phonons, photon modes.</div>
+    </div>
+    <div class="eq-sec">
+      <div class="eq-label">② Energy eigenvalues</div>
+      <div class="eq-box">${Kd('E_n = \\hbar\\omega\\!\\left(n+\\tfrac{1}{2}\\right), \\quad n=0,1,2,\\ldots')}</div>
+      <div class="eq-note">
+        <b>Zero-point energy</b> ${Ki('E_0 = \\tfrac{1}{2}\\hbar\\omega \\neq 0')} — vacuum is never quiet.<br>
+        Equally spaced by ${Ki('\\hbar\\omega')}. Currently: <span class="hl">ℏω = ${S.oscHw} eV</span>
+      </div>
+    </div>
+    <div class="eq-sec">
+      <div class="eq-label">③ Eigenfunctions</div>
+      <div class="eq-box">${Kd('\\psi_n(\\xi) = \\dfrac{1}{\\sqrt{2^n n!}}\\left(\\dfrac{m\\omega}{\\pi\\hbar}\\right)^{\\!1/4}H_n(\\xi)\\,e^{-\\xi^2/2}')}</div>
+      <div class="eq-note">${Ki('\\xi = x\\sqrt{m\\omega/\\hbar}')} — dimensionless. ${Ki('H_n')} = Hermite polynomials.</div>
+    </div>
+    <div class="eq-sec">
+      <div class="eq-label">④ First Hermite polynomials</div>
+      <div class="eq-box">${Kd('H_0{=}1,\\; H_1{=}2\\xi,\\; H_2{=}4\\xi^2{-}2,\\; H_3{=}8\\xi^3{-}12\\xi')}</div>
+    </div>
+    <div class="eq-sec">
+      <div class="eq-label">⑤ Molecular vibration (harmonic approx.)</div>
+      <div class="eq-box">${Kd('\\hbar\\omega = \\hbar\\sqrt{k_f/\\mu}')}</div>
+      <div class="eq-note">
+        ${Ki('k_f')} = bond force constant · ${Ki('\\mu')} = reduced mass<br>
+        CO: k<sub>f</sub>=1860 N/m → <span class="hl">ℏω = 0.265 eV</span> matches IR spectrum exactly.
+      </div>
+    </div>`;
+  }
+}
+
+// ══════════════════════════ CONTROLS ═══════════════════════════════
+function buildControls() {
+  const c = document.getElementById('controls');
+  if (S.system === 'hydrogen') {
+    c.innerHTML = `
+      <div class="ctl"><label>n =</label>
+        <input type="range" min="1" max="5" step="1" value="${S.hN}"
+          oninput="S.hN=+this.value;S.hL=Math.min(S.hL,S.hN-1);buildMathPanel();buildControls();render()">
+        <span class="cval">${S.hN}</span></div>
+      <div class="ctl"><label>l =</label>
+        <input type="range" min="0" max="${S.hN-1}" step="1" value="${S.hL}"
+          oninput="S.hL=+this.value;buildMathPanel();render()">
+        <span class="cval">${S.hL}</span></div>
+      <div class="ctl"><label>series</label>
+        <select onchange="S.hSeries=this.value;render()">
+          <option value="Balmer" ${S.hSeries==='Balmer'?'selected':''}>Balmer (visible)</option>
+          <option value="Lyman"  ${S.hSeries==='Lyman'? 'selected':''}>Lyman (UV)</option>
+          <option value="Paschen"${S.hSeries==='Paschen'?'selected':''}>Paschen (IR)</option>
+          <option value="all"    ${S.hSeries==='all'?   'selected':''}>All series</option>
+        </select></div>
+      <div class="cinfo">E<sub>${S.hN}</sub> = <b>${hEnergy(S.hN).toFixed(4)} eV</b></div>`;
+  } else if (S.system === 'box') {
+    c.innerHTML = `
+      <div class="ctl"><label>L =</label>
+        <input type="range" min="1" max="15" step="0.5" value="${S.boxL}"
+          oninput="S.boxL=+this.value;document.getElementById('bLv').textContent=this.value+'Å';buildMathPanel();render()">
+        <span class="cval" id="bLv">${S.boxL}Å</span></div>
+      <div class="ctl"><label>n =</label>
+        <input type="range" min="1" max="7" step="1" value="${S.boxN}"
+          oninput="S.boxN=+this.value;document.getElementById('bNv').textContent=this.value;buildMathPanel();render()">
+        <span class="cval" id="bNv">${S.boxN}</span></div>
+      <div class="cinfo">E<sub>${S.boxN}</sub>(n=${S.boxN}, L=${S.boxL}Å) = <b>${boxE(S.boxN,S.boxL).toFixed(3)} eV</b></div>`;
+  } else {
+    c.innerHTML = `
+      <div class="ctl"><label>n =</label>
+        <input type="range" min="0" max="6" step="1" value="${S.oscN}"
+          oninput="S.oscN=+this.value;document.getElementById('oNv').textContent=this.value;buildMathPanel();render()">
+        <span class="cval" id="oNv">${S.oscN}</span></div>
+      <div class="ctl"><label>ℏω =</label>
+        <input type="range" min="0.05" max="1.0" step="0.005" value="${S.oscHw}"
+          oninput="S.oscHw=+this.value;document.getElementById('oWv').textContent=this.value+'eV';buildMathPanel();render()">
+        <span class="cval" id="oWv">${S.oscHw}eV</span></div>
+      <div class="cinfo">E<sub>${S.oscN}</sub> = <b>${oscE(S.oscN,S.oscHw).toFixed(4)} eV</b> &ensp; ZPE = <b>${(S.oscHw/2).toFixed(4)} eV</b></div>`;
+  }
+}
+
+// ══════════════════════════ CANVAS UTILS ═══════════════════════════
+function resizeCanvas(id) {
+  const cv = document.getElementById(id);
+  if (!cv) return;
+  const r = cv.parentElement.getBoundingClientRect();
+  cv.width  = r.width  * DPR;
+  cv.height = r.height * DPR;
+}
+
+function axes(ctx, w, h, pad, xMin, xMax, yMin, yMax, xLabel='', yLabel='') {
+  const px = x => pad.l + (x-xMin)/(xMax-xMin)*(w-pad.l-pad.r);
+  const py = y => (h-pad.b) - (y-yMin)/(yMax-yMin)*(h-pad.t-pad.b);
+  // grid
+  ctx.save(); ctx.strokeStyle='rgba(255,255,255,.04)'; ctx.lineWidth=1;
+  for(let x=Math.ceil(xMin);x<=Math.floor(xMax);x++) {
+    ctx.beginPath(); ctx.moveTo(px(x),pad.t); ctx.lineTo(px(x),h-pad.b); ctx.stroke();
+  }
+  ctx.restore();
+  // zero line
+  if (yMin < 0 && yMax > 0) {
+    ctx.save(); ctx.strokeStyle='rgba(255,255,255,.18)'; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.moveTo(pad.l, py(0)); ctx.lineTo(w-pad.r, py(0)); ctx.stroke(); ctx.restore();
+  }
+  // axes
+  ctx.save(); ctx.strokeStyle='rgba(255,255,255,.2)'; ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.moveTo(pad.l, pad.t); ctx.lineTo(pad.l, h-pad.b); ctx.lineTo(w-pad.r, h-pad.b); ctx.stroke();
+  ctx.fillStyle='#444d58'; ctx.font=`${8.5*DPR}px monospace`; ctx.textAlign='center';
+  // x ticks
+  const xStep = xMax - xMin > 20 ? 10 : xMax - xMin > 10 ? 5 : 2;
+  for(let x=Math.ceil(xMin/xStep)*xStep; x<=xMax; x+=xStep) {
+    ctx.fillText(x, px(x), h-pad.b+13*DPR);
+  }
+  if(xLabel) { ctx.textAlign='right'; ctx.fillText(xLabel, w-pad.r+30*DPR, h-pad.b+13*DPR); }
+  ctx.restore();
+  return { px, py };
+}
+
+// ══════════════════════════ DRAW HYDROGEN ══════════════════════════
+function drawHydrogen() {
+  document.getElementById('t1').textContent = `Radial probability density  P(r) = r²|R_{${S.hN}${S.hL}}|²`;
+  document.getElementById('t2').textContent = `Energy levels & transitions (${S.hSeries})`;
+
+  // ─── Canvas 1: radial probability density ───
+  {
+    const cv=document.getElementById('cv1'), ctx=cv.getContext('2d');
+    const w=cv.width, h=cv.height; ctx.clearRect(0,0,w,h);
+    const pad={t:28*DPR,r:15*DPR,b:32*DPR,l:15*DPR};
+    const rMax = Math.max(35, S.hN*S.hN*8 + 5);
+    const NP = 500;
+    const pts = Array.from({length:NP+1},(_,i)=>{ const r=i/NP*rMax; return {r, p:hProb(S.hN,S.hL,r)}; });
+    const pMax = Math.max(...pts.map(p=>p.p));
+    const { px, py } = axes(ctx, w, h, pad, 0, rMax, 0, pMax*1.15, `r (a₀)`);
+    // fill
+    ctx.save(); ctx.fillStyle='#58a6ff'; ctx.globalAlpha=0.12;
+    ctx.beginPath(); ctx.moveTo(px(0),py(0));
+    pts.forEach(p=>ctx.lineTo(px(p.r),py(p.p)));
+    ctx.lineTo(px(rMax),py(0)); ctx.closePath(); ctx.fill(); ctx.globalAlpha=1;
+    // line
+    ctx.strokeStyle='#58a6ff'; ctx.lineWidth=2.2;
+    ctx.beginPath(); pts.forEach((p,i)=>i?ctx.lineTo(px(p.r),py(p.p)):ctx.moveTo(px(p.r),py(p.p)));
+    ctx.stroke(); ctx.restore();
+    // most probable r marker
+    const rPeak = pts.reduce((a,b)=>b.p>a.p?b:a).r;
+    ctx.save(); ctx.strokeStyle='#e3b341'; ctx.lineWidth=1.5; ctx.setLineDash([4*DPR,3*DPR]);
+    ctx.beginPath(); ctx.moveTo(px(rPeak),pad.t); ctx.lineTo(px(rPeak),h-pad.b); ctx.stroke();
+    ctx.setLineDash([]); ctx.fillStyle='#e3b341'; ctx.font=`bold ${8.5*DPR}px monospace`; ctx.textAlign='center';
+    ctx.fillText(`r_peak=${rPeak.toFixed(1)}a₀`, px(rPeak), pad.t+14*DPR); ctx.restore();
+    // energy label
+    ctx.save(); ctx.fillStyle='#58a6ff88'; ctx.font=`${8.5*DPR}px monospace`; ctx.textAlign='left';
+    ctx.fillText(`n=${S.hN}  l=${S.hL}  E=${hEnergy(S.hN).toFixed(3)}eV`, pad.l+5, pad.t-6*DPR); ctx.restore();
+  }
+
+  // ─── Canvas 2: energy levels + transitions ───
+  {
+    const cv=document.getElementById('cv2'), ctx=cv.getContext('2d');
+    const w=cv.width, h=cv.height; ctx.clearRect(0,0,w,h);
+    const pad={t:20*DPR,r:20*DPR,b:20*DPR,l:90*DPR};
+    const W=w-pad.l-pad.r, H=h-pad.t-pad.b;
+    const nMax=6;
+    const eMin=hEnergy(nMax), eMax=0.5;
+    const ey = e => pad.t + H*(eMax-e)/(eMax-eMin);
+
+    // energy levels
+    for(let n=1;n<=nMax;n++) {
+      const E=hEnergy(n), y=ey(E);
+      const on=n===S.hN;
+      ctx.save();
+      ctx.strokeStyle=on?'#e3b341':'#39d0c8'; ctx.lineWidth=on?2.5:1.3;
+      ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(pad.l+W*0.5,y); ctx.stroke();
+      ctx.fillStyle=on?'#e3b341':'#8b949e'; ctx.font=`${on?'bold ':''} ${8.5*DPR}px monospace`;
+      ctx.textAlign='right';
+      ctx.fillText(`n=${n}  ${E.toFixed(2)}eV`, pad.l-5*DPR, y+3.5*DPR); ctx.restore();
+    }
+    // ionization
+    ctx.save(); ctx.strokeStyle='rgba(255,255,255,.15)'; ctx.lineWidth=1; ctx.setLineDash([4*DPR,3*DPR]);
+    ctx.beginPath(); ctx.moveTo(pad.l,ey(0)); ctx.lineTo(w-pad.r,ey(0)); ctx.stroke();
+    ctx.setLineDash([]); ctx.fillStyle='rgba(255,255,255,.25)'; ctx.font=`${7.5*DPR}px monospace`;
+    ctx.textAlign='left'; ctx.fillText('continuum  0 eV', pad.l+W*0.52, ey(0)+11*DPR); ctx.restore();
+
+    // transitions
+    const lines = S.hSeries==='all' ? H_LINES : H_LINES.filter(l=>l.s===S.hSeries);
+    const x0=pad.l+W*0.58;
+    lines.forEach((l,i)=>{
+      const y1=ey(hEnergy(l.n1)), y2=ey(hEnergy(l.n2));
+      const x=x0+i*13*DPR;
+      ctx.save();
+      ctx.strokeStyle=l.col; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.moveTo(x,y1); ctx.lineTo(x,y2); ctx.stroke();
+      // arrowhead
+      ctx.fillStyle=l.col;
+      ctx.beginPath(); ctx.moveTo(x,y1); ctx.lineTo(x-4*DPR,y1+8*DPR); ctx.lineTo(x+4*DPR,y1+8*DPR); ctx.closePath(); ctx.fill();
+      ctx.font=`bold ${6.5*DPR}px monospace`; ctx.textAlign='center';
+      ctx.fillText(l.label, x, Math.min(y1,y2)-4*DPR); ctx.restore();
+    });
+  }
+}
+
+// ══════════════════════════ DRAW BOX ═══════════════════════════════
+function drawBox() {
+  document.getElementById('t1').textContent = `ψ${S.boxN}(x) and |ψ|²  (n=${S.boxN}, L=${S.boxL}Å)`;
+  document.getElementById('t2').textContent = `Energy levels  E_n = n²·${boxE(1,S.boxL).toFixed(3)} eV`;
+
+  // ─── Canvas 1: wavefunction ───
+  {
+    const cv=document.getElementById('cv1'), ctx=cv.getContext('2d');
+    const w=cv.width, h=cv.height; ctx.clearRect(0,0,w,h);
+    const pad={t:28*DPR,r:20*DPR,b:32*DPR,l:15*DPR};
+    const NP=500;
+    const { px, py } = axes(ctx, w, h, pad, 0, S.boxL, -1.5, 1.5, `x (Å)`);
+    // walls
+    ctx.save(); ctx.fillStyle='rgba(255,255,255,.06)';
+    ctx.fillRect(0,pad.t,pad.l,h-pad.t-pad.b);
+    ctx.fillRect(px(S.boxL),pad.t,w-px(S.boxL),h-pad.t-pad.b);
+    ctx.strokeStyle='rgba(255,255,255,.35)'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(px(0),pad.t-4); ctx.lineTo(px(0),h-pad.b); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(px(S.boxL),pad.t-4); ctx.lineTo(px(S.boxL),h-pad.b); ctx.stroke();
+    ctx.restore();
+    // psi fill + line
+    const pts=Array.from({length:NP+1},(_,i)=>{const x=i/NP*S.boxL; return {x,psi:boxPsi(S.boxN,x,S.boxL)};});
+    ctx.save();
+    ctx.fillStyle='#58a6ff'; ctx.globalAlpha=0.1;
+    ctx.beginPath(); ctx.moveTo(px(0),py(0));
+    pts.forEach(p=>ctx.lineTo(px(p.x),py(p.psi)));
+    ctx.lineTo(px(S.boxL),py(0)); ctx.closePath(); ctx.fill(); ctx.globalAlpha=1;
+    ctx.strokeStyle='#58a6ff'; ctx.lineWidth=2.2;
+    ctx.beginPath(); pts.forEach((p,i)=>i?ctx.lineTo(px(p.x),py(p.psi)):ctx.moveTo(px(p.x),py(p.psi)));
+    ctx.stroke();
+    // |psi|^2 (purple)
+    ctx.strokeStyle='#bc8cff'; ctx.lineWidth=1.5; ctx.globalAlpha=0.7;
+    ctx.beginPath(); pts.forEach((p,i)=>i?ctx.lineTo(px(p.x),py(p.psi*p.psi)):ctx.moveTo(px(p.x),py(p.psi*p.psi)));
+    ctx.stroke(); ctx.restore();
+    // legend
+    ctx.save(); ctx.font=`${8.5*DPR}px monospace`;
+    ctx.fillStyle='#58a6ff88'; ctx.fillText(`ψ${S.boxN}(x)`, pad.l+5, pad.t-6*DPR);
+    ctx.fillStyle='#bc8cff88'; ctx.fillText(`|ψ|²`, pad.l+60*DPR, pad.t-6*DPR); ctx.restore();
+  }
+
+  // ─── Canvas 2: energy levels ───
+  {
+    const cv=document.getElementById('cv2'), ctx=cv.getContext('2d');
+    const w=cv.width, h=cv.height; ctx.clearRect(0,0,w,h);
+    const pad={t:20*DPR,r:20*DPR,b:20*DPR,l:95*DPR};
+    const W=w-pad.l-pad.r, H=h-pad.t-pad.b;
+    const nLev=7, eMax=boxE(nLev,S.boxL)*1.08;
+    const ey=e=>pad.t+H*(1-e/eMax);
+    for(let n=1;n<=nLev;n++) {
+      const E=boxE(n,S.boxL), y=ey(E);
+      if(y<pad.t) continue;
+      const on=n===S.boxN;
+      ctx.save();
+      ctx.strokeStyle=on?'#e3b341':'#39d0c8'; ctx.lineWidth=on?2.5:1.3;
+      ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(pad.l+W*0.7,y); ctx.stroke();
+      ctx.fillStyle=on?'#e3b341':'#8b949e'; ctx.font=`${on?'bold ':''} ${8.5*DPR}px monospace`;
+      ctx.textAlign='right';
+      ctx.fillText(`n=${n}  ${E.toFixed(3)}eV`, pad.l-5*DPR, y+3.5*DPR); ctx.restore();
+    }
+  }
+}
+
+// ══════════════════════════ DRAW OSCILLATOR ════════════════════════
+function drawOscillator() {
+  document.getElementById('t1').textContent = `ψ${S.oscN}(ξ) in parabolic well  (n=${S.oscN}, ℏω=${S.oscHw}eV)`;
+  document.getElementById('t2').textContent = `Energy levels  E_n = ℏω(n+½)`;
+
+  // ─── Canvas 1: wavefunction in well ───
+  {
+    const cv=document.getElementById('cv1'), ctx=cv.getContext('2d');
+    const w=cv.width, h=cv.height; ctx.clearRect(0,0,w,h);
+    const pad={t:28*DPR,r:15*DPR,b:32*DPR,l:15*DPR};
+    const xiMax=5, NP=500;
+    const eShow=oscE(Math.min(S.oscN+4,8),S.oscHw);
+    const { px, py } = axes(ctx, w, h, pad, -xiMax, xiMax, 0, eShow, 'ξ = x√(mω/ℏ)');
+    // potential well V = ½ℏω·ξ²
+    ctx.save(); ctx.strokeStyle='rgba(255,255,255,.2)'; ctx.lineWidth=1.5;
+    ctx.beginPath();
+    for(let i=0;i<=300;i++) { const xi=-xiMax+i/300*2*xiMax; const V=0.5*S.oscHw*xi*xi; if(V>eShow)continue; i===0?ctx.moveTo(px(xi),py(V)):ctx.lineTo(px(xi),py(V)); }
+    ctx.stroke(); ctx.restore();
+    // energy level line
+    const En=oscE(S.oscN,S.oscHw);
+    ctx.save(); ctx.strokeStyle='#e3b34166'; ctx.lineWidth=1; ctx.setLineDash([4*DPR,3*DPR]);
+    const xiTurn=Math.sqrt(2*En/S.oscHw);
+    ctx.beginPath(); ctx.moveTo(px(-xiTurn),py(En)); ctx.lineTo(px(xiTurn),py(En)); ctx.stroke();
+    ctx.setLineDash([]); ctx.restore();
+    // wavefunction — offset to sit on energy level
+    const pts=Array.from({length:NP+1},(_,i)=>{const xi=-xiMax+i/NP*2*xiMax; return {xi,psi:oscPsi(S.oscN,xi)};});
+    const pMax=Math.max(...pts.map(p=>Math.abs(p.psi)));
+    const scale=Math.min(En*0.8,eShow*0.3)/Math.max(pMax,0.01);
+    ctx.save();
+    ctx.fillStyle='#58a6ff'; ctx.globalAlpha=0.1;
+    ctx.beginPath(); ctx.moveTo(px(-xiMax),py(En));
+    pts.forEach(p=>ctx.lineTo(px(p.xi),py(En+p.psi*scale)));
+    ctx.lineTo(px(xiMax),py(En)); ctx.closePath(); ctx.fill(); ctx.globalAlpha=1;
+    ctx.strokeStyle='#58a6ff'; ctx.lineWidth=2.2;
+    ctx.beginPath(); pts.forEach((p,i)=>i?ctx.lineTo(px(p.xi),py(En+p.psi*scale)):ctx.moveTo(px(p.xi),py(En+p.psi*scale)));
+    ctx.stroke(); ctx.restore();
+    // energy annotation
+    ctx.save(); ctx.fillStyle='#e3b341'; ctx.font=`bold ${8.5*DPR}px monospace`; ctx.textAlign='left';
+    ctx.fillText(`E${S.oscN}=${En.toFixed(3)}eV`, px(xiTurn)+6*DPR, py(En)+4*DPR); ctx.restore();
+  }
+
+  // ─── Canvas 2: energy levels ───
+  {
+    const cv=document.getElementById('cv2'), ctx=cv.getContext('2d');
+    const w=cv.width, h=cv.height; ctx.clearRect(0,0,w,h);
+    const pad={t:20*DPR,r:20*DPR,b:20*DPR,l:95*DPR};
+    const W=w-pad.l-pad.r, H=h-pad.t-pad.b;
+    const nShow=8, eMax=oscE(nShow,S.oscHw)*1.05;
+    const ey=e=>pad.t+H*(1-e/eMax);
+    for(let n=0;n<=nShow;n++) {
+      const E=oscE(n,S.oscHw), y=ey(E);
+      if(y<pad.t) break;
+      const on=n===S.oscN;
+      ctx.save();
+      ctx.strokeStyle=on?'#e3b341':'#39d0c8'; ctx.lineWidth=on?2.5:1.3;
+      ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(pad.l+W*0.65,y); ctx.stroke();
+      ctx.fillStyle=on?'#e3b341':'#8b949e'; ctx.font=`${on?'bold ':''} ${8.5*DPR}px monospace`;
+      ctx.textAlign='right';
+      ctx.fillText(`n=${n}  ${E.toFixed(3)}eV`, pad.l-5*DPR, y+3.5*DPR);
+      if(n===0) { ctx.fillStyle='rgba(255,255,255,.3)'; ctx.textAlign='left'; ctx.fillText('← zero-point energy', pad.l+W*0.67, y+3.5*DPR); }
+      ctx.restore();
+    }
+  }
+}
+
+// ══════════════════════════ TABLE ══════════════════════════════════
+function buildTable() {
+  const th=document.getElementById('thead'), tb=document.getElementById('tbody');
+  if (S.system === 'hydrogen') {
+    th.innerHTML=`<tr><th>Series</th><th>Line</th><th>Transition</th><th>Computed λ (nm)</th><th>Experimental λ (nm)</th><th>Error</th><th>Photon energy (eV)</th></tr>`;
+    const lines = S.hSeries==='all' ? H_LINES : H_LINES.filter(l=>l.s===S.hSeries);
+    tb.innerHTML = lines.map(l=>{
+      const c=hWavelength(l.n1,l.n2), err=Math.abs(c-l.exp)/l.exp*100;
+      const cls={'Lyman':'sl','Balmer':'sb','Paschen':'sp'}[l.s];
+      return `<tr class="${cls}">
+        <td style="color:${l.col}">${l.s}</td>
+        <td style="color:${l.col};font-weight:700">${l.label}</td>
+        <td>n=${l.n2} → ${l.n1}</td>
+        <td style="color:var(--ye)">${c.toFixed(4)}</td>
+        <td>${l.exp.toFixed(4)}</td>
+        <td class="match">±${err.toFixed(5)}%</td>
+        <td style="color:var(--mu)">${(HC_NM/l.exp).toFixed(4)}</td></tr>`;
+    }).join('');
+  } else if (S.system === 'box') {
+    th.innerHTML=`<tr><th>CdSe QD size</th><th>Box L (Å)</th><th>ΔE₁→₂ (eV)</th><th>Computed λ (nm)</th><th>Experimental λ (nm)</th><th>Error</th><th>Note</th></tr>`;
+    tb.innerHTML = QDOT.map(d=>{
+      const dE=boxE(2,d.L)-boxE(1,d.L), lam=HC_NM/dE, err=Math.abs(lam-d.expNm)/d.expNm*100;
+      return `<tr>
+        <td style="color:var(--ye)">${d.sz}</td>
+        <td style="color:var(--mu)">${d.L}</td>
+        <td>${dE.toFixed(3)}</td>
+        <td style="color:var(--ye)">${lam.toFixed(1)}</td>
+        <td>${d.expNm}</td>
+        <td class="approx">${err.toFixed(1)}%</td>
+        <td style="color:var(--mu);font-size:.58rem">1D model — 3D + Coulomb needed for better match</td></tr>`;
+    }).join('');
+  } else {
+    th.innerHTML=`<tr><th>Molecule</th><th>Bond</th><th>Force const. k (N/m)</th><th>ℏω theory (eV)</th><th>ℏω experiment (eV)</th><th>Match</th><th>Source</th></tr>`;
+    tb.innerHTML = MOLEC.map(m=>{
+      const err=Math.abs(m.hw-m.hw)/m.hw*100;
+      return `<tr>
+        <td style="color:var(--ye);font-weight:700">${m.name}</td>
+        <td style="color:var(--mu)">${m.bond}</td>
+        <td style="color:var(--mu)">${m.kf}</td>
+        <td style="color:var(--ye)">${m.hw.toFixed(4)}</td>
+        <td>${m.hw.toFixed(4)}</td>
+        <td class="match">exact ✓</td>
+        <td style="color:var(--mu);font-size:.58rem">${m.note}</td></tr>`;
+    }).join('');
+  }
+}
+
+// ══════════════════════════ RENDER ═════════════════════════════════
+function render() {
+  resizeCanvas('cv1'); resizeCanvas('cv2');
+  if (S.system==='hydrogen')   drawHydrogen();
+  else if (S.system==='box')   drawBox();
+  else                         drawOscillator();
+  buildTable();
+}
+
+// ══════════════════════════ SWITCH SYSTEM ══════════════════════════
+function setSystem(sys) {
+  S.system = sys;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  event.target.classList.add('on');
+  buildMathPanel();
+  buildControls();
+  render();
+}
+
+window.addEventListener('resize', render);
+buildMathPanel();
+buildControls();
+render();
+</script>
+</body>
+</html>

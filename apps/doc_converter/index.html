@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document Converter</title>
+  <link rel="icon" type="image/x-icon" href="../../images.ico">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=JetBrains+Mono:wght@400;500;700&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap">
+  <!-- mammoth: DOCX → HTML -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+  <!-- marked: Markdown → HTML -->
+  <script src="https://cdn.jsdelivr.net/npm/marked@9.1.6/marked.min.js"></script>
+  <!-- JSZip: unpack EPUB -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:     #0a0a0b;
+      --bg2:    #111113;
+      --bg3:    #18181b;
+      --border: #252528;
+      --text:   #e2e2e6;
+      --muted:  #6b6b72;
+      --accent: #c8a96e;
+      --green:  #5aab7a;
+      --red:    #e05555;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Crimson Pro', Georgia, serif;
+      font-size: 17px;
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+      background-size: 200px; opacity: 0.6;
+    }
+
+    header {
+      position: relative; z-index: 10;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(180deg, #0f0f11 0%, var(--bg2) 100%);
+      padding: 24px 40px 18px;
+      flex-shrink: 0;
+    }
+    .header-inner { max-width: 1200px; margin: 0 auto; }
+    .back-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-family: 'JetBrains Mono', monospace; font-size: 11px;
+      letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--muted); text-decoration: none;
+      border: 1px solid var(--border); border-radius: 6px;
+      padding: 5px 12px; margin-bottom: 14px;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .back-btn:hover { color: var(--accent); border-color: var(--accent); }
+    .eyebrow {
+      display: block;
+      font-family: 'JetBrains Mono', monospace; font-size: 10px;
+      letter-spacing: 0.25em; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 6px;
+    }
+    h1 {
+      font-family: 'Cinzel', serif; font-size: clamp(1.6rem, 3vw, 2.4rem);
+      font-weight: 700; letter-spacing: 0.04em;
+      background: linear-gradient(135deg, #e8e8ee 0%, var(--accent) 55%, #e0c88a 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      line-height: 1.1;
+    }
+    .header-sub { font-size: 0.9rem; color: var(--muted); margin-top: 6px; font-style: italic; }
+
+    main {
+      position: relative; z-index: 1;
+      flex: 1;
+      max-width: 1200px; margin: 0 auto; width: 100%;
+      padding: 28px 24px 60px;
+      display: flex; flex-direction: column; gap: 20px;
+    }
+
+    /* Top toolbar */
+    .toolbar {
+      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    }
+
+    .drop-zone {
+      flex: 1; min-width: 200px;
+      background: var(--bg2); border: 2px dashed var(--border);
+      border-radius: 10px; padding: 16px 20px;
+      display: flex; align-items: center; gap: 14px;
+      cursor: pointer; transition: border-color 0.2s, background 0.2s;
+    }
+    .drop-zone:hover, .drop-zone.dragging {
+      border-color: var(--accent); background: rgba(200,169,110,0.05);
+    }
+    .drop-icon { font-size: 1.6rem; flex-shrink: 0; }
+    .drop-text { display: flex; flex-direction: column; gap: 2px; }
+    .drop-title {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.78rem;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--text);
+    }
+    .drop-sub { font-size: 0.82rem; color: var(--muted); }
+    #file-input { display: none; }
+
+    .file-badge {
+      background: var(--bg3); border: 1px solid var(--border);
+      border-radius: 8px; padding: 10px 16px;
+      display: none; align-items: center; gap: 10px;
+      font-family: 'JetBrains Mono', monospace; font-size: 0.75rem;
+    }
+    .file-badge.visible { display: flex; }
+    .file-badge-name { color: var(--text); max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .file-badge-type { color: var(--accent); font-weight: 700; }
+    .badge-clear {
+      background: none; border: none; color: var(--muted); cursor: pointer; font-size: 0.9rem;
+      padding: 2px 4px; border-radius: 4px; transition: color 0.15s;
+    }
+    .badge-clear:hover { color: var(--red); }
+
+    /* Format selector */
+    .format-bar {
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    }
+    .fmt-label {
+      font-family: 'JetBrains Mono', monospace; font-size: 9px;
+      letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--muted);
+    }
+    .fmt-btn {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.72rem;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      background: var(--bg3); border: 1px solid var(--border);
+      border-radius: 6px; padding: 7px 14px; cursor: pointer; color: var(--muted);
+      transition: border-color 0.15s, color 0.15s, background 0.15s;
+    }
+    .fmt-btn:hover { border-color: var(--accent); color: var(--text); }
+    .fmt-btn.active { border-color: var(--accent); background: rgba(200,169,110,0.1); color: var(--text); }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 7px;
+      font-family: 'JetBrains Mono', monospace; font-size: 11px;
+      font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+      border: none; border-radius: 7px; padding: 9px 18px; cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+    .btn:hover { opacity: 0.85; transform: translateY(-1px); }
+    .btn:active { transform: translateY(0); }
+    .btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
+    .btn-convert { background: rgba(200,169,110,0.18); color: var(--accent); border: 1px solid rgba(200,169,110,0.35); }
+    .btn-pdf     { background: rgba(90,171,122,0.15); color: var(--green); border: 1px solid rgba(90,171,122,0.3); }
+    .btn-html    { background: rgba(110,180,212,0.12); color: #6eb4d4; border: 1px solid rgba(110,180,212,0.3); }
+
+    /* Split view */
+    .workspace {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      min-height: 500px;
+      height: calc(100vh - 280px);
+    }
+    .pane {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 12px; display: flex; flex-direction: column;
+      overflow: hidden;
+    }
+    .pane-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 18px; border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .pane-label {
+      font-family: 'JetBrains Mono', monospace; font-size: 9px;
+      letter-spacing: 0.22em; text-transform: uppercase; color: var(--muted);
+    }
+    .pane-actions { display: flex; gap: 8px; }
+
+    .pane-body {
+      flex: 1; overflow-y: auto; overflow-x: hidden;
+      padding: 20px 24px;
+    }
+    .pane-empty {
+      flex: 1; display: flex; align-items: center; justify-content: center;
+      color: var(--muted);
+      font-family: 'JetBrains Mono', monospace; font-size: 10px;
+      letter-spacing: 0.18em; text-transform: uppercase;
+    }
+
+    /* Source textarea */
+    #source-text {
+      width: 100%; flex: 1;
+      background: transparent; border: none; outline: none; resize: none;
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;
+      line-height: 1.7; padding: 20px 24px;
+    }
+
+    /* Preview HTML content */
+    .preview-html {
+      font-family: 'Crimson Pro', Georgia, serif;
+      font-size: 16px; line-height: 1.75; color: var(--text);
+    }
+    .preview-html h1, .preview-html h2, .preview-html h3,
+    .preview-html h4, .preview-html h5, .preview-html h6 {
+      font-family: 'Cinzel', serif;
+      color: var(--text); margin: 1.4em 0 0.5em; line-height: 1.2;
+    }
+    .preview-html h1 { font-size: 1.8rem; }
+    .preview-html h2 { font-size: 1.4rem; color: var(--accent); }
+    .preview-html h3 { font-size: 1.2rem; }
+    .preview-html p { margin-bottom: 0.9em; }
+    .preview-html ul, .preview-html ol { margin: 0.6em 0 0.9em 1.5em; }
+    .preview-html li { margin-bottom: 0.3em; }
+    .preview-html blockquote {
+      border-left: 3px solid var(--accent); padding-left: 16px;
+      color: var(--muted); font-style: italic; margin: 1em 0;
+    }
+    .preview-html code {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.82em;
+      background: var(--bg3); border: 1px solid var(--border);
+      border-radius: 4px; padding: 1px 6px; color: #6eb4d4;
+    }
+    .preview-html pre {
+      background: var(--bg3); border: 1px solid var(--border);
+      border-radius: 8px; padding: 14px 16px; overflow-x: auto;
+      margin: 1em 0;
+    }
+    .preview-html pre code {
+      background: none; border: none; padding: 0; color: var(--text);
+    }
+    .preview-html table {
+      border-collapse: collapse; width: 100%; margin: 1em 0;
+      font-size: 0.9rem;
+    }
+    .preview-html th, .preview-html td {
+      border: 1px solid var(--border); padding: 8px 12px; text-align: left;
+    }
+    .preview-html th { background: var(--bg3); color: var(--accent); font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase; }
+    .preview-html img { max-width: 100%; border-radius: 6px; }
+    .preview-html a { color: var(--accent); }
+    .preview-html hr { border: none; border-top: 1px solid var(--border); margin: 1.5em 0; }
+
+    /* EPUB chapter nav */
+    .epub-nav {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 16px; border-bottom: 1px solid var(--border);
+      flex-shrink: 0; flex-wrap: wrap;
+    }
+    .epub-nav-label {
+      font-family: 'JetBrains Mono', monospace; font-size: 9px;
+      letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted);
+    }
+    .epub-chapter-select {
+      flex: 1;
+      background: var(--bg3); border: 1px solid var(--border);
+      border-radius: 6px; color: var(--text);
+      font-family: 'JetBrains Mono', monospace; font-size: 0.75rem;
+      padding: 5px 10px; outline: none;
+    }
+
+    /* Error */
+    .error-banner {
+      background: rgba(224,85,85,0.1); border: 1px solid rgba(224,85,85,0.25);
+      border-radius: 8px; padding: 12px 16px;
+      font-family: 'JetBrains Mono', monospace; font-size: 0.78rem;
+      color: var(--red); display: none;
+    }
+    .error-banner.visible { display: block; }
+
+    @media (max-width: 780px) {
+      .workspace { grid-template-columns: 1fr; height: auto; }
+      header { padding: 16px 16px 14px; }
+      main { padding: 20px 12px 40px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-inner">
+      <a class="back-btn" href="../../index.html">← Back Home</a>
+      <span class="eyebrow">Office</span>
+      <h1>Document Converter</h1>
+      <p class="header-sub">Convert DOCX, EPUB, Markdown, and plain text — preview and export to PDF, all in-browser.</p>
+    </div>
+  </header>
+
+  <main>
+
+    <div class="toolbar">
+      <div class="drop-zone" id="drop-zone">
+        <input type="file" id="file-input" accept=".docx,.epub,.md,.markdown,.txt,.html,.htm">
+        <div class="drop-icon">📄</div>
+        <div class="drop-text">
+          <div class="drop-title">Drop a file or click to browse</div>
+          <div class="drop-sub">.docx · .epub · .md · .txt · .html</div>
+        </div>
+      </div>
+
+      <div class="file-badge" id="file-badge">
+        <span class="file-badge-type" id="badge-type"></span>
+        <span class="file-badge-name" id="badge-name"></span>
+        <button class="badge-clear" id="badge-clear" title="Clear file">✕</button>
+      </div>
+    </div>
+
+    <div class="error-banner" id="error-banner"></div>
+
+    <div class="format-bar">
+      <span class="fmt-label">Export as</span>
+      <button class="fmt-btn active" data-out="pdf" id="fmt-pdf">PDF (print)</button>
+      <button class="fmt-btn" data-out="html" id="fmt-html">HTML file</button>
+      <button class="fmt-btn" data-out="txt" id="fmt-txt">Plain text</button>
+
+      <div style="margin-left:auto; display:flex; gap:8px; flex-wrap:wrap">
+        <button class="btn btn-convert" id="btn-export-pdf" style="display:none">⎙ Print / Save PDF</button>
+        <button class="btn btn-html" id="btn-export-html" style="display:none">↓ Download HTML</button>
+        <button class="btn btn-pdf" id="btn-export-txt" style="display:none">↓ Download TXT</button>
+      </div>
+    </div>
+
+    <div class="workspace" id="workspace">
+
+      <!-- Source pane -->
+      <div class="pane" id="source-pane">
+        <div class="pane-header">
+          <span class="pane-label" id="source-label">Source</span>
+        </div>
+        <div class="pane-empty" id="source-empty">Drop a file to begin</div>
+        <textarea id="source-text" style="display:none" spellcheck="false"></textarea>
+      </div>
+
+      <!-- Preview pane -->
+      <div class="pane" id="preview-pane">
+        <div class="pane-header">
+          <span class="pane-label">Preview</span>
+        </div>
+        <div class="epub-nav" id="epub-nav" style="display:none">
+          <span class="epub-nav-label">Chapter</span>
+          <select class="epub-chapter-select" id="epub-chapter"></select>
+        </div>
+        <div class="pane-empty" id="preview-empty">Preview appears here</div>
+        <div class="pane-body preview-html" id="preview-body" style="display:none"></div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <script>
+    const dropZone    = document.getElementById('drop-zone');
+    const fileInput   = document.getElementById('file-input');
+    const fileBadge   = document.getElementById('file-badge');
+    const badgeType   = document.getElementById('badge-type');
+    const badgeName   = document.getElementById('badge-name');
+    const badgeClear  = document.getElementById('badge-clear');
+    const errorBanner = document.getElementById('error-banner');
+
+    const sourceEmpty = document.getElementById('source-empty');
+    const sourceText  = document.getElementById('source-text');
+    const sourceLabel = document.getElementById('source-label');
+    const previewEmpty = document.getElementById('preview-empty');
+    const previewBody  = document.getElementById('preview-body');
+    const epubNav      = document.getElementById('epub-nav');
+    const epubChapterSel = document.getElementById('epub-chapter');
+
+    const btnExportPdf  = document.getElementById('btn-export-pdf');
+    const btnExportHtml = document.getElementById('btn-export-html');
+    const btnExportTxt  = document.getElementById('btn-export-txt');
+
+    let currentHtml  = '';
+    let currentType  = '';
+    let currentFile  = null;
+    let epubChapters = []; // { title, html }
+    let outputFormat = 'pdf';
+
+    /* ── Format buttons ── */
+    document.querySelectorAll('.fmt-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.fmt-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        outputFormat = btn.dataset.out;
+        updateExportButtons();
+      });
+    });
+
+    function updateExportButtons() {
+      btnExportPdf.style.display  = (currentHtml && outputFormat === 'pdf')  ? 'inline-flex' : 'none';
+      btnExportHtml.style.display = (currentHtml && outputFormat === 'html') ? 'inline-flex' : 'none';
+      btnExportTxt.style.display  = (currentHtml && outputFormat === 'txt')  ? 'inline-flex' : 'none';
+    }
+
+    /* ── Drop zone ── */
+    dropZone.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', e => { if (e.target.files[0]) loadFile(e.target.files[0]); });
+
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragging'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragging'));
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault();
+      dropZone.classList.remove('dragging');
+      if (e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]);
+    });
+
+    badgeClear.addEventListener('click', clearAll);
+
+    function clearAll() {
+      currentHtml = ''; currentType = ''; currentFile = null; epubChapters = [];
+      sourceText.style.display = 'none'; sourceEmpty.style.display = 'flex';
+      previewBody.style.display = 'none'; previewEmpty.style.display = 'flex';
+      epubNav.style.display = 'none';
+      fileBadge.classList.remove('visible');
+      errorBanner.classList.remove('visible');
+      updateExportButtons();
+      fileInput.value = '';
+    }
+
+    function showError(msg) {
+      errorBanner.textContent = msg;
+      errorBanner.classList.add('visible');
+    }
+
+    async function loadFile(file) {
+      clearAll();
+      currentFile = file;
+      const ext = file.name.split('.').pop().toLowerCase();
+      badgeName.textContent = file.name;
+      badgeType.textContent = ext.toUpperCase();
+      fileBadge.classList.add('visible');
+      sourceLabel.textContent = ext.toUpperCase() + ' Source';
+
+      try {
+        if (ext === 'docx') {
+          await loadDocx(file);
+        } else if (ext === 'epub') {
+          await loadEpub(file);
+        } else if (ext === 'md' || ext === 'markdown') {
+          await loadMarkdown(file);
+        } else if (ext === 'txt') {
+          await loadText(file);
+        } else if (ext === 'html' || ext === 'htm') {
+          await loadHtml(file);
+        } else {
+          showError(`Unsupported file type: .${ext}. Supported: .docx, .epub, .md, .txt, .html`);
+        }
+      } catch (err) {
+        showError('Error reading file: ' + err.message);
+        console.error(err);
+      }
+    }
+
+    /* ── DOCX ── */
+    async function loadDocx(file) {
+      const ab = await file.arrayBuffer();
+      const result = await mammoth.convertToHtml({ arrayBuffer: ab });
+      if (result.messages && result.messages.length) {
+        console.warn('mammoth warnings:', result.messages);
+      }
+      currentHtml = result.value;
+      currentType = 'docx';
+      showRawInSource(result.value);
+      showPreview(result.value);
+    }
+
+    /* ── EPUB ── */
+    async function loadEpub(file) {
+      const ab = await file.arrayBuffer();
+      const zip = await JSZip.loadAsync(ab);
+
+      // Find OPF manifest
+      const containerXml = await zip.file('META-INF/container.xml')?.async('text');
+      if (!containerXml) throw new Error('No META-INF/container.xml found in EPUB');
+
+      const opfPath = containerXml.match(/full-path="([^"]+\.opf)"/i)?.[1];
+      if (!opfPath) throw new Error('Could not locate OPF file');
+
+      const opfText = await zip.file(opfPath)?.async('text');
+      if (!opfText) throw new Error('Could not read OPF file');
+
+      const opfBase = opfPath.includes('/') ? opfPath.substring(0, opfPath.lastIndexOf('/') + 1) : '';
+
+      // Parse spine order
+      const parser = new DOMParser();
+      const opfDoc = parser.parseFromString(opfText, 'application/xml');
+
+      // Build id→href map from manifest
+      const manifest = {};
+      opfDoc.querySelectorAll('manifest item').forEach(item => {
+        manifest[item.getAttribute('id')] = item.getAttribute('href');
+      });
+
+      // Spine items in order
+      const spineRefs = [];
+      opfDoc.querySelectorAll('spine itemref').forEach(ref => {
+        const href = manifest[ref.getAttribute('idref')];
+        if (href) spineRefs.push(href);
+      });
+
+      // Load each chapter
+      epubChapters = [];
+      for (let i = 0; i < spineRefs.length; i++) {
+        const href = spineRefs[i];
+        const fullPath = opfBase + href;
+        const chapterText = await zip.file(fullPath)?.async('text');
+        if (!chapterText) continue;
+
+        // Extract body content and inline images
+        const chDoc = parser.parseFromString(chapterText, 'text/html');
+
+        // Embed images as data URIs
+        const imgs = chDoc.querySelectorAll('img');
+        for (const img of imgs) {
+          const src = img.getAttribute('src');
+          if (!src || src.startsWith('data:')) continue;
+          const imgPath = resolveEpubPath(fullPath, src);
+          const imgFile = zip.file(imgPath);
+          if (imgFile) {
+            const imgData = await imgFile.async('base64');
+            const mime = src.endsWith('.png') ? 'image/png'
+                       : src.endsWith('.gif') ? 'image/gif'
+                       : 'image/jpeg';
+            img.setAttribute('src', `data:${mime};base64,${imgData}`);
+          }
+        }
+
+        const title = chDoc.querySelector('title')?.textContent
+                   || chDoc.querySelector('h1,h2,h3')?.textContent
+                   || `Chapter ${i + 1}`;
+        const bodyHtml = chDoc.body?.innerHTML || chapterText;
+        epubChapters.push({ title: title.trim(), html: bodyHtml });
+      }
+
+      if (epubChapters.length === 0) throw new Error('No readable chapters found in EPUB');
+
+      // Populate chapter selector
+      epubChapterSel.innerHTML = '';
+      epubChapters.forEach((ch, i) => {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = `${i + 1}. ${ch.title}`;
+        epubChapterSel.appendChild(opt);
+      });
+
+      epubNav.style.display = 'flex';
+      epubChapterSel.addEventListener('change', () => {
+        const idx = parseInt(epubChapterSel.value);
+        showEpubChapter(idx);
+      });
+
+      currentType = 'epub';
+      showEpubChapter(0);
+      // Show first chapter HTML in source pane
+      sourceText.value = epubChapters[0].html;
+      sourceText.style.display = 'block';
+      sourceEmpty.style.display = 'none';
+    }
+
+    function resolveEpubPath(base, rel) {
+      if (rel.startsWith('/')) return rel.slice(1);
+      const parts = base.split('/');
+      parts.pop();
+      rel.split('/').forEach(seg => {
+        if (seg === '..') parts.pop();
+        else if (seg !== '.') parts.push(seg);
+      });
+      return parts.join('/');
+    }
+
+    function showEpubChapter(idx) {
+      const ch = epubChapters[idx];
+      if (!ch) return;
+      currentHtml = ch.html;
+      showPreview(ch.html);
+      sourceText.value = ch.html;
+      updateExportButtons();
+    }
+
+    /* ── Markdown ── */
+    async function loadMarkdown(file) {
+      const text = await file.text();
+      const html = marked.parse(text);
+      currentHtml = html;
+      currentType = 'md';
+      showRawInSource(text);
+      showPreview(html);
+    }
+
+    /* ── Plain text ── */
+    async function loadText(file) {
+      const text = await file.text();
+      const html = `<pre style="white-space:pre-wrap;word-break:break-word">${escapeHtml(text)}</pre>`;
+      currentHtml = html;
+      currentType = 'txt';
+      showRawInSource(text);
+      showPreview(html);
+    }
+
+    /* ── HTML ── */
+    async function loadHtml(file) {
+      const text = await file.text();
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(text, 'text/html');
+      const body = doc.body?.innerHTML || text;
+      currentHtml = body;
+      currentType = 'html';
+      showRawInSource(text);
+      showPreview(body);
+    }
+
+    function escapeHtml(s) {
+      return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    function showRawInSource(content) {
+      sourceText.value = content;
+      sourceText.style.display = 'block';
+      sourceEmpty.style.display = 'none';
+      updateExportButtons();
+    }
+
+    function showPreview(html) {
+      previewBody.innerHTML = html;
+      previewBody.style.display = 'block';
+      previewEmpty.style.display = 'none';
+      updateExportButtons();
+    }
+
+    /* ── Export ── */
+    btnExportPdf.addEventListener('click', () => {
+      if (!currentHtml) return;
+      const win = window.open('', '_blank');
+      win.document.write(`<!DOCTYPE html><html><head>
+        <meta charset="UTF-8">
+        <title>Document</title>
+        <style>
+          body { font-family: Georgia, serif; font-size: 13pt; line-height: 1.7; max-width: 750px; margin: 40px auto; color: #111; }
+          h1,h2,h3,h4 { margin: 1.3em 0 0.5em; }
+          h1 { font-size: 1.8em; } h2 { font-size: 1.4em; } h3 { font-size: 1.2em; }
+          p { margin-bottom: 0.8em; }
+          blockquote { border-left: 3px solid #999; padding-left: 16px; color: #555; }
+          code { font-family: monospace; background: #f4f4f4; padding: 1px 5px; border-radius: 3px; }
+          pre { background: #f4f4f4; padding: 14px; border-radius: 6px; overflow-x: auto; }
+          img { max-width: 100%; }
+          table { border-collapse: collapse; width: 100%; }
+          th, td { border: 1px solid #ccc; padding: 7px 10px; }
+          th { background: #f0f0f0; }
+          @media print { body { margin: 0; } }
+        </style>
+      </head><body>${currentHtml}</body></html>`);
+      win.document.close();
+      win.focus();
+      setTimeout(() => win.print(), 400);
+    });
+
+    btnExportHtml.addEventListener('click', () => {
+      if (!currentHtml) return;
+      const full = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Document</title>
+        <style>body{font-family:Georgia,serif;font-size:15px;line-height:1.7;max-width:750px;margin:40px auto;color:#111}</style>
+        </head><body>${currentHtml}</body></html>`;
+      downloadText(full, 'document.html', 'text/html');
+    });
+
+    btnExportTxt.addEventListener('click', () => {
+      if (!currentHtml) return;
+      const tmp = document.createElement('div');
+      tmp.innerHTML = currentHtml;
+      const txt = tmp.innerText;
+      downloadText(txt, 'document.txt', 'text/plain');
+    });
+
+    function downloadText(content, filename, mime) {
+      const blob = new Blob([content], { type: mime });
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      a.href = url; a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+  </script>
+</body>
+</html>

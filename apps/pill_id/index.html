@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Pill ID</title>
+<link rel="icon" type="image/x-icon" href="../../images.ico">
+<style>
+:root {
+  --bg: #07070f; --panel: #0f0f1a; --panel2: #161625;
+  --border: #252540; --text: #e8e8f8; --muted: #5a5a8a;
+  --accent: #818cf8; --accent2: #6366f1;
+  --mono: "JetBrains Mono", ui-monospace, monospace;
+  --sans: "Segoe UI", system-ui, sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--text); font-family: var(--sans); display: flex; flex-direction: column; min-height: 100vh; }
+.topbar { display: flex; align-items: center; gap: 12px; padding: 0 16px; height: 48px; background: var(--panel); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.back { color: var(--muted); text-decoration: none; font-size: 13px; } .back:hover { color: var(--accent); }
+.app-title { font-size: 14px; font-weight: 700; color: var(--accent); } .spacer { flex: 1; }
+.main { flex: 1; display: flex; flex-direction: column; overflow-y: auto; padding: 20px 18px 40px; gap: 20px; }
+.safety-banner { background: #0f0505; border: 2px solid #dc2626; border-radius: 14px; padding: 16px 18px; display: flex; gap: 12px; align-items: flex-start; }
+.sb-icon { font-size: 28px; flex-shrink: 0; }
+.sb-text h3 { font-size: 14px; font-weight: 700; color: #fca5a5; margin-bottom: 6px; }
+.sb-text p { font-size: 12px; color: #fca5a5; line-height: 1.7; opacity: .9; }
+.form-card { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 16px; }
+.form-card h3 { font-size: 13px; font-weight: 700; color: var(--accent); letter-spacing: .5px; text-transform: uppercase; }
+.q-item { display: flex; flex-direction: column; gap: 6px; }
+.q-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.q-label { font-size: 12px; color: var(--muted); letter-spacing: .3px; }
+input[type=text] { background: var(--panel2); border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 11px 12px; font-size: 14px; width: 100%; font-family: var(--mono); letter-spacing: 1px; }
+input[type=text]::placeholder { color: var(--muted); letter-spacing: 0; font-family: var(--sans); }
+input[type=text]:focus { outline: 1px solid var(--accent2); }
+select { background: var(--panel2); border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 9px 10px; font-size: 13px; width: 100%; appearance: none; cursor: pointer; }
+select:focus { outline: 1px solid var(--accent2); }
+.color-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.color-btn { border: 2px solid var(--border); border-radius: 10px; padding: 10px 4px; font-size: 11px; text-align: center; cursor: pointer; background: var(--panel2); color: var(--muted); transition: all .15s; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+.color-btn .dot { width: 22px; height: 22px; border-radius: 50%; border: 2px solid rgba(255,255,255,.15); }
+.color-btn.sel { border-color: var(--accent); color: var(--text); }
+.btn-search { background: var(--accent2); color: #fff; border: none; border-radius: 12px; padding: 15px; font-size: 14px; font-weight: 700; cursor: pointer; width: 100%; }
+.btn-search:hover { background: var(--accent); }
+.btn-search:disabled { opacity: .5; cursor: not-allowed; }
+.btn-reset { background: var(--panel2); border: 1px solid var(--border); color: var(--muted); border-radius: 12px; padding: 12px; font-size: 13px; cursor: pointer; width: 100%; }
+.btn-reset:hover { border-color: var(--accent); color: var(--accent); }
+.loading { display: none; align-items: center; gap: 10px; padding: 16px; background: var(--panel); border: 1px solid var(--border); border-radius: 14px; font-size: 13px; color: var(--muted); }
+.loading.show { display: flex; }
+.spin { width: 16px; height: 16px; border-radius: 50%; border: 2px solid rgba(129,140,248,.3); border-top-color: var(--accent); animation: spin .7s linear infinite; flex-shrink: 0; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.results { display: flex; flex-direction: column; gap: 14px; }
+.results.hidden { display: none; }
+.pill-card { background: var(--panel2); border: 1px solid rgba(129,140,248,.25); border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.pill-head { display: flex; gap: 14px; align-items: flex-start; }
+.pill-img { width: 88px; height: 88px; border-radius: 10px; object-fit: contain; flex-shrink: 0; border: 1px solid var(--border); background: #fff; }
+.pill-info h2 { font-size: 17px; font-weight: 700; margin-bottom: 4px; line-height: 1.3; }
+.pill-info .ndc { font-size: 11px; font-family: var(--mono); color: var(--muted); margin-bottom: 8px; }
+.badge { display: inline-flex; align-items: center; border-radius: 20px; padding: 3px 11px; font-size: 12px; font-weight: 700; font-family: var(--mono); background: rgba(129,140,248,.15); border: 1px solid rgba(129,140,248,.3); color: var(--accent); margin-right: 4px; margin-bottom: 4px; }
+.pill-props { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; border-top: 1px solid var(--border); padding-top: 12px; }
+.prop-item { background: var(--panel); border-radius: 8px; padding: 8px 10px; }
+.prop-key { font-size: 10px; text-transform: uppercase; letter-spacing: 1.2px; color: var(--muted); margin-bottom: 3px; }
+.prop-val { font-size: 13px; font-weight: 600; }
+.sec-lbl { font-size: 10px; letter-spacing: 1.8px; text-transform: uppercase; color: var(--muted); }
+.other-card { background: var(--panel2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; display: flex; gap: 12px; align-items: center; }
+.other-img { width: 48px; height: 48px; border-radius: 8px; object-fit: contain; border: 1px solid var(--border); background: #fff; flex-shrink: 0; }
+.other-info { flex: 1; min-width: 0; }
+.other-name { font-size: 13px; font-weight: 600; }
+.other-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.no-result { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 24px; text-align: center; }
+.no-result p { font-size: 14px; color: var(--muted); line-height: 1.7; }
+.no-result strong { color: var(--text); }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <a class="back" href="../../index.html">← Back</a>
+  <span class="app-title">💊 Pill ID</span>
+  <div class="spacer"></div>
+</div>
+<div class="main">
+  <div class="safety-banner">
+    <div class="sb-icon">⚕️</div>
+    <div class="sb-text">
+      <h3>Medical disclaimer</h3>
+      <p>This tool uses the NIH RxImage database. For informational purposes only. Never take medication without consulting a licensed healthcare provider. If you found an unknown pill, contact Poison Control (1-800-222-1222 in the US) immediately.</p>
+    </div>
+  </div>
+  <div class="form-card">
+    <h3>Pill Description</h3>
+    <div class="q-item">
+      <div class="q-label">Imprint Text (letters/numbers printed on pill)</div>
+      <input type="text" id="qImprint" placeholder="e.g. L484, M30, WATSON 853…" autocomplete="off" autocapitalize="characters">
+    </div>
+    <div class="q-item">
+      <div class="q-label">Color</div>
+      <div class="color-grid" id="colorGrid">
+        <div class="color-btn" data-val="" onclick="selectColor(this)"><div class="dot" style="background:linear-gradient(135deg,#fff,#888,#000)"></div>Any</div>
+        <div class="color-btn" data-val="white" onclick="selectColor(this)"><div class="dot" style="background:#f0f0f0;border-color:#ccc"></div>White</div>
+        <div class="color-btn" data-val="yellow" onclick="selectColor(this)"><div class="dot" style="background:#fde047"></div>Yellow</div>
+        <div class="color-btn" data-val="orange" onclick="selectColor(this)"><div class="dot" style="background:#fb923c"></div>Orange</div>
+        <div class="color-btn" data-val="pink" onclick="selectColor(this)"><div class="dot" style="background:#f472b6"></div>Pink</div>
+        <div class="color-btn" data-val="red" onclick="selectColor(this)"><div class="dot" style="background:#ef4444"></div>Red</div>
+        <div class="color-btn" data-val="green" onclick="selectColor(this)"><div class="dot" style="background:#22c55e"></div>Green</div>
+        <div class="color-btn" data-val="blue" onclick="selectColor(this)"><div class="dot" style="background:#3b82f6"></div>Blue</div>
+        <div class="color-btn" data-val="purple" onclick="selectColor(this)"><div class="dot" style="background:#a855f7"></div>Purple</div>
+        <div class="color-btn" data-val="brown" onclick="selectColor(this)"><div class="dot" style="background:#92400e"></div>Brown</div>
+        <div class="color-btn" data-val="gray" onclick="selectColor(this)"><div class="dot" style="background:#9ca3af"></div>Gray</div>
+        <div class="color-btn" data-val="black" onclick="selectColor(this)"><div class="dot" style="background:#1f2937"></div>Black</div>
+        <div class="color-btn" data-val="turquoise" onclick="selectColor(this)"><div class="dot" style="background:#2dd4bf"></div>Teal</div>
+      </div>
+    </div>
+    <div class="q-grid">
+      <div class="q-item">
+        <div class="q-label">Shape</div>
+        <select id="qShape">
+          <option value="">Any shape</option>
+          <option value="round">Round / Circular</option>
+          <option value="oval">Oval / Elliptical</option>
+          <option value="oblong">Oblong / Capsule-shaped</option>
+          <option value="capsule">Capsule (2 colors)</option>
+          <option value="rectangle">Rectangle</option>
+          <option value="square">Square</option>
+          <option value="triangle">Triangle</option>
+          <option value="diamond">Diamond</option>
+          <option value="pentagon">Pentagon</option>
+          <option value="hexagon">Hexagon</option>
+          <option value="octagon">Octagon</option>
+        </select>
+      </div>
+      <div class="q-item">
+        <div class="q-label">Scoring (lines on pill)</div>
+        <select id="qScore">
+          <option value="">Any</option>
+          <option value="1">No score line</option>
+          <option value="2">1 score line</option>
+          <option value="3">2 score lines</option>
+          <option value="4">Quadrant scored</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn-search" id="btnSearch">🔍 Search NIH Database</button>
+  </div>
+  <div class="loading" id="loading"><div class="spin"></div>Searching NIH RxImage database…</div>
+  <div class="results hidden" id="results">
+    <div id="resultsBody"></div>
+    <button class="btn-reset" id="btnReset">↺ New search</button>
+  </div>
+</div>
+<script>
+let selectedColor = '';
+function selectColor(el) {
+  document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('sel'));
+  el.classList.add('sel');
+  selectedColor = el.dataset.val;
+}
+// Select "Any" by default
+document.querySelector('.color-btn').classList.add('sel');
+
+const SHAPE_MAP = {
+  round:'C4621', oval:'C48345', oblong:'C48335', capsule:'C25158', rectangle:'C48336',
+  square:'C48337', triangle:'C48348', diamond:'C48339', pentagon:'C48340', hexagon:'C48342', octagon:'C48343'
+};
+
+document.getElementById('btnSearch').addEventListener('click', search);
+document.getElementById('qImprint').addEventListener('keydown', e => { if (e.key === 'Enter') search(); });
+
+async function search() {
+  const imprint = document.getElementById('qImprint').value.trim();
+  const shape   = document.getElementById('qShape').value;
+  const scoring = document.getElementById('qScore').value;
+
+  const params = new URLSearchParams();
+  if (imprint) params.set('imprint', imprint);
+  if (selectedColor) params.set('color', selectedColor);
+  if (shape) params.set('shape', SHAPE_MAP[shape] || '');
+  if (scoring) params.set('score', scoring);
+  params.set('size', '20');
+
+  if (!imprint && !selectedColor && !shape) {
+    alert('Please enter an imprint code, or select a color and/or shape.'); return;
+  }
+
+  document.getElementById('loading').classList.add('show');
+  document.getElementById('results').classList.add('hidden');
+  document.getElementById('btnSearch').disabled = true;
+
+  try {
+    const url = `https://rximage.nlm.nih.gov/api/rximage/1/rxnav?${params}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    renderResults(data, imprint, shape, scoring);
+  } catch (e) {
+    renderError(e.message);
+  } finally {
+    document.getElementById('loading').classList.remove('show');
+    document.getElementById('btnSearch').disabled = false;
+  }
+}
+
+function renderResults(data, imprint, shape, scoring) {
+  const items = data.nlmRxImages || [];
+  const body = document.getElementById('resultsBody');
+
+  if (!items.length) {
+    body.innerHTML = `<div class="no-result">
+      <p style="font-size:32px;margin-bottom:12px">💊</p>
+      <p>No pills found matching your description.<br><br>
+      <strong>Tips:</strong> Try just the imprint with no other filters. Check for letters vs numbers (0 vs O, 1 vs I). Some generics have different imprints than brand names.</p>
+    </div>`;
+    document.getElementById('results').classList.remove('hidden');
+    document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+    return;
+  }
+
+  const first = items[0];
+  const rest = items.slice(1, 6);
+
+  const props = [
+    first.colorText ? { k: 'Color', v: first.colorText } : null,
+    first.shapeText ? { k: 'Shape', v: first.shapeText } : null,
+    first.sizeText  ? { k: 'Size', v: first.sizeText } : null,
+    first.deaSchedule ? { k: 'DEA Schedule', v: first.deaSchedule } : null,
+  ].filter(Boolean);
+
+  body.innerHTML = `<div class="pill-card">
+    <div class="pill-head">
+      ${first.imageUrl ? `<img class="pill-img" src="${first.imageUrl}" onerror="this.style.display='none'" alt="">` : ''}
+      <div class="pill-info" style="flex:1;min-width:0">
+        <h2>${first.name || 'Unknown Drug'}</h2>
+        ${first.ndc11 ? `<div class="ndc">NDC: ${first.ndc11}</div>` : ''}
+        ${first.imprint ? `<span class="badge">Imprint: ${first.imprint}</span>` : ''}
+        ${first.applicationNumber ? `<span class="badge">${first.applicationNumber}</span>` : ''}
+      </div>
+    </div>
+    ${props.length ? `<div class="pill-props">${props.map(p => `<div class="prop-item"><div class="prop-key">${p.k}</div><div class="prop-val">${p.v}</div></div>`).join('')}</div>` : ''}
+  </div>
+  ${rest.length ? `<div class="sec-lbl">Other matches (${items.length} total)</div>
+  ${rest.map(p => `<div class="other-card">
+    ${p.imageUrl ? `<img class="other-img" src="${p.imageUrl}" onerror="this.style.display='none'" alt="">` : '<div class="other-img" style="background:var(--panel);display:flex;align-items:center;justify-content:center;font-size:24px">💊</div>'}
+    <div class="other-info"><div class="other-name">${p.name || 'Unknown'}</div><div class="other-sub">${[p.imprint ? 'Imprint: '+p.imprint : '', p.colorText||'', p.shapeText||''].filter(Boolean).join(' · ')}</div></div>
+  </div>`).join('')}` : ''}`;
+
+  document.getElementById('results').classList.remove('hidden');
+  document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+}
+
+function renderError(msg) {
+  document.getElementById('resultsBody').innerHTML = `<div class="no-result">
+    <p style="font-size:14px;color:#f87171">Search failed: ${msg}</p>
+    <p style="margin-top:8px;font-size:13px;color:var(--muted)">The NIH RxImage API may be temporarily unavailable. Try again in a moment.</p>
+  </div>`;
+  document.getElementById('results').classList.remove('hidden');
+}
+
+document.getElementById('btnReset').addEventListener('click', () => {
+  document.getElementById('qImprint').value = '';
+  document.getElementById('qShape').value = '';
+  document.getElementById('qScore').value = '';
+  document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('sel'));
+  document.querySelector('.color-btn').classList.add('sel');
+  selectedColor = '';
+  document.getElementById('results').classList.add('hidden');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+</script>
+</body>
+</html>

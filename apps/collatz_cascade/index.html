@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Collatz Cascade Explorer</title>
+  <link rel="icon" type="image/x-icon" href="../../images.ico">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="page">
+    <header class="topbar">
+      <a class="back-btn" href="../../index.html">Back Home</a>
+      <div class="title-wrap">
+        <h1>Collatz Cascade Explorer</h1>
+        <p>Pick a start value, build runs, and watch each trajectory cascade step-by-step.</p>
+      </div>
+    </header>
+
+    <section class="panel controls" id="controls-panel">
+      <div class="control-head">
+        <h2>Run Controls</h2>
+        <p>Use the quick controls, then open the dropdowns only when you want deeper settings.</p>
+      </div>
+      <p class="mini-explain">What happens each step: if n mod m = 0, we divide by d. Otherwise we apply a*n + b. You can use expressions with n and ^ (for example: 2n+1, n^2, (n+1)/2).</p>
+
+      <div class="control-grid run-setup-grid">
+        <label>
+          <span>Start Number n0</span>
+          <input id="n-input" type="text" value="220" spellcheck="false">
+        </label>
+
+        <label>
+          <span>Animation Speed</span>
+          <div class="speed-wrap">
+            <input id="speed-range" type="range" min="1" max="60" step="1" value="14">
+            <strong id="speed-value">14x</strong>
+          </div>
+        </label>
+
+        <label>
+          <span>Auto Focus Graph</span>
+          <select id="auto-focus-check">
+            <option value="on" selected>On (after Add Run)</option>
+            <option value="off">Off</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="button-row">
+        <button id="random-btn" class="btn ghost">Random N + Add</button>
+        <button id="build-btn" class="btn primary">Add Run</button>
+        <button id="play-btn" class="btn">Pause (Space)</button>
+        <button id="reset-btn" class="btn">Restart Anim</button>
+        <button id="global-reset-btn" class="btn danger">Global Reset</button>
+        <button id="focus-scene-btn" class="btn ghost">Focus Graph</button>
+      </div>
+      <p id="queue-line" class="queue-line"></p>
+      <p id="status-line" class="status-line"></p>
+
+      <details class="accordion" id="rule-details">
+        <summary>Rule Setup (Piecewise Function)</summary>
+        <div class="accordion-body">
+          <div class="rule-builder-grid">
+            <div class="control-block">
+              <h3>Divisible Branch</h3>
+              <p class="control-note">If n satisfies the modulus check, divide by d. m and d can be expressions in n.</p>
+              <div class="control-grid control-grid-2">
+                <label>
+                  <span>Check modulus m (n mod m = 0)</span>
+                  <input id="modulus-input" type="text" value="2" spellcheck="false">
+                </label>
+                <label>
+                  <span>Divide by d</span>
+                  <input id="divisor-input" type="text" value="2" spellcheck="false">
+                </label>
+              </div>
+            </div>
+
+            <div class="control-block">
+              <h3>Otherwise Branch</h3>
+              <p class="control-note">If not divisible, apply affine map a*n + b. a and b can also be expressions in n.</p>
+              <div class="control-grid control-grid-2">
+                <label>
+                  <span>Multiplier a</span>
+                  <input id="odd-mul-input" type="text" value="3" spellcheck="false">
+                </label>
+                <label>
+                  <span>Offset b</span>
+                  <input id="odd-add-input" type="text" value="1" spellcheck="false">
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="formula-box">
+            <div class="formula-title">Rule Preview</div>
+            <div id="formula-human" class="formula-human"></div>
+            <div id="formula-latex" class="formula-latex"></div>
+            <div id="formula-latex-actual" class="formula-latex"></div>
+          </div>
+          <p id="mode-help" class="mode-help"></p>
+        </div>
+      </details>
+
+      <details class="accordion" id="safety-details">
+        <summary>Safety and Performance</summary>
+        <div class="accordion-body">
+          <div class="control-grid control-grid-3">
+            <label>
+              <span>Safety Preset</span>
+              <select id="profile-input">
+                <option value="potato">Potato Safe</option>
+                <option value="balanced" selected>Balanced</option>
+                <option value="high">High Power</option>
+                <option value="extreme">Extreme</option>
+                <option value="custom">Custom</option>
+              </select>
+            </label>
+            <label>
+              <span>Max Steps Per Run</span>
+              <input id="max-steps-input" type="number" min="1000" step="1000" value="500000">
+            </label>
+            <label>
+              <span>Max Value Cap</span>
+              <input id="max-value-input" type="text" value="1000000000000000" spellcheck="false">
+            </label>
+          </div>
+          <p id="safety-hint" class="safety-hint"></p>
+        </div>
+      </details>
+
+      <details class="accordion" id="help-details">
+        <summary>What Am I Looking At?</summary>
+        <div class="accordion-body help-copy">
+          <p>Each run starts at your chosen n0 and applies the rule repeatedly. A new point is drawn at every step.</p>
+          <p>When multiple runs are added, they stay overlaid so you can compare trajectory shape and peak behavior.</p>
+          <p>Use <strong>Run History</strong> by clicking a row in Overlay Runs to inspect every exact value.</p>
+        </div>
+      </details>
+    </section>
+
+    <section class="panel scene-panel" id="scene-panel">
+      <canvas id="scene"></canvas>
+      <div id="hover-tooltip" class="hover-tooltip hidden"></div>
+    </section>
+
+    <section class="panel stats">
+      <article><h3>Runs</h3><p id="stat-starts">0</p></article>
+      <article><h3>Distinct Nodes</h3><p id="stat-nodes">0</p></article>
+      <article><h3>Distinct Edges</h3><p id="stat-edges">0</p></article>
+      <article><h3>Longest Steps</h3><p id="stat-longest">0</p></article>
+      <article><h3>Peak Value</h3><p id="stat-peak">0</p></article>
+      <article><h3>Active Frame</h3><p id="stat-step">0</p></article>
+      <article><h3>Current Active Node</h3><p id="stat-current-node">-</p></article>
+      <article><h3>Hover Node</h3><p id="stat-hover-node">-</p></article>
+    </section>
+
+    <section class="panel runs-panel">
+      <h2>Overlay Runs</h2>
+      <div id="runs-list" class="runs-list"></div>
+    </section>
+  </div>
+
+  <div id="history-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="history-title">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h2 id="history-title">Run History</h2>
+        <button id="history-close-btn" class="btn">Close</button>
+      </div>
+      <p id="history-meta" class="modal-meta"></p>
+      <div class="modal-actions">
+        <button id="history-download-btn" class="btn ghost">Download History .txt</button>
+      </div>
+      <textarea id="history-text" class="history-text" readonly></textarea>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script src="./script.js"></script>
+</body>
+</html>

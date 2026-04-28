@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>25:00 — Pomodoro Timer</title>
+  <link rel="icon" type="image/x-icon" href="../../images.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=JetBrains+Mono:wght@400;500;700&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap">
+<style>
+:root{--bg:#0a0a0b;--bg2:#111113;--bg3:#18181b;--border:#252528;--text:#e2e2e6;--muted:#6b6b72;--accent:#c8a96e;--green:#5aab7a;--red:#e05555;--blue:#5a8fce;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Crimson Pro',serif;min-height:100vh;line-height:1.6;}
+a{color:var(--accent);text-decoration:none;}
+a:hover{text-decoration:underline;}
+.header{padding:1.5rem 2rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:1rem;}
+.back-link{font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--muted);transition:color 0.2s;}
+.back-link:hover{color:var(--accent);text-decoration:none;}
+.eyebrow{font-family:'Cinzel',serif;font-size:0.7rem;letter-spacing:0.15em;color:var(--muted);text-transform:uppercase;}
+.site-title{font-family:'Cinzel',serif;font-size:0.95rem;background:linear-gradient(135deg,var(--accent),#e8c98e);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.main{max-width:900px;margin:0 auto;padding:2rem 1.5rem;}
+.page-header{text-align:center;margin-bottom:2rem;}
+.page-title{font-family:'Cinzel',serif;font-size:2.4rem;font-weight:700;background:linear-gradient(135deg,var(--accent) 0%,#e8c98e 50%,var(--accent) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:0.5rem;}
+.page-subtitle{font-family:'Crimson Pro',serif;font-style:italic;color:var(--muted);font-size:1.1rem;}
+.mode-tabs{display:flex;gap:0.5rem;justify-content:center;margin-bottom:2rem;}
+.mode-tab{font-family:'JetBrains Mono',monospace;font-size:0.8rem;padding:0.5rem 1.2rem;border:1px solid var(--border);background:var(--bg2);color:var(--muted);border-radius:6px;cursor:pointer;transition:all 0.2s;}
+.mode-tab.active[data-mode="focus"]{border-color:var(--accent);color:var(--accent);background:rgba(200,169,110,0.1);}
+.mode-tab.active[data-mode="short"]{border-color:var(--green);color:var(--green);background:rgba(90,171,122,0.1);}
+.mode-tab.active[data-mode="long"]{border-color:var(--blue);color:var(--blue);background:rgba(90,143,206,0.1);}
+.timer-section{display:flex;flex-direction:column;align-items:center;gap:1.5rem;}
+.ring-container{position:relative;width:260px;height:260px;}
+.ring-svg{transform:rotate(-90deg);}
+.ring-bg{fill:none;stroke:var(--bg3);stroke-width:12;}
+.ring-progress{fill:none;stroke-width:12;stroke-linecap:round;transition:stroke-dashoffset 1s linear,stroke 0.5s;}
+.ring-text{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;}
+.time-display{font-family:'JetBrains Mono',monospace;font-size:3.2rem;font-weight:700;letter-spacing:0.05em;line-height:1;}
+.mode-label{font-family:'Cinzel',serif;font-size:0.75rem;letter-spacing:0.1em;color:var(--muted);margin-top:0.3rem;text-transform:uppercase;}
+.session-dots{display:flex;gap:0.6rem;align-items:center;}
+.dot{width:12px;height:12px;border-radius:50%;background:var(--bg3);border:1.5px solid var(--border);transition:all 0.3s;}
+.dot.filled{background:var(--accent);border-color:var(--accent);box-shadow:0 0 8px rgba(200,169,110,0.4);}
+.controls{display:flex;gap:0.8rem;align-items:center;}
+.btn{font-family:'JetBrains Mono',monospace;font-size:0.85rem;padding:0.6rem 1.4rem;border:1px solid var(--border);background:var(--bg3);color:var(--text);border-radius:6px;cursor:pointer;transition:all 0.2s;letter-spacing:0.05em;}
+.btn:hover{border-color:var(--accent);color:var(--accent);}
+.btn-primary{background:var(--accent);color:var(--bg);border-color:var(--accent);font-weight:700;padding:0.7rem 2rem;font-size:0.9rem;}
+.btn-primary:hover{background:#e8c98e;border-color:#e8c98e;color:var(--bg);}
+.btn-primary.paused{background:var(--bg3);color:var(--accent);border-color:var(--accent);}
+.task-input-wrap{width:100%;max-width:420px;}
+.task-input{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:0.6rem 1rem;color:var(--text);font-family:'Crimson Pro',serif;font-size:1rem;outline:none;transition:border-color 0.2s;}
+.task-input:focus{border-color:var(--accent);}
+.task-input::placeholder{color:var(--muted);}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-top:2rem;}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1.2rem;}
+.card-title{font-family:'Cinzel',serif;font-size:0.8rem;letter-spacing:0.1em;color:var(--muted);text-transform:uppercase;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;}
+.stat{background:var(--bg3);border-radius:6px;padding:0.8rem;text-align:center;}
+.stat-value{font-family:'JetBrains Mono',monospace;font-size:1.5rem;font-weight:700;color:var(--accent);}
+.stat-label{font-size:0.8rem;color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:0.7rem;}
+.log-list{display:flex;flex-direction:column;gap:0.5rem;max-height:180px;overflow-y:auto;}
+.log-item{display:flex;gap:0.8rem;align-items:center;font-size:0.85rem;padding:0.4rem 0.6rem;background:var(--bg3);border-radius:5px;}
+.log-time{font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--muted);white-space:nowrap;}
+.log-task{color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.log-badge{font-family:'JetBrains Mono',monospace;font-size:0.68rem;padding:0.15rem 0.4rem;border-radius:3px;background:rgba(200,169,110,0.15);color:var(--accent);white-space:nowrap;}
+.settings-toggle{display:flex;align-items:center;gap:0.5rem;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--muted);background:none;border:1px solid var(--border);border-radius:6px;padding:0.4rem 0.8rem;transition:all 0.2s;margin-top:0.5rem;}
+.settings-toggle:hover{color:var(--accent);border-color:var(--accent);}
+.settings-panel{display:none;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1.2rem;margin-top:1rem;width:100%;max-width:500px;}
+.settings-panel.open{display:block;}
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;}
+.setting-item{display:flex;flex-direction:column;gap:0.3rem;}
+.setting-label{font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--muted);}
+.setting-input{background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:0.4rem 0.6rem;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:0.85rem;outline:none;width:100%;}
+.setting-input:focus{border-color:var(--accent);}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:0.4rem 0;}
+.toggle-label{font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--text);}
+.toggle{position:relative;width:36px;height:20px;cursor:pointer;}
+.toggle input{opacity:0;width:0;height:0;}
+.slider{position:absolute;inset:0;background:var(--bg3);border:1px solid var(--border);border-radius:20px;transition:0.2s;}
+.slider:before{content:'';position:absolute;width:14px;height:14px;left:2px;top:2px;background:var(--muted);border-radius:50%;transition:0.2s;}
+.toggle input:checked+.slider{background:rgba(200,169,110,0.2);border-color:var(--accent);}
+.toggle input:checked+.slider:before{transform:translateX(16px);background:var(--accent);}
+.notif-btn{font-family:'JetBrains Mono',monospace;font-size:0.72rem;padding:0.4rem 0.8rem;border:1px solid var(--border);background:var(--bg3);color:var(--muted);border-radius:5px;cursor:pointer;width:100%;margin-top:0.3rem;transition:all 0.2s;}
+.notif-btn:hover{border-color:var(--accent);color:var(--accent);}
+.settings-sep{grid-column:1/-1;height:1px;background:var(--border);margin:0.2rem 0;}
+@media(max-width:600px){.grid{grid-template-columns:1fr;}.settings-grid{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<header class="header">
+  <a href="../../index.html" class="back-link">← Back Home</a>
+  <div style="margin-left:auto;text-align:right;">
+    <div class="eyebrow">Office</div>
+    <div class="site-title">Pomodoro Timer</div>
+  </div>
+</header>
+
+<main class="main">
+  <div class="page-header">
+    <h1 class="page-title">Pomodoro Timer</h1>
+    <p class="page-subtitle">Structured focus sessions with automatic breaks — the Pomodoro Technique.</p>
+  </div>
+
+  <div class="mode-tabs">
+    <button class="mode-tab active" data-mode="focus">Focus</button>
+    <button class="mode-tab" data-mode="short">Short Break</button>
+    <button class="mode-tab" data-mode="long">Long Break</button>
+  </div>
+
+  <div class="timer-section">
+    <div class="ring-container">
+      <svg class="ring-svg" width="260" height="260" viewBox="0 0 260 260">
+        <circle class="ring-bg" cx="130" cy="130" r="110"/>
+        <circle class="ring-progress" id="ringProgress" cx="130" cy="130" r="110"/>
+      </svg>
+      <div class="ring-text">
+        <div class="time-display" id="timeDisplay">25:00</div>
+        <div class="mode-label" id="modeLabel">Focus</div>
+      </div>
+    </div>
+
+    <div class="session-dots" id="sessionDots">
+      <div class="dot" data-idx="0"></div>
+      <div class="dot" data-idx="1"></div>
+      <div class="dot" data-idx="2"></div>
+      <div class="dot" data-idx="3"></div>
+    </div>
+
+    <div class="controls">
+      <button class="btn" id="resetBtn">Reset</button>
+      <button class="btn btn-primary" id="startBtn">Start</button>
+      <button class="btn" id="skipBtn">Skip</button>
+    </div>
+
+    <div class="task-input-wrap">
+      <input type="text" class="task-input" id="taskInput" placeholder="What are you working on?">
+    </div>
+
+    <button class="settings-toggle" id="settingsToggle">⚙ Settings</button>
+
+    <div class="settings-panel" id="settingsPanel">
+      <div class="settings-grid">
+        <div class="setting-item">
+          <label class="setting-label">Focus Duration (min)</label>
+          <input type="number" class="setting-input" id="setFocus" value="25" min="1" max="120">
+        </div>
+        <div class="setting-item">
+          <label class="setting-label">Short Break (min)</label>
+          <input type="number" class="setting-input" id="setShort" value="5" min="1" max="60">
+        </div>
+        <div class="setting-item">
+          <label class="setting-label">Long Break (min)</label>
+          <input type="number" class="setting-input" id="setLong" value="15" min="1" max="60">
+        </div>
+        <div class="setting-item">
+          <label class="setting-label">Long Break Every N Sessions</label>
+          <input type="number" class="setting-input" id="setInterval" value="4" min="2" max="10">
+        </div>
+        <div class="settings-sep"></div>
+        <div class="toggle-row" style="grid-column:1/-1;">
+          <span class="toggle-label">Auto-start Breaks</span>
+          <label class="toggle"><input type="checkbox" id="autoBreak" checked><span class="slider"></span></label>
+        </div>
+        <div class="toggle-row" style="grid-column:1/-1;">
+          <span class="toggle-label">Auto-start Focus</span>
+          <label class="toggle"><input type="checkbox" id="autoFocus"><span class="slider"></span></label>
+        </div>
+        <div class="settings-sep"></div>
+        <div class="setting-item" style="grid-column:1/-1;">
+          <label class="setting-label">Browser Notifications</label>
+          <button class="notif-btn" id="notifBtn">Request Permission</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <div class="card-title">Today's Stats</div>
+      <div class="stats-grid">
+        <div class="stat">
+          <div class="stat-value" id="statSessions">0</div>
+          <div class="stat-label">Sessions</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value" id="statTime">0m</div>
+          <div class="stat-label">Focus Time</div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Session Log <span style="font-family:'JetBrains Mono',monospace;font-size:0.7rem;color:var(--muted);" id="logCount">0 entries</span></div>
+      <div class="log-list" id="logList"><div style="color:var(--muted);font-size:0.85rem;font-family:'JetBrains Mono',monospace;">No sessions yet.</div></div>
+    </div>
+  </div>
+</main>
+
+<script>
+const CIRCUMFERENCE = 2 * Math.PI * 110;
+const ring = document.getElementById('ringProgress');
+ring.style.strokeDasharray = CIRCUMFERENCE;
+
+const state = {
+  mode: 'focus',
+  running: false,
+  timeLeft: 25 * 60,
+  totalTime: 25 * 60,
+  sessionCount: 0,
+  cycleCount: 0,
+  todaySessions: 0,
+  todayFocusTime: 0,
+  timer: null,
+  log: []
+};
+
+const cfg = {
+  focus: 25,
+  short: 5,
+  long: 15,
+  interval: 4,
+  autoBreak: true,
+  autoFocus: false
+};
+
+const modeColors = {
+  focus: 'var(--accent)',
+  short: 'var(--green)',
+  long: 'var(--blue, #5a8fce)'
+};
+
+const modeNames = { focus: 'Focus', short: 'Short Break', long: 'Long Break' };
+
+function modeDuration(m) {
+  if (m === 'focus') return cfg.focus * 60;
+  if (m === 'short') return cfg.short * 60;
+  return cfg.long * 60;
+}
+
+function formatTime(s) {
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
+  return `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+}
+
+function updateRing() {
+  const pct = state.timeLeft / state.totalTime;
+  ring.style.strokeDashoffset = CIRCUMFERENCE * (1 - pct);
+  ring.style.stroke = modeColors[state.mode];
+}
+
+function updateDisplay() {
+  document.getElementById('timeDisplay').textContent = formatTime(state.timeLeft);
+  document.getElementById('modeLabel').textContent = modeNames[state.mode];
+  const task = document.getElementById('taskInput').value.trim();
+  document.title = `${formatTime(state.timeLeft)} — ${task || modeNames[state.mode]}`;
+  updateRing();
+  updateDots();
+  updateStats();
+}
+
+function updateDots() {
+  const dots = document.querySelectorAll('.dot');
+  dots.forEach((d, i) => {
+    d.classList.toggle('filled', i < state.cycleCount);
+  });
+}
+
+function updateStats() {
+  document.getElementById('statSessions').textContent = state.todaySessions;
+  const mins = Math.floor(state.todayFocusTime / 60);
+  document.getElementById('statTime').textContent = mins >= 60
+    ? `${Math.floor(mins/60)}h ${mins%60}m`
+    : `${mins}m`;
+}
+
+function setMode(m, autoStart = false) {
+  state.mode = m;
+  state.totalTime = modeDuration(m);
+  state.timeLeft = state.totalTime;
+  document.querySelectorAll('.mode-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.mode === m);
+  });
+  updateDisplay();
+  document.getElementById('startBtn').textContent = 'Start';
+  document.getElementById('startBtn').classList.remove('paused');
+  if (autoStart) startTimer();
+}
+
+function playChime(type = 'focus') {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const freqs = type === 'focus' ? [523.25, 659.25, 783.99] : [783.99, 659.25, 523.25];
+    freqs.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.25);
+      gain.gain.setValueAtTime(0, ctx.currentTime + i * 0.25);
+      gain.gain.linearRampToValueAtTime(0.3, ctx.currentTime + i * 0.25 + 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.25 + 0.5);
+      osc.start(ctx.currentTime + i * 0.25);
+      osc.stop(ctx.currentTime + i * 0.25 + 0.5);
+    });
+  } catch(e) {}
+}
+
+function sendNotification(title, body) {
+  if (Notification.permission === 'granted') {
+    new Notification(title, { body, icon: '' });
+  }
+}
+
+function onTimerComplete() {
+  clearInterval(state.timer);
+  state.running = false;
+  document.getElementById('startBtn').textContent = 'Start';
+  document.getElementById('startBtn').classList.remove('paused');
+
+  if (state.mode === 'focus') {
+    state.todaySessions++;
+    state.todayFocusTime += state.totalTime;
+    state.sessionCount++;
+    state.cycleCount = state.sessionCount % cfg.interval;
+    const task = document.getElementById('taskInput').value.trim() || 'Focus session';
+    addLog('focus', task);
+    playChime('focus');
+    sendNotification('Focus complete!', `Session done. Time for a break.`);
+    if (state.sessionCount % cfg.interval === 0) {
+      setMode('long', cfg.autoBreak);
+    } else {
+      setMode('short', cfg.autoBreak);
+    }
+  } else {
+    playChime('break');
+    sendNotification('Break over!', 'Ready to focus again?');
+    setMode('focus', cfg.autoFocus);
+  }
+}
+
+function addLog(type, task) {
+  const now = new Date();
+  const ts = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  state.log.unshift({ ts, task, type, dur: modeDuration('focus') });
+  renderLog();
+}
+
+function renderLog() {
+  const list = document.getElementById('logList');
+  if (state.log.length === 0) {
+    list.innerHTML = '<div style="color:var(--muted);font-size:0.85rem;font-family:\'JetBrains Mono\',monospace;">No sessions yet.</div>';
+    return;
+  }
+  list.innerHTML = state.log.slice(0, 20).map(l => `
+    <div class="log-item">
+      <span class="log-time">${l.ts}</span>
+      <span class="log-task">${l.task || 'Untitled'}</span>
+      <span class="log-badge">${Math.round(l.dur/60)}m focus</span>
+    </div>
+  `).join('');
+  document.getElementById('logCount').textContent = `${state.log.length} entries`;
+}
+
+function startTimer() {
+  if (state.running) return;
+  state.running = true;
+  document.getElementById('startBtn').textContent = 'Pause';
+  document.getElementById('startBtn').classList.add('paused');
+  state.timer = setInterval(() => {
+    state.timeLeft--;
+    updateDisplay();
+    if (state.timeLeft <= 0) onTimerComplete();
+  }, 1000);
+}
+
+function pauseTimer() {
+  clearInterval(state.timer);
+  state.running = false;
+  document.getElementById('startBtn').textContent = 'Resume';
+  document.getElementById('startBtn').classList.add('paused');
+}
+
+document.getElementById('startBtn').addEventListener('click', () => {
+  if (state.running) pauseTimer();
+  else startTimer();
+});
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  clearInterval(state.timer);
+  state.running = false;
+  state.timeLeft = state.totalTime;
+  document.getElementById('startBtn').textContent = 'Start';
+  document.getElementById('startBtn').classList.remove('paused');
+  updateDisplay();
+});
+
+document.getElementById('skipBtn').addEventListener('click', () => {
+  clearInterval(state.timer);
+  state.running = false;
+  if (state.mode === 'focus') {
+    state.sessionCount++;
+    state.cycleCount = state.sessionCount % cfg.interval;
+    if (state.sessionCount % cfg.interval === 0) setMode('long');
+    else setMode('short');
+  } else {
+    setMode('focus');
+  }
+});
+
+document.querySelectorAll('.mode-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    clearInterval(state.timer);
+    state.running = false;
+    setMode(tab.dataset.mode);
+  });
+});
+
+document.getElementById('settingsToggle').addEventListener('click', () => {
+  document.getElementById('settingsPanel').classList.toggle('open');
+});
+
+function applySettings() {
+  cfg.focus = parseInt(document.getElementById('setFocus').value) || 25;
+  cfg.short = parseInt(document.getElementById('setShort').value) || 5;
+  cfg.long = parseInt(document.getElementById('setLong').value) || 15;
+  cfg.interval = parseInt(document.getElementById('setInterval').value) || 4;
+  cfg.autoBreak = document.getElementById('autoBreak').checked;
+  cfg.autoFocus = document.getElementById('autoFocus').checked;
+  if (!state.running) {
+    state.totalTime = modeDuration(state.mode);
+    state.timeLeft = state.totalTime;
+    updateDisplay();
+  }
+  updateDots();
+}
+
+['setFocus','setShort','setLong','setInterval'].forEach(id => {
+  document.getElementById(id).addEventListener('change', applySettings);
+});
+['autoBreak','autoFocus'].forEach(id => {
+  document.getElementById(id).addEventListener('change', applySettings);
+});
+
+document.getElementById('notifBtn').addEventListener('click', async () => {
+  const perm = await Notification.requestPermission();
+  document.getElementById('notifBtn').textContent = perm === 'granted' ? '✓ Notifications enabled' : 'Permission denied';
+});
+
+document.getElementById('taskInput').addEventListener('input', updateDisplay);
+
+// Init
+updateDisplay();
+updateRing();
+</script>
+</body>
+</html>

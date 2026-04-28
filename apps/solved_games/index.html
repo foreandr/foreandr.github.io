@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Solved Games</title>
+  <link rel="icon" type="image/x-icon" href="../../images.ico">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --bg2: #111118;
+      --card: #16161f;
+      --border: #2a2a3a;
+      --text: #e8e8f0;
+      --muted: #6b6b8a;
+      --accent: #6366f1;
+      --accent2: #8b5cf6;
+      --green: #10b981;
+      --red: #ef4444;
+      --yellow: #f59e0b;
+      --cyan: #06b6d4;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      min-height: 100vh;
+    }
+    nav {
+      background: rgba(10,10,15,0.9);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; z-index: 10;
+      padding: 0 48px;
+      height: 64px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    nav a { color: var(--text); text-decoration: none; font-weight: 600; font-size: 1rem; }
+    nav a:first-child { font-size: 1.25rem; }
+    nav .back { color: var(--muted); font-size: 0.875rem; }
+    nav .back:hover { color: var(--accent); }
+    .hero {
+      text-align: center;
+      padding: 80px 48px 60px;
+    }
+    .hero h1 {
+      font-size: 3.5rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6, #06b6d4);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 16px;
+    }
+    .hero p {
+      color: var(--muted);
+      font-size: 1.125rem;
+      max-width: 600px;
+      margin: 0 auto;
+      line-height: 1.7;
+    }
+    .badge {
+      display: inline-block;
+      background: rgba(99,102,241,0.15);
+      color: var(--accent);
+      border: 1px solid rgba(99,102,241,0.3);
+      border-radius: 20px;
+      padding: 4px 14px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+    }
+    .stat-row {
+      display: flex;
+      justify-content: center;
+      gap: 48px;
+      margin-top: 32px;
+    }
+    .stat { text-align: center; }
+    .stat-num { font-size: 2rem; font-weight: 800; color: var(--accent); letter-spacing: -0.04em; }
+    .stat-label { font-size: 0.8125rem; color: var(--muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.06em; }
+    .section-label {
+      max-width: 1200px;
+      margin: 0 auto 20px;
+      padding: 0 48px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .games-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 24px;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 48px 80px;
+    }
+    .game-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      overflow: hidden;
+      text-decoration: none;
+      color: inherit;
+      transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+      display: block;
+    }
+    .game-card:hover {
+      transform: translateY(-6px);
+      border-color: var(--accent);
+      box-shadow: 0 16px 48px rgba(99,102,241,0.18);
+    }
+    .game-preview {
+      height: 160px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 60px;
+      position: relative;
+      overflow: hidden;
+    }
+    .game-preview::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, transparent 60%, rgba(22,22,31,0.6));
+    }
+    .game-preview.ttt  { background: linear-gradient(135deg, #1e1b4b, #312e81); }
+    .game-preview.rum  { background: linear-gradient(135deg, #064e3b, #065f46); }
+    .game-preview.blk  { background: linear-gradient(135deg, #1e3a5f, #1e4d8c); }
+    .game-preview.c4   { background: linear-gradient(135deg, #1c1917, #292524); }
+    .game-preview.nim  { background: linear-gradient(135deg, #1a1a2e, #16213e); }
+    .game-preview.oth  { background: linear-gradient(135deg, #052e16, #14532d); }
+    .game-preview.mm   { background: linear-gradient(135deg, #2d1b69, #3b0764); }
+    .game-preview.g2048 { background: linear-gradient(135deg, #431407, #7c2d12); }
+    .game-preview.lo   { background: linear-gradient(135deg, #0c1445, #1e3a8a); }
+    .game-preview.ms   { background: linear-gradient(135deg, #1f2937, #111827); }
+    .game-preview.chk  { background: linear-gradient(135deg, #4a0000, #7f1d1d); }
+    .game-preview .emoji { font-size: 60px; z-index: 1; filter: drop-shadow(0 4px 20px rgba(0,0,0,0.5)); }
+    .game-info { padding: 22px 24px 24px; }
+    .game-info h2 { font-size: 1.25rem; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.02em; }
+    .game-info p { color: var(--muted); font-size: 0.875rem; line-height: 1.65; margin-bottom: 16px; }
+    .tags { display: flex; gap: 6px; flex-wrap: wrap; }
+    .tag {
+      background: rgba(99,102,241,0.1);
+      color: var(--accent);
+      border: 1px solid rgba(99,102,241,0.2);
+      border-radius: 6px;
+      padding: 2px 8px;
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+    .tag.green  { background: rgba(16,185,129,0.1);  color: var(--green);  border-color: rgba(16,185,129,0.2); }
+    .tag.yellow { background: rgba(245,158,11,0.1);  color: var(--yellow); border-color: rgba(245,158,11,0.2); }
+    .tag.red    { background: rgba(239,68,68,0.1);   color: var(--red);    border-color: rgba(239,68,68,0.2); }
+    .tag.cyan   { background: rgba(6,182,212,0.1);   color: var(--cyan);   border-color: rgba(6,182,212,0.2); }
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 2.5rem; }
+      .games-grid { grid-template-columns: 1fr; padding: 0 20px 60px; }
+      nav { padding: 0 20px; }
+      .hero { padding: 60px 20px 40px; }
+      .section-label { padding: 0 20px; }
+      .stat-row { gap: 24px; }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="../../index.html">Andre</a>
+    <a href="../../index.html" class="back">← Back to Home</a>
+  </nav>
+  <div class="hero">
+    <div class="badge">Solved Games</div>
+    <h1>Game Theory Lab</h1>
+    <p>Interactive simulations of classic games with perfect-play algorithms. Watch unbeatable AI in action, explore game-theoretic solutions, and analyze win conditions in real time.</p>
+    <div class="stat-row">
+      <div class="stat"><div class="stat-num">11</div><div class="stat-label">Games</div></div>
+      <div class="stat"><div class="stat-num">8</div><div class="stat-label">Algorithms</div></div>
+      <div class="stat"><div class="stat-num">∞</div><div class="stat-label">Playable</div></div>
+    </div>
+  </div>
+
+  <div class="section-label">Classic Strategy</div>
+  <div class="games-grid" style="padding-bottom: 40px;">
+    <a href="tictactoe.html" class="game-card">
+      <div class="game-preview ttt">
+        <span class="emoji">⭕</span>
+      </div>
+      <div class="game-info">
+        <h2>Tic-Tac-Toe</h2>
+        <p>A fully solved game. Minimax with alpha-beta pruning plays perfectly — the best you can do is draw. Includes complete decision tree analytics.</p>
+        <div class="tags">
+          <span class="tag green">Fully Solved</span>
+          <span class="tag">Minimax</span>
+          <span class="tag">Alpha-Beta</span>
+          <span class="tag yellow">Zero-Sum</span>
+        </div>
+      </div>
+    </a>
+    <a href="connect4.html" class="game-card">
+      <div class="game-preview c4">
+        <span class="emoji">🔴</span>
+      </div>
+      <div class="game-info">
+        <h2>Connect Four</h2>
+        <p>Strongly solved in 1988 — first player wins with perfect play. AI uses Minimax + Alpha-Beta with window scoring and center-column preference.</p>
+        <div class="tags">
+          <span class="tag green">Strongly Solved</span>
+          <span class="tag">Minimax</span>
+          <span class="tag">Alpha-Beta</span>
+          <span class="tag yellow">Zero-Sum</span>
+        </div>
+      </div>
+    </a>
+    <a href="othello.html" class="game-card">
+      <div class="game-preview oth">
+        <span class="emoji">⚫</span>
+      </div>
+      <div class="game-info">
+        <h2>Othello / Reversi</h2>
+        <p>Minimax + Alpha-Beta with positional weights, mobility scoring, and corner-capture bonuses. The AI prioritizes corners and minimizes opponent mobility.</p>
+        <div class="tags">
+          <span class="tag green">Optimal AI</span>
+          <span class="tag">Minimax</span>
+          <span class="tag">Positional Weights</span>
+          <span class="tag cyan">Canvas</span>
+        </div>
+      </div>
+    </a>
+    <a href="checkers.html" class="game-card">
+      <div class="game-preview chk">
+        <span class="emoji">🔵</span>
+      </div>
+      <div class="game-info">
+        <h2>Checkers</h2>
+        <p>Alpha-Beta Minimax with mandatory capture enforcement, multi-jump chains, king promotion, and back-row/mobility heuristics on a full 8×8 canvas board.</p>
+        <div class="tags">
+          <span class="tag green">AI Solver</span>
+          <span class="tag">Alpha-Beta</span>
+          <span class="tag">Minimax</span>
+          <span class="tag cyan">Canvas</span>
+        </div>
+      </div>
+    </a>
+  </div>
+
+  <div class="section-label" style="margin-top: 20px;">Puzzle & Logic</div>
+  <div class="games-grid" style="padding-bottom: 40px;">
+    <a href="mastermind.html" class="game-card">
+      <div class="game-preview mm">
+        <span class="emoji">🎯</span>
+      </div>
+      <div class="game-info">
+        <h2>Mastermind</h2>
+        <p>Knuth's 5-guess algorithm guarantees a solution in at most 5 guesses for any 4-peg 6-color code. Minimax over remaining possibilities each turn.</p>
+        <div class="tags">
+          <span class="tag green">Guaranteed ≤5 Guesses</span>
+          <span class="tag">Knuth's Algorithm</span>
+          <span class="tag">Minimax</span>
+        </div>
+      </div>
+    </a>
+    <a href="lightsout.html" class="game-card">
+      <div class="game-preview lo">
+        <span class="emoji">💡</span>
+      </div>
+      <div class="game-info">
+        <h2>Lights Out</h2>
+        <p>Gaussian elimination over GF(2) finds the minimum button presses to solve any board configuration. Selectable 3×3 through 6×6 grid sizes.</p>
+        <div class="tags">
+          <span class="tag green">Exact Solver</span>
+          <span class="tag">Gaussian Elimination</span>
+          <span class="tag">GF(2) Linear Algebra</span>
+        </div>
+      </div>
+    </a>
+    <a href="minesweeper.html" class="game-card">
+      <div class="game-preview ms">
+        <span class="emoji">💣</span>
+      </div>
+      <div class="game-info">
+        <h2>Minesweeper</h2>
+        <p>Constraint propagation + subset analysis solver. Deduces safe cells and mine positions logically, with probabilistic fallback when forced to guess.</p>
+        <div class="tags">
+          <span class="tag green">Constraint Solver</span>
+          <span class="tag">Subset Analysis</span>
+          <span class="tag yellow">Probabilistic</span>
+        </div>
+      </div>
+    </a>
+    <a href="nim.html" class="game-card">
+      <div class="game-preview nim">
+        <span class="emoji">🥢</span>
+      </div>
+      <div class="game-info">
+        <h2>Nim</h2>
+        <p>Mathematically perfect play via the Sprague-Grundy theorem — the AI computes the Nim-sum (XOR) of all heap sizes and always leaves a losing position.</p>
+        <div class="tags">
+          <span class="tag green">Mathematically Perfect</span>
+          <span class="tag">Nim-Sum XOR</span>
+          <span class="tag">Sprague-Grundy</span>
+        </div>
+      </div>
+    </a>
+  </div>
+
+  <div class="section-label" style="margin-top: 20px;">Multi-Player & Tile Games</div>
+  <div class="games-grid">
+    <a href="2048.html" class="game-card">
+      <div class="game-preview g2048">
+        <span class="emoji">🔢</span>
+      </div>
+      <div class="game-info">
+        <h2>2048</h2>
+        <p>Expectimax AI with a Snake heuristic weight matrix. Scores board by tile values, smoothness, monotonicity, and empty cells. Reliably reaches 2048+.</p>
+        <div class="tags">
+          <span class="tag green">Expectimax AI</span>
+          <span class="tag">Snake Heuristic</span>
+          <span class="tag yellow">Stochastic</span>
+        </div>
+      </div>
+    </a>
+    <a href="rummikub.html" class="game-card">
+      <div class="game-preview rum">
+        <span class="emoji">🀱</span>
+      </div>
+      <div class="game-info">
+        <h2>Rummikub</h2>
+        <p>Tile-rummy simulation with an optimal greedy set-cover solver using dynamic programming to maximize tile placement. Supports 1–4 players.</p>
+        <div class="tags">
+          <span class="tag green">Optimal Solver</span>
+          <span class="tag">Dynamic Programming</span>
+          <span class="tag">Set Cover</span>
+          <span class="tag yellow">1–4 Players</span>
+        </div>
+      </div>
+    </a>
+    <a href="blokus.html" class="game-card">
+      <div class="game-preview blk">
+        <span class="emoji">🟦</span>
+      </div>
+      <div class="game-info">
+        <h2>Blokus</h2>
+        <p>4-player territory control with all 21 pieces and all 8 transforms (rotations + flips). AI uses greedy corner-expansion heuristics with lookahead and blocking.</p>
+        <div class="tags">
+          <span class="tag green">AI Solver</span>
+          <span class="tag">Greedy Heuristic</span>
+          <span class="tag">Lookahead</span>
+          <span class="tag yellow">4-Player</span>
+          <span class="tag cyan">Canvas</span>
+        </div>
+      </div>
+    </a>
+  </div>
+</body>
+</html>

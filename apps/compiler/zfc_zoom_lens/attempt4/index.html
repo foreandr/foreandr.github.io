@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Universal Mathematical Architecture</title>
+  <link rel="icon" type="image/x-icon" href="../../images.ico">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #ffffff;
+    font-family: 'Courier New', Courier, monospace;
+    color: #111;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ── HEADER ─────────────────────────────── */
+  #header {
+    border-bottom: 2px solid #111;
+    padding: 10px 18px;
+    display: flex;
+    align-items: baseline;
+    gap: 20px;
+    flex-shrink: 0;
+  }
+  #header h1 {
+    font-size: 13px;
+    font-weight: bold;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  #header .subtitle {
+    font-size: 11px;
+    color: #555;
+  }
+  #header .badge {
+    margin-left: auto;
+    font-size: 10px;
+    color: #999;
+    border: 1px solid #ccc;
+    padding: 2px 7px;
+  }
+
+  /* ── LAYOUT ─────────────────────────────── */
+  #main {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* ── SIDEBAR ─────────────────────────────── */
+  #sidebar {
+    width: 260px;
+    border-right: 1px solid #ddd;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+
+  .panel-title {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 8px 12px;
+    border-bottom: 1px solid #ddd;
+    background: #fafafa;
+    color: #444;
+  }
+
+  /* Layer legend */
+  #layer-legend {
+    padding: 10px 12px;
+    border-bottom: 1px solid #ddd;
+    flex-shrink: 0;
+  }
+  .layer-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 5px;
+    font-size: 11px;
+    cursor: pointer;
+    padding: 2px 4px;
+    border: 1px solid transparent;
+    transition: border-color 0.1s;
+  }
+  .layer-row:hover { border-color: #bbb; }
+  .layer-row.active { border-color: #111; background: #f5f5f5; }
+  .layer-dot {
+    width: 10px; height: 10px;
+    border: 1px solid #333;
+    flex-shrink: 0;
+  }
+  .layer-count { margin-left: auto; color: #999; }
+
+  /* Rule list */
+  #rules-panel {
+    flex: 1;
+    overflow-y: auto;
+  }
+  .rule-item {
+    padding: 6px 12px;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 10px;
+    cursor: pointer;
+  }
+  .rule-item:hover { background: #f8f8f8; }
+  .rule-item .rid {
+    color: #999;
+    font-size: 9px;
+  }
+  .rule-item .rname {
+    font-weight: bold;
+    font-size: 10px;
+  }
+  .rule-item .rlevel {
+    display: inline-block;
+    padding: 1px 5px;
+    font-size: 9px;
+    margin-top: 2px;
+  }
+  .rule-item.elevated .rname { color: #c00; }
+  .rule-item.inductive .rname { color: #a00; }
+
+  /* Proof trace panel */
+  #trace-panel {
+    height: 200px;
+    border-top: 1px solid #ddd;
+    overflow-y: auto;
+    flex-shrink: 0;
+  }
+  #trace-content {
+    padding: 8px 12px;
+    font-size: 10px;
+    line-height: 1.7;
+  }
+  .trace-step {
+    padding: 2px 0;
+    border-left: 2px solid transparent;
+    padding-left: 6px;
+  }
+  .trace-step.highlight {
+    border-left-color: #cc0000;
+    color: #cc0000;
+    font-weight: bold;
+  }
+  .trace-rule { color: #888; font-size: 9px; }
+
+  /* ── GRAPH ─────────────────────────────── */
+  #graph-wrap {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+  }
+  #graph {
+    width: 100%;
+    height: 100%;
+  }
+
+  /* ── NODE DETAIL POPUP ─────────────────── */
+  #popup {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    width: 340px;
+    background: #fff;
+    border: 1px solid #333;
+    font-size: 10px;
+    display: none;
+    z-index: 10;
+  }
+  #popup.visible { display: block; }
+  #popup-header {
+    background: #111;
+    color: #fff;
+    padding: 6px 10px;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    display: flex;
+    justify-content: space-between;
+  }
+  #popup-close {
+    cursor: pointer;
+    color: #ccc;
+  }
+  #popup-body { padding: 10px; }
+  #popup-body .expr {
+    font-size: 11px;
+    font-weight: bold;
+    margin-bottom: 8px;
+    word-break: break-all;
+  }
+  #popup-body .chain-title {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #888;
+    margin: 6px 0 4px;
+    border-top: 1px solid #eee;
+    padding-top: 6px;
+  }
+  #popup-body .chain-step {
+    padding: 2px 0 2px 8px;
+    border-left: 2px solid #ddd;
+    font-size: 10px;
+    color: #444;
+    word-break: break-all;
+  }
+  #popup-body .chain-step .step-rule {
+    color: #999; font-size: 9px;
+  }
+
+  /* ── TOOLBAR ─────────────────────────────── */
+  #toolbar {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    gap: 6px;
+    z-index: 5;
+  }
+  .tbtn {
+    background: #fff;
+    border: 1px solid #999;
+    padding: 4px 10px;
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+  }
+  .tbtn:hover { background: #f0f0f0; border-color: #333; }
+  .tbtn.active { background: #111; color: #fff; border-color: #111; }
+
+  /* ── STATS BAR ─────────────────────────── */
+  #stats {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    font-size: 10px;
+    color: #888;
+    z-index: 5;
+    background: rgba(255,255,255,0.9);
+    padding: 4px 8px;
+    border: 1px solid #eee;
+  }
+
+  /* ── SCROLLBARS ─────────────────────────── */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: #f8f8f8; }
+  ::-webkit-scrollbar-thumb { background: #ccc; }
+</style>
+</head>
+<body>
+
+<div id="header">
+  <h1>Universal Mathematical Architecture</h1>
+  <span class="subtitle">Vertical Traceability: Logic → Sets → ℕ → ℤ</span>
+  <span class="badge">BFS + Induction Compiler</span>
+</div>
+
+<div id="main">
+  <!-- SIDEBAR -->
+  <div id="sidebar">
+    <div class="panel-title">Layers</div>
+    <div id="layer-legend">
+      <div class="layer-row active" data-level="all" onclick="filterLevel('all', this)">
+        <div class="layer-dot" style="background:#f5f5f5"></div>
+        All Layers
+        <span class="layer-count" id="cnt-all">—</span>
+      </div>
+      <div class="layer-row" data-level="logic" onclick="filterLevel('logic', this)">
+        <div class="layer-dot" style="background:#e8e8ff"></div>
+        Pure Logic (L)
+        <span class="layer-count" id="cnt-logic">—</span>
+      </div>
+      <div class="layer-row" data-level="set" onclick="filterLevel('set', this)">
+        <div class="layer-dot" style="background:#fff8e0"></div>
+        Set Theory (S)
+        <span class="layer-count" id="cnt-set">—</span>
+      </div>
+      <div class="layer-row" data-level="nat" onclick="filterLevel('nat', this)">
+        <div class="layer-dot" style="background:#e8ffe8"></div>
+        Naturals / ℕ (N)
+        <span class="layer-count" id="cnt-nat">—</span>
+      </div>
+      <div class="layer-row" data-level="int" onclick="filterLevel('int', this)">
+        <div class="layer-dot" style="background:#ffe8e8"></div>
+        Integers / ℤ (Z)
+        <span class="layer-count" id="cnt-int">—</span>
+      </div>
+    </div>
+
+    <div class="panel-title">Rules &amp; Theorems</div>
+    <div id="rules-panel"></div>
+
+    <div class="panel-title">Proof Trace (last proof)</div>
+    <div id="trace-panel">
+      <div id="trace-content"><span style="color:#aaa">Run a proof to see the trace.</span></div>
+    </div>
+  </div>
+
+  <!-- GRAPH -->
+  <div id="graph-wrap">
+    <div id="stats">Loading…</div>
+    <div id="toolbar">
+      <button class="tbtn" onclick="highlightProofPath()">Show Last Proof</button>
+      <button class="tbtn" onclick="resetHighlight()">Clear</button>
+      <button class="tbtn" onclick="network.fit()">Fit</button>
+    </div>
+    <div id="graph"></div>
+
+    <!-- POPUP -->
+    <div id="popup">
+      <div id="popup-header">
+        <span id="popup-title">Node Detail</span>
+        <span id="popup-close" onclick="closePopup()">✕</span>
+      </div>
+      <div id="popup-body"></div>
+    </div>
+  </div>
+</div>
+
+<script src="graph_data.js"></script>
+<script>
+
+// ─────────────────────────────────────────────
+// COLOUR SCHEME
+// ─────────────────────────────────────────────
+const LEVEL_COLORS = {
+  logic: { bg: '#e8e8ff', border: '#8888cc', font: '#111' },
+  set:   { bg: '#fff8e0', border: '#ccaa44', font: '#111' },
+  nat:   { bg: '#e8ffe8', border: '#44aa44', font: '#111' },
+  int:   { bg: '#ffe8e8', border: '#cc4444', font: '#111' },
+};
+const HIGHLIGHT = { bg: '#ffffff', border: '#cc0000', font: '#cc0000' };
+const PROOF_EDGE_COLOR = '#cc0000';
+
+let network, nodesDS, edgesDS;
+let currentFilter = 'all';
+let proofPath = new Set(graphData.proof_path || []);
+let ruleMap = {};  // rule_id → rule
+
+// ─────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────
+function init() {
+  // Build rule lookup
+  (graphData.rules || []).forEach(r => { ruleMap[r.id] = r; });
+
+  // Infer level for each node from its outgoing edges
+  const nodeLevels = {};
+  (graphData.edges || []).forEach(e => {
+    const r = ruleMap[e.rule_id];
+    if (r) { nodeLevels[e.from] = r.level; nodeLevels[e.to] = r.level; }
+  });
+
+  // Build vis nodes
+  const visNodes = (graphData.nodes || []).map(n => {
+    const level = nodeLevels[n.id] || 'logic';
+    const inProof = proofPath.has(n.id);
+    const c = inProof ? HIGHLIGHT : LEVEL_COLORS[level] || LEVEL_COLORS.logic;
+    return {
+      id: n.id,
+      label: n.label,
+      level,
+      shape: 'box',
+      color: { background: c.bg, border: c.border,
+               highlight: { background: '#fffde8', border: '#cc0000' } },
+      font: { color: inProof ? '#cc0000' : '#111', face: 'Courier New',
+              size: 11, bold: inProof },
+      borderWidth: inProof ? 3 : 1.5,
+      margin: 8,
+    };
+  });
+
+  // Build vis edges
+  const visEdges = (graphData.edges || []).map(e => {
+    const inProof = proofPath.has(e.id);
+    const r = ruleMap[e.rule_id];
+    const level = r ? r.level : 'logic';
+    const c = LEVEL_COLORS[level] || LEVEL_COLORS.logic;
+    return {
+      id: e.id,
+      from: e.from,
+      to: e.to,
+      label: e.rule_name || '',
+      level,
+      arrows: 'to',
+      color: { color: inProof ? PROOF_EDGE_COLOR : c.border,
+               highlight: PROOF_EDGE_COLOR, inherit: false },
+      font: { color: inProof ? '#cc0000' : '#888', face: 'Courier New',
+              size: 9, strokeWidth: 0, align: 'middle' },
+      width: inProof ? 3 : 1,
+      smooth: { type: 'curvedCW', roundness: 0.15 },
+    };
+  });
+
+  nodesDS = new vis.DataSet(visNodes);
+  edgesDS = new vis.DataSet(visEdges);
+
+  const options = {
+    physics: {
+      solver: 'forceAtlas2Based',
+      forceAtlas2Based: {
+        gravitationalConstant: -80,
+        centralGravity: 0.005,
+        springLength: 160,
+        springConstant: 0.08,
+        damping: 0.6,
+        avoidOverlap: 1.2
+      },
+      stabilization: { iterations: 300 }
+    },
+    layout: { improvedLayout: true },
+    interaction: { hover: true, tooltipDelay: 0 },
+    edges: { smooth: { enabled: true, type: 'curvedCW', roundness: 0.15 } },
+  };
+
+  network = new vis.Network(
+    document.getElementById('graph'),
+    { nodes: nodesDS, edges: edgesDS },
+    options
+  );
+
+  network.on('click', params => {
+    if (params.nodes.length > 0) showNodeDetail(params.nodes[0]);
+    else if (params.edges.length > 0) showEdgeDetail(params.edges[0]);
+    else closePopup();
+  });
+
+  // Update stats
+  updateStats();
+  buildRulesPanel();
+  buildTracePanel();
+  updateCounts();
+}
+
+// ─────────────────────────────────────────────
+// STATS
+// ─────────────────────────────────────────────
+function updateStats() {
+  document.getElementById('stats').textContent =
+    `${graphData.nodes.length} nodes  ·  ${graphData.edges.length} edges  ·  ` +
+    `${graphData.rules.length} rules  ·  last proof: ${proofPath.size} elements`;
+}
+
+function updateCounts() {
+  const lvls = { logic: 0, set: 0, nat: 0, int: 0 };
+  (graphData.rules || []).forEach(r => { if (lvls[r.level] !== undefined) lvls[r.level]++; });
+  document.getElementById('cnt-all').textContent = graphData.rules.length;
+  Object.entries(lvls).forEach(([k, v]) => {
+    const el = document.getElementById(`cnt-${k}`);
+    if (el) el.textContent = v;
+  });
+}
+
+// ─────────────────────────────────────────────
+// RULES PANEL
+// ─────────────────────────────────────────────
+function buildRulesPanel() {
+  const panel = document.getElementById('rules-panel');
+  panel.innerHTML = '';
+  const rules = graphData.rules || [];
+  rules.forEach(r => {
+    const div = document.createElement('div');
+    div.className = 'rule-item' + (r.elevated ? ' elevated' : '') + (r.inductive ? ' inductive' : '');
+    const levelLabel = { logic: 'L', set: 'S', nat: 'ℕ', int: 'ℤ' }[r.level] || r.level;
+    const typeStr = r.inductive ? '⊢∀' : r.elevated ? 'THMS' : 'AXM';
+    div.innerHTML = `
+      <span class="rid">${r.id}</span>
+      <span class="rlevel" style="background:${(LEVEL_COLORS[r.level]||{bg:'#eee'}).bg};border:1px solid ${(LEVEL_COLORS[r.level]||{border:'#aaa'}).border}">${levelLabel} ${typeStr}</span>
+      <div class="rname">${r.name}</div>
+    `;
+    div.onclick = () => highlightRule(r.id);
+    panel.appendChild(div);
+  });
+}
+
+// ─────────────────────────────────────────────
+// TRACE PANEL
+// ─────────────────────────────────────────────
+function buildTracePanel() {
+  const path = graphData.proof_path || [];
+  if (!path.length) return;
+  const content = document.getElementById('trace-content');
+  content.innerHTML = '<div style="color:#888;font-size:9px;margin-bottom:6px">LAST PROOF PATH</div>';
+
+  // Filter to node ids only (those starting with 'n')
+  const nodeIds = path.filter(id => id.startsWith('n'));
+  const edgeIds = path.filter(id => id.startsWith('e'));
+  const nodeMap = {};
+  (graphData.nodes || []).forEach(n => { nodeMap[n.id] = n.label; });
+  const edgeMap = {};
+  (graphData.edges || []).forEach(e => { edgeMap[e.id] = e; });
+
+  nodeIds.forEach((nid, i) => {
+    const div = document.createElement('div');
+    div.className = 'trace-step highlight';
+    const label = nodeMap[nid] || nid;
+    // find the edge arriving at this node in the proof path
+    const arrEdge = edgeIds.find(eid => edgeMap[eid] && edgeMap[eid].to === nid);
+    const ruleName = arrEdge ? (edgeMap[arrEdge].rule_name || '') : (i === 0 ? 'START' : '');
+    div.innerHTML = `<span class="trace-rule">[${ruleName}]</span> ${escHtml(label)}`;
+    content.appendChild(div);
+  });
+}
+
+// ─────────────────────────────────────────────
+// NODE DETAIL POPUP
+// ─────────────────────────────────────────────
+function showNodeDetail(nodeId) {
+  const nodeMap = {};
+  (graphData.nodes || []).forEach(n => { nodeMap[n.id] = n.label; });
+  const label = nodeMap[nodeId] || nodeId;
+
+  // Find rules applied from this node
+  const outEdges = (graphData.edges || []).filter(e => e.from === nodeId);
+  const inEdges  = (graphData.edges || []).filter(e => e.to === nodeId);
+
+  let html = `<div class="expr">${escHtml(label)}</div>`;
+
+  if (inEdges.length) {
+    html += `<div class="chain-title">Derived by</div>`;
+    inEdges.forEach(e => {
+      const rule = ruleMap[e.rule_id] || {};
+      const srcLabel = nodeMap[e.from] || e.from;
+      html += `<div class="chain-step"><span class="step-rule">${e.rule_name}</span><br>${escHtml(srcLabel)}</div>`;
+      // If rule is elevated, show source proof
+      if (rule.elevated && rule.source_proof && Array.isArray(rule.source_proof)) {
+        const isInductive = rule.inductive;
+        if (isInductive) {
+          html += `<div class="chain-step" style="color:#a00">▼ Inductive proof: ${rule.name}<br>`;
+          rule.source_proof.forEach(sp => {
+            const sr = ruleMap[sp.rule_id] || {};
+            html += `<span style="color:#888">${sp.type}: ${sr.name || sp.rule_id}</span><br>`;
+          });
+          html += `</div>`;
+        } else {
+          html += `<div class="chain-step" style="color:#888">▼ Expanded proof (${rule.source_proof.length - 1} steps):<br>`;
+          rule.source_proof.forEach(sp => {
+            html += `<span style="opacity:0.7">[${sp.rule || 'START'}] ${escHtml(sp.expr)}</span><br>`;
+          });
+          html += `</div>`;
+        }
+      }
+    });
+  }
+
+  if (outEdges.length) {
+    html += `<div class="chain-title">Leads to</div>`;
+    outEdges.forEach(e => {
+      const dstLabel = nodeMap[e.to] || e.to;
+      html += `<div class="chain-step"><span class="step-rule">${e.rule_name}</span><br>${escHtml(dstLabel)}</div>`;
+    });
+  }
+
+  document.getElementById('popup-title').textContent = `Node ${nodeId}`;
+  document.getElementById('popup-body').innerHTML = html;
+  document.getElementById('popup').classList.add('visible');
+}
+
+function showEdgeDetail(edgeId) {
+  const edge = (graphData.edges || []).find(e => e.id === edgeId);
+  if (!edge) return;
+  const nodeMap = {};
+  (graphData.nodes || []).forEach(n => { nodeMap[n.id] = n.label; });
+  const rule = ruleMap[edge.rule_id] || {};
+
+  let html = `<div class="expr">${escHtml(edge.rule_name || edge.rule_id)}</div>`;
+  html += `<div class="chain-title">From</div><div class="chain-step">${escHtml(nodeMap[edge.from] || edge.from)}</div>`;
+  html += `<div class="chain-title">To</div><div class="chain-step">${escHtml(nodeMap[edge.to] || edge.to)}</div>`;
+  html += `<div class="chain-title">Rule</div><div class="chain-step">
+    ID: ${rule.id || edge.rule_id}<br>
+    Level: ${rule.level || '?'}<br>
+    Elevated: ${rule.elevated ? '✓ (Theorem)' : '✗ (Axiom/Primitive)'}<br>
+    ${rule.inductive ? 'Inductive: ✓<br>' : ''}
+    Pattern: <span style="word-break:break-all">${escHtml(rule.pattern || '?')}</span>
+  </div>`;
+
+  if (rule.elevated && rule.source_proof && Array.isArray(rule.source_proof)) {
+    html += `<div class="chain-title">Proof chain</div>`;
+    if (rule.inductive) {
+      rule.source_proof.forEach(sp => {
+        const sr = ruleMap[sp.rule_id] || {};
+        html += `<div class="chain-step">${sp.type.toUpperCase()}: ${sr.name || sp.rule_id}</div>`;
+      });
+    } else {
+      rule.source_proof.forEach(sp => {
+        html += `<div class="chain-step"><span class="step-rule">[${sp.rule || 'START'}]</span> ${escHtml(sp.expr)}</div>`;
+      });
+    }
+  }
+
+  document.getElementById('popup-title').textContent = `Edge ${edgeId}`;
+  document.getElementById('popup-body').innerHTML = html;
+  document.getElementById('popup').classList.add('visible');
+}
+
+function closePopup() {
+  document.getElementById('popup').classList.remove('visible');
+}
+
+// ─────────────────────────────────────────────
+// HIGHLIGHTING
+// ─────────────────────────────────────────────
+function highlightProofPath() {
+  const path = new Set(graphData.proof_path || []);
+  const nodeUpdates = [];
+  const edgeUpdates = [];
+  (graphData.nodes || []).forEach(n => {
+    const inP = path.has(n.id);
+    const level = nodesDS.get(n.id).level || 'logic';
+    const c = inP ? HIGHLIGHT : LEVEL_COLORS[level] || LEVEL_COLORS.logic;
+    nodeUpdates.push({
+      id: n.id,
+      color: { background: c.bg, border: c.border },
+      font: { color: inP ? '#cc0000' : '#111', face: 'Courier New', size: 11, bold: inP },
+      borderWidth: inP ? 3 : 1.5,
+    });
+  });
+  (graphData.edges || []).forEach(e => {
+    const inP = path.has(e.id);
+    const level = edgesDS.get(e.id).level || 'logic';
+    const c = LEVEL_COLORS[level] || LEVEL_COLORS.logic;
+    edgeUpdates.push({
+      id: e.id,
+      color: { color: inP ? PROOF_EDGE_COLOR : c.border, inherit: false },
+      font: { color: inP ? '#cc0000' : '#888', face: 'Courier New', size: 9 },
+      width: inP ? 3 : 1,
+    });
+  });
+  nodesDS.update(nodeUpdates);
+  edgesDS.update(edgeUpdates);
+}
+
+function resetHighlight() {
+  const nodeUpdates = [];
+  const edgeUpdates = [];
+  (graphData.nodes || []).forEach(n => {
+    const level = nodesDS.get(n.id).level || 'logic';
+    const c = LEVEL_COLORS[level] || LEVEL_COLORS.logic;
+    nodeUpdates.push({
+      id: n.id,
+      color: { background: c.bg, border: c.border },
+      font: { color: '#111', face: 'Courier New', size: 11, bold: false },
+      borderWidth: 1.5,
+    });
+  });
+  (graphData.edges || []).forEach(e => {
+    const level = edgesDS.get(e.id).level || 'logic';
+    const c = LEVEL_COLORS[level] || LEVEL_COLORS.logic;
+    edgeUpdates.push({
+      id: e.id,
+      color: { color: c.border, inherit: false },
+      font: { color: '#888', face: 'Courier New', size: 9 },
+      width: 1,
+    });
+  });
+  nodesDS.update(nodeUpdates);
+  edgesDS.update(edgeUpdates);
+}
+
+function filterLevel(level, el) {
+  document.querySelectorAll('.layer-row').forEach(r => r.classList.remove('active'));
+  el.classList.add('active');
+  currentFilter = level;
+
+  // Filter rules panel
+  const panel = document.getElementById('rules-panel');
+  panel.querySelectorAll('.rule-item').forEach((item, i) => {
+    const rule = (graphData.rules || [])[i];
+    if (!rule) return;
+    item.style.display = (level === 'all' || rule.level === level) ? '' : 'none';
+  });
+
+  // Filter graph nodes/edges
+  if (level === 'all') {
+    nodesDS.forEach(n => nodesDS.update({ id: n.id, hidden: false }));
+    edgesDS.forEach(e => edgesDS.update({ id: e.id, hidden: false }));
+  } else {
+    nodesDS.forEach(n => nodesDS.update({ id: n.id, hidden: n.level !== level }));
+    edgesDS.forEach(e => edgesDS.update({ id: e.id, hidden: e.level !== level }));
+  }
+}
+
+function highlightRule(ruleId) {
+  resetHighlight();
+  const matchEdges = (graphData.edges || []).filter(e => e.rule_id === ruleId);
+  const matchNodeIds = new Set();
+  matchEdges.forEach(e => { matchNodeIds.add(e.from); matchNodeIds.add(e.to); });
+  const edgeUpdates = matchEdges.map(e => ({
+    id: e.id,
+    color: { color: PROOF_EDGE_COLOR, inherit: false },
+    font: { color: '#cc0000', face: 'Courier New', size: 9 },
+    width: 3,
+  }));
+  const nodeUpdates = [...matchNodeIds].map(nid => ({
+    id: nid,
+    color: { background: HIGHLIGHT.bg, border: HIGHLIGHT.border },
+    font: { color: '#cc0000', face: 'Courier New', size: 11, bold: true },
+    borderWidth: 3,
+  }));
+  nodesDS.update(nodeUpdates);
+  edgesDS.update(edgeUpdates);
+}
+
+// ─────────────────────────────────────────────
+// UTILS
+// ─────────────────────────────────────────────
+function escHtml(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+// ─────────────────────────────────────────────
+// START
+// ─────────────────────────────────────────────
+init();
+
+</script>
+</body>
+</html>

@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sacred Texts — Analytical Dashboard</title>
+  <link rel="icon" type="image/x-icon" href="../../images.ico">
+<link rel="stylesheet" href="style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</head>
+<body>
+
+<div class="grain"></div>
+
+<header>
+  <div class="header-inner">
+    <div class="header-title">
+      <a href="../../index.html" style="
+        display: inline-flex; align-items: center; gap: 7px;
+        font-family: 'JetBrains Mono', monospace; font-size: 11px;
+        letter-spacing: 0.15em; text-transform: uppercase;
+        color: var(--muted); text-decoration: none;
+        border: 1px solid var(--border); border-radius: 6px;
+        padding: 5px 12px; margin-bottom: 16px;
+        transition: color 0.2s, border-color 0.2s;
+      " onmouseover="this.style.color='var(--accent)';this.style.borderColor='var(--accent)'"
+         onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--border)'">
+        ← Home
+      </a>
+      <span class="header-eyebrow">Comparative Text Analytics</span>
+      <h1>Sacred Texts</h1>
+      <p class="header-sub">Deep linguistic analysis across 21 religious &amp; philosophical texts</p>
+    </div>
+    <div class="header-meta">
+      <span id="active-count">21 books active</span>
+    </div>
+  </div>
+</header>
+
+<nav class="tab-nav">
+  <button class="tab active" data-tab="overview">Overview</button>
+  <button class="tab" data-tab="vocabulary">Vocabulary</button>
+  <button class="tab" data-tab="phrases">Phrases &amp; N-grams</button>
+  <button class="tab" data-tab="sacred">Sacred Words</button>
+  <button class="tab" data-tab="similarity">Similarity</button>
+  <button class="tab" data-tab="style">Style &amp; Structure</button>
+  <button class="tab" data-tab="sentiment">Tone &amp; Sentiment</button>
+  <button class="tab" data-tab="distinctive">Distinctive Words</button>
+</nav>
+
+<!-- ═══════════ BOOK SELECTOR BAR ═══════════ -->
+<div class="book-bar">
+  <button class="book-bar-toggle" id="book-bar-toggle">
+    <span class="arrow">▾</span>
+    <span>Filter Books</span>
+    <span id="toggle-count" style="color:var(--accent);margin-left:4px"></span>
+  </button>
+  <div class="book-bar-panel" id="book-bar-panel">
+    <div class="book-bar-actions">
+      <button class="bar-action-btn" onclick="bookBarSelectAll()">Select All</button>
+      <button class="bar-action-btn" onclick="bookBarClearAll()">Clear All</button>
+      <button class="bar-action-btn" onclick="bookBarPreset('abrahamic')">Abrahamic</button>
+      <button class="bar-action-btn" onclick="bookBarPreset('hindu')">Hindu</button>
+      <button class="bar-action-btn" onclick="bookBarPreset('greek')">Greek</button>
+      <button class="bar-action-btn" onclick="bookBarPreset('asian')">East Asian</button>
+    </div>
+    <div class="book-groups" id="book-groups">
+      <!-- populated by JS -->
+    </div>
+  </div>
+</div>
+
+<main>
+
+<!-- ═══════════ OVERVIEW ═══════════ -->
+<section class="tab-panel active" id="tab-overview">
+  <div class="section-header">
+    <h2>At a Glance</h2>
+    <p>Core statistics across selected texts</p>
+  </div>
+  <div class="stats-table-wrap">
+    <table class="stats-table" id="stats-table"></table>
+  </div>
+  <div class="chart-row">
+    <div class="chart-card ultra-wide">
+      <h3>Total Word Count</h3>
+      <canvas id="chart-wordcount"></canvas>
+    </div>
+  </div>
+  <div class="chart-row">
+    <div class="chart-card wide">
+      <h3>Lexical Richness (%)</h3>
+      <p class="chart-sub">Unique words ÷ total words</p>
+      <canvas id="chart-richness"></canvas>
+    </div>
+    <div class="chart-card wide">
+      <h3>Reading Ease (Flesch Score)</h3>
+      <p class="chart-sub">Higher = easier to read</p>
+      <canvas id="chart-flesch"></canvas>
+    </div>
+  </div>
+  <div class="chart-row">
+    <div class="chart-card wide">
+      <h3>Avg. Word Length (characters)</h3>
+      <canvas id="chart-avgwordlen"></canvas>
+    </div>
+    <div class="chart-card wide">
+      <h3>Avg. Sentence Length (words)</h3>
+      <canvas id="chart-sentlen"></canvas>
+    </div>
+  </div>
+  <div class="chart-row">
+    <div class="chart-card ultra-wide">
+      <h3>Word Length Distribution</h3>
+      <p class="chart-sub">How often each word-length appears across selected books</p>
+      <canvas id="chart-wordlenDist"></canvas>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ VOCABULARY ═══════════ -->
+<section class="tab-panel" id="tab-vocabulary">
+  <div class="section-header">
+    <h2>Vocabulary Analysis</h2>
+    <p>Most frequent words, exclusive vocabulary, and shared language</p>
+  </div>
+  <div class="selector-row">
+    <label>Book:</label>
+    <select id="vocab-book-select"></select>
+    <label>Show:</label>
+    <select id="vocab-type-select">
+      <option value="top_words_main">Excluding stopwords</option>
+      <option value="top_words_all">All words</option>
+    </select>
+  </div>
+  <div class="chart-row">
+    <div class="chart-card ultra-wide" style="height:500px">
+      <h3>Top 30 Words</h3>
+      <canvas id="chart-topwords"></canvas>
+    </div>
+  </div>
+  <div class="chart-row">
+    <div class="chart-card">
+      <h3>Exclusive Vocabulary</h3>
+      <p class="chart-sub">Words found only in that book (vs all active books)</p>
+      <div id="vocab-exclusive" class="info-blocks"></div>
+    </div>
+    <div class="chart-card wide">
+      <h3>Hapax Legomena</h3>
+      <p class="chart-sub">Words that appear only once</p>
+      <div id="hapax-display" class="hapax-grid"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ PHRASES ═══════════ -->
+<section class="tab-panel" id="tab-phrases">
+  <div class="section-header">
+    <h2>Phrases &amp; N-grams</h2>
+    <p>Most frequent word pairs, triplets, and letter patterns</p>
+  </div>
+  <div class="selector-row">
+    <label>Book:</label>
+    <select id="phrase-book-select"></select>
+  </div>
+  <div class="chart-row">
+    <div class="chart-card" style="height:420px">
+      <h3>Top Bigrams (2-word phrases)</h3>
+      <canvas id="chart-bigrams"></canvas>
+    </div>
+    <div class="chart-card" style="height:420px">
+      <h3>Top Trigrams (3-word phrases)</h3>
+      <canvas id="chart-trigrams"></canvas>
+    </div>
+  </div>
+  <div class="chart-row">
+    <div class="chart-card">
+      <h3>Letter Digrams (2-letter combos)</h3>
+      <canvas id="chart-2gram"></canvas>
+    </div>
+    <div class="chart-card">
+      <h3>Letter Trigrams (3-letter combos)</h3>
+      <canvas id="chart-3gram"></canvas>
+    </div>
+  </div>
+  <div class="chart-row">
+    <div class="chart-card ultra-wide">
+      <h3>Notable Phrase Occurrences Across Books</h3>
+      <div id="phrase-search-table"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ SACRED WORDS ═══════════ -->
+<section class="tab-panel" id="tab-sacred">
+  <div class="section-header">
+    <h2>Sacred &amp; Spiritual Terms</h2>
+    <p>Frequency of key theological words per 1,000 words</p>
+  </div>
+  <div class="selector-row">
+    <label>Focus Term:</label>
+    <select id="sacred-term-select"></select>
+  </div>
+  <div class="chart-row">
+    <div class="chart-card ultra-wide">
+      <h3>Per 1,000 Words — All Selected Books</h3>
+      <canvas id="chart-divine" style="max-height:520px"></canvas>
+    </div>
+  </div>
+  <div class="chart-row">
+    <div class="chart-card wide">
+      <h3>Number Words Mentioned</h3>
+      <canvas id="chart-numbers"></canvas>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ SIMILARITY ═══════════ -->
+<section class="tab-panel" id="tab-similarity">
+  <div class="section-header">
+    <h2>Text Similarity</h2>
+    <p>How linguistically close are the selected texts?</p>
+  </div>
+  <div class="selector-row">
+    <label>Compare:</label>
+    <select id="sim-book1"></select>
+    <label>vs</label>
+    <select id="sim-book2"></select>
+    <button class="bar-action-btn" id="sim-go-btn" style="margin-left:4px">Show All Pairs</button>
+  </div>
+  <div class="chart-row">
+    <div class="chart-card wide">
+      <h3>Jaccard Similarity</h3>
+      <p class="chart-sub">Shared vocabulary / total vocabulary</p>
+      <canvas id="chart-jaccard"></canvas>
+    </div>
+    <div class="chart-card wide">
+      <h3>Cosine Similarity</h3>
+      <p class="chart-sub">Word frequency vector alignment</p>
+      <canvas id="chart-cosine"></canvas>
+    </div>
+  </div>
+  <div class="chart-row">
+    <div class="chart-card ultra-wide">
+      <h3>Zipf's Law — Word Rank vs Frequency</h3>
+      <p class="chart-sub">Natural languages follow a power law; similar curves across all texts</p>
+      <canvas id="chart-zipf"></canvas>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ STYLE ═══════════ -->
+<section class="tab-panel" id="tab-style">
+  <div class="section-header">
+    <h2>Style &amp; Structure</h2>
+    <p>Structural fingerprints and writing style comparisons</p>
+  </div>
+  <div class="chart-row">
+    <div class="chart-card wide">
+      <h3>Word Length Profile</h3>
+      <p class="chart-sub">% short (≤3), medium (4–7), long (8+) words</p>
+      <canvas id="chart-style-words"></canvas>
+    </div>
+    <div class="chart-card wide">
+      <h3>Punctuation Patterns</h3>
+      <canvas id="chart-punct"></canvas>
+    </div>
+  </div>
+  <div class="chart-row">
+    <div class="chart-card">
+      <h3>Line Structure</h3>
+      <div id="line-stats-display" class="info-blocks"></div>
+    </div>
+    <div class="chart-card">
+      <h3>Most Common Sentence Starters</h3>
+      <div class="selector-row" style="margin-bottom:12px">
+        <label>Book:</label>
+        <select id="starters-book-select"></select>
+      </div>
+      <canvas id="chart-starters"></canvas>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ SENTIMENT ═══════════ -->
+<section class="tab-panel" id="tab-sentiment">
+  <div class="section-header">
+    <h2>Tone &amp; Sentiment</h2>
+    <p>Positive vs negative word usage patterns</p>
+  </div>
+  <div class="chart-row">
+    <div class="chart-card ultra-wide">
+      <h3>Positive vs Negative Word Counts</h3>
+      <canvas id="chart-sentiment-counts"></canvas>
+    </div>
+  </div>
+  <div class="chart-row">
+    <div class="chart-card wide">
+      <h3>Positive / Negative Ratio</h3>
+      <p class="chart-sub">Higher = more positive tone</p>
+      <canvas id="chart-sentiment-ratio"></canvas>
+    </div>
+    <div class="chart-card wide">
+      <h3>Positive &amp; Negative % of Total Words</h3>
+      <canvas id="chart-sentiment-pct"></canvas>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ DISTINCTIVE ═══════════ -->
+<section class="tab-panel" id="tab-distinctive">
+  <div class="section-header">
+    <h2>Distinctive Words</h2>
+    <p>Words that define each book's unique voice — high frequency here, low everywhere else</p>
+  </div>
+  <div class="distinctive-grid" id="distinctive-grid">
+    <!-- populated by JS -->
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <p>Analysis generated from plain-text editions · Data powered by <code>analyze.py</code> · Charts by Chart.js · <span id="footer-count"></span></p>
+</footer>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

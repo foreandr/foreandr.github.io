@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gauge Theory Visualizer</title>
+  <link rel="icon" type="image/x-icon" href="../../images.ico">
+  <style>
+    :root{
+      --bg:#0d1117;--bg2:#161b22;--bg3:#21262d;--bdr:#30363d;
+      --txt:#e6edf3;--mu:#8b949e;
+      --bl:#58a6ff;--gr:#3fb950;--pu:#bc8cff;--or:#f78166;--ye:#e3b341;--te:#39d0c8;
+      --panel-w:230px;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html{font-size:22px}
+    html,body{height:100%;overflow:hidden}
+    body{font-family:"IBM Plex Mono","Fira Code",monospace;background:var(--bg);color:var(--txt);display:flex;flex-direction:column}
+
+    /* TOP BAR */
+    #topbar{
+      display:flex;align-items:center;gap:8px;padding:0 10px;height:40px;
+      background:var(--bg2);border-bottom:1px solid var(--bdr);flex-shrink:0;
+    }
+    #panel-toggle{
+      background:var(--bg3);border:1px solid var(--bdr);color:var(--txt);
+      border-radius:5px;padding:3px 9px;font-size:.75rem;cursor:pointer;
+      font-family:inherit;flex-shrink:0;
+    }
+    #panel-toggle:hover{background:var(--bdr)}
+    #panel-toggle.open{background:var(--pu);border-color:var(--pu);color:#000}
+    .topname{font-size:.82rem;font-weight:700;letter-spacing:.06em;flex-shrink:0}
+    .vsep{width:1px;height:20px;background:var(--bdr);flex-shrink:0}
+    .tctl{display:flex;align-items:center;gap:6px;flex-shrink:0}
+    .tctl label{font-size:.67rem;color:var(--mu)}
+    select{background:var(--bg3);border:1px solid var(--bdr);color:var(--txt);border-radius:4px;padding:2px 6px;font-size:.7rem;font-family:inherit;cursor:pointer}
+    button.tb{background:var(--bg3);border:1px solid var(--bdr);color:var(--txt);border-radius:5px;padding:3px 10px;font-size:.7rem;font-family:inherit;cursor:pointer;white-space:nowrap}
+    button.tb:hover{background:var(--bdr)}
+    button.tb.on{background:var(--bl);color:#000;border-color:var(--bl)}
+
+    /* WORKSPACE */
+    #workspace{display:flex;flex:1;overflow:hidden}
+
+    /* SETTINGS PANEL */
+    #lpanel{
+      width:var(--panel-w);flex-shrink:0;
+      background:var(--bg2);border-right:1px solid var(--bdr);
+      display:flex;flex-direction:column;overflow:hidden;
+      transition:width .2s ease;
+    }
+    #lpanel.closed{width:0;border-right:none}
+    #lpanel-inner{width:var(--panel-w);flex:1;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column}
+
+    .sec{padding:8px 10px;border-bottom:1px solid var(--bdr)}
+    .sec-title{font-size:.62rem;color:var(--pu);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px;font-weight:700}
+    .row{display:flex;align-items:center;gap:5px;margin-bottom:4px}
+    .row label{font-size:.65rem;color:var(--mu);flex-shrink:0;width:44px}
+    .row select,.row input[type=range]{flex:1}
+    .row input[type=range]{accent-color:var(--pu)}
+
+    .presets{display:flex;flex-wrap:wrap;gap:3px;margin-bottom:4px}
+    .pbt{background:var(--bg3);border:1px solid var(--bdr);color:var(--mu);border-radius:4px;padding:2px 7px;font-size:.62rem;cursor:pointer;font-family:inherit}
+    .pbt:hover{border-color:var(--pu);color:var(--txt)}
+    .pbt.active{border-color:var(--ye);color:var(--ye)}
+
+    /* Per-point rows */
+    #g-rows{display:flex;flex-direction:column}
+    .g-row{
+      display:grid;grid-template-columns:8px 34px 1fr 42px;
+      align-items:center;gap:4px;
+      padding:3px 10px;border-bottom:1px solid rgba(255,255,255,.04);
+    }
+    .g-row:hover{background:rgba(255,255,255,.03)}
+    .g-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+    .g-lbl{font-size:.68rem;font-weight:700;text-align:right;color:var(--mu)}
+    .g-lbl.origin{color:var(--ye)}
+    .g-row input[type=range]{accent-color:var(--gr);height:14px;cursor:pointer}
+    .g-val{
+      font-size:.6rem;text-align:right;padding:1px 3px;
+      background:var(--bg3);border:1px solid var(--bdr);border-radius:3px;
+      cursor:pointer;font-family:inherit;color:var(--ye);
+    }
+    .g-val:focus{outline:1px solid var(--pu);color:var(--txt)}
+
+    /* MAIN */
+    #main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+    #panels{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr auto;flex:1;gap:2px;background:var(--bdr);overflow:hidden}
+    .panel-full{grid-column:1/-1;height:180px}
+    .panel{display:flex;flex-direction:column;background:var(--bg);min-width:0;overflow:hidden}
+    .ph{display:flex;align-items:stretch;flex-shrink:0;border-bottom:1px solid var(--bdr)}
+    .ph-bar{width:4px;flex-shrink:0}
+    .ph-body{flex:1;padding:4px 8px;background:var(--bg2)}
+    .ph-title{font-size:.78rem;font-weight:700;margin-bottom:2px;line-height:1.3}
+    .ph-sub{font-size:.57rem;color:var(--mu);line-height:1.4}
+    .cw{flex:1;position:relative;overflow:hidden}
+    canvas{position:absolute;top:0;left:0;width:100%;height:100%}
+
+    .leg{display:flex;align-items:center;gap:6px;padding:3px 8px;background:var(--bg2);border-top:1px solid var(--bdr);flex-shrink:0;font-size:.57rem;flex-wrap:wrap}
+    .li{display:flex;align-items:center;gap:3px;color:var(--mu)}
+    .ld{width:18px;height:2px;border-radius:1px;flex-shrink:0}
+    .badge{margin-left:auto;font-size:.57rem;font-weight:700;padding:1px 7px;border-radius:10px;flex-shrink:0}
+    .obs{background:#3fb95022;color:var(--gr);border:1px solid var(--gr)40}
+    .not-obs{background:#f7816622;color:var(--or);border:1px solid var(--or)40}
+    .dep{background:#8b949e22;color:var(--mu);border:1px solid var(--bdr)}
+    .pure{background:#3fb95022;color:var(--gr);border:1px solid var(--gr)40}
+    .real{background:#f7816622;color:var(--or);border:1px solid var(--or)40}
+
+    .alg{height:80px;border-top:1px solid var(--bdr);background:var(--bg2);overflow-y:auto;padding:4px 8px;font-size:.57rem;line-height:1.8;flex-shrink:0}
+    .ar{display:flex;gap:4px;align-items:baseline;border-bottom:1px solid rgba(255,255,255,.03)}
+    .ax{color:var(--mu);width:22px;text-align:right;flex-shrink:0}
+    .av{color:var(--gr)}.ag{color:var(--pu)}.af{color:var(--or)}.am{color:var(--mu);font-size:.54rem;flex-shrink:0}
+
+    #story{display:flex;align-items:flex-start;gap:8px;padding:5px 10px;background:var(--bg2);border-top:1px solid var(--bdr);flex-shrink:0;font-size:.63rem;line-height:1.5;min-height:52px}
+    .si{font-size:1.2rem;flex-shrink:0}
+    .st{font-weight:700;color:var(--ye);margin-bottom:1px;font-size:.66rem}
+    .sb{color:var(--mu)}.sb b{color:var(--txt)}.hl{color:var(--bl)}.hg{color:var(--gr)}.hp{color:var(--pu)}.ho{color:var(--or)}.ht{color:var(--te)}
+
+    #bar{display:flex;align-items:center;gap:8px;padding:2px 10px;background:var(--bg2);border-top:1px solid var(--bdr);flex-shrink:0;font-size:.57rem;color:var(--mu)}
+    #bstat{color:var(--ye)}
+    ::-webkit-scrollbar{width:4px;height:4px}
+    ::-webkit-scrollbar-track{background:var(--bg2)}
+    ::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:2px}
+  </style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div id="topbar">
+  <button id="panel-toggle" class="open" onclick="togglePanel()">⚙ Settings</button>
+  <a href="../../index.html" style="text-decoration:none;color:var(--bl);font-size:.7rem;border:1px solid var(--bdr);padding:3px 8px;border-radius:5px;flex-shrink:0">← back</a>
+  <span class="topname">GAUGE THEORY VISUALIZER</span>
+  <div class="vsep"></div>
+  <div class="tctl">
+    <label>f(x) =</label>
+    <select id="fSel">
+      <option value="sinX" selected>sin(x)</option>
+      <option value="cosX">cos(x)</option>
+      <option value="triangle">triangle</option>
+      <option value="square">square</option>
+      <option value="sawtooth">sawtooth</option>
+      <option value="harmonic">harmonic</option>
+      <option value="pulse">pulse</option>
+      <option value="tanh">tanh (clipped)</option>
+    </select>
+  </div>
+  <div class="vsep"></div>
+  <button class="tb" id="playBtn">▶ Play</button>
+  <button class="tb" id="spdBtn">1×</button>
+  <span id="bstat" style="color:var(--ye);font-size:.65rem">paused  t=0.00</span>
+</div>
+
+<!-- WORKSPACE -->
+<div id="workspace">
+
+  <!-- SETTINGS PANEL -->
+  <div id="lpanel">
+  <div id="lpanel-inner">
+
+    <div class="sec">
+      <div class="sec-title">How it works</div>
+      <div style="font-size:.6rem;color:var(--mu);line-height:1.5">
+        <b style="color:var(--bl)">Chart 1</b>: ψ(x,t) — electron field<br>
+        <b style="color:var(--gr)">Chart 2</b>: Ω(x) — your gauge choice<br>
+        <b style="color:var(--pu)">Chart 3</b>: ψ'= Ω·ψ — same electron, new frame<br>
+        <b style="color:var(--te)">Chart 4</b>: A(x) — photon field<br>
+        <b style="color:var(--or)">Chart 5</b>: F = ΔA — <u>what a detector measures</u>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-title">Gauge Choice Mode</div>
+      <div class="row">
+        <label>mode</label>
+        <select id="omegaModeSel" onchange="setOmegaMode(this.value)">
+          <option value="manual">Manual (sliders)</option>
+          <option value="fn">Function</option>
+          <option value="physical">Field-driven</option>
+        </select>
+      </div>
+      <!-- Physical mode controls -->
+      <div id="physicalControls" style="display:none">
+        <div style="font-size:.6rem;color:var(--mu);padding:4px 0;line-height:1.5">
+          Ω(x,t) = exp(k·ψ). The electron's own amplitude drives the gauge. F = ΔA ∝ ∂²ψ — wave equation physics.
+        </div>
+        <div class="row">
+          <label>coupling k</label>
+          <input type="range" id="physScaleSl" min="0.1" max="3" step="0.1" value="1.2"
+            oninput="S.physScale=parseFloat(this.value);document.getElementById('physScaleVal').textContent=this.value;render()">
+          <span id="physScaleVal" style="font-size:.6rem;color:var(--ye);width:28px;text-align:right">1.2</span>
+        </div>
+      </div>
+
+      <!-- Function mode controls -->
+      <div id="fnControls" style="display:none">
+        <div class="row">
+          <label>Ω(x) =</label>
+          <select id="omegaFnSel" onchange="S.omegaFn=this.value;applyOmegaFn();render()">
+            <option value="flat">flat (constant)</option>
+            <option value="linear">linear ↗</option>
+            <option value="sin" selected>sin wave</option>
+            <option value="cos">cos wave</option>
+            <option value="gaussian">gaussian hump</option>
+            <option value="step">step</option>
+            <option value="exp">exponential</option>
+            <option value="sawtooth">sawtooth</option>
+            <option value="abs">|sin| (always +)</option>
+          </select>
+        </div>
+        <div class="row">
+          <label>scale</label>
+          <input type="range" id="omegaScaleSl" min="1" max="20" step="0.5" value="8"
+            oninput="S.omegaScale=parseFloat(this.value);document.getElementById('omegaScaleVal').textContent='×'+this.value;applyOmegaFn();render()">
+          <span id="omegaScaleVal" style="font-size:.6rem;color:var(--ye);width:28px;text-align:right">×8</span>
+        </div>
+        <div class="row">
+          <label>freq</label>
+          <input type="range" id="omegaFreqSl" min="0.2" max="3" step="0.1" value="1"
+            oninput="S.omegaFreq=parseFloat(this.value);document.getElementById('omegaFreqVal').textContent=this.value+'f';applyOmegaFn();render()">
+          <span id="omegaFreqVal" style="font-size:.6rem;color:var(--ye);width:28px;text-align:right">1f</span>
+        </div>
+        <div class="row">
+          <label>time</label>
+          <select id="omegaDynSel" onchange="S.omegaDynamic=this.value==='dynamic'">
+            <option value="static">Static</option>
+            <option value="dynamic">Dynamic ↠</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-title" id="presetTitle">Manual presets</div>
+      <div class="presets" id="presetBtns">
+        <button class="pbt" onclick="applyPreset('one')">All ×1</button>
+        <button class="pbt" onclick="applyPreset('two')">All ×2</button>
+        <button class="pbt" onclick="applyPreset('three')">All ×3</button>
+        <button class="pbt" onclick="applyPreset('slope')">Slope</button>
+        <button class="pbt" onclick="applyPreset('hump')">Hump</button>
+        <button class="pbt" onclick="applyPreset('step')">Step</button>
+        <button class="pbt" onclick="applyPreset('sin')">Sine</button>
+        <button class="pbt" onclick="applyPreset('alt')">Alternating</button>
+        <button class="pbt" onclick="applyPreset('rand')">Random</button>
+      </div>
+    </div>
+
+    <div class="sec" style="padding:4px 0">
+      <div class="sec-title" style="padding:0 10px 4px">Ω at each point (drag or type)</div>
+      <div id="g-rows"></div>
+    </div>
+
+  </div>
+  </div><!-- /lpanel -->
+
+  <!-- MAIN: 4 panels -->
+  <div id="main">
+    <div id="panels">
+
+      <!-- CHART 1: Base Field -->
+      <div class="panel">
+        <div class="ph">
+          <div class="ph-bar" style="background:var(--bl)"></div>
+          <div class="ph-body">
+            <div class="ph-title">① BASE FIELD  ψ(x,t)</div>
+            <div class="ph-sub" style="color:var(--bl)">≈ electron field — gauge-dependent, needs a frame</div>
+          </div>
+        </div>
+        <div class="cw"><canvas id="cv1"></canvas></div>
+        <div class="leg">
+          <span class="li"><span class="ld" style="background:var(--bl)"></span>ψ = f(x)·cos(t)</span>
+          <span class="badge dep">gauge-dependent</span>
+        </div>
+        <div class="alg" id="a1"></div>
+      </div>
+
+      <!-- CHART 2: Omega at each point -->
+      <div class="panel">
+        <div class="ph">
+          <div class="ph-bar" style="background:var(--gr)"></div>
+          <div class="ph-body">
+            <div class="ph-title">② GAUGE CHOICE  Ω(x)</div>
+            <div class="ph-sub" style="color:var(--gr)">≈ local phase freedom α(x) — your arbitrary choice</div>
+          </div>
+        </div>
+        <div class="cw"><canvas id="cv2"></canvas></div>
+        <div class="leg">
+          <span class="li"><span class="ld" style="background:var(--gr)"></span>Ω(x) — your choice</span>
+          <span class="li"><span class="ld" style="background:var(--bdr)"></span>Ω=1 baseline</span>
+          <span class="badge dep">free choice — any Ω > 0</span>
+        </div>
+        <div class="alg" id="a2"></div>
+      </div>
+
+      <!-- CHART 3: After Local Gauge -->
+      <div class="panel">
+        <div class="ph">
+          <div class="ph-bar" style="background:var(--pu)"></div>
+          <div class="ph-body">
+            <div class="ph-title">③ LOCAL GAUGE  ψ'= Ω·ψ</div>
+            <div class="ph-sub" style="color:var(--pu)">≈ same electron in your chosen frame — equally valid</div>
+          </div>
+        </div>
+        <div class="cw"><canvas id="cv3"></canvas></div>
+        <div class="leg">
+          <span class="li"><span class="ld" style="background:var(--bl);opacity:.3"></span>ψ (original)</span>
+          <span class="li"><span class="ld" style="background:var(--pu)"></span>Ω·ψ (gauge-transformed)</span>
+          <span class="badge dep">different frame, same physics</span>
+        </div>
+        <div class="alg" id="a3"></div>
+      </div>
+
+      <!-- CHART 4: Gauge Potential -->
+      <div class="panel">
+        <div class="ph">
+          <div class="ph-bar" style="background:var(--te)"></div>
+          <div class="ph-body">
+            <div class="ph-title">④ GAUGE POTENTIAL  A(x)</div>
+            <div class="ph-sub" style="color:var(--te)">≈ photon field  A<sub>μ</sub> — forced into existence by your choice</div>
+          </div>
+        </div>
+        <div class="cw"><canvas id="cv4"></canvas></div>
+        <div class="leg">
+          <span class="li"><span class="ld" style="background:var(--te)"></span>A(x) = −Δ(log Ω)</span>
+          <span class="badge not-obs">A varies in space, fixed in time</span>
+        </div>
+        <div class="alg" id="a4"></div>
+      </div>
+
+      <!-- CHART 5: Curvature F — the only measurable -->
+      <div class="panel panel-full">
+        <div class="ph">
+          <div class="ph-bar" style="background:var(--or)"></div>
+          <div class="ph-body">
+            <div class="ph-title">⑤ FIELD STRENGTH  F(x) = ΔA</div>
+            <div class="ph-sub" style="color:var(--or)">≈ E and B fields — the only thing a detector actually measures. Gauge-invariant: every observer agrees.</div>
+          </div>
+        </div>
+        <div class="cw"><canvas id="cv5"></canvas></div>
+        <div class="leg">
+          <span class="li"><span class="ld" style="background:var(--or)"></span>F = ΔA</span>
+          <span class="badge obs" id="fbadge">OBSERVABLE ✓</span>
+        </div>
+      </div>
+
+    </div><!-- /panels -->
+
+    <!-- STORY -->
+    <div id="story">
+      <div class="si" id="si">🌊</div>
+      <div style="flex:1">
+        <div class="st" id="stt">Base field — all Ω = 1</div>
+        <div class="sb" id="sb">
+          Open <b>⚙ Settings</b> and drag the Ω sliders — or hit a preset.
+          Chart 2 shows your Ω choices. Chart 3 shows how those choices scramble the wave. Chart 4 shows the gauge potential A that encodes the structure of your choices.
+        </div>
+      </div>
+    </div>
+
+    <!-- STATUS -->
+    <div id="bar">
+      <span>x ∈ {−5,…,5}  ·  11 points  ·  </span>
+      <span id="omegasummary" style="color:var(--pu)">all Ω = ×1.00 (identity)</span>
+      <span style="margin-left:auto;color:var(--mu)">F = 0 → pure gauge (unphysical chaos)  ·  F ≠ 0 → real field (physical)</span>
+    </div>
+  </div><!-- /main -->
+</div><!-- /workspace -->
+
+<script>
+'use strict';
+
+// ═══════════════════════ CONSTANTS ════════════════════════
+const DPR = window.devicePixelRatio || 1;
+const XS  = [-5,-4,-3,-2,-1,0,1,2,3,4,5];
+const N   = 11;
+
+// ═══════════════════════ BASE FUNCTIONS ═══════════════════
+// ψ(x,t) = BASE[key](x − t)  — traveling wave, flows smoothly
+const BASE = {
+  sinX:     u => Math.sin(u),
+  cosX:     u => Math.cos(u),
+  triangle: u => (2/Math.PI) * Math.asin(Math.sin(u)),          // triangle wave — linear ramps
+  square:   u => Math.sign(Math.sin(u)) * 0.9,                  // square wave — flat tops/bottoms
+  sawtooth: u => (((u % (2*Math.PI)) + 2*Math.PI) % (2*Math.PI)) / Math.PI - 1, // sawtooth ramp
+  harmonic: u => Math.sin(u) * 0.6 + Math.sin(2*u) * 0.3 + Math.sin(3*u) * 0.1, // harmonic mix
+  pulse:    u => { const v=Math.sin(u*0.5); return 2*Math.exp(-v*v*8)-0.3; },     // sharp repeating spikes
+  tanh:     u => Math.tanh(Math.sin(u) * 2),                    // clipped sine — flat shoulders
+};
+
+// ═══════════════════════ OMEGA FUNCTIONS ══════════════════
+// Each fn(x, t, freq, dynamic) — static uses t=0, dynamic gets live t
+// Actual Ω = clamp(1 + scale * fn(...), 0.1, 30)
+const OMEGA_FNS = {
+  // static: flat line.  dynamic: amplitude breathes in/out
+  flat:     (x,t,f,d) => d ? Math.sin(t*0.8) : 0,
+
+  // static: slope left→right.  dynamic: slope rocks back and forth
+  linear:   (x,t,f,d) => d ? x*f*0.3 * Math.cos(t*0.6) : x*f*0.3,
+
+  // static: sin curve.  dynamic: traveling wave
+  sin:      (x,t,f,d) => Math.sin(x*f - (d?t:0)),
+
+  // static: cos curve.  dynamic: traveling wave
+  cos:      (x,t,f,d) => Math.cos(x*f - (d?t:0)),
+
+  // static: fixed hump at center.  dynamic: hump slides back and forth
+  gaussian: (x,t,f,d) => { const cx = d ? 4*Math.sin(t*0.5) : 0; return 3*Math.exp(-((x-cx)**2)*f*0.4); },
+
+  // static: fixed step at x=0.  dynamic: step position sweeps left/right
+  step:     (x,t,f,d) => { const edge = d ? 4*Math.sin(t*0.4) : 0; return x>=edge ? 1 : -0.85; },
+
+  // static: tanh ramp.  dynamic: traveling ramp
+  exp:      (x,t,f,d) => Math.tanh((x*f - (d?t:0)) * 0.5) * 1.5,
+
+  // static: sawtooth.  dynamic: traveling sawtooth
+  sawtooth: (x,t,f,d) => { const u=x*f-(d?t:0); return ((u%(2*Math.PI)+2*Math.PI)%(2*Math.PI))/Math.PI-1; },
+
+  // static: |sin| bumps.  dynamic: traveling bumps
+  abs:      (x,t,f,d) => Math.abs(Math.sin(x*f - (d?t:0))),
+};
+
+// ═══════════════════════ STATE ════════════════════════════
+const S = {
+  base:         'sinX',
+  t:            0,
+  playing:      false,
+  speed:        1,
+  omega:        new Array(N).fill(1.0),
+  // Gauge function mode
+  omegaMode:    'manual',   // 'manual' | 'fn' | 'physical'
+  physScale:    1.2,
+  omegaFn:      'sin',
+  omegaScale:   8,
+  omegaFreq:    1,
+  omegaDynamic: false,
+};
+
+// ═══════════════════════ PRESETS ══════════════════════════
+function applyPreset(name) {
+  XS.forEach((x, i) => {
+    let g = 1.0;
+    switch(name) {
+      case 'one':   g = 1.0; break;
+      case 'two':   g = 2.0; break;
+      case 'three': g = 5.0; break;
+      case 'slope': g = 0.2 + (i / (N-1)) * 25; break;       // 0.2 → 25
+      case 'hump':  g = 0.3 + 22 * Math.exp(-x*x/4); break;  // spikes to ~22 at center
+      case 'step':  g = x >= 0 ? 20 : 0.2; break;            // dramatic cliff
+      case 'sin':   g = 8 + 7 * Math.sin(x); break;           // 1 → 15 oscillation
+      case 'alt':   g = (i % 2 === 0) ? 20 : 0.2; break;     // extreme alternating
+      case 'rand':  g = 0.2 + Math.random() * 22; break;
+    }
+    g = Math.max(0.1, Math.min(30, g));
+    S.omega[i] = g;
+    updateGRow(i);
+  });
+  render();
+}
+
+// ═══════════════════════ OMEGA FUNCTION MODE ══════════════
+function applyOmegaFn() {
+  const fn = OMEGA_FNS[S.omegaFn] || OMEGA_FNS.sin;
+  XS.forEach((x, i) => {
+    const raw = fn(x, S.t, S.omegaFreq, S.omegaDynamic);
+    const g = Math.max(0.1, Math.min(30, 1 + S.omegaScale * raw));
+    S.omega[i] = g;
+    updateGRow(i);
+  });
+}
+
+function setOmegaMode(mode) {
+  S.omegaMode = mode;
+  const fnCtrl  = document.getElementById('fnControls');
+  const phCtrl  = document.getElementById('physicalControls');
+  const presetBtns  = document.getElementById('presetBtns');
+  const presetTitle = document.getElementById('presetTitle');
+  const gRowsSec    = document.querySelector('#g-rows').closest('.sec');
+
+  fnCtrl.style.display  = mode === 'fn'       ? 'block' : 'none';
+  phCtrl.style.display  = mode === 'physical'  ? 'block' : 'none';
+  presetBtns.style.display  = mode === 'manual' ? 'flex' : 'none';
+  presetTitle.style.display = mode === 'manual' ? 'block' : 'none';
+  // hide per-point sliders in physical mode — they're overwritten every frame anyway
+  gRowsSec.style.display = mode === 'physical' ? 'none' : 'flex';
+
+  if (mode === 'fn') applyOmegaFn();
+  render();
+}
+
+function updateGRow(i) {
+  const slide = document.getElementById('g-slide-'+i);
+  const valEl  = document.getElementById('g-val-'+i);
+  const dotEl  = document.getElementById('g-dot-'+i);
+  const g = S.omega[i];
+  if (slide) slide.value = g;
+  if (valEl) valEl.value = '×'+g.toFixed(2);
+  if (dotEl) dotEl.style.background = omegaColor(g);
+}
+
+function omegaColor(g) {
+  if (Math.abs(g - 1.0) < 0.06) return '#30363d'; // neutral
+  if (g > 1.0) {
+    // green hue scaled
+    const t = Math.min(1, (g-1)/3);
+    const l = Math.round(35 + t*30);
+    return `hsl(120,70%,${l}%)`;
+  } else {
+    // orange hue scaled
+    const t = Math.min(1, (1-g)/0.9);
+    const l = Math.round(65 - t*25);
+    return `hsl(30,85%,${l}%)`;
+  }
+}
+
+// ═══════════════════════ COMPUTE ══════════════════════════
+function computeAll() {
+  // Points: base field + gauge-transformed field
+  const pts = XS.map((x, i) => {
+    const psi  = BASE[S.base](x - S.t);        // Chart 1 — traveling wave
+    const omega = S.omega[i];
+    const psiP  = omega * psi;                   // Chart 2 — after gauge
+    const logOm = Math.log(Math.max(1e-6, omega));
+    return { x, i, psi, omega, psiP, logOm };
+  });
+
+  // Links (midpoints between adjacent pts): gauge potential A
+  // A_link = -(logΩ_{i+1} - logΩ_i) = -Δ(logΩ)
+  // Also compute covariant derivative D_x ψ' = (ψ'_{i+1} - ψ'_i) + A * ψ'_i
+  // This IS time-varying because ψ moves
+  const links = pts.slice(0,-1).map((d, i) => {
+    const d1 = pts[i+1];
+    const dLogOm = d1.logOm - d.logOm;
+    const A = -dLogOm;
+    const rawDiff = d1.psiP - d.psiP;          // ordinary diff of Ω·ψ
+    const covDeriv = rawDiff + A * d.psiP;      // covariant derivative (dynamic)
+    return { xM: d.x + 0.5, A, dLogOm, rawDiff, covDeriv };
+  });
+
+  // Field strength: F = ΔA (difference of A on neighboring links)
+  const fs = links.slice(0,-1).map((l, i) => ({
+    xM: links[i].xM + 0.5,  // position of this F value
+    F: links[i+1].A - l.A,
+  }));
+
+  return { pts, links, fs };
+}
+
+// ═══════════════════════ CANVAS UTILS ═════════════════════
+function resizeCanvas(id) {
+  const cv = document.getElementById(id);
+  if (!cv) return;
+  const r = cv.parentElement.getBoundingClientRect();
+  cv.width  = r.width  * DPR;
+  cv.height = r.height * DPR;
+  cv.style.width  = r.width  + 'px';
+  cv.style.height = r.height + 'px';
+}
+
+function makeMap(w, h, pad, x0, x1, y0, y1) {
+  return {
+    px: wx => pad + (wx-x0)/(x1-x0) * (w-2*pad),
+    py: wy => (h-pad) - (wy-y0)/(y1-y0) * (h-2*pad),
+  };
+}
+
+function drawAxes(ctx, w, h, pad, x0, x1, y0, y1) {
+  const m = makeMap(w,h,pad,x0,x1,y0,y1);
+  ctx.save();
+  // grid
+  ctx.strokeStyle='rgba(255,255,255,.04)'; ctx.lineWidth=1;
+  for(let y=Math.ceil(y0);y<=Math.floor(y1);y++){
+    const py=m.py(y);ctx.beginPath();ctx.moveTo(pad*.5,py);ctx.lineTo(w-pad*.5,py);ctx.stroke();
+  }
+  for(let x=x0;x<=x1;x++){
+    const px=m.px(x);ctx.beginPath();ctx.moveTo(px,pad*.4);ctx.lineTo(px,h-pad*.4);ctx.stroke();
+  }
+  // zero axis
+  ctx.strokeStyle='rgba(255,255,255,.18)'; ctx.lineWidth=1.5;
+  const y0p=m.py(0);
+  ctx.beginPath();ctx.moveTo(pad*.5,y0p);ctx.lineTo(w-pad*.5,y0p);ctx.stroke();
+  // x labels
+  ctx.fillStyle='#3d4858'; ctx.font=`${9*DPR}px "IBM Plex Mono",monospace`; ctx.textAlign='center';
+  for(let x=x0;x<=x1;x++) ctx.fillText(x,m.px(x),y0p+12*DPR);
+  ctx.restore();
+  return m;
+}
+
+function drawArrow(ctx,x1,y1,x2,y2,size,col,lw){
+  const a=Math.atan2(y2-y1,x2-x1);
+  ctx.save();ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=lw;
+  ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(x2,y2);
+  ctx.lineTo(x2-size*Math.cos(a-.38),y2-size*Math.sin(a-.38));
+  ctx.lineTo(x2-size*Math.cos(a+.38),y2-size*Math.sin(a+.38));
+  ctx.closePath();ctx.fill();ctx.restore();
+}
+
+function adaptY(vals, margin=1.25) {
+  let mx = 0.5;
+  vals.forEach(v => { if(Math.abs(v)>mx) mx=Math.abs(v); });
+  return mx * margin;
+}
+
+// ═══════════════════════ CHART 1 — BASE FIELD ═════════════
+function drawChart1({pts}) {
+  const cv=document.getElementById('cv1'), ctx=cv.getContext('2d');
+  const w=cv.width, h=cv.height;
+  ctx.clearRect(0,0,w,h);
+  const pad=30*DPR;
+  const yR = adaptY(pts.map(d=>d.psi));
+  const m = drawAxes(ctx,w,h,pad,-5,5,-yR,yR);
+
+  // Blue wave
+  ctx.save();
+  ctx.strokeStyle='#58a6ff'; ctx.lineWidth=2.5;
+  ctx.beginPath();
+  pts.forEach((d,i)=>{const px=m.px(d.x),py=m.py(d.psi);i?ctx.lineTo(px,py):ctx.moveTo(px,py);});
+  ctx.stroke();
+  // fill under curve
+  ctx.globalAlpha=0.08; ctx.fillStyle='#58a6ff';
+  ctx.beginPath(); ctx.moveTo(m.px(-5),m.py(0));
+  pts.forEach(d=>ctx.lineTo(m.px(d.x),m.py(d.psi)));
+  ctx.lineTo(m.px(5),m.py(0)); ctx.closePath(); ctx.fill();
+  ctx.globalAlpha=1;
+  // dots
+  pts.forEach(d=>{
+    ctx.beginPath();ctx.arc(m.px(d.x),m.py(d.psi),4*DPR,0,2*Math.PI);
+    ctx.fillStyle='#58a6ff'; ctx.fill();
+  });
+  ctx.restore();
+
+  ctx.save();
+  ctx.font=`${8*DPR}px "IBM Plex Mono",monospace`;
+  ctx.fillStyle='#58a6ff88'; ctx.fillText('ψ(x,t)=f(x)·cos(t)',pad,pad-2);
+  ctx.restore();
+
+  // Algebra
+  const el=document.getElementById('a1');
+  el.innerHTML=`<div style="color:var(--mu)">t=${S.t.toFixed(2)}  f(x)=${S.base}</div>`
+    +pts.map(d=>`<div class="ar">
+      <span class="ax">x=${d.x}</span>
+      <span class="am"> ψ=</span><span class="av">${d.psi.toFixed(3)}</span>
+    </div>`).join('');
+}
+
+// ═══════════════════════ CHART 2 — OMEGA FIELD ════════════
+function drawChart2({pts}) {
+  const cv=document.getElementById('cv2'), ctx=cv.getContext('2d');
+  const w=cv.width, h=cv.height;
+  ctx.clearRect(0,0,w,h);
+  const pad=30*DPR;
+  const allOne = S.omega.every(g=>Math.abs(g-1.0)<0.06);
+
+  // y-range: always show Ω=1 baseline, scale to max Ω
+  const yMax = Math.max(2, ...S.omega) * 1.15;
+  const m = drawAxes(ctx,w,h,pad,-5,5,0,yMax);
+
+  // Ω=1 baseline
+  ctx.save(); ctx.strokeStyle='#30363d'; ctx.lineWidth=1.5; ctx.setLineDash([4*DPR,3*DPR]);
+  const py1=m.py(1);
+  ctx.beginPath(); ctx.moveTo(pad*.5,py1); ctx.lineTo(w-pad*.5,py1); ctx.stroke();
+  ctx.setLineDash([]); ctx.restore();
+
+  // Ω bars
+  const bw=18*DPR;
+  pts.forEach(d=>{
+    const px=m.px(d.x), py0=m.py(0), pyO=m.py(Math.min(d.omega, yMax*.98));
+    ctx.save();
+    ctx.fillStyle=omegaColor(d.omega); ctx.globalAlpha=0.7;
+    ctx.fillRect(px-bw/2, pyO, bw, py0-pyO||1);
+    ctx.globalAlpha=1; ctx.restore();
+  });
+
+  // Ω line + dots
+  ctx.save(); ctx.strokeStyle='#3fb950'; ctx.lineWidth=2;
+  ctx.beginPath();
+  pts.forEach((d,i)=>{
+    const px=m.px(d.x), py=m.py(Math.min(d.omega, yMax*.98));
+    i?ctx.lineTo(px,py):ctx.moveTo(px,py);
+  });
+  ctx.stroke();
+  pts.forEach(d=>{
+    const py=m.py(Math.min(d.omega, yMax*.98));
+    ctx.beginPath(); ctx.arc(m.px(d.x),py,4*DPR,0,2*Math.PI);
+    ctx.fillStyle=omegaColor(d.omega); ctx.strokeStyle='#0d1117'; ctx.lineWidth=1.2;
+    ctx.fill(); ctx.stroke();
+  });
+  // Ω value labels
+  pts.forEach(d=>{
+    if(Math.abs(d.omega-1.0)>0.15){
+      const py=m.py(Math.min(d.omega,yMax*.98));
+      ctx.fillStyle=omegaColor(d.omega);
+      ctx.font=`bold ${7.5*DPR}px "IBM Plex Mono",monospace`;
+      ctx.textAlign='center';
+      ctx.fillText('×'+d.omega.toFixed(1), m.px(d.x), py-5*DPR);
+    }
+  });
+  ctx.restore();
+
+  ctx.save();
+  ctx.font=`${8*DPR}px "IBM Plex Mono",monospace`;
+  ctx.fillStyle='#3fb95088'; ctx.fillText('Ω(x) — your gauge choice',pad,pad-2);
+  ctx.restore();
+
+  const el=document.getElementById('a2');
+  el.innerHTML=`<div style="color:var(--gr)">Ω(x) — local multiplier at each point:</div>`
+    +pts.map(d=>{
+      const col=d.omega>1.1?'var(--gr)':d.omega<0.9?'var(--or)':'var(--mu)';
+      return `<div class="ar">
+        <span class="ax">x=${d.x}</span>
+        <span class="am"> Ω=</span><span style="color:${col}">×${d.omega.toFixed(2)}</span>
+      </div>`;
+    }).join('');
+}
+
+// ═══════════════════════ CHART 3 — LOCAL GAUGE ════════════
+function drawChart3({pts}) {
+  const cv=document.getElementById('cv3'), ctx=cv.getContext('2d');
+  const w=cv.width, h=cv.height;
+  ctx.clearRect(0,0,w,h);
+  const pad=30*DPR;
+  const allOne = S.omega.every(g=>Math.abs(g-1.0)<0.06);
+  const yR = adaptY([...pts.map(d=>d.psi),...pts.map(d=>d.psiP)]);
+  const m = drawAxes(ctx,w,h,pad,-5,5,-yR,yR);
+
+  // Original faint dashed
+  if (!allOne) {
+    ctx.save();
+    ctx.strokeStyle='#58a6ff'; ctx.lineWidth=1.2; ctx.globalAlpha=0.22;
+    ctx.setLineDash([4*DPR,3*DPR]);
+    ctx.beginPath();
+    pts.forEach((d,i)=>{const px=m.px(d.x),py=m.py(d.psi);i?ctx.lineTo(px,py):ctx.moveTo(px,py);});
+    ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha=1; ctx.restore();
+  }
+
+  // Gauge-transformed wave Ω·ψ
+  ctx.save();
+  const waveCol = allOne ? '#58a6ff' : '#bc8cff';
+  ctx.strokeStyle=waveCol; ctx.lineWidth=2.5;
+  ctx.beginPath();
+  pts.forEach((d,i)=>{
+    const v=Math.max(-yR*.97,Math.min(yR*.97,d.psiP));
+    const px=m.px(d.x),py=m.py(v);
+    i?ctx.lineTo(px,py):ctx.moveTo(px,py);
+  });
+  ctx.stroke();
+  ctx.globalAlpha=0.08; ctx.fillStyle=waveCol;
+  ctx.beginPath(); ctx.moveTo(m.px(-5),m.py(0));
+  pts.forEach(d=>ctx.lineTo(m.px(d.x),m.py(Math.max(-yR*.97,Math.min(yR*.97,d.psiP)))));
+  ctx.lineTo(m.px(5),m.py(0)); ctx.closePath(); ctx.fill();
+  ctx.globalAlpha=1; ctx.restore();
+
+  // Dots + comparison bars
+  pts.forEach(d=>{
+    const px=m.px(d.x);
+    const v=Math.max(-yR*.97,Math.min(yR*.97,d.psiP));
+    const pyN=m.py(v), pyO=m.py(d.psi);
+    if(!allOne && Math.abs(pyN-pyO)>3) {
+      const barCol = Math.abs(d.psiP)>Math.abs(d.psi)+0.01 ? '#3fb950' : '#f78166';
+      ctx.save(); ctx.strokeStyle=barCol; ctx.lineWidth=2; ctx.globalAlpha=0.5;
+      ctx.setLineDash([3*DPR,2*DPR]);
+      ctx.beginPath(); ctx.moveTo(px,pyO); ctx.lineTo(px,pyN); ctx.stroke();
+      ctx.setLineDash([]); ctx.restore();
+    }
+    ctx.save();
+    ctx.beginPath(); ctx.arc(px,pyN,4.5*DPR,0,2*Math.PI);
+    ctx.fillStyle=omegaColor(d.omega); ctx.strokeStyle='#0d1117'; ctx.lineWidth=1.2;
+    ctx.fill(); ctx.stroke(); ctx.restore();
+  });
+
+  ctx.save();
+  ctx.font=`${8*DPR}px "IBM Plex Mono",monospace`;
+  ctx.fillStyle=waveCol+'aa'; ctx.fillText("ψ'(x,t) = Ω(x)·ψ(x,t)", pad, pad-2);
+  ctx.restore();
+
+  const el=document.getElementById('a3');
+  el.innerHTML=`<div style="color:var(--pu)">ψ'(x) = Ω(x)·ψ(x):</div>`
+    +pts.map(d=>{
+      const col=d.omega>1.1?'var(--gr)':d.omega<0.9?'var(--or)':'var(--mu)';
+      return `<div class="ar">
+        <span class="ax">x=${d.x}</span>
+        <span class="am"> Ω=</span><span style="color:${col}">×${d.omega.toFixed(2)}</span>
+        <span class="am"> ψ'=</span><span class="ag">${d.psiP.toFixed(3)}</span>
+      </div>`;
+    }).join('');
+}
+
+// ═══════════════════════ CHART 4 — GAUGE POTENTIAL A ══════════
+function drawChart4({links}) {
+  const cv=document.getElementById('cv4'), ctx=cv.getContext('2d');
+  const w=cv.width, h=cv.height;
+  ctx.clearRect(0,0,w,h);
+  const pad=30*DPR;
+  const allOne = S.omega.every(g=>Math.abs(g-1.0)<0.06);
+
+  if(allOne){
+    const m=drawAxes(ctx,w,h,pad,-5,5,-1,1);
+    ctx.save(); ctx.textAlign='center';
+    ctx.font=`bold ${10*DPR}px "IBM Plex Mono",monospace`;
+    ctx.fillStyle='#3fb950'; ctx.fillText('A(x) = 0',w/2,h/2-8*DPR);
+    ctx.font=`${8*DPR}px "IBM Plex Mono",monospace`; ctx.fillStyle='#555f6d';
+    ctx.fillText('all Ω = 1  →  no gauge potential needed',w/2,h/2+10*DPR);
+    ctx.restore();
+    document.getElementById('a4').innerHTML=`<div style="color:var(--gr)">A = 0 everywhere. Ω=1 needs no correction.</div>`;
+    updateStory({allOne});
+    return;
+  }
+
+  const yR = adaptY(links.map(l=>l.A), 1.6);
+  const m = drawAxes(ctx,w,h,pad,-5,5,-yR,yR);
+
+  // A bars
+  const bw=13*DPR;
+  links.forEach(l=>{
+    const px=m.px(l.xM), py0=m.py(0), pyA=m.py(l.A);
+    ctx.save();
+    ctx.fillStyle=l.A>=0?'#39d0c8':'#1a8f88'; ctx.globalAlpha=0.75;
+    ctx.fillRect(px-bw/2,Math.min(py0,pyA),bw,Math.abs(py0-pyA)||1);
+    ctx.globalAlpha=1; ctx.restore();
+  });
+  // A line + dots
+  ctx.save(); ctx.strokeStyle='#39d0c8'; ctx.lineWidth=2;
+  ctx.beginPath();
+  links.forEach((l,i)=>{const px=m.px(l.xM),py=m.py(l.A);i?ctx.lineTo(px,py):ctx.moveTo(px,py);});
+  ctx.stroke();
+  links.forEach(l=>{
+    ctx.beginPath();ctx.arc(m.px(l.xM),m.py(l.A),3.5*DPR,0,2*Math.PI);
+    ctx.fillStyle='#39d0c8';ctx.fill();
+  });
+  ctx.restore();
+
+  ctx.save();
+  ctx.font=`${8*DPR}px "IBM Plex Mono",monospace`;
+  ctx.fillStyle='#39d0c8aa'; ctx.fillText('A(x) = −Δ(log Ω)',pad,pad-2);
+  ctx.restore();
+
+  const el=document.getElementById('a4');
+  el.innerHTML=`<div style="color:var(--te)">A(x) = −Δ(log Ω) — a field across space, fixed in time:</div>`
+    +links.map(l=>`<div class="ar">
+      <span class="ax">x≈${l.xM.toFixed(1)}</span>
+      <span class="am"> Δ(lnΩ)=</span><span class="ag">${l.dLogOm.toFixed(3)}</span>
+      <span class="am"> A=</span><span style="color:var(--te)">${l.A.toFixed(3)}</span>
+    </div>`).join('');
+
+  updateStory({allOne});
+}
+
+// ═══════════════════════ STORY ════════════════════════════
+function updateStory({allOne}) {
+  let icon='🌊', title='', body='';
+  const nonOne = S.omega.filter(g=>Math.abs(g-1.0)>0.06).length;
+  const maxOm  = Math.max(...S.omega).toFixed(2);
+  const minOm  = Math.min(...S.omega).toFixed(2);
+
+  if(allOne) {
+    icon='🌊'; title='All Ω = 1 — base field only';
+    body=`<b class="hl">ψ(x,t)</b> oscillates cleanly. No gauge transformation. Try a preset like <b>Hump</b> or <b>Alternating</b> — Chart 2 shows your Ω, Chart 3 shows the scrambled wave, Chart 4 shows the gauge potential A that encodes the structure.`;
+  } else {
+    icon='⚡'; title=`Ω active — ${nonOne}/11 points, range ×${minOm}–×${maxOm}`;
+    body=`<b class="hp">Chart 2</b>: your Ω choices at each point. <b class="hp">Chart 3</b>: ψ'=Ω·ψ — the wave scrambled by your choices — dynamic, moves with ψ. <b class="ht">Chart 4</b>: A = −Δ(log Ω) — a <b>spatial field</b> with a value at every point, but static in time because Ω is static. Change Ω → A changes instantly.`;
+  }
+  document.getElementById('si').textContent=icon;
+  document.getElementById('stt').textContent=title;
+  document.getElementById('sb').innerHTML=body;
+
+  const sum=document.getElementById('omegasummary');
+  if(allOne) sum.textContent='all Ω = ×1.00 (identity)';
+  else sum.textContent=`${nonOne}/11 points with Ω≠1  ·  range ×${minOm} – ×${maxOm}`;
+}
+
+// ═══════════════════════ CHART 5 — FIELD STRENGTH F ═══════
+function drawChart5({links, fs}) {
+  const cv=document.getElementById('cv5'), ctx=cv.getContext('2d');
+  const w=cv.width, h=cv.height;
+  ctx.clearRect(0,0,w,h);
+  const pad=28*DPR;
+  const allOne = S.omega.every(g=>Math.abs(g-1.0)<0.06);
+  const allF0  = fs.every(f=>Math.abs(f.F)<0.001);
+
+  if(allOne || allF0){
+    const m=drawAxes(ctx,w,h,pad,-5,5,-1,1);
+    ctx.save(); ctx.textAlign='center';
+    ctx.font=`bold ${11*DPR}px "IBM Plex Mono",monospace`;
+    ctx.fillStyle='#3fb950'; ctx.fillText('F(x) = 0  —  no measurable field',w/2,h/2-6*DPR);
+    ctx.font=`${8.5*DPR}px "IBM Plex Mono",monospace`; ctx.fillStyle='#555f6d';
+    ctx.fillText(allOne ? 'Ω = 1 everywhere — vacuum, no force' : 'Ω varies smoothly — pure gauge, still no force',w/2,h/2+12*DPR);
+    ctx.restore();
+    document.getElementById('fbadge').textContent='F = 0 — vacuum ✓';
+    document.getElementById('fbadge').className='badge pure';
+    return;
+  }
+
+  document.getElementById('fbadge').textContent='F ≠ 0 — REAL FIELD ⚡';
+  document.getElementById('fbadge').className='badge real';
+
+  const yR = adaptY(fs.map(f=>f.F), 1.7);
+  const m  = drawAxes(ctx,w,h,pad,-5,5,-yR,yR);
+
+  // fill under F
+  ctx.save(); ctx.fillStyle='#f78166'; ctx.globalAlpha=0.07;
+  ctx.beginPath(); ctx.moveTo(m.px(fs[0].xM),m.py(0));
+  fs.forEach(f=>ctx.lineTo(m.px(f.xM),m.py(f.F)));
+  ctx.lineTo(m.px(fs[fs.length-1].xM),m.py(0)); ctx.closePath(); ctx.fill();
+  ctx.globalAlpha=1; ctx.restore();
+
+  // F bars
+  const bw=18*DPR;
+  fs.forEach(f=>{
+    const px=m.px(f.xM), py0=m.py(0), pyF=m.py(f.F);
+    ctx.save();
+    ctx.fillStyle=f.F>=0?'#f78166':'#e3b341'; ctx.globalAlpha=0.75;
+    ctx.fillRect(px-bw/2,Math.min(py0,pyF),bw,Math.abs(py0-pyF)||1);
+    ctx.globalAlpha=1; ctx.restore();
+  });
+
+  // F line + dots
+  ctx.save(); ctx.strokeStyle='#f78166'; ctx.lineWidth=2.5;
+  ctx.beginPath();
+  fs.forEach((f,i)=>{const px=m.px(f.xM),py=m.py(f.F);i?ctx.lineTo(px,py):ctx.moveTo(px,py);});
+  ctx.stroke();
+  fs.forEach(f=>{
+    ctx.beginPath();ctx.arc(m.px(f.xM),m.py(f.F),4*DPR,0,2*Math.PI);
+    ctx.fillStyle=f.F>=0?'#f78166':'#e3b341';
+    ctx.strokeStyle='#0d1117'; ctx.lineWidth=1.2;
+    ctx.fill(); ctx.stroke();
+  });
+  ctx.restore();
+
+  // value labels
+  const maxF = Math.max(...fs.map(f=>Math.abs(f.F)));
+  ctx.save();
+  fs.forEach(f=>{
+    if(Math.abs(f.F) > maxF*0.4) {
+      ctx.fillStyle=f.F>=0?'#f78166':'#e3b341';
+      ctx.font=`bold ${8*DPR}px "IBM Plex Mono",monospace`;
+      ctx.textAlign='center';
+      const py=m.py(f.F);
+      ctx.fillText(f.F.toFixed(2), m.px(f.xM), f.F>=0 ? py-6*DPR : py+13*DPR);
+    }
+  });
+  ctx.restore();
+
+  ctx.save();
+  ctx.font=`${8.5*DPR}px "IBM Plex Mono",monospace`;
+  ctx.fillStyle='#f78166aa'; ctx.fillText('F = ΔA  (what a detector measures)',pad,pad-3);
+  ctx.restore();
+}
+
+// ═══════════════════════ RENDER ════════════════════════════
+function render() {
+  if (S.omegaMode === 'physical') applyPhysicalOmega();
+  const data = computeAll();
+  drawChart1(data);
+  drawChart2(data);
+  drawChart3(data);
+  drawChart4(data);
+  drawChart5(data);
+  XS.forEach((_,i)=>{
+    const d=document.getElementById('g-dot-'+i);
+    if(d) d.style.background=omegaColor(S.omega[i]);
+  });
+}
+
+// ═══════════════════════ ANIMATION ════════════════════════
+let raf=null;
+const SPEEDS=[0.5,1,2,4]; let spdI=1;
+
+function applyPhysicalOmega() {
+  // Ω(x,t) = exp(k · ψ(x,t)) — field drives its own gauge
+  XS.forEach((x, i) => {
+    const psi = BASE[S.base](x - S.t);
+    const g = Math.max(0.1, Math.min(30, Math.exp(S.physScale * psi)));
+    S.omega[i] = g;
+    updateGRow(i);
+  });
+}
+
+function tick(){
+  S.t += 0.04*S.speed;
+  if (S.omegaMode === 'fn' && S.omegaDynamic) applyOmegaFn();
+  if (S.omegaMode === 'physical') applyPhysicalOmega();
+  render();
+  document.getElementById('bstat').textContent=`playing  t=${S.t.toFixed(2)}  ${S.speed}×`;
+  raf=requestAnimationFrame(tick);
+}
+function startPlay(){if(!raf)raf=requestAnimationFrame(tick);}
+function stopPlay(){if(raf){cancelAnimationFrame(raf);raf=null;}document.getElementById('bstat').textContent=`paused  t=${S.t.toFixed(2)}`;}
+
+document.getElementById('playBtn').addEventListener('click',function(){
+  S.playing=!S.playing;
+  if(S.playing){this.textContent='⏸ Pause';this.classList.add('on');startPlay();}
+  else{this.textContent='▶ Play';this.classList.remove('on');stopPlay();}
+});
+document.getElementById('spdBtn').addEventListener('click',function(){
+  spdI=(spdI+1)%SPEEDS.length; S.speed=SPEEDS[spdI]; this.textContent=S.speed+'×';
+});
+document.getElementById('fSel').addEventListener('change',e=>{S.base=e.target.value;render();});
+
+// ═══════════════════════ PANEL TOGGLE ═════════════════════
+let panelOpen=true;
+function togglePanel(){
+  panelOpen=!panelOpen;
+  document.getElementById('lpanel').classList.toggle('closed',!panelOpen);
+  document.getElementById('panel-toggle').classList.toggle('open',panelOpen);
+  setTimeout(resizeAll,220);
+}
+
+// ═══════════════════════ BUILD Ω ROWS ═════════════════════
+function buildGRows(){
+  const container=document.getElementById('g-rows');
+  container.innerHTML='';
+  XS.forEach((x,i)=>{
+    const row=document.createElement('div');
+    row.className='g-row';
+
+    const dot=document.createElement('div');
+    dot.className='g-dot'; dot.id='g-dot-'+i;
+    dot.style.background='#30363d';
+
+    const lbl=document.createElement('div');
+    lbl.className='g-lbl'+(x===0?' origin':'');
+    lbl.textContent='x='+x;
+
+    const slide=document.createElement('input');
+    slide.type='range'; slide.id='g-slide-'+i;
+    slide.min='0.1'; slide.max='30'; slide.step='0.5'; slide.value='1.0';
+    slide.addEventListener('input',()=>{
+      S.omega[i]=parseFloat(slide.value);
+      const valEl=document.getElementById('g-val-'+i);
+      if(valEl) valEl.value='×'+S.omega[i].toFixed(2);
+      dot.style.background=omegaColor(S.omega[i]);
+      render();
+    });
+
+    const val=document.createElement('input');
+    val.type='text'; val.id='g-val-'+i;
+    val.className='g-val'; val.value='×1.00';
+    val.addEventListener('change',()=>{
+      let v=parseFloat(val.value.replace('×',''))||1.0;
+      v=Math.max(0.1,Math.min(30,v));
+      S.omega[i]=v; slide.value=v;
+      val.value='×'+v.toFixed(2);
+      dot.style.background=omegaColor(v);
+      render();
+    });
+    val.addEventListener('blur',()=>{ val.value='×'+S.omega[i].toFixed(2); });
+
+    row.appendChild(dot);
+    row.appendChild(lbl);
+    row.appendChild(slide);
+    row.appendChild(val);
+    container.appendChild(row);
+  });
+}
+
+// ═══════════════════════ RESIZE & INIT ════════════════════
+function resizeAll(){['cv1','cv2','cv3','cv4','cv5'].forEach(resizeCanvas);render();}
+window.addEventListener('resize',resizeAll);
+
+buildGRows();
+setTimeout(() => {
+  resizeAll();
+  // Default: dynamic sin gauge so everything moves on load
+  document.getElementById('omegaModeSel').value = 'fn';
+  document.getElementById('omegaFnSel').value = 'linear';
+  document.getElementById('omegaDynSel').value = 'dynamic';
+  document.getElementById('omegaScaleSl').value = '8';
+  document.getElementById('omegaScaleVal').textContent = '×8';
+  S.omegaFn = 'linear'; S.omegaScale = 8; S.omegaFreq = 1; S.omegaDynamic = true;
+  setOmegaMode('fn');
+  S.playing = true;
+  const btn = document.getElementById('playBtn');
+  btn.textContent = '⏸ Pause'; btn.classList.add('on');
+  startPlay();
+}, 80);
+</script>
+</body>
+</html>

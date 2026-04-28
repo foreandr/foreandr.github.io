@@ -1,0 +1,1365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Network Stack Simulator</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#080d18;--surface:#0f172a;--surface2:#1e293b;--border:#334155;
+  --text:#f1f5f9;--dim:#94a3b8;--dimmer:#475569;
+  --l7c:#2dd4bf;--l7b:#042f2e;--l7e:#0d9488;
+  --l56c:#c084fc;--l56b:#1a0836;--l56e:#7c3aed;
+  --l4c:#fb923c;--l4b:#2a0d00;--l4e:#ea580c;
+  --l3c:#4ade80;--l3b:#031a0c;--l3e:#16a34a;
+  --l2c:#60a5fa;--l2b:#0d1f4a;--l2e:#2563eb;
+  --l1c:#94a3b8;--l1b:#0f1923;--l1e:#475569;
+  --hwc:#fbbf24;--hwb:#1a1000;--hwe:#b45309;
+}
+body{background:var(--bg);color:var(--text);font-family:'Courier New',monospace;
+     height:100vh;display:flex;flex-direction:column;overflow:hidden;font-size:14px}
+
+/* ── HEADER ── */
+header{background:var(--surface);border-bottom:1px solid var(--border);
+       padding:10px 18px;display:flex;align-items:center;gap:14px;flex-shrink:0}
+.app-title{font-size:15px;letter-spacing:2px;text-transform:uppercase;color:var(--dim)}
+.app-title b{color:#38bdf8}
+.hdr-sub{font-size:11px;color:var(--dimmer)}
+.hdr-controls{display:flex;align-items:center;gap:7px;margin-left:auto}
+.btn{background:var(--surface2);border:1px solid var(--border);color:var(--text);
+     padding:5px 13px;font-size:12px;font-family:inherit;cursor:pointer;
+     letter-spacing:.8px;text-transform:uppercase;border-radius:3px;transition:background .15s}
+.btn:hover{background:#2d3748}
+.btn.go{background:#0c2340;border-color:#38bdf8;color:#38bdf8}
+.btn.stop{background:#2a0a0a;border-color:#ef4444;color:#ef4444}
+.btn.warn{background:#2a1a00;border-color:#f59e0b;color:#f59e0b}
+.speed-wrap{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--dim)}
+.speed-wrap input{width:80px;accent-color:#38bdf8}
+
+/* ── SCENARIO BAR ── */
+.scene-bar{background:var(--surface);border-bottom:1px solid var(--border);
+           padding:6px 18px;display:flex;align-items:center;gap:7px;flex-shrink:0}
+.stab{padding:4px 12px;background:transparent;border:1px solid transparent;
+      color:var(--dimmer);font-size:11px;font-family:inherit;cursor:pointer;
+      border-radius:3px;letter-spacing:.5px;text-transform:uppercase;transition:all .15s}
+.stab:hover{color:var(--text);border-color:var(--border)}
+.stab.active{background:#0c2340;border-color:#38bdf8;color:#38bdf8}
+.scene-desc{margin-left:auto;font-size:11px;color:var(--dimmer);max-width:260px;text-align:right}
+
+/* ── SECURITY BAR ── */
+.sec-bar{display:flex;gap:5px;padding:6px 18px;border-bottom:1px solid var(--border);
+         flex-shrink:0;background:var(--surface)}
+.sec-node{flex:1;background:var(--surface2);border:1px solid var(--border);
+          border-radius:3px;padding:4px 10px;font-size:10px;text-align:center;
+          display:flex;flex-direction:column;gap:2px}
+.sec-name{color:var(--dimmer);letter-spacing:.5px}
+.sec-status{font-weight:bold;font-size:11px;letter-spacing:.5px}
+.sec-status.secure{color:#22c55e}.sec-status.shaking{color:#f59e0b}.sec-status.plain{color:#ef4444}
+
+/* ── MAIN ── */
+.main{flex:1;display:flex;overflow:hidden;position:relative}
+
+/* ── NETWORK AREA ── */
+.net-area{flex:1;overflow:auto;position:relative;padding:22px 28px}
+.net-wrap{display:flex;align-items:flex-start;gap:0;min-width:fit-content;position:relative}
+
+/* ── HOST COLUMN ── */
+.host-col{display:flex;flex-direction:column;align-items:center;z-index:10;position:relative}
+.host-badge{margin-bottom:8px;text-align:center}
+.hname{font-size:17px;font-weight:bold;letter-spacing:1px}
+.hip{font-size:11px;color:var(--dimmer);letter-spacing:1px;margin-top:2px}
+.hmac{font-size:10px;color:var(--dimmer);letter-spacing:.5px;opacity:.7}
+.host-stack{display:flex;flex-direction:column;gap:4px;width:210px}
+
+/* ── LAYER BOX ── */
+.layer{border:1px solid;border-radius:5px;padding:10px 13px;cursor:pointer;
+       transition:filter .15s,box-shadow .1s;position:relative;
+       min-height:64px;display:flex;flex-direction:column;justify-content:center}
+.layer:hover{filter:brightness(1.35)}
+.layer.sel{box-shadow:0 0 0 2px #fff,0 0 16px rgba(255,255,255,.3)}
+.lname{font-size:13px;font-weight:bold;letter-spacing:.8px;text-transform:uppercase}
+.lsub{font-size:10px;opacity:.6;margin-top:3px;letter-spacing:.3px}
+.lstate{font-size:11px;margin-top:6px;opacity:.85;min-height:13px;transition:opacity .3s;
+        white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bits{font-size:9px;color:var(--dimmer);overflow:hidden;white-space:nowrap;margin-top:4px;
+      letter-spacing:.4px;font-family:monospace}
+
+.l-hw {background:var(--hwb);border-color:var(--hwe);color:var(--hwc)}
+.l-app{background:var(--l7b);border-color:var(--l7e);color:var(--l7c)}
+.l-tls{background:var(--l56b);border-color:var(--l56e);color:var(--l56c)}
+.l-tcp{background:var(--l4b);border-color:var(--l4e);color:var(--l4c)}
+.l-ip {background:var(--l3b);border-color:var(--l3e);color:var(--l3c)}
+.l-eth{background:var(--l2b);border-color:var(--l2e);color:var(--l2c)}
+.l-phy{background:var(--l1b);border-color:var(--l1e);color:var(--l1c)}
+
+@keyframes pulse{0%,100%{filter:brightness(1)}50%{filter:brightness(2.2)}}
+.layer.flash{animation:pulse .35s ease-in-out}
+
+/* ── ROUTER ── */
+.router-col .hname{color:#f59e0b}
+.router-col .host-stack{width:160px}
+.router-col .layer{min-height:56px}
+
+/* ── WIRE ── */
+.wire-seg{display:flex;flex-direction:column;align-items:center;justify-content:center;
+          width:80px;flex-shrink:0;position:relative}
+.wire-line{width:100%;height:2px;
+           background:repeating-linear-gradient(90deg,#334155 0,#334155 6px,transparent 6px,transparent 13px)}
+.wire-lbl{position:absolute;top:-15px;font-size:10px;color:var(--dimmer);white-space:nowrap}
+
+/* ── PACKET OVERLAY ── */
+.pkt-overlay{position:absolute;inset:0;pointer-events:none;z-index:30;overflow:visible}
+
+/* ── PACKET PILL ── */
+.pkt{position:absolute;border-radius:4px;font-size:11px;padding:3px 9px;
+     font-family:'Courier New',monospace;font-weight:bold;letter-spacing:.5px;
+     pointer-events:all;cursor:pointer;white-space:nowrap;
+     transform:translate(-50%,-50%);border:1px solid;
+     transition:box-shadow .1s;user-select:none;z-index:40}
+.pkt:hover{box-shadow:0 0 12px currentColor}
+.pkt.sel{box-shadow:0 0 16px currentColor,0 0 4px #fff}
+
+/* ── INSPECTOR ── */
+.inspector{width:400px;flex-shrink:0;background:var(--surface);
+           border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.insp-head{padding:10px 14px;border-bottom:1px solid var(--border);
+           font-size:11px;text-transform:uppercase;letter-spacing:1px;
+           color:var(--dim);display:flex;align-items:center;justify-content:space-between}
+.insp-pktid{color:#38bdf8;font-size:12px;font-weight:bold}
+
+/* layer tab row */
+.layer-nav{display:flex;gap:3px;flex-wrap:wrap;padding:6px 12px;border-bottom:1px solid var(--border)}
+.lnbtn{padding:3px 8px;font-size:10px;font-family:inherit;background:transparent;
+       border:1px solid var(--border);color:var(--dimmer);cursor:pointer;border-radius:3px;transition:all .1s}
+.lnbtn:hover{color:var(--text);border-color:#64748b}
+.lnbtn.active{color:#fff;background:#0c2340;border-color:#38bdf8}
+
+/* view tab row (Fields / Hex / Code) */
+.view-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);flex-shrink:0}
+.vtab{flex:1;padding:7px 0;font-size:11px;font-family:inherit;background:transparent;
+      border:none;border-right:1px solid var(--border);color:var(--dimmer);cursor:pointer;
+      text-align:center;letter-spacing:.5px;text-transform:uppercase;transition:all .1s}
+.vtab:last-child{border-right:none}
+.vtab:hover{color:var(--text);background:var(--surface2)}
+.vtab.active{color:#38bdf8;background:#0c2340}
+
+.insp-body{flex:1;overflow-y:auto;padding:12px 14px}
+.insp-body::-webkit-scrollbar{width:4px}
+.insp-body::-webkit-scrollbar-thumb{background:var(--border)}
+.isec{margin-bottom:14px}
+.isec-title{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--dimmer);
+            margin-bottom:7px;border-bottom:1px solid var(--border);padding-bottom:4px}
+.ifield{display:flex;gap:8px;font-size:11px;line-height:1.75;margin-bottom:2px}
+.ikey{color:var(--dimmer);min-width:100px;flex-shrink:0}
+.ival{color:var(--text);word-break:break-all}
+.ival.enc{color:#c084fc;font-style:italic}
+.ival.ok{color:#22c55e}.ival.warn{color:#f59e0b}.ival.bad{color:#ef4444}
+.badge{display:inline-block;padding:1px 5px;border-radius:2px;font-size:9px;
+       font-weight:bold;margin-left:4px;vertical-align:middle}
+.badge-enc{background:#2e1065;color:#c084fc;border:1px solid #7c3aed}
+.badge-ok{background:#052e16;color:#4ade80;border:1px solid #16a34a}
+.badge-plain{background:#0d1f4a;color:#60a5fa;border:1px solid #2563eb}
+.insp-empty{color:var(--dimmer);font-size:12px;text-align:center;
+            margin-top:36px;line-height:2;padding:0 14px}
+
+/* ── HEX DUMP ── */
+.hex-wrap{font-family:'Courier New',monospace;font-size:11px;line-height:1.7}
+.hex-section{margin-bottom:10px}
+.hex-section-hdr{font-size:10px;text-transform:uppercase;letter-spacing:1px;
+                 margin-bottom:5px;padding:3px 6px;border-radius:3px;display:inline-block;font-weight:bold}
+.hex-row{display:flex;gap:10px;align-items:baseline;margin-bottom:1px}
+.hex-offset{color:var(--dimmer);min-width:38px;font-size:10px}
+.hex-bytes{letter-spacing:3px;flex:1;word-break:break-all}
+.hex-ascii{color:var(--dimmer);min-width:100px;font-size:10px;letter-spacing:1px}
+.hex-byte{display:inline;cursor:default}
+.hex-byte:hover{background:rgba(255,255,255,.15);border-radius:2px}
+/* layer colour coding */
+.hx-hw {color:#fbbf24}.hx-app{color:#2dd4bf}.hx-tls{color:#c084fc}
+.hx-tcp{color:#fb923c}.hx-ip {color:#4ade80}.hx-eth{color:#60a5fa}.hx-phy{color:#94a3b8}
+
+/* ── C++ CODE VIEW ── */
+.code-wrap{font-family:'Courier New',monospace;font-size:11px;line-height:1.75;
+           background:#0a0f1e;border:1px solid var(--border);border-radius:4px;
+           padding:12px;overflow-x:auto;white-space:pre}
+.code-file{font-size:9px;color:var(--dimmer);margin-bottom:8px;padding-bottom:5px;
+           border-bottom:1px solid var(--border);letter-spacing:.5px}
+.ck{color:#c084fc}.cs{color:#22c55e}.cc{color:#475569;font-style:italic}
+.cn{color:#38bdf8}.ct{color:#fb923c}.cv{color:#f1f5f9}.cnum{color:#fbbf24}
+.cf{color:#6ee7b7}.cstr{color:#fde047}
+
+/* ── EVENT LOG ── */
+.evlog{background:var(--surface);border-top:1px solid var(--border);
+       height:88px;flex-shrink:0;overflow-y:auto;padding:5px 18px;
+       font-size:11px;font-family:'Courier New',monospace}
+.evlog::-webkit-scrollbar{width:3px}
+.evlog::-webkit-scrollbar-thumb{background:var(--border)}
+.ev{line-height:1.7;color:var(--dim)}
+.ev .t{color:var(--dimmer);margin-right:10px}
+.ev .s{color:#38bdf8;margin-right:5px}
+.ev .a{color:var(--dim);margin-right:5px}
+.ev .d{color:#22c55e}
+.ev.info .d{color:#60a5fa}.ev.warn .d{color:#f59e0b}
+.ev.tls  .d{color:#c084fc}.ev.err  .d{color:#ef4444}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="app-title">NETWORK <b>STACK</b> SIMULATOR</div>
+  <div class="hdr-sub">Hardware → Ethernet → IP → TCP → TLS → HTTPS</div>
+  <div class="hdr-controls">
+    <button class="btn" onclick="resetSim()">↺ Reset</button>
+    <button class="btn go" id="btn-play" onclick="togglePlay()">▶ Play</button>
+    <button class="btn" onclick="stepOnce()">⏭ Step</button>
+    <div class="speed-wrap">
+      Speed<input type="range" id="spd" min="0.25" max="5" step="0.25" value="1" oninput="setSpeed(this.value)">
+      <span id="spd-lbl">1×</span>
+    </div>
+    <button class="btn warn" id="btn-host" onclick="toggleExtraHost()">+ Charlie</button>
+  </div>
+</header>
+
+<div class="scene-bar">
+  <span style="color:var(--dimmer);font-size:11px;margin-right:4px">Scenario:</span>
+  <button class="stab active" data-scene="tcp_hs"  onclick="loadScene(this)">TCP Handshake</button>
+  <button class="stab" data-scene="tls_hs"         onclick="loadScene(this)">TLS 1.3</button>
+  <button class="stab" data-scene="https"          onclick="loadScene(this)">HTTPS GET</button>
+  <button class="stab" data-scene="arp"            onclick="loadScene(this)">ARP</button>
+  <button class="stab" data-scene="multi"          onclick="loadScene(this)">Multi-Host</button>
+  <div class="scene-desc" id="scene-desc">SYN → SYN-ACK → ACK between Alice and Bob via Router</div>
+</div>
+
+<div class="sec-bar" id="sec-bar"></div>
+
+<div class="main">
+  <div class="net-area" id="net-area">
+    <div class="net-wrap" id="net-wrap"></div>
+    <div class="pkt-overlay" id="pkt-overlay"></div>
+  </div>
+
+  <div class="inspector">
+    <div class="insp-head">
+      Packet Inspector
+      <span class="insp-pktid" id="insp-pid"></span>
+    </div>
+    <div class="layer-nav" id="layer-nav"></div>
+    <div class="view-tabs" id="view-tabs">
+      <button class="vtab active" onclick="setView('fields',this)">Fields</button>
+      <button class="vtab"        onclick="setView('hex',this)">Hex Bytes</button>
+      <button class="vtab"        onclick="setView('code',this)">C++ Code</button>
+    </div>
+    <div class="insp-body" id="insp-body">
+      <div class="insp-empty">
+        Click any <b>packet in flight</b><br>or a <b>layer box</b> to inspect it.<br><br>
+        Press <b style="color:#38bdf8">▶ Play</b> to begin.
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="evlog" id="evlog"></div>
+
+<script>
+'use strict';
+
+// ═══════════════════════════════════════════
+// CONSTANTS
+// ═══════════════════════════════════════════
+
+const HOST_DEFS = [
+  { id:'alice',   name:'Alice',   ip:'10.0.0.10', mac:'AA:BB:CC:11:11:01', port:52341, color:'#6ee7b7' },
+  { id:'bob',     name:'Bob',     ip:'10.0.0.20', mac:'AA:BB:CC:22:22:02', port:443,   color:'#38bdf8' },
+  { id:'charlie', name:'Charlie', ip:'10.0.0.30', mac:'AA:BB:CC:33:33:03', port:52999, color:'#f472b6' },
+];
+const ROUTER = {
+  id:'router', name:'Router', ip:'10.0.0.1', color:'#fbbf24',
+  macs:{ alice:'FF:EE:AA:00:01:01', bob:'FF:EE:BB:00:02:02', charlie:'FF:EE:CC:00:03:03' },
+};
+
+const LAYERS = [
+  { id:'hw',  name:'Hardware',    sub:'Keyboard · Syscall',  cls:'l-hw'  },
+  { id:'app', name:'Application', sub:'HTTP/S · Layer 7',    cls:'l-app' },
+  { id:'tls', name:'TLS 1.3',     sub:'Security · L5/6',     cls:'l-tls' },
+  { id:'tcp', name:'Transport',   sub:'TCP · Layer 4',       cls:'l-tcp' },
+  { id:'ip',  name:'Network',     sub:'IP · Layer 3',        cls:'l-ip'  },
+  { id:'eth', name:'Data Link',   sub:'Ethernet · Layer 2',  cls:'l-eth' },
+  { id:'phy', name:'Physical',    sub:'NIC · Layer 1',       cls:'l-phy' },
+];
+const ROUTER_LAYERS = [
+  { id:'ip',  name:'Network',     sub:'IP Routing · L3',    cls:'l-ip'  },
+  { id:'eth', name:'Data Link',   sub:'Ethernet · L2 (×2)', cls:'l-eth' },
+  { id:'phy', name:'Physical',    sub:'2× NIC · L1',        cls:'l-phy' },
+];
+
+const PKT_STYLES = {
+  SYN:    { color:'#ef4444', bg:'#3f0e0e', label:'SYN'         },
+  SYNACK: { color:'#f97316', bg:'#431407', label:'SYN-ACK'     },
+  ACK:    { color:'#22c55e', bg:'#052e16', label:'ACK'         },
+  FIN:    { color:'#f59e0b', bg:'#291b06', label:'FIN'         },
+  DATA:   { color:'#6366f1', bg:'#1e1b4b', label:'DATA'        },
+  CHELLO: { color:'#c084fc', bg:'#2e1065', label:'ClientHello' },
+  SHELLO: { color:'#a78bfa', bg:'#2e1065', label:'ServerHello' },
+  CERT:   { color:'#818cf8', bg:'#1e1b4b', label:'Cert'        },
+  FIN_TLS:{ color:'#6366f1', bg:'#1e1b4b', label:'Finished'    },
+  HGET:   { color:'#06b6d4', bg:'#083344', label:'GET /'       },
+  H200:   { color:'#22d3ee', bg:'#083344', label:'200 OK'      },
+  ARP_Q:  { color:'#eab308', bg:'#2d2206', label:'ARP?'        },
+  ARP_A:  { color:'#fde047', bg:'#2d2206', label:'ARP!'        },
+};
+
+const SCENE_META = {
+  tcp_hs: 'SYN → SYN-ACK → ACK between Alice and Bob via Router',
+  tls_hs: 'TLS 1.3 full handshake: ClientHello → ServerHello → Certificate → Finished',
+  https:  'Complete HTTPS request: TCP handshake + TLS 1.3 + encrypted HTTP GET',
+  arp:    'ARP resolution: Alice discovers Bob\'s MAC before first packet',
+  multi:  'Alice and Charlie simultaneously connect to Bob — watch the router juggle both streams',
+};
+
+// ═══════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════
+
+const S = {
+  running:false, speed:1, showCharlie:true,
+  packets:[], nextId:1, selected:null, inspLayer:'tcp', inspView:'fields',
+  raf:null, lastTs:null, stepQueue:[], scenario:'tcp_hs',
+  tls:{}, tcp:{}, arpTable:{}, started:false,
+};
+
+const simStart = { ts:0 };
+let queueTs = 0;
+
+// ═══════════════════════════════════════════
+// UTILITIES
+// ═══════════════════════════════════════════
+
+function rng(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
+function h8(n){ return n.toString(16).toUpperCase().padStart(2,'0'); }
+function h16(n){ return n.toString(16).toUpperCase().padStart(4,'0'); }
+function h32(n){ return n.toString(16).toUpperCase().padStart(8,'0'); }
+function hexw(n,w=4){ return '0x'+n.toString(16).toUpperCase().padStart(w,'0'); }
+function bits(n=32){ let s=''; for(let i=0;i<n;i++){if(i&&i%8===0)s+=' ';s+=rng(0,1);} return s; }
+function ts(){ const d=new Date; return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}.${String(d.getMilliseconds()).padStart(3,'0')}`; }
+function pad(n){ return String(n).padStart(2,'0'); }
+function hostDef(id){ return HOST_DEFS.find(h=>h.id===id)||null; }
+function ipToBytes(ip){ return ip.split('.').map(Number); }
+function macToBytes(mac){ return mac.split(':').map(s=>parseInt(s,16)); }
+
+function log(src, action, detail, cls=''){
+  const el = document.getElementById('evlog');
+  const div = document.createElement('div');
+  div.className='ev '+(cls||'');
+  div.innerHTML=`<span class="t">${ts()}</span><span class="s">${src}</span><span class="a">${action}</span><span class="d">${detail}</span>`;
+  el.appendChild(div);
+  el.scrollTop=el.scrollHeight;
+}
+
+// ═══════════════════════════════════════════
+// HEADER BUILDERS
+// ═══════════════════════════════════════════
+
+function buildHeaders(type, srcId, dstId, opts={}){
+  const src=hostDef(srcId), dst=hostDef(dstId);
+  const tlsS=S.tls[`${srcId}-${dstId}`]||S.tls[`${dstId}-${srcId}`]||{};
+  const tcpC=S.tcp[`${srcId}-${dstId}`]||S.tcp[`${dstId}-${srcId}`]||{};
+  const seq=tcpC.seq||rng(10000,99999);
+  const ack=tcpC.ack||0;
+  const enc=!!tlsS.established;
+
+  return {
+    hw:{
+      host:src?.name||srcId,
+      process:opts.proc||(type==='HGET'?'chrome.exe':type==='H200'?'nginx':'kernel'),
+      pid:rng(1000,49999), syscall:type==='HGET'?'sendto()':type==='H200'?'write()':'send()',
+      keyInput:opts.keyInput||null, irq:`IRQ${rng(1,23)}`, bus:'PCIe 4.0 ×1',
+    },
+    app:{
+      protocol:type==='HGET'||type==='H200'?'HTTP/1.1':'(none)',
+      method:type==='HGET'?'GET':type==='H200'?'—':'—',
+      path:type==='HGET'?'/ HTTP/1.1':'—',
+      host:dst?.ip||'?', userAgent:type==='HGET'?'Mozilla/5.0 (compatible)':'—',
+      accept:type==='HGET'?'text/html,*/*':'—',
+      status:type==='H200'?'200 OK':'—',
+      body:type==='H200'?'<html><body>Hello!</body></html>':'',
+      encrypted:enc,
+    },
+    tls:{
+      version:'TLS 1.3',
+      contentType:['CHELLO','SHELLO','CERT','FIN_TLS'].includes(type)?'handshake (22)':'application_data (23)',
+      handshakeType:type==='CHELLO'?'client_hello':type==='SHELLO'?'server_hello':type==='CERT'?'certificate':type==='FIN_TLS'?'finished':'—',
+      cipherSuite:tlsS.cipher||'TLS_AES_256_GCM_SHA384',
+      keyExchange:'X25519', authAlgo:'ECDSA P-256',
+      sessionEstablished:enc,
+      clientRandom:h32(rng(0,0xffffffff)), serverRandom:h32(rng(0,0xffffffff)),
+      payload:enc?'[AEAD-ENCRYPTED — GCM tag appended]':opts.tlsPayload||'(cleartext handshake)',
+      recordLen:rng(200,1400),
+    },
+    tcp:{
+      srcPort:src?.port||rng(49152,65535), dstPort:dst?.port||443,
+      seq, ack,
+      flags:type==='SYN'?'SYN':type==='SYNACK'?'SYN,ACK':type==='FIN'?'FIN,ACK':'PSH,ACK',
+      window:65535, checksum:h16(rng(0,0xffff)), urgentPtr:0,
+      options:type==='SYN'||type==='SYNACK'?'MSS=1460, SACK_OK, Timestamps':'—',
+      dataOffset:20, dataLen:(type==='SYN'||type==='ACK')?0:rng(100,1380),
+      state:tcpC.state||'CLOSED',
+    },
+    ip:{
+      version:4, ihl:20, dscp:'CS0 (Best Effort)', ecn:'Not-ECT',
+      totalLen:rng(40,1500), id:h16(rng(0,0xffff)),
+      flags:'DF (Don\'t Fragment)', fragOffset:0,
+      ttl:opts.ttl||64, protocol:(type==='ARP_Q'||type==='ARP_A')?'ARP':'TCP (6)',
+      checksum:h16(rng(0,0xffff)), srcIP:src?.ip||'?', dstIP:dst?.ip||'?', options:'none',
+    },
+    eth:{
+      srcMAC:src?.mac||'??:??:??:??:??:??',
+      dstMAC:dst?.mac||ROUTER.macs[dstId]||'??:??:??:??:??:??',
+      etherType:(type==='ARP_Q'||type==='ARP_A')?'0x0806 (ARP)':'0x0800 (IPv4)',
+      vlan:'none', fcs:h32(rng(0,0xffffffff)), frameLen:rng(64,1518),
+      preamble:'55 55 55 55 55 55 55', sfd:'D5',
+    },
+    phy:{
+      medium:'Cat6 UTP', encoding:'4B/5B NRZI', speed:'1 Gbps',
+      preamble:'10101010 10101010 10101010 10101011',
+      bits:bits(48), signalVoltage:'2.5V differential',
+      clockRecovery:'PLL-based', errorRate:'< 10⁻¹²',
+    },
+  };
+}
+
+// ═══════════════════════════════════════════
+// HEX DUMP BUILDER
+// ═══════════════════════════════════════════
+
+function buildHexDump(pkt){
+  const h = pkt.headers;
+
+  // Build actual byte arrays for each section
+  const sections = [];
+
+  // ── ETH header (14 bytes) ──
+  const ethB = [...macToBytes(h.eth.dstMAC), ...macToBytes(h.eth.srcMAC),
+                ...(h.eth.etherType.startsWith('0x0806') ? [0x08,0x06] : [0x08,0x00])];
+  sections.push({ label:'Ethernet Header (14 B)', cls:'hx-eth', bytes:ethB });
+
+  // ── IP header (20 bytes) ──
+  const srcIp = ipToBytes(h.ip.srcIP||'0.0.0.0');
+  const dstIp = ipToBytes(h.ip.dstIP||'0.0.0.0');
+  const ipLen = h.ip.totalLen||100;
+  const ipId  = parseInt(h.ip.id||'0',16);
+  const ipChk = parseInt(h.ip.checksum||'0',16);
+  const ipB = [
+    0x45, 0x00,                            // version/IHL, DSCP/ECN
+    (ipLen>>8)&0xff, ipLen&0xff,           // total length
+    (ipId>>8)&0xff,  ipId&0xff,            // id
+    0x40, 0x00,                            // flags=DF, frag=0
+    h.ip.ttl||64,                          // TTL
+    h.ip.protocol?.includes('ARP')?0x00:0x06,  // protocol
+    (ipChk>>8)&0xff, ipChk&0xff,           // checksum
+    ...srcIp, ...dstIp,                    // addresses
+  ];
+  sections.push({ label:`IP Header (20 B) — TTL=${h.ip.ttl||64}, proto=${h.ip.protocol}`, cls:'hx-ip', bytes:ipB });
+
+  // ── TCP header (20 bytes) ──
+  const sp=h.tcp.srcPort||52341, dp=h.tcp.dstPort||443;
+  const seq=h.tcp.seq||0, ack=h.tcp.ack||0;
+  const flags=h.tcp.flags||'';
+  let flagByte=0x10; // ACK
+  if(flags.includes('SYN'))  flagByte|=0x02;
+  if(flags.includes('FIN'))  flagByte|=0x01;
+  if(flags.includes('PSH'))  flagByte|=0x08;
+  if(flags.includes('RST'))  flagByte|=0x04;
+  const tcpB = [
+    (sp>>8)&0xff, sp&0xff,          // src port
+    (dp>>8)&0xff, dp&0xff,          // dst port
+    (seq>>24)&0xff,(seq>>16)&0xff,(seq>>8)&0xff,seq&0xff, // seq
+    (ack>>24)&0xff,(ack>>16)&0xff,(ack>>8)&0xff,ack&0xff, // ack
+    0x50,                           // data offset=5*4=20
+    flagByte,                       // flags
+    0xff,0xff,                      // window=65535
+    0x00,0x00,                      // checksum (placeholder)
+    0x00,0x00,                      // urgent ptr
+  ];
+  sections.push({ label:`TCP Segment (20 B) — [${flags}] seq=${seq}`, cls:'hx-tcp', bytes:tcpB });
+
+  // ── TLS record (5-byte header + payload sample) ──
+  const tlsType = h.tls.contentType?.startsWith('handshake')?0x16:0x17;
+  const tlsLen  = Math.min(h.tls.recordLen||100,32);
+  const tlsPayloadBytes = h.tls.sessionEstablished
+    ? Array.from({length:16}, ()=>rng(0,255))     // encrypted, random
+    : [0x01,0x00,0x00,0x00,0x3e, ...Array.from({length:11},()=>rng(0,255))]; // handshake
+  const tlsB = [tlsType, 0x03,0x04, (tlsLen>>8)&0xff, tlsLen&0xff, ...tlsPayloadBytes.slice(0,10)];
+  sections.push({
+    label:`TLS Record (5 B hdr${h.tls.sessionEstablished?' + AEAD-encrypted payload':' + handshake payload'})`,
+    cls:'hx-tls', bytes:tlsB,
+  });
+
+  // ── HTTP payload (if present) ──
+  if(pkt.type==='HGET'||pkt.type==='H200'){
+    const httpStr = pkt.type==='HGET'
+      ? 'GET / HTTP/1.1\r\nHost: 10.0.0.20\r\nUser-Agent: Mozilla/5.0\r\n\r\n'
+      : 'HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<html><body>Hello!</body></html>';
+    const httpBytes = [...httpStr].slice(0,32).map(c=>c.charCodeAt(0));
+    sections.push({
+      label:`HTTP Payload (${httpStr.length} B)${h.tls.sessionEstablished?' [encrypted inside TLS]':''}`,
+      cls:'hx-app', bytes:httpBytes,
+    });
+  }
+
+  // ── Physical framing ──
+  const phyB = [0x55,0x55,0x55,0x55,0x55,0x55,0x55,0xd5]; // preamble + SFD
+  sections.push({ label:'Physical Preamble + SFD (8 B)', cls:'hx-phy', bytes:phyB });
+
+  return sections;
+}
+
+function renderHexDump(pkt, highlightLayer){
+  const sections = buildHexDump(pkt);
+  let html = '<div class="hex-wrap">';
+  let offset = 0;
+
+  sections.forEach(sec=>{
+    const active = (
+      (sec.cls==='hx-eth' && highlightLayer==='eth') ||
+      (sec.cls==='hx-ip'  && highlightLayer==='ip')  ||
+      (sec.cls==='hx-tcp' && highlightLayer==='tcp') ||
+      (sec.cls==='hx-tls' && highlightLayer==='tls') ||
+      (sec.cls==='hx-app' && highlightLayer==='app') ||
+      (sec.cls==='hx-phy' && highlightLayer==='phy')
+    );
+    const borderStyle = active?'border:1px solid currentColor;border-radius:4px;padding:4px 6px;margin:-4px -6px 6px;':'';
+    html+=`<div class="hex-section" style="${borderStyle}">`;
+    html+=`<div class="hex-section-hdr ${sec.cls}">${active?'▶ ':''} ${sec.label}</div>`;
+
+    // render bytes in rows of 8
+    for(let i=0;i<sec.bytes.length;i+=8){
+      const row=sec.bytes.slice(i,i+8);
+      const hexPart=row.map(b=>`<span class="hex-byte ${sec.cls}">${h8(b)}</span>`).join(' ');
+      const asciiPart=row.map(b=>b>=32&&b<127?String.fromCharCode(b):'.').join('');
+      html+=`<div class="hex-row">
+        <span class="hex-offset">${h16(offset+i)}</span>
+        <span class="hex-bytes">${hexPart}</span>
+        <span class="hex-ascii">${asciiPart}</span>
+      </div>`;
+    }
+    offset+=sec.bytes.length;
+    html+='</div>';
+  });
+
+  html+=`<div style="margin-top:10px;font-size:10px;color:var(--dimmer)">
+    Total on wire: ~${offset+40} bytes  ·  Colours:
+    <span class="hx-eth">■ Eth</span>  <span class="hx-ip">■ IP</span>
+    <span class="hx-tcp">■ TCP</span>  <span class="hx-tls">■ TLS</span>
+    <span class="hx-app">■ HTTP</span>  <span class="hx-phy">■ PHY</span>
+  </div>`;
+  html+='</div>';
+  return html;
+}
+
+// ═══════════════════════════════════════════
+// C++ CODE VIEW
+// ═══════════════════════════════════════════
+
+// syntax-highlight a pre-formatted code string
+function cpp(code){
+  return code
+    .replace(/\b(struct|class|void|int|uint8_t|uint16_t|uint32_t|uint64_t|__be16|__be32|unsigned|char|static|const|if|else|return|while|for|switch|case|break|NULL|nullptr|true|false|inline|auto)\b/g,
+             '<span class="ck">$1</span>')
+    .replace(/(\/\/[^\n]*)/g,'<span class="cc">$1</span>')
+    .replace(/("(?:[^"\\]|\\.)*")/g,'<span class="cstr">$1</span>')
+    .replace(/\b(\d+)\b/g,'<span class="cnum">$1</span>');
+}
+
+const CPP_CODE = {
+  phy:{
+    file:'// drivers/net/ethernet/intel/igb/igb_main.c  (simplified)',
+    code:`struct igb_rx_buffer {
+    struct sk_buff *skb;     // socket buffer
+    dma_addr_t     dma;      // DMA address of ring slot
+    unsigned int   len;      // bytes in this buffer
+};
+
+// Called by NAPI polling when NIC raises IRQ
+static void igb_clean_rx_irq(struct igb_q_vector *qv, int budget) {
+    struct igb_ring   *rx_ring = qv->rx.ring;
+    struct igb_rx_buffer *rx_buf;
+    struct sk_buff    *skb;
+    union e1000_adv_rx_desc *rx_desc;
+
+    while (likely(igb_test_staterr(rx_desc, E1000_RXD_STAT_DD))) {
+        rx_buf = igb_get_rx_buffer(rx_ring, rx_desc);
+
+        // DMA-copy bits from NIC ring buffer → sk_buff
+        skb = igb_fetch_rx_buffer(rx_ring, rx_desc, rx_buf);
+
+        // Verify FCS (CRC-32) — drop frame if bad
+        if (unlikely(igb_is_non_eop(rx_ring, rx_desc, skb))) continue;
+
+        // Strip preamble + SFD (first 8 bytes already stripped by NIC hw)
+        // Hand off to Ethernet layer
+        napi_gro_receive(&qv->napi, skb);
+    }
+}`
+  },
+  eth:{
+    file:'// net/ethernet/eth.c  (Linux kernel)',
+    code:`struct ethhdr {          // 14 bytes, packed
+    uint8_t  h_dest[6];    // destination MAC
+    uint8_t  h_source[6];  // source MAC
+    __be16   h_proto;      // EtherType: 0x0800=IPv4, 0x0806=ARP
+} __attribute__((packed));
+
+// Called by NIC driver after DMA copy
+int eth_type_trans(struct sk_buff *skb, struct net_device *dev) {
+    struct ethhdr *eth = (struct ethhdr *)skb->data;
+
+    // Compare dst MAC against our MAC
+    if (unlikely(!ether_addr_equal_64bits(eth->h_dest, dev->dev_addr))) {
+        if (is_multicast_ether_addr(eth->h_dest))
+            skb->pkt_type = PACKET_MULTICAST;
+        else
+            skb->pkt_type = PACKET_OTHERHOST; // not for us → drop
+    }
+
+    // Strip 14-byte Ethernet header, set protocol
+    skb->protocol = eth->h_proto;
+    skb_pull_inline(skb, ETH_HLEN); // ETH_HLEN = 14
+
+    // Dispatch to IP / ARP / etc. via protocol handler
+    return netif_receive_skb(skb);
+}`
+  },
+  ip:{
+    file:'// net/ipv4/ip_input.c  (Linux kernel)',
+    code:`struct iphdr {            // 20 bytes min, big-endian fields
+    uint8_t   ihl:4;       // header length (×4 = bytes)
+    uint8_t   version:4;   // must be 4
+    uint8_t   tos;         // DSCP / ECN
+    __be16    tot_len;     // total packet length
+    __be16    id;          // fragment identification
+    __be16    frag_off;    // flags + fragment offset
+    uint8_t   ttl;         // time to live
+    uint8_t   protocol;    // 6=TCP, 17=UDP, 1=ICMP …
+    __sum16   check;       // header checksum (ones-complement)
+    __be32    saddr;       // source IP
+    __be32    daddr;       // destination IP
+} __attribute__((packed));
+
+int ip_rcv(struct sk_buff *skb, ...) {
+    struct iphdr *iph = ip_hdr(skb);
+
+    // Sanity checks
+    if (unlikely(iph->ihl < 5 || iph->version != 4)) goto drop;
+    if (unlikely(ip_fast_csum(iph, iph->ihl))) goto drop; // bad checksum
+
+    // Decrement TTL; if 0, send ICMP time exceeded and drop
+    if (--iph->ttl == 0) { icmp_send(skb, ICMP_TIME_EXCEEDED, ...); goto drop; }
+
+    // Look up route (our IP? → deliver locally; else → forward)
+    rt = ip_route_input_noref(skb, iph->daddr, iph->saddr, ...);
+    if (rt->rt_flags & RTCF_LOCAL)
+        return ip_local_deliver(skb); // strip IP header → TCP/UDP
+    else
+        return ip_forward(skb);      // router: decrement TTL, re-send
+}`
+  },
+  tcp:{
+    file:'// net/ipv4/tcp_input.c  (Linux kernel)',
+    code:`struct tcphdr {           // 20 bytes min
+    __be16    source;      // source port
+    __be16    dest;        // destination port
+    __be32    seq;         // sequence number
+    __be32    ack_seq;     // acknowledgment number
+    uint16_t  doff:4;      // data offset (header len ÷ 4)
+    uint16_t  res1:4;
+    uint16_t  cwr:1, ece:1, urg:1, ack:1,
+              psh:1, rst:1, syn:1, fin:1; // control flags
+    __be16    window;      // receive window size
+    __sum16   check;       // checksum (header+data+pseudo-hdr)
+    __be16    urg_ptr;     // urgent pointer
+} __attribute__((packed));
+
+int tcp_v4_rcv(struct sk_buff *skb) {
+    struct tcphdr *th = tcp_hdr(skb);
+    struct sock   *sk;
+
+    // Verify checksum
+    if (skb->ip_summed != CHECKSUM_UNNECESSARY &&
+        tcp_checksum_complete(skb)) goto bad_packet;
+
+    // Find matching socket by (src_ip, src_port, dst_ip, dst_port)
+    sk = __inet_lookup_skb(&tcp_hashinfo, skb, th->source, th->dest);
+
+    if (th->syn)   return tcp_conn_request(sk, skb); // SYN → reply SYN-ACK
+    if (th->fin)   tcp_fin(sk);                       // FIN → begin teardown
+
+    // Queue payload data into socket receive buffer
+    tcp_data_queue(sk, skb);
+    tcp_send_ack(sk);        // send ACK back
+
+    // Wake up userspace process blocked on recv()
+    sk->sk_data_ready(sk);
+    return 0;
+}`
+  },
+  tls:{
+    file:'// OpenSSL / BoringSSL — ssl/record/rec_layer_s3.c  (simplified)',
+    code:`struct tls_record_t {     // TLS 1.3 record wire format
+    uint8_t  content_type;  // 0x14=ChangeCipherSpec, 0x15=Alert,
+                            // 0x16=Handshake,        0x17=AppData
+    uint8_t  legacy_ver[2]; // always 0x03,0x03 (TLS 1.2 compat)
+    uint16_t length;        // payload length (network byte order)
+    uint8_t  data[];        // plaintext OR AEAD-encrypted payload
+};
+
+// TLS 1.3 AEAD encryption using AES-256-GCM
+int tls13_enc(SSL *s, TLS1_ENC_CTX *ctx,
+              uint8_t *out, const uint8_t *in, size_t inlen) {
+
+    // Build 12-byte nonce: IV XOR sequence_number
+    uint8_t nonce[12];
+    memcpy(nonce, ctx->iv, 12);
+    nonce[11] ^= (ctx->seq_num & 0xff);
+
+    // Additional Authenticated Data = record header (5 bytes)
+    uint8_t aad[5] = { 0x17, 0x03, 0x03,
+                       (inlen+16)>>8, (inlen+16)&0xff };
+
+    // EVP_AEAD_CTX_seal: encrypt + append 16-byte GCM auth tag
+    EVP_AEAD_CTX_seal(ctx->aead, out, outlen,
+                      nonce, sizeof(nonce),
+                      in, inlen,
+                      aad, sizeof(aad));
+
+    ctx->seq_num++; // sequence number incremented per record
+    return 1;       // 0 = error, decryption will reject bad tag
+}`
+  },
+  app:{
+    file:'// A browser\'s network stack — Chromium net/http/http_stream_parser.cc (simplified)',
+    code:`struct HttpRequestHeaders {
+    std::string method;        // "GET", "POST", etc.
+    std::string request_uri;   // "/path?query"
+    std::string http_version;  // "HTTP/1.1"
+    HeaderMap   headers;       // key→value map
+    std::string body;          // optional body
+};
+
+// Build HTTP/1.1 GET request bytes
+std::string HttpStreamParser::BuildRequestLine(
+        const HttpRequestInfo& request) {
+
+    std::string request_line;
+    request_line = request.method + " " + request.url.PathForRequest()
+                 + " HTTP/1.1\\r\\n";
+    request_line += "Host: " + request.url.host() + "\\r\\n";
+    request_line += "User-Agent: Mozilla/5.0\\r\\n";
+    request_line += "Accept: text/html,*/*\\r\\n";
+    request_line += "Connection: keep-alive\\r\\n";
+    request_line += "\\r\\n";   // blank line = end of headers
+
+    // Hand raw bytes down to TLS layer via BIO_write()
+    return request_line;
+}
+
+// Parse HTTP response on receive
+int HttpStreamParser::ParseResponseHeaders(std::string_view data) {
+    size_t end = data.find("\\r\\n\\r\\n");
+    if (end == std::string_view::npos) return ERR_IO_PENDING;
+
+    // First line: "HTTP/1.1 200 OK"
+    ParseStatusLine(data.substr(0, data.find("\\r\\n")));
+    ParseHeaderFields(data.substr(0, end));
+    return OK;
+}`
+  },
+  hw:{
+    file:'// drivers/input/keyboard + net socket API (Linux kernel)',
+    code:`// ── KEYBOARD → kernel ──
+// drivers/input/atkbd.c
+static irqreturn_t atkbd_interrupt(struct serio *serio, uint8_t data, ...) {
+    struct atkbd *atkbd = serio_get_drvdata(serio);
+    unsigned int scancode = data & 0x7f;
+    int keycode = atkbd->keycode[scancode]; // scancode → keycode map
+
+    // Deliver key event to input subsystem
+    input_event(atkbd->dev, EV_KEY, keycode, !(data & 0x80));
+    input_sync(atkbd->dev);
+    return IRQ_HANDLED;
+}
+
+// ── Application calls sendto() ──
+// net/socket.c
+SYSCALL_DEFINE6(sendto, int, fd, void __user *, buff,
+                size_t, len, unsigned int, flags, ...) {
+    struct socket *sock = sockfd_lookup_light(fd, &err, &fput_needed);
+    struct msghdr msg;
+    struct iovec iov;
+
+    iov.iov_base = buff;     // userspace buffer pointer
+    iov.iov_len  = len;      // length to send
+
+    // Copy from userspace → kernel sk_buff, then hand to TCP
+    return sock_sendmsg(sock, &msg);
+    // → tcp_sendmsg() → ip_queue_xmit() → dev_queue_xmit()
+}`
+  },
+};
+
+function renderCppCode(layerId){
+  const entry = CPP_CODE[layerId];
+  if(!entry) return `<div class="insp-empty">No C++ code for layer "${layerId}"</div>`;
+  return `
+    <div class="isec">
+      <div class="code-file">${entry.file}</div>
+      <div class="code-wrap">${cpp(escHtml(entry.code))}</div>
+    </div>`;
+}
+
+function escHtml(s){
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ═══════════════════════════════════════════
+// PACKET CREATION
+// ═══════════════════════════════════════════
+
+function makePkt(type, srcId, dstId, opts={}){
+  const style=PKT_STYLES[type]||PKT_STYLES.DATA;
+  const headers=buildHeaders(type,srcId,dstId,opts);
+  return {
+    id:`P${S.nextId++}`, type, style, srcId, dstId, headers,
+    viaRouter:opts.viaRouter!==false,
+    phase:'descend', layerIdx:0, progress:0, x:0, y:0,
+    path:null, pathIdx:0, elapsed:0, done:false,
+  };
+}
+
+// ═══════════════════════════════════════════
+// TOPOLOGY RENDERING
+// ═══════════════════════════════════════════
+
+function renderTopology(){
+  const wrap=document.getElementById('net-wrap');
+  wrap.innerHTML='';
+
+  appendHostCol(wrap,'alice');
+  appendWire(wrap,'Alice → Router','~10ms');
+  appendRouterCol(wrap);
+  appendWire(wrap,'Router → Bob','~10ms');
+  appendHostCol(wrap,'bob');
+  if(S.showCharlie){
+    appendWire(wrap,'Router → Charlie','~15ms');
+    appendHostCol(wrap,'charlie');
+  }
+  renderSecBar();
+}
+
+function appendHostCol(parent, hid){
+  const def=hostDef(hid);
+  const col=document.createElement('div');
+  col.className='host-col'; col.id=`col-${hid}`;
+  col.innerHTML=`
+    <div class="host-badge">
+      <div class="hname" style="color:${def.color}">${def.name}</div>
+      <div class="hip">${def.ip}</div>
+      <div class="hmac">${def.mac}</div>
+    </div>
+    <div class="host-stack" id="stack-${hid}">
+      ${LAYERS.map(l=>`
+        <div class="layer ${l.cls}" id="layer-${hid}-${l.id}" onclick="clickLayer('${hid}','${l.id}')">
+          <div class="lname">${l.name}</div>
+          <div class="lsub">${l.sub}</div>
+          <div class="lstate" id="lstate-${hid}-${l.id}"></div>
+          ${l.id==='phy'?`<div class="bits" id="bits-${hid}"></div>`:''}
+        </div>`).join('')}
+    </div>`;
+  parent.appendChild(col);
+}
+
+function appendRouterCol(parent){
+  const col=document.createElement('div');
+  col.className='host-col router-col'; col.id='col-router';
+  col.innerHTML=`
+    <div class="host-badge">
+      <div class="hname" style="color:${ROUTER.color}">${ROUTER.name}</div>
+      <div class="hip">${ROUTER.ip}</div>
+      <div class="hmac">gateway · NAT · L3</div>
+    </div>
+    <div class="host-stack" id="stack-router">
+      ${ROUTER_LAYERS.map(l=>`
+        <div class="layer ${l.cls}" id="layer-router-${l.id}" onclick="clickLayer('router','${l.id}')">
+          <div class="lname">${l.name}</div>
+          <div class="lsub">${l.sub}</div>
+          <div class="lstate" id="lstate-router-${l.id}"></div>
+        </div>`).join('')}
+    </div>`;
+  parent.appendChild(col);
+}
+
+function appendWire(parent, label, latency){
+  const seg=document.createElement('div');
+  seg.className='wire-seg';
+  seg.innerHTML=`<div class="wire-lbl">${latency}</div><div class="wire-line"></div>`;
+  parent.appendChild(seg);
+}
+
+function renderSecBar(){
+  const bar=document.getElementById('sec-bar');
+  const nodes=['alice','bob'];
+  if(S.showCharlie) nodes.push('charlie');
+  nodes.push('router');
+  bar.innerHTML=nodes.map(id=>{
+    const def=id==='router'?ROUTER:hostDef(id);
+    const enc=(S.tls['alice-bob']||{}).established;
+    const status=id==='router'?'Routes IP · No TLS':enc?'TLS 1.3 Secure':'No Encryption';
+    const cls=enc&&id!=='router'?'secure':id==='router'?'plain':'plain';
+    return `<div class="sec-node">
+      <div class="sec-name" style="color:${def.color}">${def.name||def.id}</div>
+      <div class="sec-status ${cls}">${status}</div>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════
+// PACKET DOM
+// ═══════════════════════════════════════════
+
+function spawnPktEl(pkt){
+  const ol=document.getElementById('pkt-overlay');
+  const d=document.createElement('div');
+  d.className='pkt'; d.id=`pkt-${pkt.id}`;
+  d.style.color=pkt.style.color;
+  d.style.backgroundColor=pkt.style.bg;
+  d.style.borderColor=pkt.style.color;
+  d.textContent=pkt.style.label;
+  d.onclick=(e)=>{ e.stopPropagation(); selectPkt(pkt.id); };
+  ol.appendChild(d);
+}
+
+function removePktEl(pkt){
+  const e=document.getElementById(`pkt-${pkt.id}`);
+  if(e) e.remove();
+}
+
+function movePktEl(pkt,x,y){
+  const e=document.getElementById(`pkt-${pkt.id}`);
+  if(e){ e.style.left=x+'px'; e.style.top=y+'px'; }
+}
+
+// ═══════════════════════════════════════════
+// COORDINATES
+// ═══════════════════════════════════════════
+
+function layerCenter(hostId, layerId){
+  const el=document.getElementById(`layer-${hostId}-${layerId}`);
+  const area=document.getElementById('net-area');
+  if(!el||!area) return {x:0,y:0};
+  const er=el.getBoundingClientRect(), ar=area.getBoundingClientRect();
+  return {
+    x:er.left-ar.left+area.scrollLeft+er.width/2,
+    y:er.top -ar.top +area.scrollTop +er.height/2,
+  };
+}
+
+function lerp(a,b,t){ return a+(b-a)*t; }
+function ease(t){ return t<.5?2*t*t:-1+(4-2*t)*t; }
+
+// ═══════════════════════════════════════════
+// ANIMATION
+// ═══════════════════════════════════════════
+
+const STEP_DUR=550;
+
+function buildPath(pkt){
+  const path=[];
+  LAYERS.forEach(l=>path.push({hostId:pkt.srcId,layerId:l.id}));
+  if(pkt.viaRouter){
+    ['phy','eth','ip'].forEach(l=>path.push({hostId:'router',layerId:l}));
+    ['eth','phy'].forEach(l=>path.push({hostId:'router',layerId:l}));
+  }
+  [...LAYERS].reverse().forEach(l=>path.push({hostId:pkt.dstId,layerId:l.id}));
+  return path;
+}
+
+function tickPackets(dtMs){
+  const dead=[];
+  S.packets.forEach(pkt=>{
+    if(pkt.done) return;
+    if(!pkt.path){ pkt.path=buildPath(pkt); pkt.pathIdx=0; pkt.elapsed=0; }
+
+    const stepMs=STEP_DUR/S.speed;
+    pkt.elapsed=(pkt.elapsed||0)+dtMs;
+
+    const wp=pkt.path[pkt.pathIdx];
+    const wn=pkt.path[pkt.pathIdx+1];
+    if(!wp){ pkt.done=true; dead.push(pkt); return; }
+
+    const cA=layerCenter(wp.hostId,wp.layerId);
+    const cB=wn?layerCenter(wn.hostId,wn.layerId):cA;
+    const t=Math.min(pkt.elapsed/stepMs,1);
+    pkt.x=lerp(cA.x,cB.x,ease(t));
+    pkt.y=lerp(cA.y,cB.y,ease(t));
+    movePktEl(pkt,pkt.x,pkt.y);
+
+    if(t<0.12){ flashLayer(wp.hostId,wp.layerId); setLayerMsg(wp.hostId,wp.layerId,pkt); }
+
+    // keep inspector in sync if this is selected
+    if(S.selected===pkt.id && t<0.15) refreshInspector(pkt, wp.layerId);
+
+    if(t>=1){ pkt.elapsed=0; pkt.pathIdx++; if(pkt.pathIdx>=pkt.path.length){pkt.done=true;dead.push(pkt);} }
+  });
+  dead.forEach(p=>{ removePktEl(p); S.packets.splice(S.packets.indexOf(p),1); });
+}
+
+function setLayerMsg(hid,lid,pkt){
+  const msgs={
+    hw:  ()=>`↓ ${pkt.headers.hw.syscall} · pid ${pkt.headers.hw.pid}`,
+    app: ()=>pkt.headers.app.protocol!=='(none)'?`${pkt.headers.app.method} ${pkt.headers.app.path}`.trim():'pass-through',
+    tls: ()=>pkt.headers.tls.sessionEstablished?'Encrypt: AES-256-GCM':pkt.headers.tls.handshakeType!=='—'?`hs: ${pkt.headers.tls.handshakeType}`:'no session',
+    tcp: ()=>`[${pkt.headers.tcp.flags}] seq=${pkt.headers.tcp.seq}`,
+    ip:  ()=>`${pkt.headers.ip.srcIP} → ${pkt.headers.ip.dstIP}`,
+    eth: ()=>`${pkt.headers.eth.srcMAC.slice(-8)} → ${pkt.headers.eth.dstMAC.slice(-8)}`,
+    phy: ()=>`TX: ${pkt.headers.phy.bits.slice(0,20)}...`,
+  };
+  const fn=msgs[lid];
+  if(fn) setState(hid,lid,fn());
+  if(lid==='phy'){
+    const b=document.getElementById(`bits-${hid}`);
+    if(b) b.textContent=bits(40);
+  }
+}
+
+function setState(hid,lid,text){
+  const e=document.getElementById(`lstate-${hid}-${lid}`);
+  if(e) e.textContent=text;
+}
+
+function flashLayer(hid,lid){
+  const e=document.getElementById(`layer-${hid}-${lid}`);
+  if(!e) return;
+  e.classList.remove('flash'); void e.offsetWidth; e.classList.add('flash');
+  setTimeout(()=>e.classList.remove('flash'),380);
+}
+
+// ═══════════════════════════════════════════
+// SCHEDULER
+// ═══════════════════════════════════════════
+
+function schedule(delayMs, fn){
+  S.stepQueue.push({fire:queueTs+delayMs,fn});
+  queueTs+=delayMs;
+}
+
+function drainQueue(nowMs){
+  const ready=S.stepQueue.filter(e=>e.fire<=nowMs&&!e.fired);
+  ready.sort((a,b)=>a.fire-b.fire);
+  ready.forEach(e=>{e.fired=true;e.fn();});
+  S.stepQueue=S.stepQueue.filter(e=>!e.fired);
+}
+
+// ═══════════════════════════════════════════
+// SCENARIOS
+// ═══════════════════════════════════════════
+
+function loadScene(btn){
+  document.querySelectorAll('.stab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  S.scenario=btn.dataset.scene;
+  document.getElementById('scene-desc').textContent=SCENE_META[S.scenario]||'';
+  resetSim();
+}
+
+function scheduleScenario(){
+  queueTs=0; S.stepQueue=[];
+  simStart.ts=performance.now();
+  const D=1600;
+  ({tcp_hs:scenTcpHs,tls_hs:scenTlsHs,https:scenHttps,arp:scenArp,multi:scenMulti}[S.scenario]||scenTcpHs)(D);
+}
+
+function sendPkt(type,src,dst,opts={}){
+  const p=makePkt(type,src,dst,opts);
+  S.packets.push(p);
+  p.path=buildPath(p); p.pathIdx=0; p.elapsed=0;
+  spawnPktEl(p);
+  const first=p.path[0];
+  if(first){ const c=layerCenter(first.hostId,first.layerId); p.x=c.x; p.y=c.y; movePktEl(p,c.x,c.y); }
+  return p;
+}
+
+function setTcpState(src,dst,state){
+  const k=`${src}-${dst}`;
+  S.tcp[k]=Object.assign(S.tcp[k]||{},{state,seq:rng(10000,99999),ack:rng(10000,99999)});
+  setState(src,'tcp',`State: ${state}`);
+}
+
+function scenTcpHs(D){
+  schedule(400,()=>{ setTcpState('alice','bob','SYN_SENT'); sendPkt('SYN','alice','bob'); log('Alice','TCP →','SYN  seq=10000  [initiating handshake]'); });
+  schedule(D,  ()=>{ setTcpState('bob','alice','SYN_RCVD'); sendPkt('SYNACK','bob','alice'); log('Bob','TCP ←','SYN-ACK  seq=50000 ack=10001','info'); });
+  schedule(D,  ()=>{ setTcpState('alice','bob','ESTABLISHED'); setTcpState('bob','alice','ESTABLISHED'); sendPkt('ACK','alice','bob'); log('Alice','TCP →','ACK — connection ESTABLISHED','info'); setState('alice','tcp','✓ ESTABLISHED'); setState('bob','tcp','✓ ESTABLISHED'); });
+  schedule(D*2,()=>{ sendPkt('FIN','alice','bob'); log('Alice','TCP →','FIN,ACK [closing]','warn'); });
+  schedule(D,  ()=>{ sendPkt('ACK','bob','alice'); log('Bob','TCP ←','ACK [FIN acknowledged]'); });
+}
+
+function scenTlsHs(D){
+  schedule(400, ()=>{ sendPkt('CHELLO','alice','bob'); log('Alice','TLS →','ClientHello — TLS 1.3, X25519, AES-256-GCM','tls'); });
+  schedule(D,   ()=>{ sendPkt('SHELLO','bob','alice'); log('Bob','TLS ←','ServerHello — cipher chosen','tls'); });
+  schedule(D*.7,()=>{ sendPkt('CERT','bob','alice'); log('Bob','TLS ←','Certificate + CertificateVerify (ECDSA P-256)','tls'); });
+  schedule(D*.7,()=>{ sendPkt('FIN_TLS','bob','alice'); log('Bob','TLS ←','Finished — HMAC-SHA256 verify','tls'); });
+  schedule(D*.7,()=>{ S.tls['alice-bob']={established:true,cipher:'TLS_AES_256_GCM_SHA384'}; sendPkt('FIN_TLS','alice','bob'); log('Alice','TLS →','Finished — ✓ secure channel established','tls'); setState('alice','tls','✓ AES-256-GCM active'); setState('bob','tls','✓ AES-256-GCM active'); renderSecBar(); });
+}
+
+function scenHttps(D){
+  schedule(200,  ()=>{ setTcpState('alice','bob','SYN_SENT'); sendPkt('SYN','alice','bob'); log('Alice','TCP →','SYN [1/3]'); });
+  schedule(D,    ()=>{ setTcpState('bob','alice','SYN_RCVD'); sendPkt('SYNACK','bob','alice'); log('Bob','TCP ←','SYN-ACK [2/3]','info'); });
+  schedule(D,    ()=>{ setTcpState('alice','bob','ESTABLISHED'); sendPkt('ACK','alice','bob'); log('Alice','TCP →','ACK [ESTABLISHED]','info'); });
+  schedule(D*.6, ()=>{ sendPkt('CHELLO','alice','bob'); log('Alice','TLS →','ClientHello','tls'); });
+  schedule(D,    ()=>{ sendPkt('SHELLO','bob','alice'); log('Bob','TLS ←','ServerHello','tls'); });
+  schedule(D*.5, ()=>{ sendPkt('CERT','bob','alice'); log('Bob','TLS ←','Certificate','tls'); });
+  schedule(D*.5, ()=>{ sendPkt('FIN_TLS','bob','alice'); log('Bob','TLS ←','Finished','tls'); });
+  schedule(D*.5, ()=>{ S.tls['alice-bob']={established:true,cipher:'TLS_AES_256_GCM_SHA384'}; sendPkt('FIN_TLS','alice','bob'); log('Alice','TLS →','Finished — ✓ Encrypted','tls'); setState('alice','tls','✓ AES-256-GCM'); setState('bob','tls','✓ AES-256-GCM'); renderSecBar(); });
+  schedule(D,    ()=>{ sendPkt('HGET','alice','bob',{proc:'chrome.exe',keyInput:'user pressed Enter'}); log('Alice','HTTPS →','GET / HTTP/1.1 [inside TLS — encrypted]','info'); setState('alice','hw','↓ keypress → chrome.exe → sendto()'); });
+  schedule(D,    ()=>{ sendPkt('H200','bob','alice',{proc:'nginx'}); log('Bob','HTTPS ←','HTTP/1.1 200 OK [encrypted response]','info'); });
+  schedule(D,    ()=>{ setState('alice','app','✓ Page received and rendered'); log('Alice','App','Page rendered in browser','info'); });
+}
+
+function scenArp(D){
+  schedule(300, ()=>{ log('Alice','ARP','Cache miss for 10.0.0.20 — broadcasting','warn'); setState('alice','eth','ARP cache miss — broadcast'); const p=makePkt('ARP_Q','alice','bob'); p.headers.eth.dstMAC='FF:FF:FF:FF:FF:FF'; S.packets.push(p); p.path=buildPath(p); p.pathIdx=0; p.elapsed=0; spawnPktEl(p); const c=layerCenter(p.path[0].hostId,p.path[0].layerId); p.x=c.x; p.y=c.y; movePktEl(p,c.x,c.y); log('Alice','ARP →','Who has 10.0.0.20? Tell 10.0.0.10 [FF:FF:FF:FF:FF:FF]'); });
+  schedule(D,   ()=>{ S.arpTable['10.0.0.20']='AA:BB:CC:22:22:02'; sendPkt('ARP_A','bob','alice'); log('Bob','ARP ←','10.0.0.20 is at AA:BB:CC:22:22:02','info'); setState('bob','eth','ARP reply sent'); });
+  schedule(D,   ()=>{ setState('alice','eth','✓ ARP: 10.0.0.20 → AA:BB:CC:22:22:02'); log('Alice','ARP','Cache updated — sending first IP packet','info'); sendPkt('SYN','alice','bob'); log('Alice','TCP →','SYN [first packet post-ARP]'); });
+}
+
+function scenMulti(D){
+  if(!S.showCharlie){ S.showCharlie=true; renderTopology(); }
+  schedule(200, ()=>{ sendPkt('SYN','alice','bob'); log('Alice','TCP →','SYN → Bob [stream A]'); });
+  schedule(400, ()=>{ sendPkt('SYN','charlie','bob'); log('Charlie','TCP →','SYN → Bob [stream B]'); });
+  schedule(D,   ()=>{ sendPkt('SYNACK','bob','alice'); log('Bob','TCP ←','SYN-ACK → Alice [router demux by dst IP]','info'); });
+  schedule(D*.6,()=>{ sendPkt('SYNACK','bob','charlie'); log('Bob','TCP ←','SYN-ACK → Charlie [router demux by dst IP]','info'); });
+  schedule(D,   ()=>{ sendPkt('ACK','alice','bob'); sendPkt('ACK','charlie','bob'); setState('router','ip','2 active flows — 10.0.0.10 + 10.0.0.30'); log('Router','IP','Simultaneous flows — routing table lookup per packet','info'); });
+  schedule(D,   ()=>{ sendPkt('HGET','alice','bob',{proc:'chrome.exe'}); sendPkt('DATA','charlie','bob',{proc:'wget'}); log('Router','IP','Concurrent packets — FIFO queue, no drops','info'); });
+}
+
+// ═══════════════════════════════════════════
+// MAIN LOOP
+// ═══════════════════════════════════════════
+
+function tick(ts){
+  if(!S.running){ S.raf=null; return; }
+  const dt=S.lastTs?Math.min(ts-S.lastTs,100):16;
+  S.lastTs=ts;
+  const elapsed=(ts-simStart.ts)*S.speed;
+  drainQueue(elapsed);
+  tickPackets(dt*S.speed);
+  S.raf=requestAnimationFrame(tick);
+}
+
+// ═══════════════════════════════════════════
+// CONTROLS
+// ═══════════════════════════════════════════
+
+function togglePlay(){
+  S.running=!S.running;
+  const btn=document.getElementById('btn-play');
+  if(S.running){
+    btn.textContent='⏸ Pause'; btn.className='btn stop';
+    S.lastTs=null;
+    if(!S.started){ S.started=true; simStart.ts=performance.now(); scheduleScenario(); }
+    S.raf=requestAnimationFrame(tick);
+  } else {
+    btn.textContent='▶ Play'; btn.className='btn go';
+    if(S.raf){ cancelAnimationFrame(S.raf); S.raf=null; }
+  }
+}
+
+function stepOnce(){
+  if(!S.started){ S.started=true; simStart.ts=performance.now(); scheduleScenario(); }
+  drainQueue((performance.now()-simStart.ts)*S.speed+STEP_DUR);
+  tickPackets(STEP_DUR);
+}
+
+function resetSim(){
+  S.running=false; S.started=false;
+  S.packets.forEach(p=>removePktEl(p)); S.packets=[];
+  S.stepQueue=[]; queueTs=0;
+  S.tls={}; S.tcp={}; S.arpTable={}; S.selected=null; S.lastTs=null;
+  if(S.raf){ cancelAnimationFrame(S.raf); S.raf=null; }
+  document.getElementById('btn-play').textContent='▶ Play';
+  document.getElementById('btn-play').className='btn go';
+  document.getElementById('evlog').innerHTML='';
+  renderTopology(); clearInspector();
+  log('SIM','reset','Ready — press ▶ Play to begin','info');
+}
+
+function setSpeed(v){ S.speed=parseFloat(v); document.getElementById('spd-lbl').textContent=S.speed+'×'; }
+
+function toggleExtraHost(){
+  S.showCharlie=!S.showCharlie;
+  document.getElementById('btn-host').textContent=S.showCharlie?'− Charlie':'+ Charlie';
+  resetSim();
+}
+
+// ═══════════════════════════════════════════
+// INSPECTOR
+// ═══════════════════════════════════════════
+
+let _inspPkt=null;   // last inspected packet reference
+
+function setView(view, btn){
+  S.inspView=view;
+  document.querySelectorAll('.vtab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  if(_inspPkt) showInspector(_inspPkt, S.inspLayer);
+}
+
+function selectPkt(id){
+  S.packets.forEach(p=>{ const e=document.getElementById(`pkt-${p.id}`); if(e) e.classList.toggle('sel',p.id===id); });
+  S.selected=id;
+  const pkt=S.packets.find(p=>p.id===id);
+  if(!pkt) return;
+  const wp=pkt.path?.[pkt.pathIdx];
+  showInspector(pkt, wp?.layerId||S.inspLayer||'tcp');
+}
+
+function refreshInspector(pkt, layerId){
+  if(S.selected!==pkt.id) return;
+  showInspector(pkt, layerId);
+}
+
+function showInspector(pkt, layerId){
+  _inspPkt=pkt;
+  S.inspLayer=layerId;
+  document.getElementById('insp-pid').textContent=`${pkt.id} · ${pkt.type}`;
+
+  // Layer nav
+  const nav=document.getElementById('layer-nav');
+  const lids=Object.keys(pkt.headers);
+  nav.innerHTML=lids.map(lid=>`
+    <button class="lnbtn${lid===layerId?' active':''}"
+            onclick="showInspector(_inspPkt,'${lid}')">${lid.toUpperCase()}</button>`).join('');
+
+  const body=document.getElementById('insp-body');
+  if(S.inspView==='hex'){  body.innerHTML=renderHexDump(pkt,layerId); return; }
+  if(S.inspView==='code'){ body.innerHTML=renderCppCode(layerId); return; }
+  body.innerHTML=renderFieldsView(layerId, pkt);
+}
+
+function renderFieldsView(lid, pkt){
+  const h=pkt.headers[lid];
+  if(!h) return '<div class="insp-empty">No data at this layer.</div>';
+
+  const sec=(title,fields)=>`
+    <div class="isec">
+      <div class="isec-title">${title}</div>
+      ${fields.filter(f=>f[1]!==undefined&&f[1]!==null&&f[1]!=='—').map(([k,v,c])=>`
+        <div class="ifield"><span class="ikey">${k}</span><span class="ival ${c||''}">${v}</span></div>`).join('')}
+    </div>`;
+
+  if(lid==='hw') return sec('Hardware / OS Kernel',[
+    ['Host',h.host],['Process',h.process,'ok'],['PID',h.pid],
+    ['Syscall',h.syscall,'ok'],['IRQ Line',h.irq],['Bus',h.bus],
+    ['Keystroke',h.keyInput||'(background process)','warn'],
+  ]);
+  if(lid==='app') return sec('Application — HTTP/1.1',[
+    ['Protocol',h.protocol],['Method',h.method,h.method==='GET'?'ok':''],
+    ['Path',h.path],['Host',h.host],['User-Agent',h.userAgent],
+    ['Status',h.status,h.status==='200 OK'?'ok':h.status!=='—'?'warn':''],
+    ['Encrypted',h.encrypted?`Yes <span class="badge badge-enc">AES-256-GCM</span>`:`No <span class="badge badge-plain">PLAINTEXT</span>`,h.encrypted?'ok':'bad'],
+    ['Body',h.body?h.body.slice(0,48)+'…':'(empty)'],
+  ]);
+  if(lid==='tls') return sec('TLS 1.3 Record',[
+    ['Version',h.version],['Content-Type',h.contentType],
+    ['Handshake Type',h.handshakeType,'ok'],
+    ['Cipher Suite',h.cipherSuite,'ok'],
+    ['Key Exchange',h.keyExchange,'ok'],
+    ['Auth Algorithm',h.authAlgo,'ok'],
+    ['Client Random','0x'+h.clientRandom],
+    ['Server Random','0x'+h.serverRandom],
+    ['Record Length',`${h.recordLen} bytes`],
+    ['Session',h.sessionEstablished?`Established <span class="badge badge-ok">✓ SECURE</span>`:`Pending <span class="badge badge-plain">handshaking</span>`,h.sessionEstablished?'ok':'warn'],
+    ['Payload',h.payload,h.sessionEstablished?'enc':''],
+  ]);
+  if(lid==='tcp') return sec('TCP Segment',[
+    ['Src Port',h.srcPort],['Dst Port',h.dstPort],
+    ['Flags',h.flags,'ok'],['Seq Number',h.seq],['Ack Number',h.ack],
+    ['Window',`${h.window} bytes`],['Checksum','0x'+h.checksum],
+    ['Data Offset',`${h.dataOffset} bytes`],
+    ['TCP Options',h.options],['Payload Len',`${h.dataLen} bytes`],
+    ['Conn State',h.state,'ok'],
+  ]);
+  if(lid==='ip') return sec('IP Packet — IPv4',[
+    ['Version',h.version],['Header Len',`${h.ihl} bytes`],
+    ['DSCP',h.dscp],['ECN',h.ecn],['Total Len',`${h.totalLen} bytes`],
+    ['ID','0x'+h.id],['Flags',h.flags],['Frag Offset',h.fragOffset],
+    ['TTL',h.ttl,'ok'],['Protocol',h.protocol,'ok'],
+    ['Checksum','0x'+h.checksum],
+    ['Src IP',h.srcIP,'ok'],['Dst IP',h.dstIP,'ok'],
+  ]);
+  if(lid==='eth') return sec('Ethernet Frame — 802.3',[
+    ['Src MAC',h.srcMAC,'ok'],['Dst MAC',h.dstMAC,'ok'],
+    ['EtherType',h.etherType],['VLAN',h.vlan||'none'],
+    ['Frame Len',`${h.frameLen} bytes`],
+    ['FCS','0x'+h.fcs],['Preamble',h.preamble],['SFD',h.sfd],
+  ]);
+  if(lid==='phy') return `
+    <div class="isec">
+      <div class="isec-title">Physical Layer — NIC</div>
+      ${[['Medium',h.medium],['Encoding',h.encoding],['Speed',h.speed],['Signal',h.signalVoltage],['Clocking',h.clockRecovery],['Bit Error Rate',h.errorRate,'ok']].map(([k,v,c])=>`<div class="ifield"><span class="ikey">${k}</span><span class="ival ${c||''}">${v}</span></div>`).join('')}
+      <div class="isec-title" style="margin-top:10px">Bit Stream (sample)</div>
+      <div style="font-size:10px;color:var(--l1c);font-family:monospace;line-height:1.8;
+                  word-break:break-all;padding:6px 8px;background:var(--l1b);
+                  border-radius:3px;border:1px solid var(--l1e);margin-top:4px">
+        ${h.preamble}<br>${h.bits}
+      </div>
+    </div>`;
+  return '<div class="insp-empty">Unknown layer.</div>';
+}
+
+function clickLayer(hid, lid){
+  const pkt=S.packets.find(p=>{ const wp=p.path?.[p.pathIdx]; return wp&&wp.hostId===hid&&wp.layerId===lid; });
+  if(pkt){ selectPkt(pkt.id); return; }
+  // Show static layer info
+  _inspPkt=null;
+  document.getElementById('insp-pid').textContent=`${hid} · ${lid}`;
+  document.getElementById('layer-nav').innerHTML='';
+  const info={
+    hw:  ['Hardware / Keyboard','Keystroke → scancode (IRQ) → device driver → kernel input subsystem → read() in userspace. On send: process calls sendto() syscall → copies buffer from userspace into sk_buff in kernel → hands to TCP.'],
+    app: ['Application — HTTP/S','Formats data as HTTP/1.1 request or response text. With TLS active, plaintext is handed to the TLS layer for AEAD encryption before reaching TCP. Browser uses socket API; server uses accept()/read()/write().'],
+    tls: ['TLS 1.3','Handshake: X25519 ECDH key agreement → derive session keys via HKDF. Auth via certificate (ECDSA/RSA). All data AEAD-encrypted with AES-256-GCM. Each record has a 5-byte header; payload is opaque ciphertext + 16-byte auth tag.'],
+    tcp: ['TCP — Transport Layer','Reliable, ordered byte stream over IP. Three-way handshake establishes a connection. Sequence numbers detect reordering/loss. Sliding window controls flow. Congestion control (CUBIC/BBR) prevents network saturation.'],
+    ip:  ['IP — Network Layer','Connectionless, best-effort delivery. Router looks up longest-prefix match in routing table. TTL field prevents routing loops. Fragmentation splits oversized packets (usually avoided via PMTUD). No delivery guarantee — TCP handles that.'],
+    eth: ['Ethernet — Data Link Layer','Frames IP packets for one-hop delivery. MAC addresses identify hardware on a LAN. ARP maps IP → MAC. FCS (CRC-32) detects bit errors in transit. Switch learns MAC→port mappings from source addresses.'],
+    phy: ['Physical Layer — NIC/Cable','Transmits bits as electrical voltage (Cat6), light pulses (fiber), or radio (WiFi). Preamble synchronises receiver clock. 1 Gbps Ethernet = 1 bit per nanosecond. NIC uses DMA to copy frames into RAM without CPU.'],
+  };
+  const [title,desc]=info[lid]||[lid,''];
+  document.getElementById('insp-body').innerHTML=`
+    <div class="isec">
+      <div class="isec-title">${title}</div>
+      <div style="font-size:12px;color:var(--dim);line-height:1.9">${desc}</div>
+    </div>
+    <div class="isec" style="margin-top:12px">
+      <div class="isec-title">Current state</div>
+      <div style="font-size:12px;color:var(--dim)">${document.getElementById(`lstate-${hid}-${lid}`)?.textContent||'Idle'}</div>
+    </div>
+    <div style="margin-top:14px;padding:8px;background:var(--surface2);border-radius:4px;
+                border:1px solid var(--border);font-size:11px;color:var(--dimmer)">
+      ↑ Click a flying <b style="color:#38bdf8">packet pill</b> to see its live bytes & headers at this layer.
+    </div>`;
+}
+
+function clearInspector(){
+  _inspPkt=null; S.selected=null;
+  document.getElementById('insp-pid').textContent='';
+  document.getElementById('layer-nav').innerHTML='';
+  document.getElementById('insp-body').innerHTML=`<div class="insp-empty">Click any <b>packet in flight</b><br>or a <b>layer box</b> to inspect it.<br><br>Press <b style="color:#38bdf8">▶ Play</b> to begin.</div>`;
+}
+
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
+
+renderTopology();
+log('SIM','init','Network stack simulator ready','info');
+log('SIM','tip','Click ▶ Play to run scenario. Click any flying packet to inspect headers, bytes, and C++ code.');
+</script>
+</body>
+</html>

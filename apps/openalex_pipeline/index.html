@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenAlex Zeitgeist — Research Trend Explorer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="icon" type="image/x-icon" href="../../images.ico">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Instrument+Serif:ital@0;1&family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #08080c;
+  --surface: #101018;
+  --surface2: #181824;
+  --surface3: #20202e;
+  --border: #2a2a3a;
+  --border-light: #3a3a50;
+  --text: #e8e8f0;
+  --text-dim: #888898;
+  --text-muted: #55556a;
+  --accent: #6ee7b7;
+  --accent2: #38bdf8;
+  --accent3: #f472b6;
+  --accent4: #fbbf24;
+  --hot: #ef4444;
+  --warm: #f97316;
+  --font-display: 'Instrument Serif', Georgia, serif;
+  --font-body: 'Manrope', system-ui, sans-serif;
+  --font-mono: 'DM Mono', 'Consolas', monospace;
+  --radius: 8px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { font-size: 15px; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 0%, rgba(110,231,183,0.04) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 100%, rgba(56,189,248,0.03) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Layout ─────────────────────────────────────────── */
+.page-wrap {
+  position: relative;
+  z-index: 1;
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 32px 24px 80px;
+}
+
+/* ── Header ─────────────────────────────────────────── */
+.header {
+  margin-bottom: 28px;
+}
+.header-top {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+.title-main {
+  font-family: var(--font-body);
+  font-size: 2rem;
+  font-weight: 300;
+  color: var(--text);
+  letter-spacing: -0.5px;
+}
+.title-accent {
+  font-family: var(--font-display);
+  font-style: italic;
+  color: var(--accent);
+}
+.header-meta {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.header-desc {
+  font-size: 0.875rem;
+  color: var(--text-dim);
+  margin-top: 8px;
+  max-width: 680px;
+  line-height: 1.55;
+}
+
+.back-btn {
+  position: absolute;
+  top: 32px;
+  right: 24px;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  text-decoration: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 6px 12px;
+  transition: color .15s, border-color .15s;
+}
+.back-btn:hover { color: var(--accent); border-color: var(--accent); }
+
+/* ── Stats row ──────────────────────────────────────── */
+.stats-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  min-width: 120px;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity .4s, transform .4s;
+}
+.stat-card.animate-in { opacity: 1; transform: none; }
+.stat-card .label {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 4px;
+}
+.stat-card .value {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  color: var(--accent);
+}
+
+/* ── Control bar ─────────────────────────────────────── */
+.control-bar {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+.control-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.control-label {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+}
+
+/* range display */
+.range-display {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  color: var(--accent);
+  min-width: 120px;
+}
+.range-display .arrow { color: var(--text-muted); margin: 0 6px; font-size: 0.9rem; }
+
+/* dual slider */
+.slider-container {
+  flex: 1;
+  min-width: 200px;
+  position: relative;
+  height: 48px;
+  display: flex;
+  align-items: center;
+}
+.slider-track {
+  position: relative;
+  width: 100%;
+  height: 4px;
+  background: var(--surface3);
+  border-radius: 2px;
+}
+.slider-fill {
+  position: absolute;
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  border-radius: 2px;
+}
+.slider-track input[type="range"] {
+  position: absolute;
+  width: 100%;
+  top: -8px;
+  height: 20px;
+  -webkit-appearance: none;
+  background: none;
+  pointer-events: none;
+}
+.slider-track input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 3px solid var(--bg);
+  cursor: pointer;
+  pointer-events: all;
+  box-shadow: 0 0 12px rgba(110,231,183,0.3);
+}
+
+/* toggle buttons */
+.toggle-group {
+  display: flex;
+  gap: 4px;
+}
+.toggle-btn {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 5px 10px;
+  cursor: pointer;
+  transition: all .15s;
+}
+.toggle-btn:hover { color: var(--text); border-color: var(--border-light); }
+.toggle-btn.active { color: var(--accent); border-color: var(--accent); background: rgba(110,231,183,0.07); }
+
+/* ── Scope panel ─────────────────────────────────────── */
+.scope-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 20px;
+  margin-bottom: 20px;
+  display: none;
+}
+.scope-panel.visible { display: block; }
+
+/* Field dropdown */
+.scope-select {
+  width: 100%;
+  max-width: 480px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  padding: 7px 12px;
+  cursor: pointer;
+  margin-top: 8px;
+}
+.scope-select:focus { outline: none; border-color: var(--accent2); }
+
+/* Journal multi-select */
+.journal-wrap { margin-top: 8px; }
+.journal-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+  min-height: 0;
+}
+.journal-chip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(110,231,183,0.1);
+  border: 1px solid rgba(110,231,183,0.25);
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  color: var(--accent);
+}
+.journal-chip button {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.8rem;
+  line-height: 1;
+  padding: 0;
+}
+.journal-chip button:hover { color: var(--hot); }
+.journal-search {
+  width: 100%;
+  max-width: 480px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  padding: 7px 12px;
+  margin-bottom: 8px;
+}
+.journal-search::placeholder { color: var(--text-muted); }
+.journal-search:focus { outline: none; border-color: var(--accent2); }
+.journal-list-wrap {
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface2);
+  max-width: 640px;
+}
+.journal-list-wrap::-webkit-scrollbar { width: 4px; }
+.journal-list-wrap::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 2px; }
+.journal-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border);
+  transition: background .1s;
+  font-size: 0.82rem;
+}
+.journal-item:last-child { border-bottom: none; }
+.journal-item:hover { background: var(--surface3); }
+.journal-item.selected { background: rgba(110,231,183,0.06); }
+.journal-item input[type="checkbox"] { accent-color: var(--accent); cursor: pointer; flex-shrink: 0; }
+.journal-item .jname { flex: 1; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.journal-item .jcount { font-family: var(--font-mono); font-size: 0.62rem; color: var(--text-muted); white-space: nowrap; }
+
+/* ── Main grid ──────────────────────────────────────── */
+.main-grid {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 16px;
+  align-items: start;
+}
+@media (max-width: 900px) { .main-grid { grid-template-columns: 1fr; } }
+
+/* ── Ranking panel ──────────────────────────────────── */
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.panel-header {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.panel-title {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  color: var(--text);
+}
+.panel-count {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* ── Rank items ─────────────────────────────────────── */
+.ranking-list { padding: 0; }
+.rank-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 18px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background .1s;
+}
+.rank-item:last-child { border-bottom: none; }
+.rank-item:hover { background: var(--surface2); }
+.rank-item.selected { background: rgba(110,231,183,0.06); }
+.rank-num {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  color: var(--text-muted);
+  min-width: 24px;
+  text-align: right;
+}
+.rank-num.top3 { color: var(--accent4); }
+.rank-term {
+  flex: 1;
+  font-size: 0.88rem;
+  color: var(--text);
+}
+.rank-term.bigram { color: var(--accent2); }
+.rank-bar-cell { width: 100px; flex-shrink: 0; }
+.rank-bar {
+  height: 3px;
+  border-radius: 2px;
+  transition: width .3s;
+}
+.bar-hot  { background: var(--hot); }
+.bar-warm { background: var(--warm); }
+.bar-accent { background: var(--accent); }
+.bar-cool { background: var(--accent2); }
+.bar-muted { background: var(--surface3); }
+.rank-count {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  min-width: 44px;
+  text-align: right;
+}
+.empty-state {
+  padding: 48px;
+  text-align: center;
+  color: var(--text-muted);
+}
+.empty-icon { font-size: 2rem; margin-bottom: 12px; }
+
+/* ── Detail panel ───────────────────────────────────── */
+.detail-panel { position: sticky; top: 20px; }
+.empty-detail {
+  padding: 48px 24px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+.empty-detail-icon { font-size: 2rem; margin-bottom: 12px; opacity: 0.4; }
+.detail-content { padding: 18px; display: none; }
+.detail-content h3 {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+.detail-term {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  color: var(--accent);
+  margin-bottom: 14px;
+  word-break: break-word;
+}
+.detail-stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 5px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.82rem;
+}
+.detail-stat:last-of-type { border-bottom: none; }
+.dl { color: var(--text-muted); }
+.dv { color: var(--text); font-family: var(--font-mono); font-size: 0.75rem; }
+
+/* sparkline */
+.sparkline-section { margin-top: 14px; }
+.sparkline-label {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+.sparkline {
+  width: 100%;
+  height: 52px;
+  display: block;
+}
+
+/* sample papers */
+.sample-list { list-style: none; margin-top: 8px; }
+.sample-item { margin-bottom: 8px; font-size: 0.78rem; }
+.sample-item a { color: var(--accent2); text-decoration: none; }
+.sample-item a:hover { text-decoration: underline; }
+.paper-meta { font-family: var(--font-mono); font-size: 0.6rem; color: var(--text-muted); margin-top: 2px; }
+
+/* ── No-data overlay ────────────────────────────────── */
+.no-data-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(8,8,12,0.95);
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 16px;
+  text-align: center;
+  padding: 40px;
+}
+.no-data-overlay h2 {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+.no-data-overlay p { color: var(--text-dim); max-width: 480px; line-height: 1.6; }
+.no-data-overlay code {
+  font-family: var(--font-mono);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 0.85rem;
+  color: var(--accent2);
+}
+</style>
+</head>
+<body>
+
+<div id="noDataOverlay" class="no-data-overlay">
+  <h2>No data yet</h2>
+  <p>Run the pipeline to generate <code>openalex_data.js</code>, then reload this page.</p>
+  <p style="margin-top:12px;">
+    <code>python get_data.py --from-year 1980</code><br>
+    <span style="color:var(--text-muted);font-size:0.8rem;margin:0 8px;">then</span><br>
+    <code>python main.py</code>
+  </p>
+</div>
+
+<div class="page-wrap">
+  <a href="../../index.html" class="back-btn">← Back to home</a>
+
+  <div class="header">
+    <div class="header-top">
+      <h1 class="title-main">OpenAlex <span class="title-accent">Zeitgeist</span></h1>
+      <span class="header-meta" id="headerMeta">—</span>
+    </div>
+    <p class="header-desc">
+      Explore the most frequent title terms across the OpenAlex works corpus.
+      Filter by year range, then drill into a specific field or one or more journals.
+    </p>
+  </div>
+
+  <div class="stats-row" id="statsRow"></div>
+
+  <!-- ── Control bar ───────────────────────────────────── -->
+  <div class="control-bar">
+    <div class="control-group">
+      <span class="control-label">Time Range</span>
+      <div class="range-display" id="rangeDisplay">—</div>
+    </div>
+
+    <div class="slider-container">
+      <div class="slider-track" id="sliderTrack">
+        <div class="slider-fill" id="sliderFill"></div>
+        <input type="range" id="sliderMin" min="0" max="1" value="0" step="1">
+        <input type="range" id="sliderMax" min="0" max="1" value="1" step="1">
+      </div>
+    </div>
+
+    <div class="control-group">
+      <span class="control-label">Scope</span>
+      <div class="toggle-group">
+        <button class="toggle-btn active" data-scope="global"   onclick="setScope('global')">Global</button>
+        <button class="toggle-btn"        data-scope="fields"   onclick="setScope('fields')">Fields</button>
+        <button class="toggle-btn"        data-scope="journals" onclick="setScope('journals')">Journals</button>
+      </div>
+    </div>
+
+    <div class="control-group">
+      <span class="control-label">View</span>
+      <div class="toggle-group">
+        <button class="toggle-btn active" data-mode="unigrams" onclick="setMode('unigrams')">Words</button>
+        <button class="toggle-btn"        data-mode="bigrams"  onclick="setMode('bigrams')">Phrases</button>
+        <button class="toggle-btn"        data-mode="both"     onclick="setMode('both')">Both</button>
+      </div>
+    </div>
+
+    <div class="control-group">
+      <span class="control-label">Show</span>
+      <div class="toggle-group">
+        <button class="toggle-btn active" data-count="50"   onclick="setCount(50)">50</button>
+        <button class="toggle-btn"        data-count="100"  onclick="setCount(100)">100</button>
+        <button class="toggle-btn"        data-count="9999" onclick="setCount(9999)">All</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Scope panel (fields dropdown / journal picker) ── -->
+  <div class="scope-panel" id="scopePanel">
+
+    <!-- Fields -->
+    <div id="fieldWrap" style="display:none;">
+      <span class="control-label">Field</span>
+      <select class="scope-select" id="fieldSelect" onchange="onFieldChange()">
+        <option value="">Select a field…</option>
+      </select>
+    </div>
+
+    <!-- Journals -->
+    <div id="journalWrap" style="display:none;" class="journal-wrap">
+      <span class="control-label">Journals <span style="color:var(--text-muted);font-weight:400;">(select one or more to combine)</span></span>
+      <div class="journal-chips" id="journalChips"></div>
+      <input type="text" class="journal-search" id="journalSearch"
+             placeholder="Search journals…" oninput="filterJournals()">
+      <div class="journal-list-wrap">
+        <div id="journalList"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Main grid ─────────────────────────────────────── -->
+  <div class="main-grid">
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title" id="panelTitle">Top Words</span>
+        <span class="panel-count" id="panelCount">—</span>
+      </div>
+      <div class="ranking-list" id="rankingList"></div>
+    </div>
+
+    <div class="panel detail-panel">
+      <div class="empty-detail" id="emptyDetail">
+        <div class="empty-detail-icon">◎</div>
+        <p>Select a term from the ranking<br>to see details and trend</p>
+      </div>
+      <div class="detail-content" id="detailContent"></div>
+    </div>
+  </div>
+</div>
+
+<script src="openalex_data.js"></script>
+<script>
+(() => {
+  'use strict';
+
+  if (typeof OPENALEX_DATA === 'undefined') {
+    document.getElementById('noDataOverlay').style.display = 'flex';
+    return;
+  }
+
+  const DATA      = OPENALEX_DATA;
+  const allYears  = Object.keys(DATA.years || {}).sort();
+  if (!allYears.length) {
+    document.getElementById('noDataOverlay').style.display = 'flex';
+    return;
+  }
+
+  const fmtNum = n => n >= 1e9 ? (n/1e9).toFixed(1)+'B' : n >= 1e6 ? (n/1e6).toFixed(1)+'M' : n >= 1e3 ? (n/1e3).toFixed(1)+'K' : Number(n||0).toLocaleString();
+  const esc    = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+  // ── State ────────────────────────────────────────────────────────────────
+  let state = {
+    minIdx:           0,
+    maxIdx:           allYears.length - 1,
+    mode:             'unigrams',
+    showCount:        50,
+    scopeType:        'global',       // 'global' | 'fields' | 'journals'
+    selectedField:    '',
+    selectedJournals: [],             // array of journal keys (for combining)
+    selectedTerm:     null,
+  };
+
+  // ── Header ───────────────────────────────────────────────────────────────
+  function initHeader() {
+    const m = DATA.meta || {};
+    document.getElementById('headerMeta').textContent = [
+      fmtNum(m.totalPapers || 0) + ' papers',
+      (m.totalYears || 0) + ' years',
+      (m.totalJournals || 0) + ' journals',
+      (m.totalFields || 0) + ' fields',
+    ].join(' · ');
+
+    const topWord   = DATA.globalUnigrams?.[0]?.term || '—';
+    const topPhrase = DATA.globalBigrams?.[0]?.term  || '—';
+    const m2 = DATA.meta || {};
+    document.getElementById('statsRow').innerHTML = [
+      { l: 'Total Papers',  v: fmtNum(m2.totalPapers || 0) },
+      { l: 'Year Span',     v: m2.yearRange ? `${m2.yearRange[0]} – ${m2.yearRange[1]}` : '—' },
+      { l: 'Years Covered', v: m2.totalYears || 0 },
+      { l: 'Journals',      v: fmtNum(m2.totalJournals || 0) },
+      { l: '#1 Word',       v: topWord },
+      { l: '#1 Phrase',     v: topPhrase },
+    ].map((s,i) =>
+      `<div class="stat-card animate-in" style="animation-delay:${i*60}ms">
+        <div class="label">${s.l}</div>
+        <div class="value">${esc(String(s.v))}</div>
+      </div>`
+    ).join('');
+  }
+
+  // ── Slider ───────────────────────────────────────────────────────────────
+  function initSlider() {
+    const sMin = document.getElementById('sliderMin');
+    const sMax = document.getElementById('sliderMax');
+    const mx   = allYears.length - 1;
+    sMin.max = sMax.max = mx;
+    sMin.value = 0;
+    sMax.value = mx;
+
+    sMin.addEventListener('input', () => {
+      let v = +sMin.value;
+      if (v > state.maxIdx) { v = state.maxIdx; sMin.value = v; }
+      state.minIdx = v;
+      syncSlider();
+    });
+    sMax.addEventListener('input', () => {
+      let v = +sMax.value;
+      if (v < state.minIdx) { v = state.minIdx; sMax.value = v; }
+      state.maxIdx = v;
+      syncSlider();
+    });
+    syncSlider();
+  }
+
+  function syncSlider() {
+    const fill = document.getElementById('sliderFill');
+    const mx   = allYears.length - 1 || 1;
+    fill.style.left  = (state.minIdx / mx * 100) + '%';
+    fill.style.width = ((state.maxIdx - state.minIdx) / mx * 100) + '%';
+    document.getElementById('rangeDisplay').innerHTML =
+      `${allYears[state.minIdx]}<span class="arrow">→</span>${allYears[state.maxIdx]}`;
+    renderRanking();
+  }
+
+  // ── Scope panel setup ────────────────────────────────────────────────────
+  function initScopePanel() {
+    // Populate field dropdown
+    const fSel = document.getElementById('fieldSelect');
+    (DATA.fieldList || []).forEach(f => {
+      const opt = document.createElement('option');
+      opt.value = f.key;
+      opt.textContent = `${f.label} (${fmtNum(f.paperCount)})`;
+      fSel.appendChild(opt);
+    });
+    if (DATA.fieldList?.length) state.selectedField = DATA.fieldList[0].key;
+
+    // Populate journal list
+    renderJournalList('');
+  }
+
+  function renderJournalList(query) {
+    const list = document.getElementById('journalList');
+    const jl   = DATA.journalList || [];
+    const q    = query.toLowerCase().trim();
+    const filtered = q ? jl.filter(j => j.label.toLowerCase().includes(q)) : jl;
+
+    list.innerHTML = filtered.slice(0, 150).map(j => {
+      const sel = state.selectedJournals.includes(j.key);
+      return `<div class="journal-item${sel?' selected':''}" onclick="toggleJournal('${j.key.replace(/'/g,"\\'")}')">
+        <input type="checkbox"${sel?' checked':''} readonly tabindex="-1">
+        <span class="jname">${esc(j.label)}</span>
+        <span class="jcount">${fmtNum(j.paperCount)}</span>
+      </div>`;
+    }).join('') || '<div style="padding:12px;color:var(--text-muted);font-size:0.8rem;">No journals match</div>';
+  }
+
+  function renderJournalChips() {
+    const chips = document.getElementById('journalChips');
+    if (!state.selectedJournals.length) {
+      chips.innerHTML = '<span style="font-size:0.75rem;color:var(--text-muted);">None selected — pick one or more below</span>';
+      return;
+    }
+    chips.innerHTML = state.selectedJournals.map(jk => {
+      const jd = DATA.journals?.[jk];
+      const label = jd?.label || jk;
+      return `<div class="journal-chip">
+        <span>${esc(label)}</span>
+        <button onclick="toggleJournal('${jk.replace(/'/g,"\\'")}')">×</button>
+      </div>`;
+    }).join('');
+  }
+
+  window.filterJournals = function() {
+    renderJournalList(document.getElementById('journalSearch').value);
+  };
+
+  window.toggleJournal = function(jk) {
+    const idx = state.selectedJournals.indexOf(jk);
+    if (idx === -1) {
+      state.selectedJournals.push(jk);
+    } else {
+      state.selectedJournals.splice(idx, 1);
+    }
+    state.selectedTerm = null;
+    renderJournalChips();
+    renderJournalList(document.getElementById('journalSearch')?.value || '');
+    hideDetail();
+    renderRanking();
+  };
+
+  window.onFieldChange = function() {
+    state.selectedField  = document.getElementById('fieldSelect').value;
+    state.selectedTerm   = null;
+    hideDetail();
+    renderRanking();
+  };
+
+  // ── Scope toggle ─────────────────────────────────────────────────────────
+  window.setScope = function(scope) {
+    state.scopeType    = scope;
+    state.selectedTerm = null;
+
+    document.querySelectorAll('[data-scope]').forEach(btn =>
+      btn.classList.toggle('active', btn.dataset.scope === scope)
+    );
+
+    const panel      = document.getElementById('scopePanel');
+    const fieldWrap  = document.getElementById('fieldWrap');
+    const journalWrap= document.getElementById('journalWrap');
+
+    if (scope === 'global') {
+      panel.classList.remove('visible');
+      fieldWrap.style.display   = 'none';
+      journalWrap.style.display = 'none';
+    } else if (scope === 'fields') {
+      panel.classList.add('visible');
+      fieldWrap.style.display   = '';
+      journalWrap.style.display = 'none';
+    } else { // journals
+      panel.classList.add('visible');
+      fieldWrap.style.display   = 'none';
+      journalWrap.style.display = '';
+      renderJournalChips();
+    }
+
+    hideDetail();
+    renderRanking();
+  };
+
+  // ── Aggregate data for current state ─────────────────────────────────────
+  function getAgg() {
+    const fromY = parseInt(allYears[state.minIdx], 10);
+    const toY   = parseInt(allYears[state.maxIdx],  10);
+    const uC    = {}, bC = {}, sm = {};
+    let tp = 0;
+
+    if (state.scopeType === 'global') {
+      for (const yr of allYears) {
+        const y = parseInt(yr, 10);
+        if (y < fromY || y > toY) continue;
+        const yd = DATA.years[yr];
+        if (!yd) continue;
+        tp += yd.paperCount;
+        for (const x of yd.unigrams) uC[x.term] = (uC[x.term] || 0) + x.count;
+        for (const x of yd.bigrams)  bC[x.term] = (bC[x.term] || 0) + x.count;
+        if (yd.samples) for (const [t, s] of Object.entries(yd.samples)) if (!sm[t]) sm[t] = s;
+      }
+
+    } else if (state.scopeType === 'fields') {
+      const fd = DATA.fields?.[state.selectedField];
+      if (fd?.years) {
+        for (const yr of Object.keys(fd.years)) {
+          const y = parseInt(yr, 10);
+          if (y < fromY || y > toY) continue;
+          const yd = fd.years[yr];
+          if (!yd) continue;
+          tp += yd.paperCount;
+          for (const x of yd.unigrams) uC[x.term] = (uC[x.term] || 0) + x.count;
+          for (const x of yd.bigrams)  bC[x.term] = (bC[x.term] || 0) + x.count;
+        }
+      }
+
+    } else { // journals — combine all selected
+      for (const jk of state.selectedJournals) {
+        const jd = DATA.journals?.[jk];
+        if (!jd?.years) continue;
+        for (const yr of Object.keys(jd.years)) {
+          const y = parseInt(yr, 10);
+          if (y < fromY || y > toY) continue;
+          const yd = jd.years[yr];
+          if (!yd) continue;
+          tp += yd.paperCount;
+          for (const x of yd.unigrams) uC[x.term] = (uC[x.term] || 0) + x.count;
+          for (const x of yd.bigrams)  bC[x.term] = (bC[x.term] || 0) + x.count;
+        }
+      }
+    }
+
+    const sort = obj =>
+      Object.entries(obj)
+        .map(([t, c]) => ({ term: t, count: c, isBigram: t.includes(' ') }))
+        .sort((a, b) => b.count - a.count);
+    return { unigrams: sort(uC), bigrams: sort(bC), totalPapers: tp, samples: sm };
+  }
+
+  // ── Render ranking ────────────────────────────────────────────────────────
+  function renderRanking() {
+    const agg = getAgg();
+    let items;
+
+    if (state.mode === 'unigrams')     items = agg.unigrams;
+    else if (state.mode === 'bigrams') items = agg.bigrams;
+    else {
+      const dd = {};
+      for (const x of [...agg.unigrams, ...agg.bigrams])
+        if (!dd[x.term] || dd[x.term].count < x.count) dd[x.term] = x;
+      items = Object.values(dd).sort((a, b) => b.count - a.count);
+    }
+    items = items.slice(0, state.showCount);
+
+    const maxC = items[0]?.count || 1;
+    const list = document.getElementById('rankingList');
+
+    // Panel title
+    let title = state.mode === 'unigrams' ? 'Top Words' :
+                state.mode === 'bigrams'  ? 'Top Phrases' : 'All Terms';
+    if (state.scopeType === 'fields' && state.selectedField) {
+      const fd = DATA.fields?.[state.selectedField];
+      if (fd) title = `${fd.label} · ${title}`;
+    } else if (state.scopeType === 'journals' && state.selectedJournals.length) {
+      const names = state.selectedJournals.map(jk => DATA.journals?.[jk]?.label || jk);
+      title = names.length === 1 ? `${names[0]} · ${title}` : `${names.length} Journals · ${title}`;
+    }
+
+    document.getElementById('panelTitle').textContent = title;
+    document.getElementById('panelCount').textContent =
+      `${items.length} terms · ${fmtNum(agg.totalPapers)} papers`;
+
+    if (!items.length) {
+      const msg = state.scopeType === 'journals' && !state.selectedJournals.length
+        ? 'Select one or more journals above'
+        : state.scopeType === 'fields' && !state.selectedField
+        ? 'Select a field above'
+        : 'No terms in this range';
+      list.innerHTML = `<div class="empty-state"><div class="empty-icon">∅</div><p>${msg}</p></div>`;
+      return;
+    }
+
+    list.innerHTML = items.map((it, idx) => {
+      const pct  = (it.count / maxC * 100);
+      const bc   = idx<3?'bar-hot':idx<10?'bar-warm':idx<25?'bar-accent':idx<50?'bar-cool':'bar-muted';
+      const nc   = idx<3?'rank-num top3':'rank-num';
+      const sc   = it.term === state.selectedTerm ? ' selected' : '';
+      const tc   = it.isBigram ? ' bigram' : '';
+      const safe = esc(it.term).replace(/'/g, "\\'");
+      return `<div class="rank-item${sc}" data-term="${esc(it.term)}" onclick="selectTerm('${safe}')">
+        <span class="${nc}">${idx+1}</span>
+        <span class="rank-term${tc}">${esc(it.term)}</span>
+        <div class="rank-bar-cell"><div class="rank-bar ${bc}" style="width:${pct}%"></div></div>
+        <span class="rank-count">${fmtNum(it.count)}</span>
+      </div>`;
+    }).join('');
+
+    if (state.selectedTerm) {
+      const f = items.find(i => i.term === state.selectedTerm);
+      if (f) renderDetail(f.term, f.count, agg.samples[f.term] || [], items);
+    }
+  }
+
+  // ── Select term ───────────────────────────────────────────────────────────
+  window.selectTerm = function(term) {
+    state.selectedTerm = term;
+    document.querySelectorAll('.rank-item').forEach(el =>
+      el.classList.toggle('selected', el.dataset.term === term)
+    );
+    const agg  = getAgg();
+    const all  = [...agg.unigrams, ...agg.bigrams];
+    let pool;
+    if (state.mode === 'bigrams')      pool = agg.bigrams;
+    else if (state.mode === 'unigrams') pool = agg.unigrams;
+    else {
+      const dd = {};
+      for (const x of all) if (!dd[x.term] || dd[x.term].count < x.count) dd[x.term] = x;
+      pool = Object.values(dd).sort((a, b) => b.count - a.count);
+    }
+    const m = pool.find(i => i.term === term);
+    renderDetail(term, m ? m.count : 0, agg.samples[term] || [], pool);
+  };
+
+  function hideDetail() {
+    document.getElementById('emptyDetail').style.display   = '';
+    document.getElementById('detailContent').style.display = 'none';
+    state.selectedTerm = null;
+  }
+
+  // ── Detail pane ───────────────────────────────────────────────────────────
+  function renderDetail(term, count, samples, pool) {
+    document.getElementById('emptyDetail').style.display   = 'none';
+    const dc = document.getElementById('detailContent');
+    dc.style.display = 'block';
+
+    // Build per-year trend from whatever scope is active
+    const trend = buildTrend(term);
+    const rank  = pool ? pool.findIndex(i => i.term === term) + 1 : 0;
+    const yearsPresent = trend.filter(t => t.count > 0).length;
+    const peakEntry    = trend.reduce((a, b) => b.count > a.count ? b : a, { count: 0 });
+
+    const sampleHtml = samples.length
+      ? `<div style="margin-top:18px;">
+           <div class="sparkline-label">Sample Papers</div>
+           <ul class="sample-list">
+             ${samples.map(s =>
+               `<li class="sample-item">
+                  <div style="color:var(--accent2);">${esc(s.title)}</div>
+                  <div class="paper-meta">${esc(s.date || '')}</div>
+                </li>`
+             ).join('')}
+           </ul>
+         </div>`
+      : '';
+
+    dc.innerHTML = `
+      <h3>Term Details</h3>
+      <span class="detail-term">${esc(term)}</span>
+      <div class="detail-stat"><span class="dl">Rank</span><span class="dv">#${rank || '—'}</span></div>
+      <div class="detail-stat"><span class="dl">Occurrences</span><span class="dv">${fmtNum(count)}</span></div>
+      <div class="detail-stat"><span class="dl">Years present</span><span class="dv">${yearsPresent} / ${allYears.length}</span></div>
+      <div class="detail-stat"><span class="dl">Peak year</span><span class="dv">${peakEntry.count > 0 ? peakEntry.year + ' (' + fmtNum(peakEntry.count) + ')' : '—'}</span></div>
+      <div class="sparkline-section">
+        <div class="sparkline-label">Trend (all years)</div>
+        <canvas class="sparkline" id="sparkCanvas"></canvas>
+      </div>
+      ${sampleHtml}`;
+
+    requestAnimationFrame(() => drawSparkline(trend));
+  }
+
+  function buildTrend(term) {
+    // Returns [{year, count}] for all years in allYears, for the active scope.
+    return allYears.map(yr => {
+      let count = 0;
+      if (state.scopeType === 'global') {
+        const yd = DATA.years[yr];
+        if (yd) {
+          const u = yd.unigrams.find(x => x.term === term);
+          const b = yd.bigrams.find(x => x.term === term);
+          count = (u?.count || 0) + (b?.count || 0);
+        }
+      } else if (state.scopeType === 'fields') {
+        const fd = DATA.fields?.[state.selectedField];
+        if (fd?.years?.[yr]) {
+          const yd = fd.years[yr];
+          const u  = yd.unigrams.find(x => x.term === term);
+          const b  = yd.bigrams.find(x => x.term === term);
+          count    = (u?.count || 0) + (b?.count || 0);
+        }
+      } else {
+        for (const jk of state.selectedJournals) {
+          const jd = DATA.journals?.[jk];
+          if (jd?.years?.[yr]) {
+            const yd = jd.years[yr];
+            const u  = yd.unigrams.find(x => x.term === term);
+            const b  = yd.bigrams.find(x => x.term === term);
+            count   += (u?.count || 0) + (b?.count || 0);
+          }
+        }
+      }
+      return { year: yr, count };
+    });
+  }
+
+  function drawSparkline(trend) {
+    const canvas = document.getElementById('sparkCanvas');
+    if (!canvas) return;
+    const dpr = devicePixelRatio || 1;
+    const r   = canvas.getBoundingClientRect();
+    canvas.width  = r.width  * dpr;
+    canvas.height = r.height * dpr;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+    const w = r.width, h = r.height;
+    const vals = trend.map(t => t.count);
+    const mx   = Math.max(...vals, 1);
+    const p    = { t: 4, b: 4, l: 2, r: 2 };
+    const pw   = w - p.l - p.r, ph = h - p.t - p.b;
+
+    // Highlight selected range
+    const rl = p.l + (state.minIdx / (vals.length - 1 || 1)) * pw;
+    const rr = p.l + (state.maxIdx / (vals.length - 1 || 1)) * pw;
+    ctx.fillStyle = 'rgba(110,231,183,0.1)';
+    ctx.fillRect(rl, 0, rr - rl, h);
+
+    // Line
+    ctx.beginPath();
+    ctx.strokeStyle = '#6ee7b7';
+    ctx.lineWidth   = 1.5;
+    ctx.lineJoin    = 'round';
+    vals.forEach((v, i) => {
+      const x = p.l + (i / (vals.length - 1 || 1)) * pw;
+      const y = p.t + ph - (v / mx) * ph;
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+
+    // Fill under line
+    ctx.lineTo(p.l + pw, p.t + ph);
+    ctx.lineTo(p.l,      p.t + ph);
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(110,231,183,0.06)';
+    ctx.fill();
+  }
+
+  // ── Toggle handlers ───────────────────────────────────────────────────────
+  window.setMode = function(mode) {
+    state.mode = mode;
+    state.selectedTerm = null;
+    document.querySelectorAll('[data-mode]').forEach(b =>
+      b.classList.toggle('active', b.dataset.mode === mode)
+    );
+    hideDetail();
+    renderRanking();
+  };
+
+  window.setCount = function(count) {
+    state.showCount = count;
+    document.querySelectorAll('[data-count]').forEach(b =>
+      b.classList.toggle('active', Number(b.dataset.count) === count)
+    );
+    renderRanking();
+  };
+
+  // ── Boot ──────────────────────────────────────────────────────────────────
+  initHeader();
+  initScopePanel();
+  initSlider();
+
+})();
+</script>
+</body>
+</html>

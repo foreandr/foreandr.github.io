@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Landlord Optimization</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/x-icon" href="../../images.ico">
+  <style>
+    :root {
+      --bg-primary: #fafafa;
+      --bg-secondary: #ffffff;
+      --text-primary: #0f172a;
+      --text-secondary: #64748b;
+      --text-muted: #94a3b8;
+      --border: #e2e8f0;
+      --hover-bg: #f8fafc;
+      --accent: #6366f1;
+      --accent-hover: #4f46e5;
+      --success: #10b981;
+      --success-bg: #ecfdf5;
+      --success-border: #a7f3d0;
+      --warning: #f59e0b;
+      --warning-bg: #fef3c7;
+      --warning-border: #fde68a;
+      --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Navigation */
+    .site-nav {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: saturate(180%) blur(20px);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      height: 64px;
+    }
+
+    .nav-wrap {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      height: 100%;
+    }
+
+    .nav-wrap a {
+      font-weight: 600;
+      font-size: 0.9375rem;
+      color: var(--text-primary);
+      text-decoration: none;
+      letter-spacing: -0.01em;
+      transition: color 0.2s;
+    }
+
+    .nav-wrap a:hover {
+      color: var(--accent);
+    }
+
+    /* Main Container */
+    #landlord-optimizer {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+    }
+
+    /* Header */
+    .page-header {
+      margin-bottom: 40px;
+    }
+
+    .page-header h1 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 12px;
+    }
+
+    .page-header .subtitle {
+      font-size: 1.125rem;
+      color: var(--text-secondary);
+      line-height: 1.7;
+    }
+
+    /* Action Bar */
+    .action-bar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+    }
+
+    .lop-btn {
+      background: var(--accent);
+      color: white;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.9375rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .lop-btn:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-md);
+    }
+
+    /* Summary Card */
+    #lop-summary {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 40px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    #lop-summary h3 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      letter-spacing: -0.02em;
+    }
+
+    #lop-summary p {
+      color: var(--text-secondary);
+      line-height: 1.7;
+      margin-bottom: 8px;
+    }
+
+    #lop-summary p:last-child {
+      margin-bottom: 0;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+
+    .lop-summary--profit {
+      background: var(--success-bg);
+      border-color: var(--success-border);
+    }
+
+    .lop-summary--profit h3 {
+      color: var(--success);
+    }
+
+    .lop-summary--noprofit {
+      background: var(--warning-bg);
+      border-color: var(--warning-border);
+    }
+
+    .lop-summary--noprofit h3 {
+      color: var(--warning);
+    }
+
+    /* Input Sections */
+    .input-section {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+
+    .input-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .input-card h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+      letter-spacing: -0.01em;
+      color: var(--text-primary);
+    }
+
+    .input-card label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .input-card input {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.9375rem;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+
+    .input-card input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+
+    /* Details Section */
+    #lop-math-details {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 32px;
+      margin-bottom: 40px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    #lop-math-details summary {
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      color: var(--text-primary);
+      padding: 4px 0;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    #lop-math-details summary::before {
+      content: '▼';
+      font-size: 0.75rem;
+      transition: transform 0.2s;
+      color: var(--text-muted);
+    }
+
+    #lop-math-details[open] summary::before {
+      transform: rotate(0deg);
+    }
+
+    #lop-math-details:not([open]) summary::before {
+      transform: rotate(-90deg);
+    }
+
+    #lop-math-text {
+      margin-top: 20px;
+      color: var(--text-secondary);
+    }
+
+    .lop-year-block {
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+
+    .lop-year-title {
+      font-weight: 700;
+      font-size: 1.125rem;
+      margin-bottom: 12px;
+      letter-spacing: -0.01em;
+    }
+
+    .lop-math-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+    }
+
+    .lop-math-table tr td {
+      padding: 8px 6px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .lop-math-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .lop-math-label {
+      width: 48%;
+      color: var(--text-secondary);
+    }
+
+    .lop-math-value {
+      width: 32%;
+      text-align: right;
+      font-family: ui-monospace, monospace;
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    .lop-math-delta {
+      width: 20%;
+      text-align: right;
+      font-weight: 700;
+    }
+
+    .lop-pos { color: var(--success); }
+    .lop-neg { color: var(--warning); }
+
+    /* Highlight important rows with color backgrounds */
+    .lop-math-table tr.income-row {
+      background: rgba(16, 185, 129, 0.05);
+    }
+
+    .lop-math-table tr.income-row td {
+      color: var(--success);
+      font-weight: 600;
+    }
+
+    .lop-math-table tr.expense-row {
+      background: rgba(239, 68, 68, 0.05);
+    }
+
+    .lop-math-table tr.expense-row td {
+      color: #ef4444;
+      font-weight: 600;
+    }
+
+    .lop-math-table tr.profit-row {
+      background: rgba(16, 185, 129, 0.08);
+      border-left: 3px solid var(--success);
+    }
+
+    .lop-math-table tr.profit-row td {
+      font-weight: 700;
+      padding-left: 10px;
+    }
+
+    .lop-math-table tr.loss-row {
+      background: rgba(239, 68, 68, 0.08);
+      border-left: 3px solid #ef4444;
+    }
+
+    .lop-math-table tr.loss-row td {
+      font-weight: 700;
+      padding-left: 10px;
+    }
+
+    .lop-math-table tr.neutral-row {
+      background: rgba(99, 102, 241, 0.05);
+    }
+
+    .lop-math-formula {
+      margin-top: 16px;
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      font-family: ui-monospace, monospace;
+      font-size: 0.8125rem;
+      color: var(--text-secondary);
+      white-space: pre-wrap;
+      line-height: 1.6;
+      overflow-x: auto;
+    }
+
+    /* Charts */
+    .charts-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+      gap: 24px;
+      margin-top: 40px;
+    }
+
+    .chart-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .chart-card h4 {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+      letter-spacing: -0.01em;
+      color: var(--text-primary);
+    }
+
+    .chart-card canvas {
+      width: 100% !important;
+      height: 300px !important;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      #landlord-optimizer {
+        padding: 32px 16px 60px;
+      }
+
+      .page-header h1 {
+        font-size: 2rem;
+      }
+
+      .input-section {
+        grid-template-columns: 1fr;
+      }
+
+      .charts-row {
+        grid-template-columns: 1fr;
+      }
+
+      .nav-wrap {
+        padding: 0 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav class="site-nav">
+    <div class="nav-wrap">
+      <a href="../../index.html">← Back to Portfolio</a>
+    </div>
+  </nav>
+
+  <div id="landlord-optimizer">
+    <div class="page-header">
+      <h1>Landlord Optimization</h1>
+      <p class="subtitle">Calculate costs, expenses, and projections for property management.</p>
+    </div>
+
+    <div class="action-bar">
+      <button class="lop-btn" onclick="window.generateProjection && window.generateProjection()">Generate Analysis</button>
+    </div>
+
+    <div id="lop-summary" class="lop-summary--profit">
+      <h3>✅ Profitable starting in Year 1</h3>
+      <p>After-tax cashflow in Year 1 meets or exceeds your personal target.</p>
+    </div>
+
+    <!-- Building Setup -->
+    <div class="input-section" id="section-building">
+      <div class="input-card">
+        <h3>Number of Stores</h3>
+        <label for="lop-store-count">Street level stores</label>
+        <input type="number" id="lop-store-count" value="4" min="0">
+      </div>
+      <div class="input-card">
+        <h3>Income per Store</h3>
+        <label for="lop-store-rent">CA$ / month</label>
+        <input type="number" id="lop-store-rent" value="1500">
+      </div>
+      <div class="input-card">
+        <h3>Number of Apartments</h3>
+        <label for="lop-apt-count">Upper level apartments</label>
+        <input type="number" id="lop-apt-count" value="5" min="0">
+      </div>
+      <div class="input-card">
+        <h3>Rent per Apartment</h3>
+        <label for="lop-apt-rent">CA$ / month</label>
+        <input type="number" id="lop-apt-rent" value="650">
+      </div>
+    </div>
+
+    <!-- Operating Costs -->
+    <div class="input-section" id="section-costs">
+      <div class="input-card">
+        <h3>Fixed Building Expenses</h3>
+        <label for="lop-fixed-expenses">Tax + insurance + maintenance (CA$ / month)</label>
+        <input type="number" id="lop-fixed-expenses" value="1600">
+      </div>
+      <div class="input-card">
+        <h3>Expense per Store</h3>
+        <label for="lop-exp-per-store">CA$ / month</label>
+        <input type="number" id="lop-exp-per-store" value="150">
+      </div>
+      <div class="input-card">
+        <h3>Expense per Apartment</h3>
+        <label for="lop-exp-per-apt">CA$ / month</label>
+        <input type="number" id="lop-exp-per-apt" value="120">
+      </div>
+      <div class="input-card">
+        <h3>Mortgage Payment</h3>
+        <label for="lop-mortgage">CA$ / month</label>
+        <input type="number" id="lop-mortgage" value="700">
+      </div>
+    </div>
+
+    <!-- Owner -->
+    <div class="input-section" id="section-owner">
+      <div class="input-card">
+        <h3>Your Living Costs</h3>
+        <label for="lop-personal">CA$ / month you need to live</label>
+        <input type="number" id="lop-personal" value="3500">
+      </div>
+      <div class="input-card">
+        <h3>Personal Cost Growth</h3>
+        <label for="lop-personal-growth">% per year</label>
+        <input type="number" id="lop-personal-growth" value="2">
+      </div>
+    </div>
+
+    <!-- Growth + Horizon -->
+    <div class="input-section" id="section-growth">
+      <div class="input-card">
+        <h3>Rent Growth</h3>
+        <label for="lop-rent-growth">% per year</label>
+        <input type="number" id="lop-rent-growth" value="4">
+      </div>
+      <div class="input-card">
+        <h3>Expense Inflation</h3>
+        <label for="lop-exp-inflation">% per year</label>
+        <input type="number" id="lop-exp-inflation" value="3">
+      </div>
+      <div class="input-card">
+        <h3>Property Appreciation</h3>
+        <label for="lop-appreciation">% per year</label>
+        <input type="number" id="lop-appreciation" value="3">
+      </div>
+      <div class="input-card">
+        <h3>Projection Horizon</h3>
+        <label for="lop-years">years</label>
+        <input type="number" id="lop-years" value="15">
+      </div>
+    </div>
+
+    <!-- Tax / Structure -->
+    <div class="input-section" id="section-tax">
+      <div class="input-card">
+        <h3>Personal Tax Rate</h3>
+        <label for="lop-personal-tax">%</label>
+        <input type="number" id="lop-personal-tax" value="35">
+      </div>
+      <div class="input-card">
+        <h3>Corp Tax Rate</h3>
+        <label for="lop-corp-tax">Active business rate %</label>
+        <input type="number" id="lop-corp-tax" value="12">
+      </div>
+      <div class="input-card">
+        <h3>Use Corp Structure?</h3>
+        <label for="lop-use-corp">1 = yes, 0 = no</label>
+        <input type="number" id="lop-use-corp" value="0" min="0" max="1" step="1">
+      </div>
+      <div class="input-card">
+        <h3>City Tax Share</h3>
+        <label for="lop-city-share">% of expenses that is city tax</label>
+        <input type="number" id="lop-city-share" value="40">
+      </div>
+      <div class="input-card">
+        <h3>Charity Rebate</h3>
+        <label for="lop-rebate">Property tax rebate % (0–40)</label>
+        <input type="number" id="lop-rebate" value="0">
+      </div>
+    </div>
+
+    <!-- Alt -->
+    <div class="input-section" id="section-alt">
+      <div class="input-card">
+        <h3>Alt Income</h3>
+        <label for="lop-alt-income">Livestream / camera / parking (CA$ / month)</label>
+        <input type="number" id="lop-alt-income" value="0">
+      </div>
+      <div class="input-card">
+        <h3>Alt Expense</h3>
+        <label for="lop-alt-expense">Equipment / security (CA$ / month)</label>
+        <input type="number" id="lop-alt-expense" value="0">
+      </div>
+    </div>
+
+    <details id="lop-math-details" open>
+      <summary>Show detailed math (all years)</summary>
+      <div id="lop-math-text">Click "Generate Analysis" to see step-by-step calculations.</div>
+    </details>
+
+    <div class="charts-row">
+      <div class="chart-card">
+        <h4>Income vs Expenses (Annual)</h4>
+        <canvas id="lop-income-chart"></canvas>
+      </div>
+      <div class="chart-card">
+        <h4>Net After Tax (Owner Spendable)</h4>
+        <canvas id="lop-net-chart"></canvas>
+      </div>
+      <div class="chart-card">
+        <h4>Revenue / Cost Mix (Spider)</h4>
+        <canvas id="lop-spider-chart"></canvas>
+      </div>
+      <div class="chart-card">
+        <h4>Property Value vs Costs</h4>
+        <canvas id="lop-value-chart"></canvas>
+      </div>
+      <div class="chart-card">
+        <h4>Alt Income vs Alt Expense</h4>
+        <canvas id="lop-alt-chart"></canvas>
+      </div>
+      <div class="chart-card">
+        <h4>Pre-Tax vs Tax Paid</h4>
+        <canvas id="lop-tax-chart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script>
+    // [ALL YOUR ORIGINAL JAVASCRIPT CODE HERE - UNCHANGED]
+    function _num(id) {
+      const el = document.getElementById(id);
+      if (!el) return 0;
+      const v = Number(el.value);
+      return Number.isFinite(v) ? v : 0;
+    }
+    function _pctToRate(id) { return _num(id) / 100; }
+    function _money(n) {
+      const x = Number(n);
+      if (!Number.isFinite(x)) return "CA$ 0";
+      const sign = x < 0 ? "-" : "";
+      const abs = Math.abs(x);
+      return sign + "CA$ " + abs.toLocaleString(undefined, { maximumFractionDigits: 0 });
+    }
+    function _clsDelta(n) { return (n >= 0) ? "lop-pos" : "lop-neg"; }
+    const _charts = { income: null, net: null, spider: null, value: null, alt: null, tax: null };
+    function _destroyChart(key) {
+      if (_charts[key]) { _charts[key].destroy(); _charts[key] = null; }
+    }
+    function _computeProjection() {
+      const years = Math.max(1, Math.floor(_num("lop-years")));
+      const storeCount = Math.max(0, _num("lop-store-count"));
+      const storeRentM = Math.max(0, _num("lop-store-rent"));
+      const aptCount = Math.max(0, _num("lop-apt-count"));
+      const aptRentM = Math.max(0, _num("lop-apt-rent"));
+      const fixedExpM = Math.max(0, _num("lop-fixed-expenses"));
+      const expPerStoreM = Math.max(0, _num("lop-exp-per-store"));
+      const expPerAptM = Math.max(0, _num("lop-exp-per-apt"));
+      const mortgageM = Math.max(0, _num("lop-mortgage"));
+      const personalNeedM = Math.max(0, _num("lop-personal"));
+      const personalGrowth = _pctToRate("lop-personal-growth");
+      const rentGrowth = _pctToRate("lop-rent-growth");
+      const expInflation = _pctToRate("lop-exp-inflation");
+      const appreciation = _pctToRate("lop-appreciation");
+      const personalTax = _pctToRate("lop-personal-tax");
+      const corpTax = _pctToRate("lop-corp-tax");
+      const useCorp = Math.round(_num("lop-use-corp")) === 1;
+      const cityShare = Math.min(1, Math.max(0, _pctToRate("lop-city-share")));
+      const rebate = Math.min(0.40, Math.max(0, _pctToRate("lop-rebate")));
+      const altIncomeM0 = Math.max(0, _num("lop-alt-income"));
+      const altExpenseM0 = Math.max(0, _num("lop-alt-expense"));
+      const basePropertyValue = 1000000;
+      const rows = [];
+      let cumCost = 0;
+      for (let y = 1; y <= years; y++) {
+        const gRent = Math.pow(1 + rentGrowth, y - 1);
+        const gExp = Math.pow(1 + expInflation, y - 1);
+        const gPersonal = Math.pow(1 + personalGrowth, y - 1);
+        const storeIncomeY = storeCount * storeRentM * 12 * gRent;
+        const aptIncomeY = aptCount * aptRentM * 12 * gRent;
+        const altIncomeY = altIncomeM0 * 12 * gRent;
+        const grossIncomeY = storeIncomeY + aptIncomeY + altIncomeY;
+        const fixedExpY = fixedExpM * 12 * gExp;
+        const varStoreExpY = storeCount * expPerStoreM * 12 * gExp;
+        const varAptExpY = aptCount * expPerAptM * 12 * gExp;
+        const mortgageY = mortgageM * 12;
+        const altExpenseY = altExpenseM0 * 12 * gExp;
+        const rawExpensesY = fixedExpY + varStoreExpY + varAptExpY + mortgageY + altExpenseY;
+        const cityTaxPortion = rawExpensesY * cityShare;
+        const rebateValue = cityTaxPortion * rebate;
+        const expensesAfterRebateY = rawExpensesY - rebateValue;
+        const preTaxY = grossIncomeY - expensesAfterRebateY;
+        const taxRate = useCorp ? corpTax : personalTax;
+        const taxPaidY = Math.max(0, preTaxY) * taxRate;
+        const netAfterTaxY = preTaxY - taxPaidY;
+        const personalNeedY = personalNeedM * 12 * gPersonal;
+        const ownerSpendableY = netAfterTaxY - personalNeedY;
+        const propertyValueY = basePropertyValue * Math.pow(1 + appreciation, y - 1);
+        cumCost += expensesAfterRebateY;
+        rows.push({
+          y,
+          storeIncomeY, aptIncomeY, altIncomeY,
+          grossIncomeY,
+          fixedExpY, varStoreExpY, varAptExpY, mortgageY, altExpenseY,
+          rawExpensesY, cityTaxPortion, rebateValue, expensesAfterRebateY,
+          preTaxY, taxPaidY, netAfterTaxY,
+          personalNeedY, ownerSpendableY,
+          propertyValueY, cumCost
+        });
+      }
+      return rows;
+    }
+    function _renderSummary(rows) {
+      const el = document.getElementById("lop-summary");
+      if (!el || !rows.length) return;
+      const y1 = rows[0];
+      const profitable = y1.ownerSpendableY >= 0;
+      el.classList.remove("lop-summary--profit", "lop-summary--noprofit");
+      el.classList.add(profitable ? "lop-summary--profit" : "lop-summary--noprofit");
+      const title = profitable ? "✅ Profitable starting in Year 1" : "⚠️ Not profitable in Year 1";
+      const msg = profitable
+        ? "After-tax cashflow in Year 1 meets or exceeds your personal target."
+        : "After-tax cashflow in Year 1 does not cover your personal target. Adjust rent, expenses, or horizon.";
+      el.innerHTML = `
+        <h3>${title}</h3>
+        <p>${msg}</p>
+        <p><strong>Year 1 owner spendable:</strong> ${_money(y1.ownerSpendableY)} &nbsp; | &nbsp;
+           <strong>Year 1 net after tax:</strong> ${_money(y1.netAfterTaxY)} &nbsp; | &nbsp;
+           <strong>Year 1 personal need:</strong> ${_money(y1.personalNeedY)}</p>
+      `;
+    }
+    function _renderMath(rows) {
+      const el = document.getElementById("lop-math-text");
+      if (!el) return;
+      if (!rows.length) { el.textContent = "No data."; return; }
+      let html = "";
+      for (const r of rows) {
+        const preTaxClass = r.preTaxY >= 0 ? 'profit-row' : 'loss-row';
+        const netClass = r.netAfterTaxY >= 0 ? 'profit-row' : 'loss-row';
+        const ownerClass = r.ownerSpendableY >= 0 ? 'profit-row' : 'loss-row';
+        
+        html += `
+          <div class="lop-year-block">
+            <div class="lop-year-title">Year ${r.y}</div>
+            <table class="lop-math-table">
+              <tr class="income-row"><td class="lop-math-label">Store income</td><td class="lop-math-value">${_money(r.storeIncomeY)}</td><td class="lop-math-delta">▲</td></tr>
+              <tr class="income-row"><td class="lop-math-label">Apartment income</td><td class="lop-math-value">${_money(r.aptIncomeY)}</td><td class="lop-math-delta">▲</td></tr>
+              <tr class="income-row"><td class="lop-math-label">Alt income</td><td class="lop-math-value">${_money(r.altIncomeY)}</td><td class="lop-math-delta">▲</td></tr>
+              <tr class="income-row"><td class="lop-math-label"><strong>Gross income</strong></td><td class="lop-math-value"><strong>${_money(r.grossIncomeY)}</strong></td><td class="lop-math-delta"><strong>▲</strong></td></tr>
+              <tr class="expense-row"><td class="lop-math-label">Fixed expenses</td><td class="lop-math-value">${_money(r.fixedExpY)}</td><td class="lop-math-delta">▼</td></tr>
+              <tr class="expense-row"><td class="lop-math-label">Store variable expenses</td><td class="lop-math-value">${_money(r.varStoreExpY)}</td><td class="lop-math-delta">▼</td></tr>
+              <tr class="expense-row"><td class="lop-math-label">Apartment variable expenses</td><td class="lop-math-value">${_money(r.varAptExpY)}</td><td class="lop-math-delta">▼</td></tr>
+              <tr class="expense-row"><td class="lop-math-label">Mortgage (flat)</td><td class="lop-math-value">${_money(r.mortgageY)}</td><td class="lop-math-delta">▼</td></tr>
+              <tr class="expense-row"><td class="lop-math-label">Alt expense</td><td class="lop-math-value">${_money(r.altExpenseY)}</td><td class="lop-math-delta">▼</td></tr>
+              <tr class="expense-row"><td class="lop-math-label"><strong>Expenses (raw)</strong></td><td class="lop-math-value"><strong>${_money(r.rawExpensesY)}</strong></td><td class="lop-math-delta"><strong>▼</strong></td></tr>
+              <tr class="neutral-row"><td class="lop-math-label">City-tax portion</td><td class="lop-math-value">${_money(r.cityTaxPortion)}</td><td class="lop-math-delta"></td></tr>
+              <tr class="income-row"><td class="lop-math-label">Rebate value</td><td class="lop-math-value">${_money(r.rebateValue)}</td><td class="lop-math-delta">▲</td></tr>
+              <tr class="expense-row"><td class="lop-math-label"><strong>Expenses after rebate</strong></td><td class="lop-math-value"><strong>${_money(r.expensesAfterRebateY)}</strong></td><td class="lop-math-delta"><strong>▼</strong></td></tr>
+              <tr class="${preTaxClass}">
+                <td class="lop-math-label"><strong>Pre-tax cashflow</strong></td>
+                <td class="lop-math-value"><strong>${_money(r.preTaxY)}</strong></td>
+                <td class="lop-math-delta ${_clsDelta(r.preTaxY)}"><strong>${r.preTaxY >= 0 ? "▲" : "▼"}</strong></td>
+              </tr>
+              <tr class="expense-row"><td class="lop-math-label">Tax paid</td><td class="lop-math-value">${_money(r.taxPaidY)}</td><td class="lop-math-delta">▼</td></tr>
+              <tr class="${netClass}">
+                <td class="lop-math-label"><strong>Net after tax</strong></td>
+                <td class="lop-math-value"><strong>${_money(r.netAfterTaxY)}</strong></td>
+                <td class="lop-math-delta ${_clsDelta(r.netAfterTaxY)}"><strong>${r.netAfterTaxY >= 0 ? "▲" : "▼"}</strong></td>
+              </tr>
+              <tr class="expense-row"><td class="lop-math-label">Personal need</td><td class="lop-math-value">${_money(r.personalNeedY)}</td><td class="lop-math-delta">▼</td></tr>
+              <tr class="${ownerClass}">
+                <td class="lop-math-label"><strong>Owner spendable</strong></td>
+                <td class="lop-math-value"><strong>${_money(r.ownerSpendableY)}</strong></td>
+                <td class="lop-math-delta ${_clsDelta(r.ownerSpendableY)}"><strong>${r.ownerSpendableY >= 0 ? "▲" : "▼"}</strong></td>
+              </tr>
+              <tr class="neutral-row"><td class="lop-math-label">Property value (proxy)</td><td class="lop-math-value">${_money(r.propertyValueY)}</td><td class="lop-math-delta"></td></tr>
+              <tr class="neutral-row"><td class="lop-math-label">Cumulative expenses</td><td class="lop-math-value">${_money(r.cumCost)}</td><td class="lop-math-delta"></td></tr>
+            </table>
+            <div class="lop-math-formula">Income = (stores * store_rent * 12) + (apts * apt_rent * 12) + (alt_income * 12)
+Expenses = fixed + per_store + per_apt + mortgage + alt_expense
+Rebate = (Expenses * city_share) * rebate_rate
+PreTax = Income - (Expenses - Rebate)
+TaxPaid = max(0, PreTax) * tax_rate
+Net = PreTax - TaxPaid
+OwnerSpendable = Net - PersonalNeed</div>
+          </div>
+        `;
+      }
+      el.innerHTML = html;
+    }
+    function _renderCharts(rows) {
+      const labels = rows.map(r => `Y${r.y}`);
+      const income = rows.map(r => Math.round(r.grossIncomeY));
+      const expenses = rows.map(r => Math.round(r.expensesAfterRebateY));
+      const netAfterTax = rows.map(r => Math.round(r.netAfterTaxY));
+      const ownerSpendable = rows.map(r => Math.round(r.ownerSpendableY));
+      const preTax = rows.map(r => Math.round(r.preTaxY));
+      const taxPaid = rows.map(r => Math.round(r.taxPaidY));
+      const propertyValue = rows.map(r => Math.round(r.propertyValueY));
+      const cumCost = rows.map(r => Math.round(r.cumCost));
+      const altIncome = rows.map(r => Math.round(r.altIncomeY));
+      const altExpense = rows.map(r => Math.round(r.altExpenseY));
+      const y1 = rows[0];
+      const spiderLabels = ["Store Income", "Apt Income", "Alt Income", "Fixed Exp", "Var Exp", "Mortgage"];
+      const spiderValues = [
+        Math.round(y1.storeIncomeY),
+        Math.round(y1.aptIncomeY),
+        Math.round(y1.altIncomeY),
+        Math.round(y1.fixedExpY),
+        Math.round(y1.varStoreExpY + y1.varAptExpY),
+        Math.round(y1.mortgageY),
+      ];
+      _destroyChart("income");
+      _destroyChart("net");
+      _destroyChart("spider");
+      _destroyChart("value");
+      _destroyChart("alt");
+      _destroyChart("tax");
+      _charts.income = new Chart(document.getElementById("lop-income-chart"), {
+        type: "line",
+        data: { labels, datasets: [
+          { label: "Income", data: income, tension: 0.4, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)' },
+          { label: "Expenses", data: expenses, tension: 0.4, borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.1)' },
+        ]},
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: true } },
+          scales: { y: { ticks: { callback: (v) => _money(v) } } }
+        }
+      });
+      _charts.net = new Chart(document.getElementById("lop-net-chart"), {
+        type: "line",
+        data: { labels, datasets: [
+          { label: "Net After Tax", data: netAfterTax, tension: 0.4, borderColor: '#6366f1', backgroundColor: 'rgba(99, 102, 241, 0.1)' },
+          { label: "Owner Spendable", data: ownerSpendable, tension: 0.4, borderColor: '#8b5cf6', backgroundColor: 'rgba(139, 92, 246, 0.1)' },
+        ]},
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: true } },
+          scales: { y: { ticks: { callback: (v) => _money(v) } } }
+        }
+      });
+      _charts.spider = new Chart(document.getElementById("lop-spider-chart"), {
+        type: "radar",
+        data: { labels: spiderLabels, datasets: [
+          { label: "Year 1 Mix", data: spiderValues, borderColor: '#6366f1', backgroundColor: 'rgba(99, 102, 241, 0.2)' }
+        ]},
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: true } }
+        }
+      });
+      _charts.value = new Chart(document.getElementById("lop-value-chart"), {
+        type: "line",
+        data: { labels, datasets: [
+          { label: "Property Value", data: propertyValue, tension: 0.4, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)' },
+          { label: "Cumulative Expenses", data: cumCost, tension: 0.4, borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)' },
+        ]},
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: true } },
+          scales: { y: { ticks: { callback: (v) => _money(v) } } }
+        }
+      });
+      _charts.alt = new Chart(document.getElementById("lop-alt-chart"), {
+        type: "bar",
+        data: { labels, datasets: [
+          { label: "Alt Income", data: altIncome, backgroundColor: '#10b981' },
+          { label: "Alt Expense", data: altExpense, backgroundColor: '#f59e0b' },
+        ]},
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: true } },
+          scales: { y: { ticks: { callback: (v) => _money(v) } } }
+        }
+      });
+      _charts.tax = new Chart(document.getElementById("lop-tax-chart"), {
+        type: "bar",
+        data: { labels, datasets: [
+          { label: "Pre-Tax", data: preTax, backgroundColor: '#6366f1' },
+          { label: "Tax Paid", data: taxPaid, backgroundColor: '#ef4444' },
+        ]},
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: true } },
+          scales: { y: { ticks: { callback: (v) => _money(v) } } }
+        }
+      });
+    }
+    window.generateProjection = function() {
+      try {
+        const rows = _computeProjection();
+        _renderSummary(rows);
+        _renderMath(rows);
+        _renderCharts(rows);
+      } catch (e) {
+        console.error("[LANDLORD OPT] ERROR:", e);
+        const el = document.getElementById("lop-math-text");
+        if (el) el.textContent = "Error generating projection. Check console.";
+      }
+    };
+    window.addEventListener("DOMContentLoaded", () => {
+      window.generateProjection();
+    });
+  </script>
+</body>
+</html>

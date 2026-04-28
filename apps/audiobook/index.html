@@ -1,0 +1,1415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Audiobook Studio</title>
+<link rel="icon" type="image/x-icon" href="../../images.ico">
+<script src="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+<style>
+:root {
+  --bg: #0d0d0f;
+  --panel: #141417;
+  --panel2: #1a1a1f;
+  --border: #2a2a35;
+  --text: #e8e8f0;
+  --muted: #5a5a72;
+  --accent: #f97316;
+  --accent2: #22c55e;
+  --hl: #f97316;
+  --hl-bg: rgba(249,115,22,0.18);
+  --mono: "JetBrains Mono", ui-monospace, monospace;
+  --sans: "Segoe UI", system-ui, sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── Top bar ── */
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 20px;
+  height: 50px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  z-index: 10;
+}
+.back { color: var(--muted); text-decoration: none; font-size: 13px; transition: color .2s; }
+.back:hover { color: var(--accent); }
+.app-title { font-size: 15px; font-weight: 700; letter-spacing: -.3px; }
+.topbar-spacer { flex: 1; }
+.model-status {
+  font-size: 11px;
+  font-family: var(--mono);
+  letter-spacing: .5px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+.model-status.loading { color: #fbbf24; border-color: rgba(251,191,36,.3); animation: pulse 1.2s ease-in-out infinite; }
+.model-status.ready   { color: var(--accent2); border-color: rgba(34,197,94,.3); animation: none; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+/* ── Drop screen: two-panel layout ── */
+.drop-screen {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+.drop-books-panel {
+  flex: 1;
+  overflow-y: auto;
+  padding: 32px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  border-right: 1px solid var(--border);
+  min-width: 0;
+}
+.drop-books-panel::-webkit-scrollbar { width: 6px; }
+.drop-books-panel::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+.drop-books-empty {
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  text-align: center;
+  padding: 60px 0;
+}
+.drop-input-panel {
+  width: 300px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 28px;
+}
+.drop-zone {
+  border: 2px dashed var(--border);
+  border-radius: 16px;
+  padding: 48px 32px;
+  text-align: center;
+  cursor: pointer;
+  position: relative;
+  transition: all .2s;
+  background: var(--panel);
+  width: 100%;
+}
+.drop-zone:hover, .drop-zone.drag { border-color: var(--accent); background: rgba(249,115,22,.05); }
+.drop-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+.drop-icon { font-size: 3rem; margin-bottom: 16px; }
+.drop-zone h2 { font-size: 16px; margin-bottom: 8px; }
+.drop-zone p  { font-size: 11px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
+
+/* ── Library ── */
+.library-section { width: 100%; }
+.library-header {
+  font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 14px; display: flex; align-items: center; gap: 10px;
+}
+.library-header span { flex: 1; }
+.library-grid { display: flex; flex-direction: column; gap: 8px; }
+.lib-card {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+  padding: 14px 18px; display: flex; align-items: center; gap: 14px;
+  cursor: pointer; transition: border-color .15s, background .15s;
+}
+.lib-card:hover { border-color: var(--accent); background: rgba(249,115,22,.04); }
+.lib-card-icon { font-size: 1.6rem; flex-shrink: 0; }
+.lib-card-body { flex: 1; min-width: 0; }
+.lib-card-title { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 6px; }
+.lib-card-meta { font-size: 11px; color: var(--muted); font-family: var(--mono); }
+.lib-progress { height: 3px; background: var(--border); border-radius: 2px; margin-top: 8px; overflow: hidden; }
+.lib-progress-fill { height: 100%; background: var(--accent); border-radius: 2px; }
+.lib-del { background: none; border: none; color: var(--muted); font-size: 16px; cursor: pointer; padding: 4px 6px; border-radius: 4px; flex-shrink: 0; transition: color .15s; }
+.lib-del:hover { color: #ef4444; }
+.lib-empty { color: var(--muted); font-size: 12px; letter-spacing: 1px; text-transform: uppercase; text-align: center; padding: 20px 0; }
+.preload-badge { font-size: 10px; color: var(--muted); padding: 3px 8px; border: 1px solid var(--border); border-radius: 4px; flex-shrink: 0; transition: color .15s, border-color .15s; }
+.lib-card:hover .preload-badge { color: var(--accent); border-color: var(--accent); }
+
+/* ── Main app layout ── */
+.app-layout {
+  display: none;
+  flex: 1;
+  overflow: hidden;
+}
+.app-layout.active { display: grid; grid-template-columns: 280px 1fr 1fr; }
+
+/* ── Left sidebar ── */
+.sidebar {
+  background: var(--panel);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.sidebar-head {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+.page-canvas-wrap {
+  padding: 10px;
+  border-bottom: 1px solid var(--border);
+  background: #000;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 180px;
+  position: relative;
+}
+#thumbCanvas {
+  max-width: 100%;
+  max-height: 200px;
+  display: block;
+  border-radius: 3px;
+}
+.scan-line {
+  position: absolute;
+  left: 10px; right: 10px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent2), transparent);
+  top: 10px;
+  pointer-events: none;
+  opacity: 0;
+}
+.scan-line.active { opacity: 1; animation: scanDown 1.6s linear infinite; }
+@keyframes scanDown { 0%{top:10px} 100%{top:calc(100% - 12px)} }
+
+/* Page nav */
+.page-nav {
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.nav-btn {
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  width: 30px; height: 30px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .15s;
+}
+.nav-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.nav-btn:disabled { opacity: .3; cursor: not-allowed; }
+.page-indicator {
+  flex: 1;
+  text-align: center;
+  font-size: 12px;
+  font-family: var(--mono);
+  color: var(--muted);
+}
+.page-indicator strong { color: var(--text); }
+
+/* Page dots grid */
+.page-dots {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  align-content: flex-start;
+}
+.page-dots::-webkit-scrollbar { width: 4px; }
+.page-dots::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+.dot {
+  width: 26px; height: 26px;
+  border-radius: 5px;
+  border: 1px solid var(--border);
+  background: var(--panel2);
+  color: var(--muted);
+  font-size: 9px;
+  font-family: var(--mono);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .15s;
+  position: relative;
+}
+.dot:hover { border-color: var(--accent); color: var(--accent); }
+.dot.extracted { border-color: #334; color: var(--muted); }
+.dot.generating { border-color: #fbbf24; color: #fbbf24; animation: pulse 1s ease-in-out infinite; }
+.dot.ready { border-color: rgba(34,197,94,.5); color: var(--accent2); }
+.dot.current { background: var(--accent); border-color: var(--accent); color: #000; font-weight: 700; }
+
+/* ── Middle: full page view panel ── */
+.page-view {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-right: 1px solid var(--border);
+  background: #0a0a0c;
+}
+.page-view-head {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.page-view-head .pv-page-tag { color: var(--text); font-size: 13px; text-transform: none; letter-spacing: 0; }
+.page-view-scroll {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 16px;
+  background: #111114;
+}
+.page-view-scroll::-webkit-scrollbar { width: 6px; }
+.page-view-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+#pageCanvas {
+  max-width: 100%;
+  display: block;
+  border-radius: 4px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.6);
+}
+.page-view-empty {
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+}
+
+/* ── Right: reader panel ── */
+.reader {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.reader-head {
+  padding: 12px 24px;
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.reader-head .page-tag { color: var(--text); font-size: 13px; text-transform: none; letter-spacing: 0; }
+.audio-status-tag {
+  margin-left: auto;
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+.audio-status-tag.ready   { color: var(--accent2); border-color: rgba(34,197,94,.35); }
+.audio-status-tag.generating { color: #fbbf24; border-color: rgba(251,191,36,.35); animation: pulse 1s ease-in-out infinite; }
+
+.text-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 32px 48px;
+  font-size: 19px;
+  line-height: 1.85;
+  color: #ccd0e0;
+  letter-spacing: .01em;
+}
+.text-area::-webkit-scrollbar { width: 6px; }
+.text-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+.text-area.empty { display: flex; align-items: center; justify-content: center; }
+.text-empty-msg { color: var(--muted); font-size: 13px; letter-spacing: 1px; text-transform: uppercase; }
+
+.word {
+  display: inline;
+  border-radius: 3px;
+  padding: 0 1px;
+  transition: background .08s, color .08s;
+  cursor: pointer;
+}
+.word:hover { color: var(--accent); }
+.word.active {
+  background: var(--hl-bg);
+  color: var(--hl);
+}
+
+/* ── Player bar ── */
+.player-bar {
+  flex-shrink: 0;
+  background: var(--panel);
+  border-top: 1px solid var(--border);
+  padding: 12px 24px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.progress-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.time-label { font-size: 11px; font-family: var(--mono); color: var(--muted); white-space: nowrap; min-width: 80px; }
+.time-label.right { text-align: right; }
+.seek-bar {
+  flex: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--border);
+  outline: none;
+  cursor: pointer;
+}
+.seek-bar::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  transition: transform .15s;
+}
+.seek-bar::-webkit-slider-thumb:hover { transform: scale(1.2); }
+.controls-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+.ctrl-btn {
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all .15s;
+  font-family: var(--sans);
+  display: flex; align-items: center; gap: 5px;
+}
+.ctrl-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.ctrl-btn:disabled { opacity: .3; cursor: not-allowed; }
+.ctrl-btn.play {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #000;
+  font-weight: 700;
+  padding: 8px 22px;
+  font-size: 15px;
+}
+.ctrl-btn.play:hover:not(:disabled) { filter: brightness(1.1); color: #000; border-color: var(--accent); }
+.speed-select {
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 12px;
+  font-family: var(--mono);
+  cursor: pointer;
+  outline: none;
+  margin-left: auto;
+}
+.speed-select:focus { border-color: var(--accent); }
+
+@media (max-width: 768px) {
+  .drop-screen { flex-direction: column; overflow-y: auto; }
+  .drop-books-panel { border-right: none; border-bottom: 1px solid var(--border); overflow-y: visible; }
+  .drop-input-panel { width: 100%; }
+  .app-layout.active { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+  .page-view { display: none; }
+  .text-area { padding: 20px; font-size: 16px; }
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a class="back" href="../../index.html">- Back</a>
+  <span class="app-title">Audiobook Studio</span>
+  <div class="topbar-spacer"></div>
+  <span class="model-status" id="modelStatus">Voice model: not loaded</span>
+</div>
+
+<!-- Drop screen -->
+<div class="drop-screen" id="dropScreen">
+  <!-- Left: book lists -->
+  <div class="drop-books-panel">
+    <div class="library-section" id="preloadedSection" style="display:none">
+      <div class="library-header">
+        <span>Preloaded Books</span>
+      </div>
+      <div class="library-grid" id="preloadedGrid"></div>
+    </div>
+    <div class="library-section" id="librarySection" style="display:none">
+      <div class="library-header">
+        <span>My Library</span>
+      </div>
+      <div class="library-grid" id="libraryGrid"></div>
+    </div>
+    <div class="drop-books-empty" id="dropBooksEmpty">Loading library...</div>
+  </div>
+  <!-- Right: drop / file picker -->
+  <div class="drop-input-panel">
+    <div class="drop-zone" id="dropZone">
+      <input type="file" accept=".pdf,.epub,.txt" id="fileInput">
+      <div class="drop-icon">📖</div>
+      <h2>Drop a book to begin</h2>
+      <p>PDF · EPUB · TXT &mdash; text extraction + TTS run in parallel</p>
+    </div>
+  </div>
+</div>
+
+<!-- Main app -->
+<div class="app-layout" id="appLayout">
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-head">
+      <span id="sidebarTitle">Pages</span>
+      <span id="extractStatus" style="color:var(--accent2);font-size:9px"></span>
+    </div>
+    <div class="page-canvas-wrap">
+      <canvas id="thumbCanvas"></canvas>
+      <div class="scan-line" id="scanLine"></div>
+    </div>
+    <div class="page-nav">
+      <button class="nav-btn" id="prevBtn" disabled>&#8592;</button>
+      <span class="page-indicator"><strong id="curPageDisp">-</strong> / <span id="totalPageDisp">-</span></span>
+      <button class="nav-btn" id="nextBtn" disabled>&#8594;</button>
+    </div>
+    <div class="page-dots" id="pageDots"></div>
+  </div>
+
+  <!-- Page View -->
+  <div class="page-view">
+    <div class="page-view-head">
+      <span>Page</span>
+      <span class="pv-page-tag" id="pvPageTag">—</span>
+    </div>
+    <div class="page-view-scroll" id="pvScroll">
+      <canvas id="pageCanvas"></canvas>
+    </div>
+  </div>
+
+  <!-- Reader -->
+  <div class="reader">
+    <div class="reader-head">
+      <span>Now Reading</span>
+      <span class="page-tag" id="readerPageTag">-</span>
+      <span class="audio-status-tag" id="audioStatusTag">No audio</span>
+    </div>
+    <div class="text-area" id="textArea">
+      <span class="text-empty-msg">Extracting pages...</span>
+    </div>
+    <div class="player-bar">
+      <div class="progress-row">
+        <span class="time-label" id="timeCur">0:00</span>
+        <input type="range" class="seek-bar" id="seekBar" min="0" max="1000" value="0" step="1">
+        <span class="time-label right" id="timeDur">0:00</span>
+      </div>
+      <div class="controls-row">
+        <button class="ctrl-btn" id="back15Btn" title="-15s" disabled>-15s</button>
+        <button class="ctrl-btn" id="prevPageBtn" disabled>&#171; Page</button>
+        <button class="ctrl-btn play" id="playBtn" disabled>&#9654;</button>
+        <button class="ctrl-btn" id="nextPageBtn" disabled>Page &#187;</button>
+        <button class="ctrl-btn" id="fwd15Btn" title="+15s" disabled>+15s</button>
+        <select class="speed-select" id="speedSel">
+          <option value="0.75">0.75x</option>
+          <option value="1" selected>1x</option>
+          <option value="1.25">1.25x</option>
+          <option value="1.5">1.5x</option>
+          <option value="2">2x</option>
+        </select>
+      </div>
+    </div>
+  </div>
+</div>
+
+<audio id="player"></audio>
+
+<script type="module">
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+
+window.addEventListener('beforeunload', () => speechSynthesis.cancel());
+window.addEventListener('pagehide', () => speechSynthesis.cancel());
+
+/* ── Library persistence (localStorage + IndexedDB) ── */
+const LIB_KEY = 'ab_library';
+
+function libGet() {
+  try { return JSON.parse(localStorage.getItem(LIB_KEY) || '{}'); } catch { return {}; }
+}
+function libSet(data) {
+  try { localStorage.setItem(LIB_KEY, JSON.stringify(data)); } catch {}
+}
+function libSaveProgress(name, page, total) {
+  const lib = libGet();
+  lib[name] = { ...lib[name], name, lastPage: page, totalPages: total, savedAt: Date.now() };
+  libSet(lib);
+}
+function libDelete(name) {
+  const lib = libGet(); delete lib[name]; libSet(lib);
+  idbDelete(name);
+}
+
+// IndexedDB for storing PDF binaries
+function idbOpen() {
+  return new Promise((res, rej) => {
+    const req = indexedDB.open('audiobook_files', 1);
+    req.onupgradeneeded = e => e.target.result.createObjectStore('files');
+    req.onsuccess = e => res(e.target.result);
+    req.onerror = () => rej(req.error);
+  });
+}
+async function idbSave(name, buf) {
+  const db = await idbOpen();
+  return new Promise((res, rej) => {
+    const tx = db.transaction('files', 'readwrite');
+    tx.objectStore('files').put(buf, name);
+    tx.oncomplete = res; tx.onerror = () => rej(tx.error);
+  });
+}
+async function idbLoad(name) {
+  const db = await idbOpen();
+  return new Promise((res, rej) => {
+    const tx = db.transaction('files', 'readonly');
+    const req = tx.objectStore('files').get(name);
+    req.onsuccess = () => res(req.result || null);
+    req.onerror = () => rej(req.error);
+  });
+}
+async function idbDelete(name) {
+  const db = await idbOpen();
+  return new Promise((res, rej) => {
+    const tx = db.transaction('files', 'readwrite');
+    tx.objectStore('files').delete(name);
+    tx.oncomplete = res; tx.onerror = () => rej(tx.error);
+  });
+}
+
+function timeAgo(ts) {
+  const s = Math.floor((Date.now() - ts) / 1000);
+  if (s < 60) return 'just now';
+  if (s < 3600) return Math.floor(s/60) + 'm ago';
+  if (s < 86400) return Math.floor(s/3600) + 'h ago';
+  return Math.floor(s/86400) + 'd ago';
+}
+
+const librarySection   = document.getElementById('librarySection');
+const libraryGrid      = document.getElementById('libraryGrid');
+const dropBooksEmpty   = document.getElementById('dropBooksEmpty');
+const preloadedSection = document.getElementById('preloadedSection');
+const preloadedGrid    = document.getElementById('preloadedGrid');
+
+function updateDropBooksEmpty() {
+  const hasContent = (preloadedSection && preloadedSection.style.display !== 'none')
+                  || librarySection.style.display !== 'none';
+  if (dropBooksEmpty) dropBooksEmpty.style.display = hasContent ? 'none' : '';
+}
+
+function renderLibrary() {
+  const lib = libGet();
+  const entries = Object.values(lib).sort((a, b) => b.savedAt - a.savedAt);
+  if (!entries.length) { librarySection.style.display = 'none'; updateDropBooksEmpty(); return; }
+  librarySection.style.display = '';
+  updateDropBooksEmpty();
+  libraryGrid.innerHTML = '';
+  entries.forEach(entry => {
+    const pct = entry.totalPages ? Math.round((entry.lastPage / entry.totalPages) * 100) : 0;
+    const card = document.createElement('div');
+    card.className = 'lib-card';
+    card.innerHTML = `
+      <div class="lib-card-icon">📖</div>
+      <div class="lib-card-body">
+        <div class="lib-card-title">${entry.name}</div>
+        <div class="lib-card-meta">Page ${entry.lastPage + 1} of ${entry.totalPages || '?'} &nbsp;·&nbsp; ${timeAgo(entry.savedAt)}</div>
+        <div class="lib-progress"><div class="lib-progress-fill" style="width:${pct}%"></div></div>
+      </div>
+      <button class="lib-del" title="Remove from library">×</button>`;
+    card.querySelector('.lib-del').addEventListener('click', e => {
+      e.stopPropagation();
+      libDelete(entry.name);
+      renderLibrary();
+    });
+    card.addEventListener('click', async () => {
+      const buf = await idbLoad(entry.name);
+      if (!buf) { alert('File no longer cached. Please re-upload the book.'); return; }
+      const ext = entry.name.split('.').pop().toLowerCase();
+      const mime = { pdf: 'application/pdf', epub: 'application/epub+zip', txt: 'text/plain' }[ext] || '';
+      const file = new File([buf], entry.name, { type: mime });
+      startBook(file, entry.lastPage);
+    });
+    libraryGrid.appendChild(card);
+  });
+}
+
+renderLibrary();
+
+/* ── State ── */
+const pages = [];        // {text, words, status:'pending'|'extracted'|'ready'}
+let curPage  = 0;
+let totalPages = 0;
+let ocrWorker = null;
+let pdfDoc = null;  // module-level pdf reference for re-rendering
+let hlRAF    = null;
+let seeking  = false;
+let ttsUtt   = null;   // current SpeechSynthesisUtterance
+let ttsWordIdx = 0;
+
+/* ── DOM ── */
+const dropScreen    = document.getElementById('dropScreen');
+const dropZone      = document.getElementById('dropZone');
+const fileInput     = document.getElementById('fileInput');
+const appLayout     = document.getElementById('appLayout');
+const modelStatus   = document.getElementById('modelStatus');
+const thumbCanvas   = document.getElementById('thumbCanvas');
+const thumbCtx      = thumbCanvas.getContext('2d');
+const pageCanvas    = document.getElementById('pageCanvas');
+const pageCanvasCtx = pageCanvas.getContext('2d');
+const pvPageTag     = document.getElementById('pvPageTag');
+
+// Off-screen canvas used exclusively by the extraction loop (never touched by renderThumb)
+const extractCanvas = document.createElement('canvas');
+const extractCtx    = extractCanvas.getContext('2d');
+
+// Render lock — prevents concurrent renderThumb calls from racing each other
+let thumbRenderSeq = 0;
+const scanLine      = document.getElementById('scanLine');
+const prevBtn       = document.getElementById('prevBtn');
+const nextBtn       = document.getElementById('nextBtn');
+const curPageDisp   = document.getElementById('curPageDisp');
+const totalPageDisp = document.getElementById('totalPageDisp');
+const pageDots      = document.getElementById('pageDots');
+const sidebarTitle  = document.getElementById('sidebarTitle');
+const extractStatus = document.getElementById('extractStatus');
+const readerPageTag = document.getElementById('readerPageTag');
+const audioStatusTag= document.getElementById('audioStatusTag');
+const textArea      = document.getElementById('textArea');
+const player        = document.getElementById('player');
+const seekBar       = document.getElementById('seekBar');
+const timeCur       = document.getElementById('timeCur');
+const timeDur       = document.getElementById('timeDur');
+const playBtn       = document.getElementById('playBtn');
+const back15Btn     = document.getElementById('back15Btn');
+const fwd15Btn      = document.getElementById('fwd15Btn');
+const prevPageBtn   = document.getElementById('prevPageBtn');
+const nextPageBtn   = document.getElementById('nextPageBtn');
+const speedSel      = document.getElementById('speedSel');
+
+/* ── Back link: stop audio before navigating ── */
+document.querySelector('.back').addEventListener('click', () => speechSynthesis.cancel());
+
+/* ── Drop / file ── */
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault(); dropZone.classList.remove('drag');
+  const f = e.dataTransfer.files[0];
+  if (f) startBook(f);
+});
+fileInput.addEventListener('change', () => { if (fileInput.files[0]) startBook(fileInput.files[0]); });
+
+let currentFileName = '';
+
+/* ── Init browser TTS ── */
+modelStatus.className = 'model-status ready';
+modelStatus.textContent = 'Voice: ready';
+
+let cachedVoice = null;
+
+function getBrowserVoice() {
+  if (cachedVoice) return cachedVoice;
+  const voices = speechSynthesis.getVoices();
+  cachedVoice = voices.find(v => v.name === 'Google UK English Male')
+    || voices.find(v => v.lang === 'en-GB')
+    || voices.find(v => v.lang.startsWith('en'))
+    || voices[0] || null;
+  return cachedVoice;
+}
+
+// Pre-load voices as soon as they're available and cache immediately
+function initVoice() {
+  const voices = speechSynthesis.getVoices();
+  if (voices.length) {
+    cachedVoice = voices.find(v => v.name === 'Google UK English Male')
+      || voices.find(v => v.lang === 'en-GB')
+      || voices.find(v => v.lang.startsWith('en'))
+      || voices[0] || null;
+    modelStatus.textContent = 'Voice: ' + (cachedVoice?.name || 'ready');
+  }
+}
+initVoice();
+speechSynthesis.onvoiceschanged = initVoice;
+
+/* ── Reset app state before loading a new book ── */
+function resetApp() {
+  pages.length = 0;
+  curPage = 0;
+  totalPages = 0;
+  currentFileName = '';
+  pageDots.innerHTML = '';
+  totalPageDisp.textContent = '-';
+  curPageDisp.textContent = '-';
+  readerPageTag.textContent = '-';
+  textArea.innerHTML = '<span class="text-empty-msg">Loading...</span>';
+  extractStatus.textContent = '';
+  playBtn.disabled = true;
+  prevBtn.disabled = true;
+  nextBtn.disabled = true;
+  prevPageBtn.disabled = true;
+  nextPageBtn.disabled = true;
+  seekBar.value = 0;
+  timeCur.textContent = '';
+  timeDur.textContent = '';
+  audioStatusTag.className = 'audio-status-tag';
+  audioStatusTag.textContent = 'No audio';
+  speechSynthesis.cancel();
+  stopHl();
+}
+
+/* ── Dispatch by file type ── */
+function startBook(file, resumePage = 0) {
+  const ext = file.name.split('.').pop().toLowerCase();
+  if (ext === 'epub') return startEpub(file, resumePage);
+  if (ext === 'txt')  return startTxt(file, resumePage);
+  return startPdf(file, resumePage);
+}
+
+/* ── Shared: split raw text into synthetic pages ── */
+function buildSyntheticPages(text) {
+  const words = text.replace(/\s+/g, ' ').trim().split(' ').filter(Boolean);
+  const PAGE_SIZE = 500;
+  totalPages = Math.max(1, Math.ceil(words.length / PAGE_SIZE));
+  totalPageDisp.textContent = totalPages;
+  for (let i = 0; i < totalPages; i++) {
+    const pw = words.slice(i * PAGE_SIZE, (i + 1) * PAGE_SIZE);
+    pages.push({ text: pw.join(' '), words: pw, status: 'ready' });
+    const dot = document.createElement('div');
+    dot.className = 'dot ready';
+    dot.id = 'dot-' + i;
+    dot.textContent = i + 1;
+    dot.title = 'Page ' + (i + 1);
+    dot.addEventListener('click', () => goToPage(i));
+    pageDots.appendChild(dot);
+  }
+}
+
+/* ── Resolve EPUB relative paths ── */
+function resolveEpubPath(base, href) {
+  const parts = (base ? base + '/' + href : href).split('/');
+  const out = [];
+  for (const p of parts) {
+    if (p === '..') out.pop();
+    else if (p && p !== '.') out.push(p);
+  }
+  return out.join('/');
+}
+
+/* ── TXT loader ── */
+async function startTxt(file, resumePage = 0) {
+  resetApp();
+  currentFileName = file.name;
+  dropScreen.style.display = 'none';
+  appLayout.classList.add('active');
+  sidebarTitle.textContent = file.name.slice(0, 24) + (file.name.length > 24 ? '...' : '');
+  const buf = await file.arrayBuffer();
+  idbSave(file.name, buf).catch(() => {});
+  buildSyntheticPages(new TextDecoder().decode(buf));
+  goToPage(resumePage);
+  extractStatus.textContent = 'Done';
+  libSaveProgress(currentFileName, resumePage, totalPages);
+  renderLibrary();
+}
+
+/* ── EPUB loader ── */
+async function startEpub(file, resumePage = 0) {
+  resetApp();
+  currentFileName = file.name;
+  dropScreen.style.display = 'none';
+  appLayout.classList.add('active');
+  sidebarTitle.textContent = file.name.slice(0, 24) + (file.name.length > 24 ? '...' : '');
+  extractStatus.textContent = 'Parsing EPUB...';
+
+  const buf = await file.arrayBuffer();
+  idbSave(file.name, buf).catch(() => {});
+
+  await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js');
+  const zip = await JSZip.loadAsync(buf);
+  const parser = new DOMParser();
+
+  // Locate OPF via container.xml
+  const contXml = await zip.file('META-INF/container.xml').async('string');
+  const contDoc = parser.parseFromString(contXml, 'application/xml');
+  const opfPath = contDoc.querySelector('rootfile').getAttribute('full-path');
+  const opfDir  = opfPath.includes('/') ? opfPath.split('/').slice(0, -1).join('/') : '';
+
+  // Parse OPF
+  const opfXml = await zip.file(opfPath).async('string');
+  const opfDoc = parser.parseFromString(opfXml, 'application/xml');
+  const manifest = {};
+  opfDoc.querySelectorAll('manifest item').forEach(it => {
+    manifest[it.getAttribute('id')] = it.getAttribute('href');
+  });
+
+  // Walk spine and gather text
+  let allText = '';
+  for (const item of opfDoc.querySelectorAll('spine itemref')) {
+    const href = manifest[item.getAttribute('idref')];
+    if (!href) continue;
+    const fullPath = resolveEpubPath(opfDir, href.split('#')[0].split('?')[0]);
+    const zf = zip.file(fullPath);
+    if (!zf) continue;
+    const content = await zf.async('string');
+    const doc = parser.parseFromString(content, 'application/xhtml+xml');
+    const body = doc.querySelector('body');
+    if (body) allText += body.textContent + '\n\n';
+  }
+
+  buildSyntheticPages(allText);
+  goToPage(resumePage);
+  extractStatus.textContent = 'Done';
+  libSaveProgress(currentFileName, resumePage, totalPages);
+  renderLibrary();
+}
+
+/* ── Preloaded library ── */
+async function loadPreloadedLibrary() {
+  try {
+    const res = await fetch('pre_loaded_books/manifest.json');
+    if (!res.ok) { updateDropBooksEmpty(); return; }
+    const { books } = await res.json();
+    if (!books?.length) { updateDropBooksEmpty(); return; }
+    preloadedSection.style.display = '';
+    updateDropBooksEmpty();
+    preloadedGrid.innerHTML = '';
+    books.forEach(book => {
+      const card = document.createElement('div');
+      card.className = 'lib-card';
+      const icon = book.type === 'epub' ? '📕' : book.type === 'txt' ? '📄' : '📖';
+      const authorHtml = book.author ? `<span style="margin-left:6px;color:var(--muted)">— ${book.author}</span>` : '';
+      card.innerHTML = `
+        <div class="lib-card-icon">${icon}</div>
+        <div class="lib-card-body">
+          <div class="lib-card-title">${book.title}${authorHtml}</div>
+          <div class="lib-card-meta">${book.type.toUpperCase()} · Preloaded</div>
+        </div>
+        <span class="preload-badge">Load</span>`;
+      card.addEventListener('click', async () => {
+        card.style.opacity = '0.5';
+        card.style.pointerEvents = 'none';
+        try {
+          const r = await fetch('pre_loaded_books/' + encodeURIComponent(book.filename));
+          if (!r.ok) throw new Error('HTTP ' + r.status);
+          const mime = { pdf: 'application/pdf', epub: 'application/epub+zip', txt: 'text/plain' }[book.type] || '';
+          const file = new File([await r.arrayBuffer()], book.filename, { type: mime });
+          startBook(file);
+        } catch(e) {
+          card.style.opacity = '';
+          card.style.pointerEvents = '';
+          alert('Could not load "' + book.title + '".\n\nThis usually means the file is stored in Git LFS and not yet served by the host. Commit without LFS or serve via another CDN.');
+        }
+      });
+      preloadedGrid.appendChild(card);
+    });
+  } catch(_) { updateDropBooksEmpty(); }
+}
+
+loadPreloadedLibrary();
+
+/* ── PDF extraction pipeline ── */
+async function startPdf(file, resumePage = 0) {
+  resetApp();
+  currentFileName = file.name;
+  dropScreen.style.display = 'none';
+  appLayout.classList.add('active');
+
+  sidebarTitle.textContent = file.name.slice(0, 24) + (file.name.length > 24 ? '...' : '');
+
+  const buf = await file.arrayBuffer();
+
+  // Save to IndexedDB so library can re-open it later
+  idbSave(file.name, buf).catch(() => {});
+
+  const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+  pdfDoc = pdf;
+  totalPages = pdf.numPages;
+  totalPageDisp.textContent = totalPages;
+
+  // Init pages array + dots
+  for (let i = 0; i < totalPages; i++) {
+    pages.push({ text: '', words: [], status: 'pending' });
+    const dot = document.createElement('div');
+    dot.className = 'dot';
+    dot.id = 'dot-' + i;
+    dot.textContent = i + 1;
+    dot.title = 'Page ' + (i + 1);
+    dot.addEventListener('click', () => goToPage(i));
+    pageDots.appendChild(dot);
+  }
+
+  goToPage(resumePage);
+
+  // Extract pages one by one
+  for (let i = 0; i < totalPages; i++) {
+    extractStatus.textContent = 'Extracting ' + (i+1) + '/' + totalPages;
+    scanLine.classList.add('active');
+
+    const page = await pdf.getPage(i + 1);
+
+    // Render to off-screen extractCanvas (never shared with display canvases)
+    const vp = page.getViewport({ scale: 1.5 });
+    extractCanvas.width = vp.width;
+    extractCanvas.height = vp.height;
+    await page.render({ canvasContext: extractCtx, viewport: vp }).promise;
+
+    // Try text layer, fall back to OCR using extractCanvas
+    let text = await extractPdfTextLayer(page);
+    if (text) {
+      text = cleanOcrText(text);
+    } else {
+      if (!ocrWorker) {
+        await loadScript('https://unpkg.com/tesseract.js@5.1.1/dist/tesseract.min.js');
+        ocrWorker = await Tesseract.createWorker('eng', 1, { logger: () => {} });
+      }
+      const result = await ocrWorker.recognize(extractCanvas);
+      text = cleanOcrText(result.data.text || '');
+    }
+
+    scanLine.classList.remove('active');
+
+    // Skip garbage pages (images, blanks) - require at least 20 real words
+    const rawWords = text.split(/\s+/).filter(Boolean);
+    if (rawWords.length < 5) {
+      pages[i].text = '';
+      pages[i].words = [];
+      pages[i].status = 'ready'; // mark ready but empty so navigation doesn't block
+      updateDot(i);
+      if (i === curPage) { renderText(i); updateAudioStatusTag(); }
+      prevBtn.disabled = curPage === 0;
+      nextBtn.disabled = false;
+      prevPageBtn.disabled = curPage === 0;
+      nextPageBtn.disabled = false;
+      continue;
+    }
+
+    pages[i].text = text;
+    pages[i].words = rawWords;
+    pages[i].status = 'ready';
+    updateDot(i);
+
+    if (i === curPage) {
+      renderText(i);
+      updateAudioStatusTag();
+      playBtn.disabled = false; // enable as soon as current page is ready
+    }
+    // Also enable if user is still on page 0 and this is page 0
+    if (curPage === i) playBtn.disabled = false;
+
+    prevBtn.disabled = curPage === 0;
+    nextBtn.disabled = false;
+    prevPageBtn.disabled = curPage === 0;
+    nextPageBtn.disabled = false;
+  }
+
+  if (ocrWorker) { await ocrWorker.terminate(); ocrWorker = null; }
+  extractStatus.textContent = 'Done';
+  libSaveProgress(currentFileName, curPage, totalPages);
+  renderLibrary();
+}
+
+/* ── Browser TTS playback ── */
+function speakPage(idx, startWord = 0) {
+  speechSynthesis.cancel();
+  stopHl();
+  ttsUtt = null; ttsWordIdx = startWord;
+
+  const pg = pages[idx];
+  if (!pg?.text || pg.words.length < 5) {
+    const next = idx + 1;
+    if (next < totalPages) { goToPage(next); setTimeout(() => speakPage(next), 50); }
+    return;
+  }
+
+  // Speak from startWord onward, strip parentheticals (citations etc.)
+  const spokenWords = pg.words.slice(startWord);
+  const spokenText  = spokenWords.join(' ').replace(/\([^)]{0,120}\)/g, '').replace(/\s{2,}/g, ' ').trim();
+
+  const utt = new SpeechSynthesisUtterance(spokenText);
+  const voice = getBrowserVoice();
+  if (voice) utt.voice = voice;
+  utt.rate = parseFloat(speedSel.value) || 1;
+  ttsUtt = utt;
+
+  // Track timing for RAF interpolation
+  let speakStart = null;
+  // Estimate average ms per char at current rate (rough: ~80ms/char at 1x)
+  const msPerChar = 80 / (parseFloat(speedSel.value) || 1);
+  const totalChars = spokenWords.reduce((s, w) => s + w.length, 0);
+
+  utt.onboundary = e => {
+    if (e.name !== 'word') return;
+    let cum = 0, local = 0;
+    for (let i = 0; i < spokenWords.length; i++) {
+      if (cum + spokenWords[i].length > e.charIndex) { local = i; break; }
+      cum += spokenWords[i].length + 1;
+      local = i;
+    }
+    const global = startWord + local;
+    ttsWordIdx = global;
+    highlightWordAt(global);
+    if (!seeking) seekBar.value = Math.round((global / pg.words.length) * 1000);
+    timeCur.textContent = global + ' / ' + pg.words.length;
+  };
+
+  // RAF loop - uses onboundary if available, falls back to time estimate
+  speakStart = performance.now();
+  let lastHighlighted = startWord;
+  function hlLoop() {
+    if (!isSpeaking) return;
+    // If onboundary is updating ttsWordIdx, just mirror it
+    if (ttsWordIdx !== lastHighlighted) {
+      lastHighlighted = ttsWordIdx;
+      hlRAF = requestAnimationFrame(hlLoop);
+      return;
+    }
+    // Fallback: estimate word from elapsed time (+400ms look-ahead to compensate lag)
+    const elapsed = performance.now() - speakStart + 200;
+    const charsSpoken = elapsed / msPerChar;
+    let cum = 0, local = 0;
+    for (let i = 0; i < spokenWords.length; i++) {
+      cum += spokenWords[i].length + 1;
+      if (cum >= charsSpoken) { local = i; break; }
+      local = i;
+    }
+    const global = Math.min(startWord + local, pg.words.length - 1);
+    if (global !== lastHighlighted) {
+      lastHighlighted = global;
+      ttsWordIdx = global;
+      highlightWordAt(global);
+      if (!seeking) seekBar.value = Math.round((global / pg.words.length) * 1000);
+      timeCur.textContent = global + ' / ' + pg.words.length;
+    }
+    hlRAF = requestAnimationFrame(hlLoop);
+  }
+  hlRAF = requestAnimationFrame(hlLoop);
+
+  utt.onend = () => {
+    updatePlayer(false);
+    const next = curPage + 1;
+    if (next < totalPages) {
+      goToPage(next);
+      setTimeout(() => speakPage(next), 150);
+    }
+  };
+  utt.onerror = e => {
+    if (e.error === 'interrupted' || e.error === 'canceled') return;
+    updatePlayer(false);
+    audioStatusTag.className = 'audio-status-tag';
+    audioStatusTag.textContent = 'TTS error: ' + (e.error || 'unknown');
+  };
+
+  updatePlayer(true);
+  playBtn.disabled = false;
+  back15Btn.disabled = true;
+  fwd15Btn.disabled = true;
+  timeDur.textContent = pg.words.length + ' w';
+  seekBar.value = Math.round((startWord / pg.words.length) * 1000);
+  timeCur.textContent = startWord + ' / ' + pg.words.length;
+  speakStart = performance.now();
+  speechSynthesis.speak(utt);
+}
+
+/* ── Page navigation ── */
+function goToPage(idx) {
+  if (idx < 0 || idx >= totalPages) return;
+  curPage = idx;
+  if (currentFileName) libSaveProgress(currentFileName, idx, totalPages);
+  curPageDisp.textContent = idx + 1;
+  readerPageTag.textContent = 'Page ' + (idx + 1) + ' of ' + totalPages;
+  prevBtn.disabled = idx === 0;
+  nextBtn.disabled = idx >= totalPages - 1;
+  prevPageBtn.disabled = idx === 0;
+  nextPageBtn.disabled = idx >= totalPages - 1;
+
+  // Update dot highlights
+  pageDots.querySelectorAll('.dot').forEach((d, i) => {
+    d.classList.toggle('current', i === idx);
+  });
+
+  // Re-render thumbnail if page exists
+  renderThumb(idx);
+
+  // Render text
+  renderText(idx);
+  updateAudioStatusTag();
+
+  stopHl();
+  updatePlayer(false);
+  const pg = pages[idx];
+  playBtn.disabled = !(pg?.status === 'ready' && pg?.words?.length >= 5);
+  seekBar.value = 0;
+  timeCur.textContent = '';
+  timeDur.textContent = '';
+}
+
+async function renderThumb(idx) {
+  if (!pdfDoc) return;
+  // Bump sequence — any older in-flight call will bail when it checks seq
+  const seq = ++thumbRenderSeq;
+  try {
+    const page = await pdfDoc.getPage(idx + 1);
+    if (seq !== thumbRenderSeq) return; // superseded by a newer call
+
+    // Thumb (small, for sidebar)
+    const vp = page.getViewport({ scale: 1.5 });
+    thumbCanvas.width = vp.width;
+    thumbCanvas.height = vp.height;
+    const thumbTask = page.render({ canvasContext: thumbCtx, viewport: vp });
+    await thumbTask.promise;
+    if (seq !== thumbRenderSeq) return;
+
+    // Full page canvas (larger)
+    const pvScroll = document.getElementById('pvScroll');
+    const availW = Math.max(200, pvScroll.clientWidth - 32);
+    const scale = Math.max(1.5, (availW / vp.width) * 1.5);
+    const fullVp = page.getViewport({ scale });
+    pageCanvas.width = fullVp.width;
+    pageCanvas.height = fullVp.height;
+    const pageTask = page.render({ canvasContext: pageCanvasCtx, viewport: fullVp });
+    await pageTask.promise;
+    if (seq !== thumbRenderSeq) return;
+
+    pvPageTag.textContent = 'Page ' + (idx + 1) + ' of ' + totalPages;
+  } catch(e) {
+    if (!e.message?.includes('cancel')) console.warn('renderThumb:', e.message);
+  }
+}
+
+function renderText(idx) {
+  const pg = pages[idx];
+  if (!pg || !pg.text || pg.words.length < 5) {
+    const msg = pg?.status === 'ready' ? 'Image or blank page - skipped' : 'Extracting page ' + (idx+1) + '...';
+    textArea.innerHTML = '<span class="text-empty-msg">' + msg + '</span>';
+    return;
+  }
+  pg.sentences = buildSentences(pg.words);
+  textArea.innerHTML = '';
+  pg.words.forEach((w, i) => {
+    const span = document.createElement('span');
+    span.className = 'word';
+    span.dataset.i = i;
+    span.textContent = w + ' ';
+    span.addEventListener('click', () => seekToWord(i));
+    textArea.appendChild(span);
+  });
+}
+
+function seekToWord(wordIdx) {
+  speakPage(curPage, wordIdx);
+}
+
+function updateAudioStatusTag() {
+  const pg = pages[curPage];
+  if (!pg) return;
+  if (pg.status === 'ready') {
+    audioStatusTag.className = 'audio-status-tag ready';
+    audioStatusTag.textContent = 'Ready';
+  } else {
+    audioStatusTag.className = 'audio-status-tag';
+    audioStatusTag.textContent = pg.status === 'extracted' ? 'Extracting...' : 'Pending';
+  }
+}
+
+function updateDot(idx) {
+  const dot = document.getElementById('dot-' + idx);
+  if (!dot) return;
+  const pg = pages[idx];
+  dot.className = 'dot' + (idx === curPage ? ' current' : '') + (pg ? ' ' + pg.status : '');
+}
+
+/* ── Player controls ── */
+let isSpeaking = false;
+
+playBtn.addEventListener('click', () => {
+  if (isSpeaking) {
+    speechSynthesis.cancel();
+    updatePlayer(false);
+  } else {
+    if (pages[curPage]?.status === 'ready') speakPage(curPage);
+  }
+});
+prevPageBtn.addEventListener('click', () => { speechSynthesis.cancel(); goToPage(curPage - 1); });
+nextPageBtn.addEventListener('click', () => { speechSynthesis.cancel(); goToPage(curPage + 1); });
+prevBtn.addEventListener('click', () => { speechSynthesis.cancel(); goToPage(curPage - 1); });
+nextBtn.addEventListener('click', () => { speechSynthesis.cancel(); goToPage(curPage + 1); });
+speedSel.addEventListener('change', () => {
+  // Restart speech at new speed if playing
+  if (isSpeaking) speakPage(curPage);
+});
+seekBar.addEventListener('mousedown', () => { seeking = true; });
+seekBar.addEventListener('mouseup', () => { seeking = false; });
+
+function updatePlayer(playing) {
+  isSpeaking = playing;
+  playBtn.innerHTML = playing ? '&#9646;&#9646;' : '&#9654;';
+}
+
+function fmt(s) {
+  if (!isFinite(s)) return '0:00';
+  const m = Math.floor(s / 60), sec = Math.floor(s % 60);
+  return m + ':' + (sec < 10 ? '0' : '') + sec;
+}
+
+/* ── Word highlight ── */
+function stopHl() {
+  if (hlRAF) { cancelAnimationFrame(hlRAF); hlRAF = null; }
+}
+
+function buildSentences(words) {
+  const sentences = [];
+  let start = 0;
+  for (let i = 0; i < words.length; i++) {
+    if (/[.!?]['"\u201d\u2019]?$/.test(words[i]) || i === words.length - 1) {
+      sentences.push({ start, end: i });
+      start = i + 1;
+    }
+  }
+  if (start < words.length) sentences.push({ start, end: words.length - 1 });
+  return sentences;
+}
+
+function highlightWordAt(idx) {
+  const pg = pages[curPage];
+  const sentences = pg?.sentences || [];
+  let sentStart = idx, sentEnd = idx;
+  for (const s of sentences) {
+    if (idx >= s.start && idx <= s.end) { sentStart = s.start; sentEnd = s.end; break; }
+  }
+
+  const spans = textArea.querySelectorAll('.word');
+  spans.forEach((s, i) => {
+    if (i < sentStart) s.className = 'word done';
+    else if (i <= sentEnd) s.className = 'word active';
+    else s.className = 'word';
+  });
+
+  const firstActive = textArea.querySelector('.word.active');
+  if (firstActive) {
+    const rect = firstActive.getBoundingClientRect();
+    const areaRect = textArea.getBoundingClientRect();
+    if (rect.top < areaRect.top + 80 || rect.bottom > areaRect.bottom - 80) {
+      firstActive.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
+}
+
+/* ── Helpers ── */
+function loadScript(src) {
+  return new Promise((res, rej) => {
+    if (document.querySelector(`script[src="${src}"]`)) return res();
+    const s = document.createElement('script');
+    s.src = src; s.onload = res; s.onerror = rej;
+    document.head.appendChild(s);
+  });
+}
+
+/* ── Text layer extraction (column-aware) ── */
+async function extractPdfTextLayer(page) {
+  try {
+    const tc = await page.getTextContent();
+    const items = tc.items.filter(it => it.str?.trim());
+    if (items.length < 10) return null;
+    const midX = page.getViewport({ scale: 1 }).width / 2;
+    const left  = items.filter(it => it.transform[4] <  midX);
+    const right = items.filter(it => it.transform[4] >= midX);
+    function colText(g) {
+      if (!g.length) return '';
+      g.sort((a,b) => { const dy=b.transform[5]-a.transform[5]; return Math.abs(dy)>3?dy:a.transform[4]-b.transform[4]; });
+      const lines=[]; let cur=[g[0].str], ly=g[0].transform[5];
+      for (let k=1;k<g.length;k++) {
+        const it=g[k];
+        if (Math.abs(it.transform[5]-ly)>3){lines.push(cur.join(''));cur=[];ly=it.transform[5];}
+        cur.push(it.str);
+      }
+      if (cur.length) lines.push(cur.join(''));
+      return lines.join('\n');
+    }
+    const l=colText(left), r=right.length>15?colText(right):'';
+    const combined = r ? l+'\n\n'+r : l;
+    if ((combined.match(/\b[a-zA-Z]{3,}\b/g)||[]).length < 20) return null;
+    return combined.trim();
+  } catch(e) { return null; }
+}
+
+/* ── OCR cleanup ── */
+function isGarbage(line) {
+  if (!line) return false;
+  if (/PHOTO:|NATIONAL LIBRARY|ARCHIVE OF|ALL PHOTOGRAPHS|OpenAirPhilosophy|PRIVATE COLLECTION|~~|———/.test(line)) return true;
+  if (/^[^a-zA-Z]{0,4}[o|\\&]{1,2}[-\u2014]{2,}/.test(line)) return true;
+  const tokens = line.split(/\s+/).filter(Boolean);
+  if (tokens.length >= 4 && tokens.filter(t=>t.length===1).length/tokens.length > 0.45) return true;
+  const an = (line.match(/[a-zA-Z0-9]/g)||[]).length;
+  if (an/line.length < 0.45 && line.length < 80) return true;
+  if (/(\b\S\b\s){3,}/.test(line)) return true;
+  return false;
+}
+function cleanOcrText(raw) {
+  const lines = raw.split('\n');
+  const cleaned = [];
+  for (let i=0;i<lines.length;i++) {
+    let l=lines[i].trim();
+    if (!l){cleaned.push('');continue;}
+    if (isGarbage(l)) continue;
+    if ((l.match(/[a-zA-Z0-9]/g)||[]).length<=2) continue;
+    if (l.endsWith('-')&&i+1<lines.length){const nx=lines[i+1].trim();if(nx&&/^[a-z]/.test(nx)&&!isGarbage(nx)){l=l.slice(0,-1)+nx;i++;}}
+    if (isGarbage(l)) continue;
+    cleaned.push(l);
+  }
+  const rejoined=[];
+  for (let i=0;i<cleaned.length;i++) {
+    const l=cleaned[i];
+    if (l===''){rejoined.push('');continue;}
+    const nx=cleaned[i+1];
+    if (!nx||nx===''||/[.!?:;"\u201d\u2019]$/.test(l)) rejoined.push(l);
+    else cleaned[i+1]=l+' '+nx;
+  }
+  return rejoined.filter(l=>l===''||!isGarbage(l)).join('\n')
+    .replace(/\n{3,}/g,'\n\n').replace(/ {2,}/g,' ')
+    .replace(/(?<!\S)([b-hj-z])(?!\S)/gi,(m,c)=>/^[aiAI]$/.test(c)?m:'')
+    .replace(/ {2,}/g,' ').trim();
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GitHub Tracker — foreandr</title>
+<link rel="icon" type="image/x-icon" href="../../images.ico">
+<style>
+:root {
+  --bg:      #0d0d0f;
+  --panel:   #141417;
+  --panel2:  #1a1a1f;
+  --border:  #2a2a35;
+  --text:    #e8e8f0;
+  --muted:   #5a5a72;
+  --green:   #39d353;
+  --green2:  #26a641;
+  --green3:  #006d32;
+  --green4:  #0e4429;
+  --accent:  #f97316;
+  --blue:    #38bdf8;
+  --mono:    "JetBrains Mono", ui-monospace, monospace;
+  --sans:    "Segoe UI", system-ui, sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; display: flex; flex-direction: column; }
+
+.topbar {
+  display: flex; align-items: center; gap: 16px; padding: 0 20px; height: 50px;
+  background: var(--panel); border-bottom: 1px solid var(--border);
+  flex-shrink: 0; position: sticky; top: 0; z-index: 10;
+}
+.back { color: var(--muted); text-decoration: none; font-size: 13px; transition: color .2s; }
+.back:hover { color: var(--accent); }
+.app-title { font-size: 15px; font-weight: 700; }
+.topbar-spacer { flex: 1; }
+.refresh-btn {
+  background: var(--panel2); border: 1px solid var(--border); color: var(--muted);
+  border-radius: 6px; padding: 5px 14px; font-size: 12px; cursor: pointer; transition: all .15s;
+}
+.refresh-btn:hover { border-color: var(--accent); color: var(--accent); }
+.loading-bar {
+  height: 2px; background: var(--border); position: relative; overflow: hidden;
+}
+.loading-bar-fill {
+  position: absolute; left: -40%; width: 40%; height: 100%;
+  background: linear-gradient(90deg, transparent, var(--green), transparent);
+  animation: slide 1.2s linear infinite;
+}
+@keyframes slide { to { left: 140%; } }
+.loading-bar.done .loading-bar-fill { display: none; }
+.loading-bar.done { background: transparent; }
+
+.content { flex: 1; padding: 24px; max-width: 1100px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 20px; }
+
+/* Profile */
+.profile-card {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 14px;
+  padding: 20px 24px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
+}
+.avatar { width: 72px; height: 72px; border-radius: 50%; border: 2px solid var(--border); }
+.profile-info { flex: 1; min-width: 0; }
+.profile-name { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+.profile-login { font-size: 13px; color: var(--muted); margin-bottom: 8px; }
+.profile-bio { font-size: 13px; color: var(--muted); }
+.profile-stats { display: flex; gap: 20px; flex-wrap: wrap; }
+.pstat { text-align: center; }
+.pstat-val { font-size: 20px; font-weight: 700; font-family: var(--mono); color: var(--text); }
+.pstat-lbl { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.gh-link {
+  background: var(--panel2); border: 1px solid var(--border); color: var(--text);
+  border-radius: 8px; padding: 8px 16px; text-decoration: none; font-size: 13px;
+  transition: all .15s; white-space: nowrap; display: flex; align-items: center; gap: 6px;
+}
+.gh-link:hover { border-color: var(--green); color: var(--green); }
+
+/* Section wrapper */
+.section-title { font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+.panel-card {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px;
+}
+
+/* Contribution chart embed */
+.ghchart-outer {
+  background: #fff; border-radius: 10px; padding: 10px 14px;
+  display: flex; align-items: center; justify-content: center; overflow: hidden;
+}
+.ghchart-outer img {
+  width: 100%; display: block; max-height: 130px; object-fit: contain;
+}
+.chart-note { font-size: 11px; color: var(--muted); margin-top: 10px; }
+
+/* Readme stats embed row */
+.stats-embed-row {
+  display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-start;
+}
+.stats-embed-row img {
+  border-radius: 10px; flex: 1; min-width: 260px; max-width: 100%; display: block;
+}
+
+/* Trophies embed */
+.trophy-wrap img {
+  width: 100%; border-radius: 10px; display: block;
+}
+
+/* Mini stat cards */
+.mini-stats { display: flex; gap: 12px; flex-wrap: wrap; }
+.mini-stat {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+  padding: 12px 18px; flex: 1; min-width: 110px;
+}
+.mini-stat .v { font-size: 22px; font-weight: 700; font-family: var(--mono); color: var(--green); }
+.mini-stat .l { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+/* Two col layout */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media (max-width: 700px) { .two-col { grid-template-columns: 1fr; } }
+
+/* Repos */
+.repo-list { display: flex; flex-direction: column; gap: 8px; }
+.repo-row {
+  background: var(--panel2); border: 1px solid var(--border); border-radius: 8px;
+  padding: 10px 14px; display: flex; align-items: center; gap: 10px;
+  text-decoration: none; color: var(--text); transition: border-color .15s;
+}
+.repo-row:hover { border-color: var(--accent); }
+.repo-name { font-size: 13px; font-weight: 600; flex: 1; }
+.repo-updated { font-size: 11px; color: var(--muted); font-family: var(--mono); }
+.repo-stars { font-size: 12px; color: #fbbf24; font-family: var(--mono); }
+
+/* Activity feed */
+.activity-list { display: flex; flex-direction: column; gap: 0; }
+.activity-row {
+  display: flex; gap: 10px; padding: 9px 0;
+  border-bottom: 1px solid var(--border); align-items: flex-start;
+}
+.activity-row:last-child { border-bottom: none; }
+.activity-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); margin-top: 5px; flex-shrink: 0; }
+.activity-body { flex: 1; min-width: 0; }
+.activity-text { font-size: 13px; line-height: 1.5; }
+.activity-text .repo-link { color: var(--accent); font-weight: 600; }
+.activity-time { font-size: 11px; color: var(--muted); font-family: var(--mono); margin-top: 2px; }
+
+/* tooltip */
+.tooltip {
+  position: fixed; background: #1c1c24; border: 1px solid var(--border);
+  border-radius: 6px; padding: 5px 9px; font-size: 11px; font-family: var(--mono);
+  color: var(--text); pointer-events: none; z-index: 999; white-space: nowrap;
+  opacity: 0; transition: opacity .1s;
+}
+
+.error-msg { color: var(--muted); font-size: 13px; text-align: center; padding: 40px; }
+
+/* Heatmap fallback (JS-built) */
+.heatmap-wrap { overflow-x: auto; }
+.heatmap-wrap::-webkit-scrollbar { height: 4px; }
+.heatmap-wrap::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+#heatmapGrid { display: flex; gap: 3px; align-items: flex-start; }
+.heatmap-col { display: flex; flex-direction: column; gap: 3px; }
+.heatmap-col .month-label { font-size: 9px; color: var(--muted); height: 12px; white-space: nowrap; font-family: var(--mono); }
+.heatmap-cell {
+  width: 11px; height: 11px; border-radius: 2px; background: var(--panel2);
+  cursor: default; transition: opacity .1s;
+}
+.heatmap-cell:hover { opacity: .75; }
+.heatmap-cell[data-count="0"] { background: #161b22; }
+.heatmap-cell[data-level="1"] { background: var(--green4); }
+.heatmap-cell[data-level="2"] { background: var(--green3); }
+.heatmap-cell[data-level="3"] { background: var(--green2); }
+.heatmap-cell[data-level="4"] { background: var(--green); }
+.heatmap-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 10px; font-size: 11px; color: var(--muted); flex-wrap: wrap; gap: 8px;
+}
+.heatmap-legend { display: flex; align-items: center; gap: 4px; }
+.legend-cell { width: 11px; height: 11px; border-radius: 2px; }
+
+.api-note {
+  font-size: 11px; color: var(--muted); padding: 8px 12px;
+  background: var(--panel2); border: 1px solid var(--border); border-radius: 8px;
+  line-height: 1.6;
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a class="back" href="../../index.html">- Back</a>
+  <span class="app-title">⚡ GitHub Tracker — foreandr</span>
+  <div class="topbar-spacer"></div>
+  <button class="refresh-btn" id="refreshBtn">↺ Refresh</button>
+</div>
+<div class="loading-bar" id="loadingBar"><div class="loading-bar-fill"></div></div>
+
+<div class="content">
+
+  <!-- Profile -->
+  <div class="profile-card" id="profileCard">
+    <div style="color:var(--muted);font-size:13px">Loading profile...</div>
+  </div>
+
+  <!-- Mini Stats (from live API) -->
+  <div class="mini-stats" id="miniStats"></div>
+
+  <!-- Extended GitHub Stats Cards (github-readme-stats) -->
+  <div class="panel-card">
+    <div class="section-title">GitHub Stats — All Time</div>
+    <div class="stats-embed-row">
+      <img
+        src="https://github-readme-stats.vercel.app/api?username=foreandr&show_icons=true&hide_border=true&bg_color=141417&title_color=39d353&text_color=e8e8f0&icon_color=38bdf8&count_private=true&include_all_commits=true"
+        alt="GitHub Stats"
+        onerror="this.parentElement.innerHTML='<span style=\'color:var(--muted);font-size:12px\'>Stats card unavailable</span>'"
+      >
+      <img
+        src="https://github-readme-stats.vercel.app/api/top-langs/?username=foreandr&layout=compact&hide_border=true&bg_color=141417&title_color=39d353&text_color=e8e8f0&icon_color=38bdf8&langs_count=8"
+        alt="Top Languages"
+        onerror="this.style.display='none'"
+      >
+    </div>
+  </div>
+
+  <!-- Full-Year Contribution Graph (ghchart.rshah.org) -->
+  <div class="panel-card">
+    <div class="section-title">Contribution Graph — Full Year</div>
+    <div class="ghchart-outer">
+      <img
+        src="https://ghchart.rshah.org/39d353/foreandr"
+        alt="GitHub Contributions Graph"
+        onerror="this.closest('.ghchart-outer').innerHTML='<span style=\'color:var(--muted);font-size:12px\'>Chart unavailable — visit github.com/foreandr</span>'"
+      >
+    </div>
+    <div class="chart-note">Full-year contribution graph via ghchart.rshah.org — reflects your public GitHub contribution history.</div>
+  </div>
+
+  <!-- Recent Activity (last ~300 events, from GitHub Events API) -->
+  <div class="panel-card">
+    <div class="section-title">Recent Activity Heatmap — Public Commits (Events API)</div>
+    <div class="heatmap-wrap"><div id="heatmapGrid"></div></div>
+    <div class="heatmap-footer">
+      <span id="heatmapTotal">Loading...</span>
+      <div class="heatmap-legend">
+        <span style="font-size:11px;color:var(--muted);margin-right:4px">Less</span>
+        <div class="legend-cell" style="background:#161b22"></div>
+        <div class="legend-cell" style="background:var(--green4)"></div>
+        <div class="legend-cell" style="background:var(--green3)"></div>
+        <div class="legend-cell" style="background:var(--green2)"></div>
+        <div class="legend-cell" style="background:var(--green)"></div>
+        <span style="font-size:11px;color:var(--muted);margin-left:4px">More</span>
+      </div>
+    </div>
+    <div class="api-note" style="margin-top:10px">
+      ⚠️ GitHub's public Events API returns a maximum of 300 events — for very active profiles this only covers the last few days.
+      Private repository commits are not visible without authentication. The full-year graph above (ghchart) is more accurate.
+    </div>
+  </div>
+
+  <!-- Achievements / Trophies -->
+  <div class="panel-card">
+    <div class="section-title">Achievements &amp; Trophies</div>
+    <div class="trophy-wrap">
+      <img
+        src="https://github-profile-trophy.vercel.app/?username=foreandr&theme=darkhub&no-bg=true&no-frame=true&column=7&margin-w=8&margin-h=8&rank=SECRET,SSS,SS,S,AAA,AA,A,B,C"
+        alt="GitHub Trophies"
+        onerror="this.closest('.trophy-wrap').innerHTML='<span style=\'color:var(--muted);font-size:12px\'>Trophies unavailable — check github.com/foreandr for achievements</span>'"
+      >
+    </div>
+    <div class="chart-note" style="margin-top:10px">
+      Trophies via github-profile-trophy — includes commits, repos, followers, PRs, issues, stars, and reviews milestones.
+      GitHub Achievements (Arctic Code Vault, etc.) are profile-only badges not exposed via API.
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="panel-card">
+      <div class="section-title">Public Repositories</div>
+      <div class="repo-list" id="repoList"><div style="color:var(--muted);font-size:13px">Loading...</div></div>
+    </div>
+    <div class="panel-card">
+      <div class="section-title">Recent Activity Feed</div>
+      <div class="activity-list" id="activityList"><div style="color:var(--muted);font-size:13px">Loading...</div></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+const USERNAME = 'foreandr';
+const GH_API   = 'https://api.github.com';
+
+const profileCard  = document.getElementById('profileCard');
+const miniStats    = document.getElementById('miniStats');
+const heatmapGrid  = document.getElementById('heatmapGrid');
+const heatmapTotal = document.getElementById('heatmapTotal');
+const repoList     = document.getElementById('repoList');
+const activityList = document.getElementById('activityList');
+const loadingBar   = document.getElementById('loadingBar');
+const tooltip      = document.getElementById('tooltip');
+
+// ── Tooltip ───────────────────────────────────────────────────────────────────
+document.addEventListener('mousemove', e => {
+  tooltip.style.left = (e.clientX + 12) + 'px';
+  tooltip.style.top  = (e.clientY - 28) + 'px';
+});
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+async function api(path) {
+  const r = await fetch(GH_API + path);
+  if (!r.ok) throw new Error(r.status);
+  return r.json();
+}
+
+function timeAgo(iso) {
+  const s = Math.floor((Date.now() - new Date(iso)) / 1000);
+  if (s < 60)    return 'just now';
+  if (s < 3600)  return Math.floor(s/60) + 'm ago';
+  if (s < 86400) return Math.floor(s/3600) + 'h ago';
+  return Math.floor(s/86400) + 'd ago';
+}
+
+function dateStr(d) {
+  return d.toISOString().slice(0, 10);
+}
+
+// ── Profile ───────────────────────────────────────────────────────────────────
+async function loadProfile() {
+  const u = await api(`/users/${USERNAME}`);
+  profileCard.innerHTML = `
+    <img class="avatar" src="${u.avatar_url}" alt="avatar">
+    <div class="profile-info">
+      <div class="profile-name">${u.name || u.login}</div>
+      <div class="profile-login">@${u.login}</div>
+      ${u.bio ? `<div class="profile-bio">${u.bio}</div>` : ''}
+      ${u.location ? `<div class="profile-bio" style="margin-top:4px">📍 ${u.location}</div>` : ''}
+      ${u.blog ? `<div class="profile-bio" style="margin-top:2px">🔗 <a href="${u.blog}" target="_blank" style="color:var(--blue)">${u.blog.replace(/^https?:\/\//, '')}</a></div>` : ''}
+    </div>
+    <div class="profile-stats">
+      <div class="pstat"><div class="pstat-val">${u.public_repos}</div><div class="pstat-lbl">Public repos</div></div>
+      <div class="pstat"><div class="pstat-val">${u.followers}</div><div class="pstat-lbl">Followers</div></div>
+      <div class="pstat"><div class="pstat-val">${u.following}</div><div class="pstat-lbl">Following</div></div>
+    </div>
+    <a class="gh-link" href="https://github.com/${USERNAME}" target="_blank">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 21.795 24 17.295 24 12c0-6.63-5.37-12-12-12"/></svg>
+      View on GitHub
+    </a>`;
+}
+
+// ── Events → heatmap + activity + mini-stats ──────────────────────────────────
+async function loadEvents() {
+  let allEvents = [];
+  for (let page = 1; page <= 10; page++) {
+    try {
+      const batch = await api(`/users/${USERNAME}/events/public?per_page=100&page=${page}`);
+      if (!batch.length) break;
+      allEvents = allEvents.concat(batch);
+      if (batch.length < 100) break;
+    } catch { break; }
+  }
+
+  // ── Build heatmap from events ────────────────────────────────────────────────
+  const dayCounts = {};
+  let totalCommits = 0;
+
+  allEvents.forEach(e => {
+    const day = e.created_at.slice(0, 10);
+    if (e.type === 'PushEvent') {
+      // payload.size = real commit count; commits[] is truncated by GitHub to 20 max
+      const n = e.payload?.size ?? e.payload?.distinct_size ?? e.payload?.commits?.length ?? 1;
+      dayCounts[day] = (dayCounts[day] || 0) + n;
+      totalCommits += n;
+    } else {
+      dayCounts[day] = dayCounts[day] || 0;
+    }
+  });
+
+  // Build 90-day grid
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const days = [];
+  for (let i = 89; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    days.push(d);
+  }
+
+  const maxCount = Math.max(1, ...Object.values(dayCounts));
+  function level(count) {
+    if (!count) return 0;
+    if (count <= maxCount * 0.25) return 1;
+    if (count <= maxCount * 0.5)  return 2;
+    if (count <= maxCount * 0.75) return 3;
+    return 4;
+  }
+
+  const firstDay  = days[0];
+  const startDow  = firstDay.getDay();
+  const padded    = Array(startDow).fill(null).concat(days);
+  const months    = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  heatmapGrid.innerHTML = '';
+  for (let col = 0; col < Math.ceil(padded.length / 7); col++) {
+    const colEl = document.createElement('div');
+    colEl.className = 'heatmap-col';
+    for (let row = 0; row < 7; row++) {
+      const d = padded[col * 7 + row];
+      if (row === 0) {
+        const labelEl = document.createElement('div');
+        labelEl.className = 'month-label';
+        if (d && d.getDate() <= 7) labelEl.textContent = months[d.getMonth()];
+        colEl.appendChild(labelEl);
+      }
+      const cell = document.createElement('div');
+      cell.className = 'heatmap-cell';
+      if (!d) {
+        cell.style.opacity = '0';
+      } else {
+        const ds    = dateStr(d);
+        const count = dayCounts[ds] || 0;
+        cell.dataset.count = count;
+        cell.dataset.level = level(count);
+        const label = `${ds}: ${count} commit${count !== 1 ? 's' : ''}`;
+        cell.addEventListener('mouseenter', () => { tooltip.textContent = label; tooltip.style.opacity = '1'; });
+        cell.addEventListener('mouseleave', () => { tooltip.style.opacity = '0'; });
+      }
+      colEl.appendChild(cell);
+    }
+    heatmapGrid.appendChild(colEl);
+  }
+
+  const activeDays = Object.values(dayCounts).filter(v => v > 0).length;
+  const daysSpanned = allEvents.length
+    ? Math.ceil((Date.now() - new Date(allEvents[allEvents.length-1]?.created_at)) / 86400000)
+    : 0;
+
+  heatmapTotal.textContent =
+    `${totalCommits.toLocaleString()} commits across ${activeDays} active days` +
+    (daysSpanned ? ` (last ~${daysSpanned} days visible from API)` : '');
+
+  // ── Mini stats ─────────────────────────────────────────────────────────────
+  const uniqueRepos = new Set(allEvents.map(e => e.repo?.name)).size;
+  const today7 = new Date(); today7.setDate(today7.getDate() - 7);
+  const week = allEvents
+    .filter(e => new Date(e.created_at) > today7 && e.type === 'PushEvent')
+    .reduce((s, e) => s + (e.payload?.size ?? e.payload?.distinct_size ?? e.payload?.commits?.length ?? 1), 0);
+
+  miniStats.innerHTML = `
+    <div class="mini-stat"><div class="v">${totalCommits.toLocaleString()}</div><div class="l">Commits (API window)</div></div>
+    <div class="mini-stat"><div class="v">${week.toLocaleString()}</div><div class="l">Commits this week</div></div>
+    <div class="mini-stat"><div class="v">${activeDays}</div><div class="l">Active days (API)</div></div>
+    <div class="mini-stat"><div class="v">${uniqueRepos}</div><div class="l">Repos touched</div></div>`;
+
+  // ── Activity feed ──────────────────────────────────────────────────────────
+  const shown = allEvents.slice(0, 40);
+  if (!shown.length) {
+    activityList.innerHTML = '<div class="error-msg">No public activity found.</div>';
+    return;
+  }
+
+  activityList.innerHTML = shown.map(e => {
+    const repo     = e.repo?.name?.replace(`${USERNAME}/`, '') || '?';
+    let text = '';
+
+    if (e.type === 'PushEvent') {
+      const n   = e.payload?.size ?? e.payload?.distinct_size ?? e.payload?.commits?.length ?? 1;
+      const msg = e.payload?.commits?.[0]?.message?.split('\n')[0] || '';
+      text = `Pushed <strong>${n} commit${n !== 1 ? 's' : ''}</strong> to <span class="repo-link">${repo}</span>`
+           + (msg ? ` — <em style="color:var(--muted);font-size:12px">${msg.slice(0,60)}${msg.length>60?'…':''}</em>` : '');
+    } else if (e.type === 'CreateEvent') {
+      text = `Created ${e.payload?.ref_type || 'branch'} in <span class="repo-link">${repo}</span>`;
+    } else if (e.type === 'PullRequestEvent') {
+      text = `${e.payload?.action} PR in <span class="repo-link">${repo}</span>`;
+    } else if (e.type === 'IssuesEvent') {
+      text = `${e.payload?.action} issue in <span class="repo-link">${repo}</span>`;
+    } else if (e.type === 'WatchEvent') {
+      text = `Starred <span class="repo-link">${repo}</span>`;
+    } else if (e.type === 'ForkEvent') {
+      text = `Forked <span class="repo-link">${repo}</span>`;
+    } else if (e.type === 'DeleteEvent') {
+      text = `Deleted ${e.payload?.ref_type || 'ref'} in <span class="repo-link">${repo}</span>`;
+    } else if (e.type === 'ReleaseEvent') {
+      text = `Released <strong>${e.payload?.release?.tag_name || 'v?'}</strong> in <span class="repo-link">${repo}</span>`;
+    } else {
+      text = `${e.type.replace('Event','')} on <span class="repo-link">${repo}</span>`;
+    }
+
+    return `<div class="activity-row">
+      <div class="activity-dot"></div>
+      <div class="activity-body">
+        <div class="activity-text">${text}</div>
+        <div class="activity-time">${timeAgo(e.created_at)}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Repos ─────────────────────────────────────────────────────────────────────
+async function loadRepos() {
+  const repos = await api(`/users/${USERNAME}/repos?per_page=100&sort=updated`);
+  if (!repos.length) { repoList.innerHTML = '<div class="error-msg">No public repos.</div>'; return; }
+  repoList.innerHTML = repos.slice(0, 20).map(r => `
+    <a class="repo-row" href="${r.html_url}" target="_blank">
+      <span class="repo-name">📁 ${r.name}</span>
+      ${r.stargazers_count ? `<span class="repo-stars">★ ${r.stargazers_count}</span>` : ''}
+      <span class="repo-updated">${r.updated_at.slice(0,10)}</span>
+    </a>`).join('');
+}
+
+// ── Load all ──────────────────────────────────────────────────────────────────
+async function loadAll() {
+  loadingBar.classList.remove('done');
+  try {
+    await Promise.all([loadProfile(), loadEvents(), loadRepos()]);
+  } catch(e) {
+    console.error(e);
+  }
+  loadingBar.classList.add('done');
+}
+
+document.getElementById('refreshBtn').addEventListener('click', loadAll);
+loadAll();
+</script>
+</body>
+</html>

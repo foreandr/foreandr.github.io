@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Linear Transformations</title>
+  <link rel="icon" type="image/x-icon" href="../../images.ico">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+<div class="page">
+
+  <header class="topbar">
+    <a class="back-btn" href="../../index.html">← Back</a>
+    <div class="title-wrap">
+      <h1>Linear Transformations</h1>
+      <p>Connections between tangent spaces in ℝ² — linear or nonlinear</p>
+    </div>
+  </header>
+
+  <div class="main-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <button class="sidebar-toggle" id="sidebar-toggle">‹</button>
+      <div class="sidebar-inner" id="sidebar-inner">
+
+        <!-- Display options (always visible) -->
+        <section class="sb-opts">
+          <h4 class="sb-opts-title">Display</h4>
+          <label class="opt-row"><input type="checkbox" id="opt-grid" checked> Grid lines</label>
+          <label class="opt-row"><input type="checkbox" id="opt-basis" checked> Basis vectors</label>
+          <div class="opt-range-row">
+            <span>Range</span>
+            <input type="range" id="opt-range" min="2" max="8" value="3" step="1">
+            <span id="opt-range-val">3</span>
+          </div>
+        </section>
+
+        <!-- Dynamic: interleaved node + connection sections -->
+        <div id="sidebar-content"></div>
+
+        <button class="add-btn" id="add-node-btn">+ Add Node</button>
+      </div>
+    </aside>
+
+    <!-- RIGHT AREA -->
+    <div class="right-area" id="right-area">
+
+      <!-- TOP: chain of tangent spaces -->
+      <div class="chain-scroll-wrap">
+        <div class="chain-legend">
+          <div class="chain-legend-item"><div class="legend-dash"></div> reference grid</div>
+          <div class="chain-legend-item"><div class="legend-solid"></div> transported grid</div>
+<div class="chain-legend-item"><div class="legend-v1"></div> v₁ (local basis)</div>
+          <div class="chain-legend-item"><div class="legend-v2"></div> v₂ (local basis)</div>
+        </div>
+        <div class="chain-row" id="chain-row"></div>
+      </div>
+
+      <!-- BOTTOM: curvature / holonomy -->
+      <div class="curv-panel">
+        <div class="curv-panel-header">
+          <div class="curv-header-left">
+            <span class="curv-title-text">Curvature — Parallel Transport Holonomy</span>
+            <span class="curv-subtitle">Forward order T₁·T₂·…·Tₙ vs reverse order Tₙ·…·T₂·T₁</span>
+          </div>
+          <button class="explain-btn" id="explain-btn" style="display:none">Why?</button>
+        </div>
+        <div class="curv-body" id="curv-body">
+          <div class="curv-empty">Add at least 3 nodes (2 connections) to detect curvature.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+<!-- Explanation modal -->
+<div class="modal-backdrop" id="modal-backdrop">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <h2 id="modal-title">Why is this curved?</h2>
+      <button class="modal-close" id="modal-close">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<script src="./script.js"></script>
+</body>
+</html>

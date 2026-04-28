@@ -1,0 +1,6 @@
+fix the names, some are all caps, some have [, and some have ' and shit], do  A full clerasn, remove surnames like dr and mr and so on , REMOVE PERIOPODS, REMOVE THINGS LIKE tHE, REMOVE COMMON WORDS LIKE THE FOR A IS, AND SO ON
+
+circle size based on num edges
+colour clusters
+    - although this coloring job can probabbly be done ONCE the graph is loaded?
+    - like I load the graph and kind of do the calculatiosn in the background and update them gradually, dont redraw graph just update color

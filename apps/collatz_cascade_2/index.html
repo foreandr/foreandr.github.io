@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Collatz Cascade 2 – Generalized Dynamics</title>
+  <link rel="icon" type="image/x-icon" href="../../images.ico">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="page">
+    <header class="topbar">
+      <a class="back-btn" href="../../index.html">Back Home</a>
+      <div class="title-wrap">
+        <h1>Collatz Cascade 2 <span class="v2-badge">Generalized</span></h1>
+        <p>Extend the Collatz idea to any modulus and any operation. Pick a modulus <strong>m</strong>, then assign a different mathematical operation to each residue class — linear maps, powers, roots, logarithms, exponentials, polynomial derivatives, integrals, rational functions, and more. Stack runs, watch trajectories cascade, and inspect every step.</p>
+      </div>
+    </header>
+
+    <section class="panel controls" id="controls-panel">
+      <div class="control-head">
+        <h2>Run Controls</h2>
+        <p>Set a start value, build and overlay runs. The rule system below defines what happens at each step.</p>
+      </div>
+
+      <div class="control-grid run-setup-grid">
+        <label>
+          <span>Start Number n₀</span>
+          <input id="n-input" type="text" value="27" spellcheck="false">
+        </label>
+        <label>
+          <span>Animation Speed</span>
+          <div class="speed-wrap">
+            <input id="speed-range" type="range" min="1" max="60" step="1" value="14">
+            <strong id="speed-value">14×</strong>
+          </div>
+        </label>
+        <label>
+          <span>Auto Focus Graph</span>
+          <select id="auto-focus-check">
+            <option value="on" selected>On (after Add Run)</option>
+            <option value="off">Off</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="button-row">
+        <button id="random-btn" class="btn ghost">🎲 Random N + Add</button>
+        <button id="build-btn" class="btn primary">▶ Add Run</button>
+        <button id="play-btn" class="btn">Pause (Space)</button>
+        <button id="reset-btn" class="btn">↺ Restart Anim</button>
+        <button id="global-reset-btn" class="btn danger">✕ Clear All</button>
+        <button id="focus-scene-btn" class="btn ghost">⊞ Focus Graph</button>
+      </div>
+      <p id="queue-line" class="queue-line"></p>
+      <p id="status-line" class="status-line"></p>
+
+      <!-- RULE SYSTEM -->
+      <details class="accordion" id="rule-details" open>
+        <summary>Rule System — Generalized Operations</summary>
+        <div class="accordion-body">
+          <p class="mini-explain">Choose a modulus <strong>m</strong>. For each residue class r = 0, 1, …, m−1, assign an operation. At each step, compute <strong>n mod m</strong> to pick a rule, then apply it to get the next n. All residues are always covered — no gaps.</p>
+
+          <div class="modulus-section">
+            <div class="modulus-label-row">
+              <span class="field-label">Modulus m — compute <strong>n mod m</strong></span>
+              <div id="modulus-btn-group" class="modulus-pill-track">
+                <button class="mod-btn active" data-m="2">mod 2</button>
+                <button class="mod-btn" data-m="3">mod 3</button>
+                <button class="mod-btn" data-m="4">mod 4</button>
+                <button class="mod-btn" data-m="5">mod 5</button>
+                <button class="mod-btn" data-m="6">mod 6</button>
+                <button class="mod-btn" data-m="7">mod 7</button>
+                <button class="mod-btn" data-m="8">mod 8</button>
+                <button class="mod-btn" data-m="custom">Custom…</button>
+              </div>
+              <div id="custom-mod-wrap" class="custom-mod-wrap hidden">
+                <label>m = <input id="custom-mod-input" type="number" min="2" max="24" value="9" class="custom-mod-input"></label>
+              </div>
+            </div>
+            <div id="coverage-badge" class="coverage-badge ok">✓ All residues covered</div>
+          </div>
+
+          <div id="rules-container" class="rules-container"></div>
+
+          <div class="formula-box">
+            <div class="formula-title">Rule Summary</div>
+            <pre id="formula-preview" class="formula-preview-text"></pre>
+          </div>
+        </div>
+      </details>
+
+      <!-- SAFETY -->
+      <details class="accordion" id="safety-details">
+        <summary>Safety and Performance</summary>
+        <div class="accordion-body">
+          <div class="control-grid control-grid-3">
+            <label>
+              <span>Safety Preset</span>
+              <select id="profile-input">
+                <option value="potato">🥔 Potato Safe</option>
+                <option value="balanced" selected>⚖ Balanced</option>
+                <option value="high">⚡ High Power</option>
+                <option value="extreme">🔥 Extreme</option>
+                <option value="custom">Custom</option>
+              </select>
+            </label>
+            <label>
+              <span>Max Steps Per Run</span>
+              <input id="max-steps-input" type="number" min="1000" step="1000" value="500000">
+            </label>
+            <label>
+              <span>Max Value Cap</span>
+              <input id="max-value-input" type="text" value="1000000000000000" spellcheck="false">
+            </label>
+          </div>
+          <p id="safety-hint" class="safety-hint"></p>
+        </div>
+      </details>
+
+      <!-- HELP -->
+      <details class="accordion" id="help-details">
+        <summary>What Am I Looking At?</summary>
+        <div class="accordion-body help-copy">
+          <p>Each run starts at your chosen n₀ and applies your rule system repeatedly. At every step, n mod m selects one of your residue rules, which applies its operation to produce the next n.</p>
+          <p>Multiple overlay runs let you compare trajectory shapes, peak behaviors, and convergence. Use <strong>mod 2</strong> with <em>divide</em> for residue 0 and <em>linear 3n+1</em> for residue 1 to get classic Collatz.</p>
+          <p>Try exotic rules: <strong>mod 3</strong> with power, root, and log operations — then watch for cycles, divergence, or surprising convergence. The on-canvas HUD shows the live calculation at every step of the active run.</p>
+          <p>Click any row in <strong>Overlay Runs</strong> to inspect the full step-by-step sequence with calculations.</p>
+        </div>
+      </details>
+    </section>
+
+    <section class="panel scene-panel" id="scene-panel">
+      <canvas id="scene"></canvas>
+      <div id="hover-tooltip" class="hover-tooltip hidden"></div>
+    </section>
+
+    <section class="panel stats">
+      <article><h3>Runs</h3><p id="stat-starts">0</p></article>
+      <article><h3>Distinct Nodes</h3><p id="stat-nodes">0</p></article>
+      <article><h3>Distinct Edges</h3><p id="stat-edges">0</p></article>
+      <article><h3>Longest Steps</h3><p id="stat-longest">0</p></article>
+      <article><h3>Peak Value</h3><p id="stat-peak">0</p></article>
+      <article><h3>Active Frame</h3><p id="stat-step">0</p></article>
+      <article><h3>Current Active Node</h3><p id="stat-current-node">-</p></article>
+      <article><h3>Hover Node</h3><p id="stat-hover-node">-</p></article>
+    </section>
+
+    <section class="panel runs-panel">
+      <h2>Overlay Runs</h2>
+      <div id="runs-list" class="runs-list"></div>
+    </section>
+  </div>
+
+  <div id="history-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="history-title">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h2 id="history-title">Run History</h2>
+        <button id="history-close-btn" class="btn">Close</button>
+      </div>
+      <p id="history-meta" class="modal-meta"></p>
+      <div class="modal-actions">
+        <button id="history-download-btn" class="btn ghost">↓ Download History .txt</button>
+      </div>
+      <textarea id="history-text" class="history-text" readonly></textarea>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script src="./script.js"></script>
+</body>
+</html>

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Path Connect Lab (2D + Cube)</title>
+  <link rel="icon" type="image/x-icon" href="../../images.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="back-btn" href="../../index.html">Back Home</a>
+    <div class="title-wrap">
+      <h1>Path Connect Lab</h1>
+      <p>Flow-style path puzzle on a flat grid or a rotatable cube surface.</p>
+    </div>
+  </header>
+
+  <main class="app-shell">
+    <section class="control-panel card">
+      <h2>Setup</h2>
+      <div class="controls-grid">
+        <label>
+          <span>Board Type</span>
+          <select id="mode-select">
+            <option value="2d" selected>2D Square Grid</option>
+            <option value="cube">3D Cube Surface</option>
+          </select>
+        </label>
+        <label>
+          <span>Grid Size n</span>
+          <input id="size-input" type="number" min="3" max="8" value="5">
+        </label>
+        <label>
+          <span>Color Pairs</span>
+          <input id="pairs-input" type="number" min="2" max="10" value="5">
+        </label>
+        <label>
+          <span>Puzzle Flag</span>
+          <select id="solvability-select">
+            <option value="solvable" selected>Flag: Solvable</option>
+            <option value="unsolvable">Flag: Unsolvable</option>
+            <option value="random">Flag: Random</option>
+          </select>
+          <small class="control-hint">Choose whether the generator should target a solvable or unsolvable instance.</small>
+        </label>
+        <label>
+          <span>Solver Budget (ms)</span>
+          <input id="budget-input" type="number" min="50" max="5000" step="50" value="1200">
+        </label>
+      </div>
+
+      <div class="button-row">
+        <button id="generate-btn" class="btn primary">Generate Random Puzzle</button>
+        <button id="reset-btn" class="btn">Clear Paths</button>
+        <button id="solve-btn" class="btn ghost">Try Solve (Bounded)</button>
+      </div>
+
+      <div class="button-row">
+        <label class="switch">
+          <input type="checkbox" id="math-toggle">
+          <span>Math Mode</span>
+        </label>
+      </div>
+
+      <p id="flag-pill" class="flag-pill">Flag: Solvable</p>
+      <p id="status-line" class="status-line">Generate a puzzle to begin.</p>
+      <div id="legend" class="legend"></div>
+    </section>
+
+    <section class="board-panel card">
+      <div class="board-head">
+        <h2>Board</h2>
+        <p id="board-subtitle">Drag from a colored terminal to build paths.</p>
+      </div>
+
+      <div id="board-2d-wrap" class="board-wrap active">
+        <canvas id="board-2d"></canvas>
+      </div>
+
+      <div id="board-3d-wrap" class="board-wrap">
+        <div id="cube-scene"></div>
+      </div>
+    </section>
+
+    <aside class="meta-panel card">
+      <h2>Live Stats</h2>
+      <ul class="stats-list">
+        <li><strong>Connected pairs:</strong> <span id="connected-pairs">0 / 0</span></li>
+        <li><strong>Coverage:</strong> <span id="coverage">0%</span></li>
+        <li><strong>Cells:</strong> <span id="cell-count">0</span></li>
+        <li><strong>Edges:</strong> <span id="edge-count">0</span></li>
+      </ul>
+
+      <div id="math-panel" class="math-panel hidden">
+        <h3>Math Metadata</h3>
+        <p id="graph-line" class="meta-line"></p>
+        <p class="meta-line">Complexity: this family is NP-Complete (related to Hamiltonian-style and SAT reductions).</p>
+        <p id="degree-line" class="meta-line"></p>
+        <p id="topology-line" class="meta-line"></p>
+        <p class="meta-line formula">Terminals: d(v) = 1, Path interior: d(v) = 2</p>
+      </div>
+
+      <div class="solver-panel">
+        <h3>Solver Result</h3>
+        <p id="solver-line" class="meta-line">No solve attempt yet.</p>
+      </div>
+    </aside>
+  </main>
+
+  <script src="../earth_data/static/js/three.min.js"></script>
+  <script src="./script.js"></script>
+</body>
+</html>

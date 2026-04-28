@@ -1,0 +1,1390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>K-LAB — Algorithmic Information Workbench</title>
+<link rel="icon" href="../../images.ico">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg0:#030608;--bg1:#070d12;--bg2:#0c1520;--bg3:#101a28;
+  --g:#00ff88;--b:#00aaff;--p:#aa44ff;--r:#ff3355;--y:#ffcc00;--o:#ff8822;
+  --t:#c8e0f4;--t2:#3d566e;--t3:#1a2e40;
+  --bdr:#0e1c28;--f:'JetBrains Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;overflow:hidden;background:var(--bg0);color:var(--t);font-family:var(--f);font-size:13px;}
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
+  background:radial-gradient(900px 400px at 10% -5%,rgba(0,255,136,.04),transparent 60%),
+             radial-gradient(700px 350px at 90% 120%,rgba(0,170,255,.04),transparent 60%);
+}
+/* ─── TOPBAR ─── */
+#topbar{
+  position:fixed;top:0;left:0;right:0;height:46px;z-index:100;
+  background:rgba(3,6,8,.97);border-bottom:1px solid var(--bdr);
+  display:flex;align-items:center;gap:6px;padding:0 12px;
+  backdrop-filter:blur(12px);
+}
+.logo{font-size:.9rem;font-weight:700;color:var(--g);letter-spacing:.12em;white-space:nowrap;margin-right:4px;user-select:none;}
+.logo em{color:var(--t2);font-style:normal;}
+.back-btn{
+  color:var(--t2);text-decoration:none;font-size:.68rem;
+  border:1px solid var(--t3);border-radius:4px;padding:3px 9px;
+  transition:all .15s;white-space:nowrap;flex-shrink:0;
+}
+.back-btn:hover{color:var(--t);border-color:var(--t2);}
+.vsep{width:1px;height:22px;background:var(--t3);flex-shrink:0;}
+.tabs{display:flex;gap:3px;flex:1;overflow-x:auto;}
+.tabs::-webkit-scrollbar{height:0;}
+.tab{
+  background:none;border:1px solid transparent;color:var(--t2);
+  border-radius:5px;padding:5px 11px;font-size:.67rem;font-family:var(--f);
+  cursor:pointer;letter-spacing:.05em;font-weight:600;transition:all .15s;
+  white-space:nowrap;flex-shrink:0;
+}
+.tab:hover{color:var(--t);border-color:var(--t3);}
+.tab.active{color:var(--bg0);background:var(--g);border-color:var(--g);}
+/* ─── MAIN ─── */
+#main{position:fixed;top:46px;left:0;right:0;bottom:0;overflow-y:auto;overflow-x:hidden;}
+.panel{display:none;padding:22px 24px 60px;max-width:1260px;margin:0 auto;}
+.panel.active{display:block;}
+/* ─── PANEL HEADER ─── */
+.ph{margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid var(--bdr);}
+.ph h2{font-size:.9rem;font-weight:700;color:var(--g);letter-spacing:.1em;margin-bottom:5px;}
+.ph p{font-size:.7rem;color:var(--t2);line-height:1.7;max-width:80ch;}
+.ph cite{display:block;font-size:.62rem;color:var(--t3);font-style:italic;margin-top:6px;}
+/* ─── GRID ─── */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+@media(max-width:720px){.g2,.g3{grid-template-columns:1fr;}}
+/* ─── CARD ─── */
+.card{background:var(--bg1);border:1px solid var(--bdr);border-radius:8px;padding:14px;}
+.card-title{font-size:.6rem;color:var(--t2);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;font-weight:700;}
+/* ─── INPUTS ─── */
+textarea.ki,input.ki{
+  width:100%;background:var(--bg2);border:1px solid var(--t3);color:var(--t);
+  border-radius:5px;padding:8px 10px;font-family:var(--f);font-size:.72rem;
+  resize:vertical;outline:none;transition:border-color .15s;
+}
+textarea.ki:focus,input.ki:focus{border-color:var(--b);}
+textarea.ki{min-height:90px;}
+/* ─── BUTTONS ─── */
+.btn{
+  background:var(--g);color:var(--bg0);border:none;border-radius:5px;
+  padding:7px 16px;font-family:var(--f);font-size:.72rem;font-weight:700;
+  cursor:pointer;transition:all .15s;letter-spacing:.04em;
+}
+.btn:hover{filter:brightness(1.1);}
+.btn.b{background:var(--b);}
+.btn.y{background:var(--y);}
+.btn.r{background:var(--r);color:#fff;}
+.btn.ghost{background:none;border:1px solid var(--t3);color:var(--t2);}
+.btn.ghost:hover{border-color:var(--t);color:var(--t);}
+.btn.sm{padding:4px 10px;font-size:.63rem;}
+/* ─── EXAMPLE CHIPS ─── */
+.chips{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px;}
+.chip{
+  background:var(--bg3);border:1px solid var(--t3);color:var(--t2);
+  border-radius:4px;padding:3px 8px;font-size:.61rem;font-family:var(--f);
+  cursor:pointer;transition:all .12s;
+}
+.chip:hover{border-color:var(--g);color:var(--g);}
+/* ─── METRICS ─── */
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-top:12px;}
+.metric{background:var(--bg2);border:1px solid var(--t3);border-radius:6px;padding:10px 12px;}
+.metric .mv{font-size:1.3rem;font-weight:700;color:var(--g);margin-bottom:2px;line-height:1;}
+.metric .ml{font-size:.58rem;color:var(--t2);text-transform:uppercase;letter-spacing:.08em;}
+.metric .ms{font-size:.63rem;color:var(--t2);margin-top:3px;}
+/* ─── GAUGE ─── */
+.gauge-wrap{height:22px;background:var(--bg2);border:1px solid var(--t3);border-radius:11px;overflow:hidden;position:relative;margin-top:10px;}
+.gauge-fill{height:100%;border-radius:11px;transition:width .55s ease,background .55s ease;}
+.gauge-label{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:.62rem;font-weight:700;color:var(--bg0);}
+/* ─── CLASSIFICATION BAR ─── */
+.cbar{margin-top:12px;}
+.cbar-lbl{font-size:.6rem;color:var(--t2);margin-bottom:4px;display:flex;justify-content:space-between;}
+.cbar-track{height:5px;background:linear-gradient(to right,#0066ff,#00ff88,#ffcc00,#ff3355);border-radius:3px;position:relative;}
+.cbar-mark{position:absolute;top:-5px;width:3px;height:15px;background:#fff;border-radius:2px;box-shadow:0 0 6px #fff;transition:left .55s ease;}
+.cbar-class{margin-top:6px;font-size:.72rem;font-weight:700;}
+/* ─── CANVAS ─── */
+canvas{display:block;}
+.cv-wrap{background:var(--bg2);border:1px solid var(--t3);border-radius:6px;overflow:hidden;}
+/* ─── FORMULA ─── */
+.formula{
+  background:rgba(0,255,136,.04);border-left:3px solid var(--g);
+  padding:9px 14px;margin:12px 0;border-radius:0 6px 6px 0;
+  font-size:.75rem;color:var(--g);letter-spacing:.02em;line-height:1.7;
+}
+/* ─── NCD RESULT ─── */
+.ncd-big{font-size:3.5rem;font-weight:700;text-align:center;padding:18px 10px 6px;line-height:1;transition:color .4s;}
+.ncd-interp{text-align:center;font-size:.7rem;color:var(--t2);margin-bottom:10px;}
+/* ─── OMEGA ─── */
+.omega-bits{display:flex;gap:3px;flex-wrap:wrap;margin-top:8px;}
+.obit{
+  width:24px;height:24px;display:flex;align-items:center;justify-content:center;
+  font-size:.72rem;font-weight:700;border-radius:3px;transition:all .4s;
+}
+.obit.one{background:rgba(255,204,0,.18);color:var(--y);border:1px solid rgba(255,204,0,.4);}
+.obit.zero{background:rgba(0,170,255,.1);color:var(--b);border:1px solid rgba(0,170,255,.25);}
+.obit.unk{background:var(--bg3);color:var(--t3);border:1px solid var(--t3);}
+/* ─── STATS STRIP ─── */
+.sstrip{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px;}
+.sstat{background:var(--bg2);border:1px solid var(--t3);border-radius:4px;padding:4px 10px;font-size:.65rem;}
+.sstat .sv{color:var(--g);font-weight:700;margin-right:5px;}
+/* ─── LIBRARY ─── */
+.lib-controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px;}
+.tiers{display:flex;gap:4px;}
+.tf{
+  background:var(--bg3);border:1px solid var(--t3);color:var(--t2);
+  border-radius:4px;padding:3px 9px;font-size:.61rem;font-family:var(--f);
+  cursor:pointer;transition:all .12s;
+}
+.tf.on{border-color:var(--g);color:var(--g);background:rgba(0,255,136,.08);}
+.lib-tbl{width:100%;border-collapse:collapse;}
+.lib-tbl th{font-size:.6rem;color:var(--t2);text-transform:uppercase;letter-spacing:.08em;padding:7px 10px;text-align:left;border-bottom:1px solid var(--t3);font-weight:700;}
+.lib-tbl td{padding:8px 10px;border-bottom:1px solid var(--bg3);font-size:.68rem;vertical-align:top;line-height:1.5;}
+.lib-tbl tr:hover td{background:var(--bg3);}
+.lib-tbl .auth{color:var(--b);font-size:.63rem;}
+.lib-tbl .yr{color:var(--t2);font-size:.65rem;white-space:nowrap;}
+.lib-tbl .desc{font-size:.62rem;color:var(--t2);margin-top:3px;}
+.tbadge{display:inline-block;padding:2px 6px;border-radius:3px;font-size:.57rem;font-weight:700;letter-spacing:.05em;}
+.tb1{background:rgba(255,204,0,.12);color:var(--y);}
+.tb2{background:rgba(0,255,136,.1);color:var(--g);}
+.tb3{background:rgba(0,170,255,.1);color:var(--b);}
+.tb4{background:rgba(170,68,255,.1);color:var(--p);}
+/* ─── CODE ─── */
+.code{background:var(--bg2);border:1px solid var(--t3);border-radius:4px;padding:8px 11px;font-size:.66rem;color:var(--g);word-break:break-all;line-height:1.7;}
+/* ─── LOG ─── */
+.log-box{background:var(--bg2);border:1px solid var(--t3);border-radius:6px;padding:10px;height:110px;overflow-y:auto;font-size:.64rem;color:var(--t2);line-height:1.75;}
+.log-box .hi{color:var(--g);}
+.log-box .warn{color:var(--y);}
+.log-box .err{color:var(--r);}
+/* ─── SCROLLBAR ─── */
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:var(--bg0);}
+::-webkit-scrollbar-thumb{background:var(--t3);border-radius:2px;}
+/* ─── MISC ─── */
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.row.top{align-items:flex-start;}
+.dim{color:var(--t2);}
+.hi-g{color:var(--g);font-weight:700;}
+.hi-b{color:var(--b);}
+.hi-y{color:var(--y);}
+.hi-r{color:var(--r);}
+.sep{height:1px;background:var(--bdr);margin:14px 0;}
+.placeholder{color:var(--t2);font-size:.7rem;padding:20px;text-align:center;}
+sub{font-size:.7em;}
+sup{font-size:.7em;}
+/* ─── SOURCE TOGGLE ─── */
+.src-toggle{display:flex;gap:4px;margin-bottom:8px;}
+.src-btn{background:var(--bg3);border:1px solid var(--t3);color:var(--t2);border-radius:4px;padding:4px 12px;font-size:.65rem;font-family:var(--f);cursor:pointer;transition:all .12s;}
+.src-btn.on{background:rgba(0,255,136,.1);border-color:var(--g);color:var(--g);font-weight:700;}
+/* ─── DROP ZONE ─── */
+#a-drop{
+  display:none;border:2px dashed var(--t3);border-radius:8px;
+  padding:30px 20px;text-align:center;font-size:.72rem;color:var(--t2);
+  cursor:pointer;transition:all .2s;position:relative;
+}
+#a-drop.over{border-color:var(--g);background:rgba(0,255,136,.05);color:var(--g);}
+#a-drop input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+#a-drop .drop-icon{font-size:2rem;margin-bottom:8px;}
+#a-file-info{font-size:.65rem;color:var(--b);margin-top:6px;}
+/* ─── BINARY DISPLAY ─── */
+#a-binary-wrap{margin-top:14px;display:none;}
+.bin-header{display:flex;align-items:center;gap:12px;margin-bottom:8px;flex-wrap:wrap;}
+.bin-header .blen{font-size:.72rem;}
+.bin-header .blen strong{color:var(--g);}
+.bin-preview{
+  background:var(--bg2);border:1px solid var(--t3);border-radius:6px;
+  padding:10px 12px;font-size:.68rem;line-height:2;word-break:break-all;
+  max-height:180px;overflow-y:auto;
+}
+.bin-byte{display:inline-block;margin-right:4px;margin-bottom:2px;}
+.b1{color:var(--g);}
+.b0{color:var(--t3);}
+.bin-sep{display:inline-block;width:6px;}
+.bin-char{font-size:.52rem;color:var(--t2);display:block;text-align:center;line-height:1;margin-top:-2px;}
+.bin-more{font-size:.65rem;color:var(--t2);margin-top:8px;padding-top:6px;border-top:1px solid var(--t3);}
+.bin-more strong{color:var(--y);}
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <div class="logo">K<em>·</em>LAB</div>
+  <a href="../../index.html" class="back-btn">← Site</a>
+  <div class="vsep"></div>
+  <div class="tabs">
+    <button class="tab active" data-tab="analyze">⚗ Analyze</button>
+    <button class="tab" data-tab="distance">↔ Distance</button>
+    <button class="tab" data-tab="depth">∇ Depth</button>
+    <button class="tab" data-tab="omega">Ω Omega</button>
+    <button class="tab" data-tab="bitmap">⊞ Bitmap</button>
+    <button class="tab" data-tab="library">📚 Library</button>
+  </div>
+</div>
+
+<div id="main">
+
+<!-- ══════════════════ ANALYZE ══════════════════ -->
+<div class="panel active" id="pan-analyze">
+  <div class="ph">
+    <h2>K-BOUNDARY ANALYZER</h2>
+    <p>Everything is converted to its raw binary representation first — text via UTF-8 encoding, files as raw bytes, audio as PCM bit-streams. You see the actual bit-string that K-complexity operates on. Compression gives a rigorous upper bound: K(x) ≤ C(x) + O(1).</p>
+    <cite>Kolmogorov 1965 · Invariance Theorem · Martin-Löf 1966 (randomness = maximal complexity) · Li & Vitányi 1993 · Rissanen 1983 (MDL)</cite>
+  </div>
+  <div class="g2">
+    <div>
+      <div class="src-toggle">
+        <button class="src-btn on" id="a-src-text">T Text / String</button>
+        <button class="src-btn" id="a-src-file">⊞ File / Audio / Binary</button>
+      </div>
+      <div id="a-text-wrap">
+        <textarea class="ki" id="a-input" rows="6" placeholder="Paste any text, binary digits, DNA, code, number sequences…"></textarea>
+        <div class="chips" id="a-chips"></div>
+      </div>
+      <div id="a-drop">
+        <input type="file" id="a-file-input" accept="*/*">
+        <div class="drop-icon">⊞</div>
+        <div>Drop any file — text, image, audio, PDF, .bin, anything</div>
+        <div style="font-size:.6rem;margin-top:4px;color:var(--t3)">or click to browse · all file types accepted</div>
+      </div>
+      <div id="a-file-info"></div>
+      <div id="a-binary-wrap">
+        <div class="bin-header">
+          <span class="blen">Binary: <strong id="a-bitlen">—</strong> bits &nbsp;·&nbsp; <strong id="a-bytelen">—</strong> bytes</span>
+          <span class="dim" style="font-size:.6rem;">showing first <span id="a-showing">—</span> bits of binary representation</span>
+        </div>
+        <div class="bin-preview" id="a-bin-preview"></div>
+        <div class="bin-more" id="a-bin-more"></div>
+      </div>
+      <div class="row" style="margin-top:12px;">
+        <button class="btn" id="a-run">▶ Analyze</button>
+        <span id="a-status" class="dim" style="font-size:.65rem;"></span>
+      </div>
+      <div class="formula">K(x) ≤ C<sub>gz</sub>(x) + O(1) &nbsp;[Invariance Theorem: language choice shifts K by constant c]</div>
+    </div>
+    <div>
+      <div class="card-title">Complexity Metrics</div>
+      <div id="a-metrics" class="placeholder">Run analysis to see results</div>
+    </div>
+  </div>
+  <div class="sep"></div>
+  <div class="card-title">Randomness Classification</div>
+  <div class="cbar">
+    <div class="cbar-lbl"><span>← STRUCTURED / REDUNDANT</span><span>MARTIN-LÖF RANDOM →</span></div>
+    <div class="cbar-track"><div class="cbar-mark" id="a-mark" style="left:0%"></div></div>
+    <div class="cbar-class" id="a-class" style="margin-top:8px;color:var(--t2)">—</div>
+  </div>
+  <div class="sep"></div>
+  <div class="card-title">Bit-Level Entropy Distribution <span class="dim" style="font-size:.6rem;">(sliding window=16 bytes)</span></div>
+  <div class="cv-wrap">
+    <canvas id="a-canvas" height="72"></canvas>
+  </div>
+</div>
+
+<!-- ══════════════════ DISTANCE ══════════════════ -->
+<div class="panel" id="pan-distance">
+  <div class="ph">
+    <h2>NORMALIZED COMPRESSION DISTANCE</h2>
+    <p>The NCD approximates the Normalized Information Distance — the length of the shortest program that transforms x into y, relative to the longer of the two. NCD ≈ 0 means the strings share nearly all their algorithmic content. NCD ≈ 1 means they are maximally different. Works on DNA, music, code, text, languages — without any domain knowledge.</p>
+    <cite>Bennett et al. 1998 (Information Distance) · Cilibrasi & Vitányi 2005 (Clustering by Compression) · Gács 1974 (Symmetry of AIT)</cite>
+  </div>
+  <div class="formula">NCD(x,y) = [ C(xy) − min(C(x), C(y)) ] / max(C(x), C(y))</div>
+  <div class="g2" style="margin-top:14px;">
+    <div>
+      <div class="card-title">String X</div>
+      <textarea class="ki" id="d-x" rows="5"></textarea>
+    </div>
+    <div>
+      <div class="card-title">String Y</div>
+      <textarea class="ki" id="d-y" rows="5"></textarea>
+    </div>
+  </div>
+  <div class="chips" id="d-chips" style="margin-top:8px;"></div>
+  <div class="row" style="margin-top:10px;">
+    <button class="btn b" id="d-run">↔ Compute NCD</button>
+    <span id="d-status" class="dim" style="font-size:.65rem;"></span>
+  </div>
+  <div class="sep"></div>
+  <div class="g2" id="d-result-area">
+    <div class="card">
+      <div class="card-title">NCD Score</div>
+      <div class="ncd-big" id="d-ncd">—</div>
+      <div class="gauge-wrap">
+        <div class="gauge-fill" id="d-gauge" style="width:0%;background:var(--g)"></div>
+      </div>
+      <div class="ncd-interp" id="d-interp" style="margin-top:8px;">Run calculation to compare</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Compression Breakdown</div>
+      <div id="d-breakdown" class="placeholder">—</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ DEPTH ══════════════════ -->
+<div class="panel" id="pan-depth">
+  <div class="ph">
+    <h2>LOGICAL DEPTH ESTIMATOR</h2>
+    <p>Bennett (1988) distinguished two types of "non-random" strings: shallow structured (easily compressed AND generated, like "AAAA…"), and logically deep (compressed/structured but requiring massive computation to produce, like π or Mandelbrot escape times). This module places your string on the Depth Map alongside canonical examples.</p>
+    <cite>Bennett 1988 (Logical Depth) · Antunes et al. 2006 (Computational Depth) · Levin 1974 (Information Conservation)</cite>
+  </div>
+  <div class="g2">
+    <div>
+      <div class="card-title">Input</div>
+      <textarea class="ki" id="dep-input" rows="5"></textarea>
+      <div class="chips" id="dep-chips" style="margin-top:6px;"></div>
+      <button class="btn" id="dep-run" style="margin-top:10px;">∇ Estimate Depth</button>
+      <div id="dep-result" class="placeholder" style="margin-top:14px;">Run to place your string on the Depth Map</div>
+    </div>
+    <div>
+      <div class="card-title">Depth Map — Canonical Strings</div>
+      <div class="cv-wrap">
+        <canvas id="dep-canvas" height="280"></canvas>
+      </div>
+      <div style="font-size:.6rem;color:var(--t2);margin-top:5px;">
+        X → compression ratio (low = more structured) &nbsp;·&nbsp; Y → estimated logical depth &nbsp;·&nbsp; ⊕ = your input
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ OMEGA ══════════════════ -->
+<div class="panel" id="pan-omega">
+  <div class="ph">
+    <h2>CHAITIN'S Ω — THE HALTING PROBABILITY</h2>
+    <p>Ω is the probability that a randomly chosen program halts. It is a well-defined real number between 0 and 1 — yet it is provably uncomputable. Knowing k bits of Ω lets you decide the Halting Problem for all programs of length ≤ k. This simulation enumerates all 2-state 2-symbol Turing Machines (12⁴ = 20,736 total) and tracks the empirical halting fraction.</p>
+    <cite>Chaitin 1975 (Ω definition) · Chaitin 1987 (AIT book) · Rado 1962 (Busy Beaver) · Soler-Toscano & Zenil 2014</cite>
+  </div>
+  <div class="formula">Ω = Σ<sub>p: U(p) halts</sub> 2<sup>−|p|</sup> &nbsp;·&nbsp; Ω is Σ<sub>1</sub>-complete — unknowable, uncompressible, but real</div>
+  <div class="g2" style="margin-top:14px;">
+    <div>
+      <div class="card-title">Simulation Controls</div>
+      <div class="row" style="margin-bottom:12px;">
+        <button class="btn y" id="om-start">▶ Run Simulation</button>
+        <button class="btn ghost" id="om-reset">↺ Reset</button>
+        <span id="om-status" class="dim" style="font-size:.63rem;"></span>
+      </div>
+      <div class="sstrip">
+        <div class="sstat"><span class="sv" id="om-total">0</span>TMs enumerated</div>
+        <div class="sstat"><span class="sv" id="om-halted">0</span>halted</div>
+        <div class="sstat"><span class="sv" id="om-pct">—</span>halt rate</div>
+        <div class="sstat"><span class="sv" id="om-est" style="color:var(--y)">—</span>Ω estimate</div>
+      </div>
+      <div class="sep"></div>
+      <div class="card-title">Running Binary Expansion of Ω</div>
+      <div class="omega-bits" id="om-bits">
+        <div class="obit unk">?</div><div class="obit unk">?</div><div class="obit unk">?</div>
+        <div class="obit unk">?</div><div class="obit unk">?</div><div class="obit unk">?</div>
+        <div class="obit unk">?</div><div class="obit unk">?</div>
+      </div>
+      <div class="sep"></div>
+      <div class="card-title">Known Ω Bits (Calude et al. 2002)</div>
+      <div class="code" style="font-size:.62rem;color:var(--y);">0.0000001000000100000110000001000001110001011001111001100011000000...</div>
+      <div style="font-size:.6rem;color:var(--t2);margin-top:5px;">First 64 bits for a specific prefix-free UTM. These 64 bits alone decide halting for all programs of length ≤ 64.</div>
+      <div class="sep"></div>
+      <div class="card-title">Busy Beaver Numbers BB(n)</div>
+      <div class="sstrip">
+        <div class="sstat"><span class="sv">4</span>BB(2)</div>
+        <div class="sstat"><span class="sv">6</span>BB(3)</div>
+        <div class="sstat"><span class="sv">13</span>BB(4)</div>
+        <div class="sstat"><span class="sv" style="color:var(--o)">≥4098</span>BB(5)</div>
+        <div class="sstat"><span class="sv" style="color:var(--r)">∞?</span>BB(6)</div>
+      </div>
+    </div>
+    <div>
+      <div class="card-title">Halting Distribution &amp; Ω Convergence</div>
+      <div class="cv-wrap">
+        <canvas id="om-canvas" height="300"></canvas>
+      </div>
+      <div id="om-log" class="log-box" style="margin-top:10px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ BITMAP ══════════════════ -->
+<div class="panel" id="pan-bitmap">
+  <div class="ph">
+    <h2>ENTROPY BITMAP VISUALIZER</h2>
+    <p>Render a string as a 2D pixel grid. In Entropy mode, each pixel is colored by the local Shannon entropy of its neighborhood — blue = low entropy (structured), red = high entropy (random). This makes the "texture" of information directly visible. Structure emerges as islands of order inside chaos.</p>
+    <cite>Martin-Löf 1966 · Shannon 1948 · Zenil 2011 (Computable Algorithmic Probability) · V'yugin 1987 (Defect of Randomness)</cite>
+  </div>
+  <div class="g2">
+    <div>
+      <div class="card-title">Input</div>
+      <textarea class="ki" id="bm-input" rows="5" placeholder="Paste any text, binary string, or sequence…"></textarea>
+      <div class="chips" id="bm-chips" style="margin-top:6px;"></div>
+      <div style="margin-top:10px;">
+        <div class="card-title">Render Mode</div>
+        <div class="row" style="gap:6px;">
+          <button class="btn sm ghost bm-mode on" data-mode="entropy">Entropy</button>
+          <button class="btn sm ghost bm-mode" data-mode="bw">B/W Bits</button>
+          <button class="btn sm ghost bm-mode" data-mode="struct">Structure</button>
+          <button class="btn sm ghost bm-mode" data-mode="freq">Frequency</button>
+        </div>
+      </div>
+      <button class="btn" id="bm-run" style="margin-top:10px;">⊞ Render</button>
+      <div id="bm-stats" class="sstrip" style="margin-top:10px;"></div>
+    </div>
+    <div>
+      <div class="card-title">Bitmap Output</div>
+      <div class="cv-wrap" id="bm-cv-wrap">
+        <canvas id="bm-canvas"></canvas>
+      </div>
+      <div style="font-size:.6rem;color:var(--t2);margin-top:5px;" id="bm-legend"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ LIBRARY ══════════════════ -->
+<div class="panel" id="pan-library">
+  <div class="ph">
+    <h2>REFERENCE LIBRARY — 50 FOUNDATIONAL PAPERS</h2>
+    <p>The complete canon of Algorithmic Information Theory, ranked by foundational impact. Each paper links to a hands-on demonstration in this workbench. Use the "Load" button to pre-populate the relevant module with example data for that result.</p>
+  </div>
+  <div class="lib-controls">
+    <input type="text" class="ki" id="lib-q" placeholder="Search…" style="width:200px;min-height:auto;resize:none;padding:5px 9px;">
+    <div class="tiers">
+      <button class="tf on" data-tier="all">All 50</button>
+      <button class="tf" data-tier="1">Tier I — Foundation</button>
+      <button class="tf" data-tier="2">Tier II — Structure</button>
+      <button class="tf" data-tier="3">Tier III — Applied</button>
+      <button class="tf" data-tier="4">Deep Lore</button>
+    </div>
+  </div>
+  <div style="overflow-x:auto;">
+    <table class="lib-tbl">
+      <thead>
+        <tr><th>#</th><th>Year</th><th>Author(s)</th><th>Title / Key Result</th><th>Tier</th><th>Demo</th></tr>
+      </thead>
+      <tbody id="lib-body"></tbody>
+    </table>
+  </div>
+</div>
+
+</div><!-- #main -->
+
+<script>
+// ═══════════════════════════════════════════ DATA
+
+const PAPERS = [
+  {n:1,y:1965,a:'A.N. Kolmogorov',t:'Three approaches to the quantitative definition of information',tier:1,d:'The "Big Bang." Defined K-complexity as the shortest program on a Universal Turing Machine. Proved the Invariance Theorem.',tab:'analyze',ex:'pi'},
+  {n:2,y:1960,a:'R. Solomonoff',t:'A Preliminary Report on a General Theory of Inductive Inference',tier:1,d:'Invented Algorithmic Probability. Predates Kolmogorov — suggests we predict the future by finding the simplest code for the past.',tab:'analyze',ex:'primes'},
+  {n:3,y:1966,a:'G. Chaitin',t:'On the length of programs for computing finite binary sequences',tier:1,d:'Independently discovered the field. Focused on program size as information measure.',tab:'analyze',ex:'fib'},
+  {n:4,y:1966,a:'P. Martin-Löf',t:'The definition of random sequences',tier:1,d:'Proved randomness = maximal Kolmogorov complexity. A string is random iff it cannot be compressed.',tab:'bitmap',ex:'random'},
+  {n:5,y:1975,a:'G. Chaitin',t:'A theory of program size formally identical to information theory (Ω)',tier:1,d:'Introduced Chaitin\'s Constant Ω — the probability that a random program halts. It encodes the entire Halting Problem.',tab:'omega',ex:null},
+  {n:6,y:1965,a:'A.N. Kolmogorov',t:'The Invariance Theorem',tier:1,d:'The choice of programming language changes K(x) by at most a constant. Mathematics is universal.',tab:'analyze',ex:'pi'},
+  {n:7,y:1970,a:'Zvonkin & Levin',t:'The complexity of finite objects and the development of information theory',tier:1,d:'Definitive survey bridging Soviet school rigor with the West. Levin\'s contributions formalized.',tab:'analyze',ex:null},
+  {n:8,y:1974,a:'L. Levin',t:'Laws of information conservation (non-growth)',tier:1,d:'You cannot create information via deterministic processing — only lose or transform it.',tab:'depth',ex:null},
+  {n:9,y:1974,a:'P. Gács',t:'On the symmetry of algorithmic information',tier:1,d:'K(x,y) ≈ K(x) + K(y|x). Proved algorithmic information is symmetric.',tab:'distance',ex:null},
+  {n:10,y:1962,a:'T. Rado',t:'On non-computable functions (Busy Beaver)',tier:1,d:'Proved there is a hard limit to how much "work" a small program can do — directly tied to K-complexity.',tab:'omega',ex:null},
+  {n:11,y:1988,a:'C. Bennett',t:'Logical Depth and Physical Complexity',tier:2,d:'Distinguished random (junk) from deep (complex). Depth = history of computation required to produce the string.',tab:'depth',ex:'pi'},
+  {n:12,y:1982,a:'C. Bennett',t:'The thermodynamics of computation',tier:2,d:'Tied K-complexity to Maxwell\'s Demon. Erasing one bit of a program generates kT·ln2 of heat.',tab:'depth',ex:null},
+  {n:13,y:1978,a:'R. Solomonoff',t:'Complexity-based induction systems: comparisons and convergence theorems',tier:2,d:'Solomonoff Induction is the optimal way to do science, given infinite computing power.',tab:'analyze',ex:'primes'},
+  {n:14,y:1983,a:'M. Sipser',t:'A complexity theoretic approach to randomness',tier:2,d:'Introduced Distinguishing Complexity (CD): how many bits do you need to identify a string, not just generate it?',tab:'analyze',ex:null},
+  {n:15,y:1983,a:'J. Rissanen',t:'A universal data compression system (MDL principle)',tier:2,d:'Minimum Description Length: the best model for data is the one that compresses it most. Occam\'s Razor formalized.',tab:'analyze',ex:'english'},
+  {n:16,y:1984,a:'L. Levin',t:'Randomness conservation inequalities (Kt measure)',tier:2,d:'Kt measure: time-bounded K-complexity, making the theory slightly more real-world applicable.',tab:'depth',ex:null},
+  {n:17,y:1980,a:'Paul, Seiferas & Simon',t:'An information-theoretic lower bound on Turing machine transitions',tier:2,d:'Used K-complexity to prove lower bounds in Turing Machine head movements — a "magic" proof technique.',tab:'omega',ex:null},
+  {n:18,y:1987,a:'G. Chaitin',t:'Algorithmic Information Theory (monograph)',tier:2,d:'Chaitin\'s manifesto. Connected AIT fully to Gödel\'s Incompleteness Theorem.',tab:'omega',ex:null},
+  {n:19,y:1983,a:'J. Hartmanis',t:'Generalized Kolmogorov Complexity and feasible computations',tier:2,d:'Connected K-complexity to the P vs NP problem and resource-bounded complexity classes.',tab:'analyze',ex:null},
+  {n:20,y:1989,a:'Li & Vitányi',t:'Two decades of applied Kolmogorov complexity',tier:2,d:'The survey that paved the way for the most influential AIT textbook.',tab:'library',ex:null},
+  {n:21,y:1993,a:'Li & Vitányi',t:'An Introduction to Kolmogorov Complexity and Its Applications (The Bible)',tier:3,d:'Cited by virtually every AIT researcher. The canonical reference. Third edition 2008.',tab:'library',ex:null},
+  {n:22,y:2005,a:'Cilibrasi & Vitányi',t:'Clustering by Compression',tier:3,d:'You can classify music, languages, and DNA just by compressing them together. No domain knowledge needed.',tab:'distance',ex:'dna_pair'},
+  {n:23,y:2000,a:'M. Hutter',t:'A theory of universal artificial intelligence based on algorithmic complexity',tier:3,d:'Error bound for Solomonoff Prediction. Proved how fast an ideal AI would learn its environment.',tab:'analyze',ex:null},
+  {n:24,y:2001,a:'P. Vitányi',t:'Quantum Kolmogorov Complexity',tier:3,d:'Extended K-complexity to qubits. How many quantum gates are needed to describe a quantum state?',tab:'bitmap',ex:null},
+  {n:25,y:2005,a:'M. Hutter',t:'Universal Artificial Intelligence (AIXI)',tier:3,d:'First mathematically perfect AI. Uncomputable, but the theoretical ceiling for all intelligence.',tab:'analyze',ex:null},
+  {n:26,y:2002,a:'Muchnik et al.',t:'Upper semi-lattice of binary strings with algorithmic conditional complexity',tier:3,d:'Proved results about the extractable information in a string.',tab:'distance',ex:null},
+  {n:27,y:2004,a:'J. Schmidhuber',t:'Optimal Ordered Problem Solver',tier:3,d:'Used K-complexity ideas to build a self-improving program searcher.',tab:'depth',ex:null},
+  {n:28,y:2011,a:'H. Zenil',t:'A Computable Measure of Algorithmic Probability by Finite Approximations',tier:3,d:'Coding Theorem Method: actually calculate K-complexity for small strings using TM enumeration.',tab:'bitmap',ex:'random'},
+  {n:29,y:1998,a:'Bennett et al.',t:'Information Distance',tier:3,d:'Distance between two objects = the shortest program to transform one into the other.',tab:'distance',ex:'code_pair'},
+  {n:30,y:2008,a:'P. Grünwald',t:'The Minimum Description Length Principle',tier:3,d:'The definitive modern guide to how compression creates knowledge. MDL applied across science.',tab:'analyze',ex:'english'},
+  {n:31,y:1970,a:'G. Chaitin',t:'The Incompleteness of Information',tier:4,d:'Most numbers are algorithmically unknowable. K-complexity reframes the Incompleteness Theorem.',tab:'omega',ex:null},
+  {n:32,y:1973,a:'L. Levin',t:'Universal enumeration problems',tier:4,d:'Discovery of NP-completeness through a K-complexity lens.',tab:'analyze',ex:null},
+  {n:33,y:1997,a:'R. Solomonoff',t:'The discovery of algorithmic probability',tier:4,d:'Retrospective on why AIT is the foundation of all science.',tab:'analyze',ex:'primes'},
+  {n:34,y:1983,a:'P. Gács',t:'On the relation between descriptive and operational complexity',tier:4,d:'Tied K-complexity to computational time bounds.',tab:'depth',ex:null},
+  {n:35,y:2002,a:'C. Calude',t:'Information and Randomness: An Algorithmic Perspective',tier:4,d:'Formalized the degree of randomness across different computational models.',tab:'analyze',ex:'random'},
+  {n:36,y:2009,a:'A. Nies',t:'Computability and Randomness',tier:4,d:'The bridge between AIT and pure Recursion Theory.',tab:'bitmap',ex:null},
+  {n:37,y:2010,a:'Downey & Hirschfeldt',t:'Algorithmic Randomness and Complexity',tier:4,d:'A massive modern synthesis of the entire field.',tab:'library',ex:null},
+  {n:38,y:2001,a:'Berthiaume et al.',t:'Quantum Kolmogorov Complexity',tier:4,d:'Redefined K(x) for the Hilbert Space. Quantum information meets AIT.',tab:'bitmap',ex:null},
+  {n:39,y:2006,a:'Antunes et al.',t:'Computational Depth: Concept and Results',tier:4,d:'Time-bounded version of Bennett\'s Logical Depth. Rigorous definition.',tab:'depth',ex:'pi'},
+  {n:40,y:2013,a:'Bauwens et al.',t:'Complexity of Complexity (Inception)',tier:4,d:'How complex is the K-complexity function itself? A recursive meta-result.',tab:'analyze',ex:null},
+  {n:41,y:1983,a:'A.K. Shen',t:'On the concept of the complexity of a finite object',tier:4,d:'Refined Soviet definitions of complexity for Western mathematics.',tab:'analyze',ex:null},
+  {n:42,y:1987,a:"V.V. V'yugin",t:'On the defect of randomness of a finite object',tier:4,d:'How far a string is from being perfectly random — a quantitative measure.',tab:'bitmap',ex:'random'},
+  {n:43,y:2000,a:'Vereshchagin & Vitányi',t:"Kolmogorov's structure functions and model selection",tier:4,d:'Proved CD(x) vs C(x) gaps. Distinguishing complexity vs generating complexity.',tab:'analyze',ex:null},
+  {n:44,y:1991,a:'A. Milovanov',t:'Algorithmic information and thermodynamics',tier:4,d:'The entropy of nearly-random states. AIT meets statistical mechanics.',tab:'depth',ex:null},
+  {n:45,y:2001,a:'E. Allender',t:'When Worlds Collide: K-complexity and circuit lower bounds',tier:4,d:'Connected K-complexity to circuit complexity lower bounds.',tab:'analyze',ex:null},
+  {n:46,y:2014,a:'Soler-Toscano & Zenil',t:'Calculating KC from Turing Machine Output Frequencies',tier:4,d:'Experimental AIT: computing K(x) empirically from TM enumeration output.',tab:'omega',ex:null},
+  {n:47,y:2007,a:'M. Hutter',t:'On Universal Prediction and Bayesian Confirmation',tier:4,d:'Why AIT is the "True" Bayesianism. Every Bayesian update is K-complexity in disguise.',tab:'analyze',ex:null},
+  {n:48,y:2003,a:'Kuo & Vitányi',t:'Kolmogorov Complexity and Information Theory',tier:4,d:'Relative K-complexity given an oracle. Questions-and-answers framework.',tab:'distance',ex:null},
+  {n:49,y:2010,a:'M. Müller',t:'Stationary Algorithmic Probability',tier:4,d:'AIT extended to infinite sequences and stationary processes.',tab:'bitmap',ex:null},
+  {n:50,y:2002,a:'D. Donoho',t:'Counting Bits with Kolmogorov and Shannon (Wald Lecture)',tier:4,d:'The modern bridge between K-complexity and Shannon information theory.',tab:'analyze',ex:'pi'},
+];
+
+const EXAMPLES = {
+  pi:       {label:'π digits',      v:'314159265358979323846264338327950288419716939937510582097494459230781640628620899862803482534211706798214808651328230664709384460955058'},
+  fib:      {label:'Fibonacci',     v:'011235813213455891442337761098715972584418167651094617711286574636875025121393119641831781151422983204021'},
+  primes:   {label:'Primes',        v:'23571113171923293137414347535961677173798389971011031071091131271311371391491511571631671731791811911931971'},
+  zeros:    {label:'All Zeros',     v:'00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'},
+  english:  {label:'English',       v:'The quick brown fox jumps over the lazy dog. In the beginning was the Word. A stitch in time saves nine. Knowledge is the only good, and ignorance the only evil.'},
+  random:   {label:'Random bits',   v:() => Array.from({length:120},()=>Math.random()<.5?'0':'1').join('')},
+  dna:      {label:'DNA',           v:'ATGCGATCGATCGTAGCTAGCTAGCGATCGATCGTAGCTAGCGATCGATCGATCGTAGCTAGCTAGCTAGCGATCGATCGTAGCTAGCGATCGATCGTAGCTAG'},
+  code:     {label:'JS code',       v:'function fibonacci(n){if(n<=1)return n;const memo={};function fib(k){if(k in memo)return memo[k];return memo[k]=fib(k-1)+fib(k-2);}return fib(n);}'},
+  mandel:   {label:'Mandelbrot',    v:'0000000012234455667788990112234566789901234567890123456789012345678901234567890123456789012345678901234'},
+  dna_pair: {label:'DNA pair',      x:'ATGCGATCGATCGTAGCTAGCTAGCGATCGATCGTAGCTAGCGATCGATCGATCGTAGCTAGCTAGCTAG',y:'ATGCGATCGATCGAAGCTAGCTAGCGATCGATCGAAGCTAGCGATCGATCGATCGAAGCTAGCTAGCTAG'},
+  code_pair:{label:'Code pair',     x:'function fib(n){return n<=1?n:fib(n-1)+fib(n-2);}',y:'def fib(n): return n if n<=1 else fib(n-1)+fib(n-2)'},
+  primes_fib:{label:'Primes vs Fib',x:'235711131719232931374143475359616771737983899710110310710911312713113714',y:'011235813213455891442337761098715972584418167651094617711286574636875'},
+};
+
+// ═══════════════════════════════════════════ COMPRESSION
+
+async function gzip(str) {
+  if (!str) return 0;
+  const data = new TextEncoder().encode(str);
+  const cs = new CompressionStream('gzip');
+  const w = cs.writable.getWriter();
+  w.write(data); w.close();
+  const r = cs.readable.getReader();
+  const chunks = [];
+  for (;;) { const {done, value} = await r.read(); if (done) break; chunks.push(value); }
+  return chunks.reduce((s,c) => s + c.length, 0);
+}
+
+async function analyzeString(s) {
+  const raw = new TextEncoder().encode(s).length;
+  const cz  = await gzip(s);
+  const ratio = cz / raw;
+  const H = shannonEntropy(s);
+  const maxH = Math.log2(new Set([...s]).size || 1);
+  return { raw, cz, ratio, H, maxH, nic: ratio, chars: s.length };
+}
+
+async function computeNCD(x, y) {
+  const [cx, cy, cxy] = await Promise.all([gzip(x), gzip(y), gzip(x + y)]);
+  const val = (cxy - Math.min(cx, cy)) / Math.max(cx, cy);
+  return { cx, cy, cxy, val: Math.max(0, Math.min(1, val)) };
+}
+
+// ═══════════════════════════════════════════ MATH
+
+function shannonEntropy(str) {
+  const f = {};
+  for (const c of str) f[c] = (f[c] || 0) + 1;
+  const n = str.length;
+  let H = 0;
+  for (const k in f) { const p = f[k] / n; H -= p * Math.log2(p); }
+  return H;
+}
+
+function localEntropy(str, win = 16) {
+  const out = new Float32Array(str.length);
+  for (let i = 0; i < str.length; i++) {
+    const s = Math.max(0, i - (win >> 1));
+    out[i] = shannonEntropy(str.slice(s, s + win));
+  }
+  return out;
+}
+
+function classifyRatio(r) {
+  if (r < 0.15) return {label:'CONSTANT / ALL-SAME',    color:'#0066ff', pos:2};
+  if (r < 0.30) return {label:'HIGHLY STRUCTURED',      color:'#0099ff', pos:12};
+  if (r < 0.45) return {label:'STRUCTURED / PERIODIC',  color:'#00cc88', pos:25};
+  if (r < 0.60) return {label:'NORMAL COMPLEXITY',      color:'#00ff88', pos:45};
+  if (r < 0.75) return {label:'HIGH COMPLEXITY',        color:'#88cc00', pos:60};
+  if (r < 0.88) return {label:'NEAR-INCOMPRESSIBLE',    color:'#ffcc00', pos:74};
+  if (r < 0.96) return {label:'INCOMPRESSIBLE',         color:'#ff8800', pos:86};
+  return             {label:'MARTIN-LÖF RANDOM',        color:'#ff3355', pos:96};
+}
+
+function ncdInterpret(v) {
+  if (v < 0.10) return {label:'IDENTICAL CONTENT',   color:'#00ff88'};
+  if (v < 0.25) return {label:'VERY SIMILAR',        color:'#44ee88'};
+  if (v < 0.45) return {label:'RELATED',             color:'#88cc00'};
+  if (v < 0.60) return {label:'SOMEWHAT DIFFERENT',  color:'#ccaa00'};
+  if (v < 0.75) return {label:'DIFFERENT',           color:'#ff8800'};
+  if (v < 0.90) return {label:'VERY DIFFERENT',      color:'#ff5533'};
+  return              {label:'ALGORITHMICALLY UNRELATED', color:'#ff3355'};
+}
+
+// ═══════════════════════════════════════════ TURING MACHINE
+
+// 2-state 2-symbol TM: 4 transitions, each in {0..11}
+// transition n: write=n%2, dir=(n>>1)%2?+1:-1, next=n>>2 (0=A,1=B,2+=HALT)
+function makeTM(c) {
+  return c.map(n => ({ w: n % 2, d: (n >> 1) & 1 ? 1 : -1, s: n >> 2 }));
+}
+function runTM(rules, max = 150) {
+  const tape = {};
+  let h = 100, st = 0, steps = 0;
+  while (st < 2 && steps < max) {
+    const sym = tape[h] || 0;
+    const r = rules[st * 2 + sym];
+    tape[h] = r.w; h += r.d; st = r.s; steps++;
+  }
+  return { halted: st >= 2, steps };
+}
+
+// ═══════════════════════════════════════════ OMEGA STATE
+
+const OM = { running: false, total: 0, halted: 0, gen: null, timer: null };
+const TOTAL_TMS = 12 * 12 * 12 * 12; // 20736
+
+function* enumTMs() {
+  for (let a=0;a<12;a++) for (let b=0;b<12;b++) for (let c=0;c<12;c++) for (let d=0;d<12;d++)
+    yield [a, b, c, d];
+}
+
+function omegaStep(n = 400) {
+  if (!OM.gen) return;
+  for (let i = 0; i < n; i++) {
+    const nx = OM.gen.next();
+    if (nx.done) { omComplete(); return; }
+    const { halted } = runTM(makeTM(nx.value));
+    OM.total++;
+    if (halted) OM.halted++;
+  }
+  updateOmegaUI();
+}
+
+function omComplete() {
+  OM.running = false;
+  clearInterval(OM.timer);
+  document.getElementById('om-start').textContent = '✓ Complete';
+  document.getElementById('om-status').textContent = `All ${TOTAL_TMS.toLocaleString()} TMs evaluated.`;
+  omLog(`Complete. Final Ω ≈ ${(OM.halted/OM.total).toFixed(6)} (${OM.halted.toLocaleString()} / ${OM.total.toLocaleString()})`, 'hi');
+  updateOmegaUI();
+}
+
+function omLog(msg, cls = '') {
+  const box = document.getElementById('om-log');
+  const el = document.createElement('div');
+  if (cls) el.className = cls;
+  el.textContent = `[${OM.total.toString().padStart(6,' ')}] ${msg}`;
+  box.appendChild(el);
+  box.scrollTop = box.scrollHeight;
+}
+
+function updateOmegaUI() {
+  const est = OM.total > 0 ? OM.halted / OM.total : 0;
+  document.getElementById('om-total').textContent  = OM.total.toLocaleString();
+  document.getElementById('om-halted').textContent = OM.halted.toLocaleString();
+  document.getElementById('om-pct').textContent    = OM.total > 0 ? (est * 100).toFixed(1) + '%' : '—';
+  document.getElementById('om-est').textContent    = OM.total > 0 ? est.toFixed(6) : '—';
+
+  // Binary expansion
+  let val = est, binStr = '0.';
+  const bEl = document.getElementById('om-bits');
+  bEl.innerHTML = '';
+  for (let i = 0; i < 24; i++) {
+    val *= 2;
+    const b = val >= 1 ? 1 : 0;
+    if (b) val -= 1;
+    const d = document.createElement('div');
+    d.className = `obit ${OM.total < 100 ? 'unk' : (b ? 'one' : 'zero')}`;
+    d.textContent = OM.total < 100 ? '?' : b;
+    bEl.appendChild(d);
+    binStr += b;
+  }
+
+  drawOmegaCanvas(est);
+}
+
+function drawOmegaCanvas(est) {
+  const cv = document.getElementById('om-canvas');
+  const W = cv.width = cv.parentElement.clientWidth;
+  const H = 300;
+  cv.height = H;
+  const ctx = cv.getContext('2d');
+  ctx.fillStyle = '#070d12'; ctx.fillRect(0, 0, W, H);
+
+  if (OM.total === 0) {
+    ctx.fillStyle = '#1a2e40'; ctx.font = '12px JetBrains Mono,monospace';
+    ctx.textAlign = 'center'; ctx.fillText('Run simulation to begin', W/2, H/2);
+    return;
+  }
+
+  const prog = OM.total / TOTAL_TMS;
+  const ex = Math.max(2, est * (W - 20) + 10);
+
+  // Background gradient
+  const bg = ctx.createLinearGradient(0, 0, W, 0);
+  bg.addColorStop(0, 'rgba(255,204,0,0.06)');
+  bg.addColorStop(est, 'rgba(255,204,0,0.12)');
+  bg.addColorStop(Math.min(1, est + 0.01), 'rgba(0,170,255,0.04)');
+  bg.addColorStop(1, 'rgba(0,170,255,0.02)');
+  ctx.fillStyle = bg; ctx.fillRect(0, 40, W, H - 80);
+
+  // Grid lines
+  ctx.strokeStyle = '#0e1c28'; ctx.lineWidth = 1;
+  for (let v = 0; v <= 1; v += 0.1) {
+    const x = v * (W - 20) + 10;
+    ctx.beginPath(); ctx.moveTo(x, 40); ctx.lineTo(x, H - 40); ctx.stroke();
+  }
+
+  // Omega marker
+  ctx.strokeStyle = '#ffcc00'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(ex, 30); ctx.lineTo(ex, H - 30); ctx.stroke();
+
+  // Omega glow
+  const grd = ctx.createRadialGradient(ex, H/2, 0, ex, H/2, 80);
+  grd.addColorStop(0, 'rgba(255,204,0,0.18)');
+  grd.addColorStop(1, 'rgba(255,204,0,0)');
+  ctx.fillStyle = grd; ctx.fillRect(0, 0, W, H);
+
+  // Labels
+  ctx.fillStyle = '#ffcc00'; ctx.font = '700 13px JetBrains Mono,monospace';
+  ctx.textAlign = ex < W - 120 ? 'left' : 'right';
+  ctx.fillText(`Ω ≈ ${est.toFixed(5)}`, ex + (ex < W - 120 ? 8 : -8), 28);
+
+  ctx.fillStyle = '#3d566e'; ctx.font = '11px JetBrains Mono,monospace';
+  ctx.textAlign = 'left'; ctx.fillText('0', 10, H - 20);
+  ctx.textAlign = 'right'; ctx.fillText('1', W - 10, H - 20);
+  ctx.textAlign = 'center'; ctx.fillText('probability that a random TM halts', W/2, H - 20);
+
+  // Progress bar
+  const py = H - 10;
+  ctx.fillStyle = '#0e1c28'; ctx.fillRect(0, py - 4, W, 8);
+  const gc = ctx.createLinearGradient(0, 0, W * prog, 0);
+  gc.addColorStop(0, '#00ff88'); gc.addColorStop(1, '#00cc70');
+  ctx.fillStyle = gc; ctx.fillRect(0, py - 4, W * prog, 8);
+  ctx.fillStyle = '#00ff88'; ctx.font = '10px JetBrains Mono,monospace';
+  ctx.textAlign = 'left';
+  ctx.fillText(`${(prog*100).toFixed(1)}%  ${OM.total.toLocaleString()} / ${TOTAL_TMS.toLocaleString()} TMs`, 4, py - 8);
+}
+
+// ═══════════════════════════════════════════ BINARY UTILITIES
+
+function bytesToBits(bytes) {
+  // bytes = Uint8Array
+  let bits = '';
+  for (const b of bytes) bits += b.toString(2).padStart(8, '0');
+  return bits;
+}
+
+function stringToBytes(s) {
+  return new TextEncoder().encode(s);
+}
+
+const SHOW_BITS = 512; // preview this many bits (64 bytes)
+
+function renderBinaryPreview(bytes) {
+  const totalBits = bytes.length * 8;
+  const wrap = document.getElementById('a-binary-wrap');
+  wrap.style.display = 'block';
+  document.getElementById('a-bitlen').textContent = totalBits.toLocaleString();
+  document.getElementById('a-bytelen').textContent = bytes.length.toLocaleString();
+
+  const showBytes = Math.min(64, bytes.length); // show 64 bytes = 512 bits
+  const showBits = showBytes * 8;
+  document.getElementById('a-showing').textContent = showBits.toLocaleString();
+
+  const preview = document.getElementById('a-bin-preview');
+  preview.innerHTML = '';
+
+  for (let i = 0; i < showBytes; i++) {
+    const byte = bytes[i];
+    const bits = byte.toString(2).padStart(8, '0');
+    const charCode = byte;
+    // printable ASCII char or placeholder
+    const ch = (charCode >= 32 && charCode < 127) ? String.fromCharCode(charCode) : (charCode === 0 ? '∅' : (charCode === 10 ? '↵' : (charCode === 32 ? '·' : '?')));
+
+    const span = document.createElement('span');
+    span.className = 'bin-byte';
+    span.title = `byte[${i}] = 0x${byte.toString(16).padStart(2,'0')} = ${byte} = '${ch}'`;
+    // color each bit individually
+    let bitsHtml = '';
+    for (const bit of bits) {
+      bitsHtml += `<span class="${bit === '1' ? 'b1' : 'b0'}">${bit}</span>`;
+    }
+    span.innerHTML = bitsHtml + `<span class="bin-char">${ch}</span>`;
+    preview.appendChild(span);
+
+    // visual byte separator every 8 bytes
+    if ((i + 1) % 8 === 0 && i < showBytes - 1) {
+      const sep = document.createElement('br');
+      preview.appendChild(sep);
+    }
+  }
+
+  const more = document.getElementById('a-bin-more');
+  if (bytes.length > 64) {
+    const remaining = bytes.length - 64;
+    more.innerHTML = `… and <strong>${(remaining * 8).toLocaleString()}</strong> more bits (<strong>${remaining.toLocaleString()}</strong> more bytes) not shown`;
+    more.style.display = 'block';
+  } else {
+    more.style.display = 'none';
+  }
+}
+
+// ═══════════════════════════════════════════ ANALYZE MODULE
+
+let aBytes = null; // current bytes being analyzed (from text or file)
+
+function initAnalyze() {
+  // Chips
+  const chips = document.getElementById('a-chips');
+  ['pi','fib','primes','zeros','english','random','dna','code','mandel'].forEach(k => {
+    const btn = document.createElement('button');
+    btn.className = 'chip'; btn.textContent = EXAMPLES[k].label;
+    btn.onclick = () => {
+      const v = EXAMPLES[k].v;
+      document.getElementById('a-input').value = typeof v === 'function' ? v() : v;
+      aBytes = null;
+      document.getElementById('a-binary-wrap').style.display = 'none';
+    };
+    chips.appendChild(btn);
+  });
+
+  // Source toggle
+  const srcText = document.getElementById('a-src-text');
+  const srcFile = document.getElementById('a-src-file');
+  const textWrap = document.getElementById('a-text-wrap');
+  const dropZone = document.getElementById('a-drop');
+
+  srcText.onclick = () => {
+    srcText.classList.add('on'); srcFile.classList.remove('on');
+    textWrap.style.display = 'block'; dropZone.style.display = 'none';
+    aBytes = null;
+    document.getElementById('a-binary-wrap').style.display = 'none';
+    document.getElementById('a-file-info').textContent = '';
+  };
+  srcFile.onclick = () => {
+    srcFile.classList.add('on'); srcText.classList.remove('on');
+    textWrap.style.display = 'none'; dropZone.style.display = 'block';
+  };
+
+  // Drag & drop
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('over'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('over'));
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault(); dropZone.classList.remove('over');
+    const file = e.dataTransfer.files[0];
+    if (file) loadFile(file);
+  });
+  document.getElementById('a-file-input').addEventListener('change', e => {
+    const file = e.target.files[0];
+    if (file) loadFile(file);
+  });
+
+  function loadFile(file) {
+    const reader = new FileReader();
+    reader.onload = evt => {
+      aBytes = new Uint8Array(evt.target.result);
+      document.getElementById('a-file-info').innerHTML =
+        `<span style="color:var(--b)">${file.name}</span> &nbsp;·&nbsp; ${file.type || 'binary'} &nbsp;·&nbsp; ${aBytes.length.toLocaleString()} bytes`;
+      renderBinaryPreview(aBytes);
+    };
+    reader.readAsArrayBuffer(file);
+  }
+
+  // Auto-preview binary when typing
+  document.getElementById('a-input').addEventListener('input', () => {
+    aBytes = null;
+    const s = document.getElementById('a-input').value;
+    if (s.length > 0) {
+      const bytes = stringToBytes(s);
+      renderBinaryPreview(bytes);
+    } else {
+      document.getElementById('a-binary-wrap').style.display = 'none';
+    }
+  });
+
+  document.getElementById('a-run').onclick = async () => {
+    // Get bytes: file takes priority, else encode the text input
+    let bytes;
+    if (aBytes) {
+      bytes = aBytes;
+    } else {
+      const s = document.getElementById('a-input').value.trim();
+      if (!s) return;
+      bytes = stringToBytes(s);
+    }
+    renderBinaryPreview(bytes);
+
+    const st = document.getElementById('a-status');
+    st.textContent = 'Computing…';
+
+    // Build a string representation for compression (use the raw bytes as binary string)
+    // We compress the actual bytes directly via gzip
+    const rawStr = Array.from(bytes).map(b => String.fromCharCode(b)).join('');
+    const raw = bytes.length;
+    const cz = await gzip(rawStr);
+    const ratio = cz / raw;
+    const H = shannonEntropyBytes(bytes);
+    const uniqueBytes = new Set(bytes).size;
+    const cl = classifyRatio(ratio);
+
+    st.textContent = '';
+
+    document.getElementById('a-metrics').innerHTML = `
+      <div class="metrics">
+        <div class="metric"><div class="mv">${(bytes.length * 8).toLocaleString()}</div><div class="ml">Total bits</div><div class="ms">|x| in binary</div></div>
+        <div class="metric"><div class="mv">${raw.toLocaleString()}</div><div class="ml">Raw bytes</div></div>
+        <div class="metric"><div class="mv" style="color:var(--b)">${cz.toLocaleString()}</div><div class="ml">Gzip bytes</div><div class="ms">C(x) upper bound</div></div>
+        <div class="metric"><div class="mv" style="color:${cl.color}">${(ratio*100).toFixed(1)}%</div><div class="ml">Compression ratio</div><div class="ms">C(x) / |x|</div></div>
+        <div class="metric"><div class="mv" style="color:var(--p)">${H.toFixed(3)}</div><div class="ml">Shannon H (bits)</div><div class="ms">per byte</div></div>
+        <div class="metric"><div class="mv" style="color:var(--y)">${uniqueBytes}</div><div class="ml">Unique bytes</div><div class="ms">of 256 possible</div></div>
+        <div class="metric"><div class="mv" style="color:var(--o)">${((1 - ratio)*100).toFixed(1)}%</div><div class="ml">Saved by compress</div></div>
+      </div>`;
+
+    const mark = document.getElementById('a-mark');
+    mark.style.left = cl.pos + '%';
+    const cl2 = document.getElementById('a-class');
+    cl2.textContent = cl.label;
+    cl2.style.color = cl.color;
+
+    // Entropy canvas — operate on bytes
+    const ents = localEntropyBytes(bytes, 16);
+    const cv = document.getElementById('a-canvas');
+    cv.width = cv.parentElement.clientWidth;
+    const cvW = cv.width, cvH = 72;
+    const ctx = cv.getContext('2d');
+    ctx.fillStyle = '#0c1520'; ctx.fillRect(0, 0, cvW, cvH);
+    const maxE = Math.max(0.01, ...ents);
+    const step = cvW / ents.length;
+    for (let i = 0; i < ents.length; i++) {
+      const t = ents[i] / maxE;
+      const bh = t * (cvH - 4) + 2;
+      ctx.fillStyle = `rgb(${Math.floor(t*255)},${Math.floor(t*60)},${Math.floor((1-t)*200)})`;
+      ctx.fillRect(i * step, cvH - bh, Math.max(1, step), bh);
+    }
+    ctx.strokeStyle = 'rgba(255,255,255,0.12)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(0, cvH - 2); ctx.lineTo(cvW, cvH - 2); ctx.stroke();
+  };
+}
+
+function shannonEntropyBytes(bytes) {
+  const f = new Array(256).fill(0);
+  for (const b of bytes) f[b]++;
+  const n = bytes.length;
+  let H = 0;
+  for (const c of f) { if (c > 0) { const p = c / n; H -= p * Math.log2(p); } }
+  return H;
+}
+
+function localEntropyBytes(bytes, win = 16) {
+  const out = [];
+  for (let i = 0; i < bytes.length; i++) {
+    const s = Math.max(0, i - (win >> 1));
+    const slice = bytes.slice(s, s + win);
+    out.push(shannonEntropyBytes(slice));
+  }
+  return out;
+}
+
+// ═══════════════════════════════════════════ DISTANCE MODULE
+
+function initDistance() {
+  const chips = document.getElementById('d-chips');
+  const pairs = {
+    'dna_pair':'DNA sequences','code_pair':'Code (JS vs Python)','primes_fib':'Primes vs Fibonacci'
+  };
+  Object.entries(pairs).forEach(([k, label]) => {
+    const btn = document.createElement('button');
+    btn.className = 'chip'; btn.textContent = label;
+    btn.onclick = () => {
+      const e = EXAMPLES[k];
+      document.getElementById('d-x').value = e.x;
+      document.getElementById('d-y').value = e.y;
+    };
+    chips.appendChild(btn);
+  });
+  // Also add single-string examples that load same string into both
+  ['pi','primes','english','random'].forEach(k => {
+    const btn = document.createElement('button');
+    btn.className = 'chip'; btn.textContent = `X = ${EXAMPLES[k].label}`;
+    btn.onclick = () => {
+      const v = EXAMPLES[k].v;
+      document.getElementById('d-x').value = typeof v === 'function' ? v() : v;
+    };
+    chips.appendChild(btn);
+  });
+
+  document.getElementById('d-run').onclick = async () => {
+    const x = document.getElementById('d-x').value.trim();
+    const y = document.getElementById('d-y').value.trim();
+    if (!x || !y) return;
+    const st = document.getElementById('d-status');
+    st.textContent = 'Computing…';
+    const res = await computeNCD(x, y);
+    st.textContent = '';
+    const interp = ncdInterpret(res.val);
+
+    const ncdEl = document.getElementById('d-ncd');
+    ncdEl.textContent = res.val.toFixed(4);
+    ncdEl.style.color = interp.color;
+
+    const gauge = document.getElementById('d-gauge');
+    gauge.style.width = (res.val * 100) + '%';
+    gauge.style.background = interp.color;
+
+    document.getElementById('d-interp').textContent = interp.label;
+    document.getElementById('d-interp').style.color = interp.color;
+
+    document.getElementById('d-breakdown').innerHTML = `
+      <div class="metrics" style="grid-template-columns:1fr 1fr;">
+        <div class="metric"><div class="mv" style="color:var(--b)">${res.cx}</div><div class="ml">C(x) bytes</div></div>
+        <div class="metric"><div class="mv" style="color:var(--p)">${res.cy}</div><div class="ml">C(y) bytes</div></div>
+        <div class="metric"><div class="mv" style="color:var(--y)">${res.cxy}</div><div class="ml">C(xy) bytes</div></div>
+        <div class="metric"><div class="mv" style="color:${interp.color}">${res.val.toFixed(4)}</div><div class="ml">NCD</div></div>
+      </div>
+      <div style="margin-top:10px;font-size:.65rem;color:var(--t2);">
+        NCD = (${res.cxy} − ${Math.min(res.cx,res.cy)}) / ${Math.max(res.cx,res.cy)} = ${res.val.toFixed(4)}
+      </div>`;
+  };
+}
+
+// ═══════════════════════════════════════════ DEPTH MODULE
+
+const DEPTH_POINTS = [
+  {label:'All Zeros',    x:0.08, y:0.05, c:'#0066ff'},
+  {label:'Repeating',   x:0.22, y:0.08, c:'#0099cc'},
+  {label:'Fibonacci',   x:0.52, y:0.25, c:'#00aa88'},
+  {label:'Primes',      x:0.61, y:0.42, c:'#00cc66'},
+  {label:'English',     x:0.48, y:0.30, c:'#44cc44'},
+  {label:'DNA',         x:0.58, y:0.22, c:'#66bb00'},
+  {label:'π digits',    x:0.78, y:0.74, c:'#ffcc00'},
+  {label:'Mandelbrot',  x:0.72, y:0.82, c:'#ff8800'},
+  {label:'Random bits', x:0.97, y:0.06, c:'#ff3355'},
+];
+
+function drawDepthCanvas(userPt) {
+  const cv = document.getElementById('dep-canvas');
+  const W = cv.width = cv.parentElement.clientWidth;
+  const H = 280; cv.height = H;
+  const ctx = cv.getContext('2d');
+  ctx.fillStyle = '#070d12'; ctx.fillRect(0, 0, W, H);
+
+  const PAD = 44;
+  const pw = W - PAD * 2, ph = H - PAD * 2;
+
+  // Grid
+  ctx.strokeStyle = '#0e1c28'; ctx.lineWidth = 1;
+  for (let i = 0; i <= 10; i++) {
+    ctx.beginPath();
+    ctx.moveTo(PAD + i/10*pw, PAD); ctx.lineTo(PAD + i/10*pw, PAD + ph); ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(PAD, PAD + i/10*ph); ctx.lineTo(PAD + pw, PAD + i/10*ph); ctx.stroke();
+  }
+
+  // Axis labels
+  ctx.fillStyle = '#3d566e'; ctx.font = '10px JetBrains Mono,monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText('← STRUCTURED', PAD + pw*0.15, H - 6);
+  ctx.fillText('COMPRESSION RATIO →', PAD + pw*0.6, H - 6);
+  ctx.save(); ctx.translate(12, PAD + ph*0.5); ctx.rotate(-Math.PI/2);
+  ctx.fillText('LOGICAL DEPTH →', 0, 0);
+  ctx.restore();
+
+  // Region labels
+  ctx.fillStyle = 'rgba(0,102,255,0.12)'; ctx.fillRect(PAD, PAD + ph*0.7, pw*0.35, ph*0.3);
+  ctx.fillStyle = 'rgba(255,204,0,0.08)';  ctx.fillRect(PAD + pw*0.5, PAD, pw*0.5, ph*0.5);
+  ctx.fillStyle = 'rgba(255,51,85,0.08)';  ctx.fillRect(PAD + pw*0.75, PAD + ph*0.55, pw*0.25, ph*0.45);
+
+  ctx.fillStyle = 'rgba(0,102,255,0.5)'; ctx.font = '10px JetBrains Mono,monospace';
+  ctx.textAlign = 'left'; ctx.fillText('Shallow Structured', PAD + 4, PAD + ph*0.98);
+  ctx.fillStyle = 'rgba(255,204,0,0.5)';
+  ctx.fillText('DEEP', PAD + pw*0.52, PAD + 14);
+  ctx.fillStyle = 'rgba(255,51,85,0.5)';
+  ctx.fillText('Shallow Random', PAD + pw*0.76, PAD + ph*0.62);
+
+  // Points
+  for (const p of DEPTH_POINTS) {
+    const px = PAD + p.x * pw;
+    const py = PAD + (1 - p.y) * ph;
+    ctx.beginPath(); ctx.arc(px, py, 5, 0, Math.PI*2);
+    ctx.fillStyle = p.c; ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth = 1; ctx.stroke();
+    ctx.fillStyle = p.c; ctx.font = '10px JetBrains Mono,monospace';
+    ctx.textAlign = px < PAD + pw*0.6 ? 'left' : 'right';
+    ctx.fillText(p.label, px + (px < PAD + pw*0.6 ? 8 : -8), py + 4);
+  }
+
+  // User point
+  if (userPt) {
+    const px = PAD + userPt.x * pw;
+    const py = PAD + (1 - userPt.y) * ph;
+    ctx.beginPath(); ctx.arc(px, py, 8, 0, Math.PI*2);
+    ctx.fillStyle = '#fff'; ctx.fill();
+    ctx.strokeStyle = '#00ff88'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.fillStyle = '#00ff88'; ctx.font = '700 11px JetBrains Mono,monospace';
+    ctx.textAlign = 'center'; ctx.fillText('⊕ Your input', px, py - 14);
+  }
+}
+
+function initDepth() {
+  drawDepthCanvas(null);
+  ['pi','mandel','primes','random','zeros','english'].forEach(k => {
+    const btn = document.createElement('button');
+    btn.className = 'chip'; btn.textContent = EXAMPLES[k].label;
+    btn.onclick = () => {
+      const v = EXAMPLES[k].v;
+      document.getElementById('dep-input').value = typeof v === 'function' ? v() : v;
+    };
+    document.getElementById('dep-chips').appendChild(btn);
+  });
+
+  document.getElementById('dep-run').onclick = async () => {
+    const s = document.getElementById('dep-input').value.trim();
+    if (!s) return;
+    const r = await analyzeString(s);
+    const cl = classifyRatio(r.ratio);
+
+    // Estimate depth heuristically:
+    // High depth = structured (low ratio) + complex generation
+    // Proxy: depth ∝ (1 - ratio) * (H / log2(charsetSize))
+    const charset = new Set([...s]).size;
+    const maxH = Math.log2(Math.max(2, charset));
+    const normH = r.H / maxH;
+    const depthEstimate = (1 - r.ratio) * normH * 0.9 + 0.02;
+
+    document.getElementById('dep-result').innerHTML = `
+      <div class="metrics">
+        <div class="metric"><div class="mv" style="color:var(--b)">${(r.ratio*100).toFixed(1)}%</div><div class="ml">Compression ratio</div><div class="ms">Lower = more structured</div></div>
+        <div class="metric"><div class="mv" style="color:var(--p)">${r.H.toFixed(3)}</div><div class="ml">Shannon H (bits)</div></div>
+        <div class="metric"><div class="mv" style="color:var(--y)">${(depthEstimate*100).toFixed(0)}%</div><div class="ml">Depth estimate</div><div class="ms">Heuristic proxy</div></div>
+        <div class="metric"><div class="mv" style="color:${cl.color}">${cl.label.split('/')[0]}</div><div class="ml">Complexity class</div></div>
+      </div>
+      <div style="margin-top:10px;font-size:.65rem;color:var(--t2);line-height:1.7;">
+        Logical Depth is formally uncomputable. This is a heuristic proxy:<br>
+        depth ≈ (1 − ratio) × (H / H<sub>max</sub>)<br>
+        True depth requires measuring <em>how long</em> the shortest program runs.
+      </div>`;
+
+    drawDepthCanvas({ x: r.ratio, y: Math.min(0.95, depthEstimate) });
+  };
+}
+
+// ═══════════════════════════════════════════ OMEGA MODULE
+
+function initOmega() {
+  drawOmegaCanvas(0);
+  document.getElementById('om-start').onclick = () => {
+    if (OM.running) {
+      OM.running = false;
+      clearInterval(OM.timer);
+      document.getElementById('om-start').textContent = '▶ Resume';
+    } else {
+      OM.running = true;
+      if (!OM.gen) { OM.gen = enumTMs(); omLog('Enumerating all 2-state 2-symbol TMs (12⁴ = 20,736)…'); }
+      document.getElementById('om-start').textContent = '⏸ Pause';
+      OM.timer = setInterval(() => {
+        omegaStep(500);
+        if (OM.total % 2000 < 500) omLog(`${OM.halted.toLocaleString()} halted of ${OM.total.toLocaleString()} — Ω ≈ ${(OM.halted/OM.total).toFixed(5)}`);
+      }, 30);
+    }
+  };
+  document.getElementById('om-reset').onclick = () => {
+    OM.running = false; OM.total = 0; OM.halted = 0; OM.gen = null;
+    clearInterval(OM.timer);
+    document.getElementById('om-start').textContent = '▶ Run Simulation';
+    document.getElementById('om-status').textContent = '';
+    document.getElementById('om-log').innerHTML = '';
+    updateOmegaUI();
+    drawOmegaCanvas(0);
+  };
+}
+
+// ═══════════════════════════════════════════ BITMAP MODULE
+
+let bmMode = 'entropy';
+
+function initBitmap() {
+  ['pi','random','dna','english','primes','mandel'].forEach(k => {
+    const btn = document.createElement('button');
+    btn.className = 'chip'; btn.textContent = EXAMPLES[k].label;
+    btn.onclick = () => {
+      const v = EXAMPLES[k].v;
+      document.getElementById('bm-input').value = typeof v === 'function' ? v() : v;
+    };
+    document.getElementById('bm-chips').appendChild(btn);
+  });
+
+  document.querySelectorAll('.bm-mode').forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll('.bm-mode').forEach(b => b.classList.remove('on'));
+      btn.classList.add('on');
+      bmMode = btn.dataset.mode;
+    };
+  });
+
+  document.getElementById('bm-run').onclick = () => {
+    const s = document.getElementById('bm-input').value;
+    if (!s) return;
+    renderBitmap(s, bmMode);
+  };
+}
+
+function renderBitmap(str, mode) {
+  const wrap = document.getElementById('bm-cv-wrap');
+  const cv = document.getElementById('bm-canvas');
+  const W = wrap.clientWidth;
+  const n = str.length;
+  const side = Math.ceil(Math.sqrt(n));
+  const pixW = Math.floor(W / side);
+  cv.width = pixW * side;
+  cv.height = pixW * side;
+  const ctx = cv.getContext('2d');
+  ctx.fillStyle = '#030608'; ctx.fillRect(0, 0, cv.width, cv.height);
+
+  if (mode === 'bw') {
+    for (let i = 0; i < n; i++) {
+      const x = (i % side) * pixW, y = Math.floor(i / side) * pixW;
+      const code = str.charCodeAt(i);
+      const v = (code & 1) ? 220 : 30;
+      ctx.fillStyle = `rgb(${v},${v},${v})`;
+      ctx.fillRect(x, y, pixW, pixW);
+    }
+    document.getElementById('bm-legend').textContent = 'B/W: odd char-code = white, even = dark';
+  } else if (mode === 'entropy') {
+    const ents = localEntropy(str, 8);
+    const maxE = Math.max(0.01, ...ents);
+    for (let i = 0; i < n; i++) {
+      const x = (i % side) * pixW, y = Math.floor(i / side) * pixW;
+      const t = ents[i] / maxE;
+      ctx.fillStyle = `rgb(${Math.floor(t*255)},${Math.floor(t*40)},${Math.floor((1-t)*200)})`;
+      ctx.fillRect(x, y, pixW, pixW);
+    }
+    document.getElementById('bm-legend').textContent = 'Entropy: red = high entropy (random) · blue = low entropy (structured)';
+  } else if (mode === 'struct') {
+    for (let i = 0; i < n; i++) {
+      const x = (i % side) * pixW, y = Math.floor(i / side) * pixW;
+      const c = str[i];
+      let col;
+      if (c >= '0' && c <= '9') col = '#00ff88';
+      else if (c >= 'A' && c <= 'Z') col = '#00aaff';
+      else if (c >= 'a' && c <= 'z') col = '#aa44ff';
+      else if (c === ' ' || c === '\n') col = '#0c1520';
+      else col = '#ff3355';
+      ctx.fillStyle = col; ctx.fillRect(x, y, pixW, pixW);
+    }
+    document.getElementById('bm-legend').textContent = 'Structure: green=digit · blue=uppercase · purple=lowercase · red=symbol · dark=space';
+  } else if (mode === 'freq') {
+    const freq = {};
+    for (const c of str) freq[c] = (freq[c] || 0) + 1;
+    const maxF = Math.max(...Object.values(freq));
+    for (let i = 0; i < n; i++) {
+      const x = (i % side) * pixW, y = Math.floor(i / side) * pixW;
+      const t = (freq[str[i]] || 0) / maxF;
+      ctx.fillStyle = `rgb(${Math.floor(t*255)},${Math.floor(t*180)},${Math.floor((1-t)*255)})`;
+      ctx.fillRect(x, y, pixW, pixW);
+    }
+    document.getElementById('bm-legend').textContent = 'Frequency: bright = common character · dark = rare character';
+  }
+
+  // Stats
+  const H = shannonEntropy(str);
+  const uniq = new Set([...str]).size;
+  document.getElementById('bm-stats').innerHTML = `
+    <div class="sstat"><span class="sv">${n}</span>chars</div>
+    <div class="sstat"><span class="sv">${uniq}</span>unique</div>
+    <div class="sstat"><span class="sv">${H.toFixed(3)}</span>H (bits)</div>
+    <div class="sstat"><span class="sv">${side}×${side}</span>grid</div>`;
+}
+
+// ═══════════════════════════════════════════ LIBRARY MODULE
+
+function initLibrary() {
+  const tbody = document.getElementById('lib-body');
+  const searchEl = document.getElementById('lib-q');
+  let activeTier = 'all';
+
+  const tierLabel = {1:'I',2:'II',3:'III',4:'IV'};
+  const tierCls   = {1:'tb1',2:'tb2',3:'tb3',4:'tb4'};
+  const tierName  = {1:'Tier I',2:'Tier II',3:'Tier III',4:'Deep Lore'};
+
+  function render() {
+    const q = searchEl.value.toLowerCase();
+    tbody.innerHTML = '';
+    const filtered = PAPERS.filter(p =>
+      (activeTier === 'all' || p.tier === +activeTier) &&
+      (!q || p.t.toLowerCase().includes(q) || p.a.toLowerCase().includes(q) || p.d.toLowerCase().includes(q))
+    );
+    for (const p of filtered) {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td style="color:var(--t2);font-size:.62rem;">${p.n}</td>
+        <td class="yr">${p.y}</td>
+        <td><div class="auth">${p.a}</div></td>
+        <td><div style="color:var(--t)">${p.t}</div><div class="desc">${p.d}</div></td>
+        <td><span class="tbadge ${tierCls[p.tier]}">${tierName[p.tier]}</span></td>
+        <td><button class="btn sm ghost lib-load" data-tab="${p.tab}" data-ex="${p.ex || ''}">→</button></td>`;
+      tbody.appendChild(tr);
+    }
+    tbody.querySelectorAll('.lib-load').forEach(btn => {
+      btn.onclick = () => {
+        const tab = btn.dataset.tab;
+        const ex = btn.dataset.ex;
+        switchTab(tab);
+        if (ex && ex !== 'null') {
+          setTimeout(() => {
+            const e = EXAMPLES[ex];
+            if (!e) return;
+            const v = typeof e.v === 'function' ? e.v() : e.v;
+            const ids = {analyze:'a-input', depth:'dep-input', bitmap:'bm-input'};
+            const el = document.getElementById(ids[tab]);
+            if (el && v) { el.value = v; }
+            if (e.x) {
+              const ex2 = document.getElementById('d-x');
+              const ey = document.getElementById('d-y');
+              if (ex2) ex2.value = e.x;
+              if (ey) ey.value = e.y;
+            }
+          }, 100);
+        }
+      };
+    });
+  }
+
+  searchEl.addEventListener('input', render);
+  document.querySelectorAll('.tf').forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll('.tf').forEach(b => b.classList.remove('on'));
+      btn.classList.add('on');
+      activeTier = btn.dataset.tier;
+      render();
+    };
+  });
+  render();
+}
+
+// ═══════════════════════════════════════════ TABS
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === 'pan-' + tab));
+  if (tab === 'omega') { setTimeout(() => drawOmegaCanvas(OM.total > 0 ? OM.halted / OM.total : 0), 50); }
+  if (tab === 'depth') { setTimeout(() => drawDepthCanvas(null), 50); }
+}
+
+document.querySelectorAll('.tab').forEach(b => b.onclick = () => switchTab(b.dataset.tab));
+
+// ═══════════════════════════════════════════ INIT
+
+initAnalyze();
+initDistance();
+initDepth();
+initOmega();
+initBitmap();
+initLibrary();
+
+// Pre-load pi into analyze on start + show binary preview
+(function() {
+  const v = EXAMPLES.pi.v;
+  document.getElementById('a-input').value = v;
+  renderBinaryPreview(stringToBytes(v));
+})();
+
+window.addEventListener('resize', () => {
+  const active = document.querySelector('.panel.active');
+  if (!active) return;
+  const id = active.id;
+  if (id === 'pan-omega' && OM.total > 0) drawOmegaCanvas(OM.halted / OM.total);
+  if (id === 'pan-depth') drawDepthCanvas(null);
+  const acv = document.getElementById('a-canvas');
+  if (acv && id === 'pan-analyze') { acv.width = acv.parentElement.clientWidth; }
+});
+</script>
+</body>
+</html>

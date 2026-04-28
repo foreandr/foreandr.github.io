@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QR Code Generator</title>
+  <link rel="icon" type="image/x-icon" href="../../images.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=JetBrains+Mono:wght@400;500;700&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<style>
+:root { --bg:#0a0a0b; --bg2:#111113; --bg3:#18181b; --border:#252528; --text:#e2e2e6; --muted:#6b6b72; --accent:#c8a96e; --green:#5aab7a; --red:#e05555; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { background:var(--bg); color:var(--text); font-family:'Crimson Pro',Georgia,serif; font-size:17px; line-height:1.6; min-height:100vh; display:flex; flex-direction:column; }
+
+header {
+  background: linear-gradient(135deg, #0a0a0b 0%, #111113 40%, #18181b 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 2.5rem 2rem 2rem;
+  text-align: center;
+  position: relative;
+}
+.back-btn {
+  position: absolute; top: 1.5rem; left: 1.5rem;
+  color: var(--muted); text-decoration: none;
+  font-family: 'Crimson Pro', serif; font-size: 15px;
+  border: 1px solid var(--border); padding: 0.4rem 0.9rem;
+  border-radius: 4px; transition: color 0.2s, border-color 0.2s;
+}
+.back-btn:hover { color: var(--accent); border-color: var(--accent); }
+.eyebrow {
+  font-family: 'Cinzel', serif; font-size: 11px; font-weight: 600;
+  letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent);
+  margin-bottom: 0.5rem;
+}
+header h1 {
+  font-family: 'Cinzel', serif; font-weight: 700; font-size: clamp(1.8rem, 4vw, 2.8rem);
+  background: linear-gradient(135deg, var(--accent) 0%, #e8c98e 50%, var(--accent) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  letter-spacing: 0.05em; margin-bottom: 0.5rem;
+}
+header p {
+  color: var(--muted); font-size: 15px; max-width: 560px; margin: 0 auto;
+}
+
+main { flex: 1; max-width: 1000px; width: 100%; margin: 0 auto; padding: 2rem 1.5rem; }
+
+.layout { display: grid; grid-template-columns: 1fr 340px; gap: 2rem; align-items: start; }
+
+.panel {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem;
+}
+.panel-title {
+  font-family: 'Cinzel', serif; font-size: 13px; font-weight: 600;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent);
+  margin-bottom: 1.25rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border);
+}
+
+.quick-fill { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
+.qf-btn {
+  font-family: 'Crimson Pro', serif; font-size: 14px;
+  background: var(--bg3); border: 1px solid var(--border);
+  color: var(--muted); padding: 0.3rem 0.8rem; border-radius: 4px;
+  cursor: pointer; transition: color 0.2s, border-color 0.2s;
+}
+.qf-btn:hover { color: var(--accent); border-color: var(--accent); }
+
+textarea {
+  width: 100%; background: var(--bg3); border: 1px solid var(--border);
+  color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: 13px;
+  padding: 0.85rem; border-radius: 6px; resize: vertical; line-height: 1.5;
+  outline: none; transition: border-color 0.2s;
+}
+textarea:focus { border-color: var(--accent); }
+
+label { display: block; font-size: 14px; color: var(--muted); margin-bottom: 0.3rem; margin-top: 1rem; }
+
+.options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem 1rem; margin-top: 1rem; }
+
+select, input[type="number"] {
+  width: 100%; background: var(--bg3); border: 1px solid var(--border);
+  color: var(--text); font-family: 'Crimson Pro', serif; font-size: 15px;
+  padding: 0.45rem 0.7rem; border-radius: 5px; outline: none;
+  transition: border-color 0.2s; appearance: none;
+}
+select:focus, input[type="number"]:focus { border-color: var(--accent); }
+
+.color-row { display: flex; align-items: center; gap: 0.6rem; }
+.color-row input[type="color"] {
+  width: 36px; height: 36px; border: 1px solid var(--border);
+  border-radius: 5px; padding: 2px; background: var(--bg3); cursor: pointer;
+}
+.color-hex {
+  flex: 1; background: var(--bg3); border: 1px solid var(--border);
+  color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: 13px;
+  padding: 0.45rem 0.7rem; border-radius: 5px; outline: none; transition: border-color 0.2s;
+}
+.color-hex:focus { border-color: var(--accent); }
+
+/* Preview panel */
+.preview-panel { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+.canvas-wrap {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 8px; padding: 1rem; display: flex; align-items: center; justify-content: center;
+  min-height: 180px; width: 100%;
+}
+#qr-canvas { display: block; max-width: 100%; border-radius: 4px; }
+.placeholder-text { color: var(--muted); font-size: 14px; text-align: center; }
+
+.download-btns { display: flex; flex-direction: column; gap: 0.6rem; width: 100%; }
+.btn {
+  font-family: 'Cinzel', serif; font-size: 13px; font-weight: 600; letter-spacing: 0.08em;
+  padding: 0.65rem 1.2rem; border-radius: 5px; border: none; cursor: pointer;
+  transition: opacity 0.2s, transform 0.1s; text-align: center;
+}
+.btn:active { transform: scale(0.98); }
+.btn-primary { background: var(--accent); color: #0a0a0b; }
+.btn-primary:hover { opacity: 0.88; }
+.btn-secondary { background: transparent; border: 1px solid var(--accent); color: var(--accent); }
+.btn-secondary:hover { background: rgba(200,169,110,0.08); }
+
+.error-msg { color: var(--red); font-size: 13px; margin-top: 0.5rem; display: none; }
+
+footer { text-align: center; padding: 1.5rem; color: var(--muted); font-size: 13px; border-top: 1px solid var(--border); }
+
+@media (max-width: 720px) {
+  .layout { grid-template-columns: 1fr; }
+  .options-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <a href="../../index.html" class="back-btn">← Back Home</a>
+  <div class="eyebrow">Office</div>
+  <h1>QR Code Generator</h1>
+  <p>Generate QR codes for URLs, WiFi, vCards, and more — download as PNG or SVG.</p>
+</header>
+
+<main>
+  <div class="layout">
+    <!-- Left: input + options -->
+    <div class="panel">
+      <div class="panel-title">Content</div>
+
+      <div class="quick-fill">
+        <button class="qf-btn" onclick="fillTemplate('url')">URL</button>
+        <button class="qf-btn" onclick="fillTemplate('wifi')">WiFi</button>
+        <button class="qf-btn" onclick="fillTemplate('vcard')">vCard</button>
+        <button class="qf-btn" onclick="fillTemplate('email')">Email</button>
+      </div>
+
+      <textarea id="content" rows="7" placeholder="Enter URL, text, WiFi credentials, vCard data..."></textarea>
+      <div class="error-msg" id="err-msg">Content is too long for selected error correction level.</div>
+
+      <div class="options-grid">
+        <div>
+          <label for="size-select">Size</label>
+          <select id="size-select">
+            <option value="128">128 × 128 px</option>
+            <option value="256" selected>256 × 256 px</option>
+            <option value="512">512 × 512 px</option>
+            <option value="1024">1024 × 1024 px</option>
+          </select>
+        </div>
+        <div>
+          <label for="ecc-select">Error Correction</label>
+          <select id="ecc-select">
+            <option value="L">L — Low (7%)</option>
+            <option value="M" selected>M — Medium (15%)</option>
+            <option value="Q">Q — Quartile (25%)</option>
+            <option value="H">H — High (30%)</option>
+          </select>
+        </div>
+        <div>
+          <label>Foreground Color</label>
+          <div class="color-row">
+            <input type="color" id="fg-color" value="#e2e2e6">
+            <input type="text" class="color-hex" id="fg-hex" value="#e2e2e6" maxlength="7">
+          </div>
+        </div>
+        <div>
+          <label>Background Color</label>
+          <div class="color-row">
+            <input type="color" id="bg-color" value="#0a0a0b">
+            <input type="text" class="color-hex" id="bg-hex" value="#0a0a0b" maxlength="7">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: preview + download -->
+    <div class="panel preview-panel">
+      <div class="panel-title" style="width:100%;text-align:center;">Preview</div>
+      <div class="canvas-wrap" id="canvas-wrap">
+        <div class="placeholder-text" id="placeholder">Enter content on the left<br>to generate a QR code.</div>
+        <canvas id="qr-canvas" style="display:none;"></canvas>
+      </div>
+      <div class="download-btns">
+        <button class="btn btn-primary" onclick="downloadPNG()">Download PNG</button>
+        <button class="btn btn-secondary" onclick="downloadSVG()">Download SVG</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>QR Code Generator &mdash; all processing is local, nothing is uploaded.</footer>
+
+<script>
+const contentEl = document.getElementById('content');
+const sizeEl = document.getElementById('size-select');
+const eccEl = document.getElementById('ecc-select');
+const fgColorEl = document.getElementById('fg-color');
+const fgHexEl = document.getElementById('fg-hex');
+const bgColorEl = document.getElementById('bg-color');
+const bgHexEl = document.getElementById('bg-hex');
+const canvasEl = document.getElementById('qr-canvas');
+const placeholder = document.getElementById('placeholder');
+const errMsg = document.getElementById('err-msg');
+
+let debounceTimer = null;
+
+function scheduleRender() {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(renderQR, 300);
+}
+
+function renderQR() {
+  const text = contentEl.value.trim();
+  errMsg.style.display = 'none';
+  if (!text) {
+    canvasEl.style.display = 'none';
+    placeholder.style.display = 'block';
+    return;
+  }
+  const size = parseInt(sizeEl.value);
+  const ecc = eccEl.value;
+  const fg = fgHexEl.value;
+  const bg = bgHexEl.value;
+
+  QRCode.toCanvas(canvasEl, text, {
+    width: size,
+    errorCorrectionLevel: ecc,
+    color: { dark: fg, light: bg },
+    margin: 2
+  }, function(err) {
+    if (err) {
+      canvasEl.style.display = 'none';
+      placeholder.style.display = 'block';
+      errMsg.style.display = 'block';
+      errMsg.textContent = 'Error: ' + (err.message || 'Could not generate QR code.');
+    } else {
+      canvasEl.style.display = 'block';
+      placeholder.style.display = 'none';
+    }
+  });
+}
+
+function downloadPNG() {
+  const text = contentEl.value.trim();
+  if (!text) return;
+  const size = parseInt(sizeEl.value);
+  const ecc = eccEl.value;
+  const fg = fgHexEl.value;
+  const bg = bgHexEl.value;
+  const offscreen = document.createElement('canvas');
+  QRCode.toCanvas(offscreen, text, {
+    width: size,
+    errorCorrectionLevel: ecc,
+    color: { dark: fg, light: bg },
+    margin: 2
+  }, function(err) {
+    if (err) { alert('Could not generate PNG: ' + err.message); return; }
+    const link = document.createElement('a');
+    link.download = 'qrcode.png';
+    link.href = offscreen.toDataURL('image/png');
+    link.click();
+  });
+}
+
+function downloadSVG() {
+  const text = contentEl.value.trim();
+  if (!text) return;
+  const size = parseInt(sizeEl.value);
+  const ecc = eccEl.value;
+  const fg = fgHexEl.value;
+  const bg = bgHexEl.value;
+  QRCode.toString(text, {
+    type: 'svg',
+    width: size,
+    errorCorrectionLevel: ecc,
+    color: { dark: fg, light: bg },
+    margin: 2
+  }, function(err, svgStr) {
+    if (err) { alert('Could not generate SVG: ' + err.message); return; }
+    const blob = new Blob([svgStr], { type: 'image/svg+xml' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.download = 'qrcode.svg';
+    link.href = url;
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  });
+}
+
+function syncColor(colorInput, hexInput) {
+  colorInput.addEventListener('input', () => {
+    hexInput.value = colorInput.value;
+    scheduleRender();
+  });
+  hexInput.addEventListener('input', () => {
+    const v = hexInput.value;
+    if (/^#[0-9a-fA-F]{6}$/.test(v)) {
+      colorInput.value = v;
+      scheduleRender();
+    }
+  });
+}
+
+const TEMPLATES = {
+  url: 'https://example.com',
+  wifi: 'WIFI:T:WPA;S:MyNetwork;P:MyPassword;;',
+  vcard: `BEGIN:VCARD\nVERSION:3.0\nFN:Jane Doe\nORG:Acme Corp\nTEL:+1-555-123-4567\nEMAIL:jane@example.com\nURL:https://example.com\nEND:VCARD`,
+  email: 'mailto:hello@example.com?subject=Hello&body=Hi%20there!'
+};
+
+function fillTemplate(type) {
+  contentEl.value = TEMPLATES[type];
+  scheduleRender();
+}
+
+syncColor(fgColorEl, fgHexEl);
+syncColor(bgColorEl, bgHexEl);
+contentEl.addEventListener('input', scheduleRender);
+sizeEl.addEventListener('change', scheduleRender);
+eccEl.addEventListener('change', scheduleRender);
+
+// Default
+contentEl.value = 'https://example.com';
+renderQR();
+</script>
+</body>
+</html>

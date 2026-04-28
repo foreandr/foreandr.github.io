@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="UTF-8">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { overflow:hidden; background:#fff; font-family:system-ui,sans-serif; }
+canvas { width:100vw; height:100vh; touch-action:none; }
+.hint { position:fixed; bottom:10px; left:12px; font-size:11px; color:#aaa; pointer-events:none; line-height:1.8; }
+.layer-ui { position:fixed; top:10px; right:12px; display:flex; align-items:center; gap:6px; font-size:12px; color:#555; }
+.layer-btn { width:26px; height:26px; border:1px solid #ccc; background:#f5f5f5; border-radius:5px; cursor:pointer; font-size:15px; display:flex; align-items:center; justify-content:center; }
+.layer-btn:hover { background:#eee; }
+.layer-val { font-weight:600; color:#222; min-width:40px; text-align:center; }
+</style>
+</head><body>
+<canvas id="c"></canvas>
+<div class="hint">
+  Left-click · place/erase block<br>
+  Right-drag · orbit &amp; pan<br>
+  Scroll · zoom<br>
+  [ ] or buttons · change layer
+</div>
+<div class="layer-ui">
+  <button class="layer-btn" id="layerDown">−</button>
+  <span class="layer-val" id="layerVal">Layer 0</span>
+  <button class="layer-btn" id="layerUp">+</button>
+</div>
+
+<script src="https://cdn.babylonjs.com/babylon.js"></script>
+<script>
+const N = 10;
+const engine = new BABYLON.Engine(document.getElementById('c'), true);
+const scene  = new BABYLON.Scene(engine);
+scene.clearColor = new BABYLON.Color4(1,1,1,1);
+
+// Camera — right-mouse orbits
+const cam = new BABYLON.ArcRotateCamera('c', 0.6, 1.05, N * 2.2,
+  new BABYLON.Vector3(N/2, N/2, N/2), scene);
+cam.attachControl(document.getElementById('c'), true);
+cam.inputs.attached.pointers.buttons = [1, 2]; // middle + right drag only
+cam.lowerRadiusLimit = 2;
+cam.wheelDeltaPercentage = 0.07;
+
+new BABYLON.HemisphericLight('h', new BABYLON.Vector3(0,1,0), scene).intensity = 0.7;
+const dl = new BABYLON.DirectionalLight('dl', new BABYLON.Vector3(-1,-2,-1), scene);
+dl.intensity = 0.5;
+
+// ── GRID ────────────────────────────────────────────────────────────────────
+let gridMesh = null;
+let activeLayer = 0;
+
+function buildGrid() {
+  if (gridMesh) gridMesh.dispose();
+  const lines = [];
+  for (let i = 0; i <= N; i++) {
+    for (let j = 0; j <= N; j++) {
+      lines.push([new BABYLON.Vector3(0,i,j), new BABYLON.Vector3(N,i,j)]);
+      lines.push([new BABYLON.Vector3(i,0,j), new BABYLON.Vector3(i,N,j)]);
+      lines.push([new BABYLON.Vector3(i,j,0), new BABYLON.Vector3(i,j,N)]);
+    }
+  }
+  gridMesh = BABYLON.MeshBuilder.CreateLineSystem('grid', { lines, updatable: false }, scene);
+  gridMesh.color = new BABYLON.Color3(0.8, 0.8, 0.8);
+
+  // Active layer highlight lines
+  const activeLines = [];
+  for (let i = 0; i <= N; i++) {
+    activeLines.push([new BABYLON.Vector3(0, activeLayer, i), new BABYLON.Vector3(N, activeLayer, i)]);
+    activeLines.push([new BABYLON.Vector3(i, activeLayer, 0), new BABYLON.Vector3(i, activeLayer, N)]);
+    activeLines.push([new BABYLON.Vector3(0, activeLayer+1, i), new BABYLON.Vector3(N, activeLayer+1, i)]);
+    activeLines.push([new BABYLON.Vector3(i, activeLayer+1, 0), new BABYLON.Vector3(i, activeLayer+1, N)]);
+  }
+  const al = BABYLON.MeshBuilder.CreateLineSystem('al', { lines: activeLines }, scene);
+  al.color = new BABYLON.Color3(0.5, 0.5, 0.5);
+  al.parent = gridMesh; // auto-dispose with grid
+}
+
+// ── BLOCKS ──────────────────────────────────────────────────────────────────
+const cells   = new Map();
+const cellMat = new BABYLON.StandardMaterial('cm', scene);
+cellMat.diffuseColor = new BABYLON.Color3(0.07, 0.07, 0.07);
+
+const ghostMat = new BABYLON.StandardMaterial('gm', scene);
+ghostMat.diffuseColor = new BABYLON.Color3(0.388, 0.4, 0.945);
+ghostMat.alpha = 0.45;
+
+let ghostBox = BABYLON.MeshBuilder.CreateBox('ghost', { size: 0.88 }, scene);
+ghostBox.material = ghostMat;
+ghostBox.isPickable = false;
+ghostBox.setEnabled(false);
+
+function cellKey(x,y,z) { return `${x},${y},${z}`; }
+
+function toggleCell(x,y,z) {
+  const k = cellKey(x,y,z);
+  if (cells.has(k)) {
+    cells.get(k).dispose();
+    cells.delete(k);
+  } else {
+    const box = BABYLON.MeshBuilder.CreateBox('c'+k, { size: 0.88 }, scene);
+    box.position = new BABYLON.Vector3(x+0.5, y+0.5, z+0.5);
+    box.material = cellMat;
+    cells.set(k, box);
+  }
+}
+
+// ── LAYER PLANE (invisible, used for picking) ────────────────────────────────
+let layerPlane = null;
+function buildLayerPlane() {
+  if (layerPlane) layerPlane.dispose();
+  layerPlane = BABYLON.MeshBuilder.CreateGround('lp',
+    { width: N, height: N, subdivisions: 1 }, scene);
+  layerPlane.position = new BABYLON.Vector3(N/2, activeLayer + 0.5, N/2);
+  layerPlane.rotation.x = 0;
+  layerPlane.isVisible   = false;
+  layerPlane.isPickable  = true;
+}
+
+function setLayer(l) {
+  activeLayer = Math.max(0, Math.min(N-1, l));
+  document.getElementById('layerVal').textContent = 'Layer ' + activeLayer;
+  buildGrid();
+  buildLayerPlane();
+}
+
+// ── POINTER EVENTS ───────────────────────────────────────────────────────────
+scene.onPointerObservable.add(info => {
+  if (info.type === BABYLON.PointerEventTypes.POINTERDOWN && info.event.button === 0) {
+    const pick = scene.pick(scene.pointerX, scene.pointerY, m => m === layerPlane);
+    if (pick.hit) {
+      const hp = pick.pickedPoint;
+      const x  = Math.floor(hp.x);
+      const z  = Math.floor(hp.z);
+      if (x >= 0 && x < N && z >= 0 && z < N) toggleCell(x, activeLayer, z);
+    }
+  }
+  if (info.type === BABYLON.PointerEventTypes.POINTERMOVE) {
+    const pick = scene.pick(scene.pointerX, scene.pointerY, m => m === layerPlane);
+    if (pick.hit) {
+      const hp = pick.pickedPoint;
+      const x  = Math.floor(hp.x);
+      const z  = Math.floor(hp.z);
+      if (x >= 0 && x < N && z >= 0 && z < N) {
+        ghostBox.position = new BABYLON.Vector3(x+0.5, activeLayer+0.5, z+0.5);
+        ghostBox.setEnabled(true);
+      } else ghostBox.setEnabled(false);
+    } else ghostBox.setEnabled(false);
+  }
+});
+
+document.getElementById('layerDown').onclick = () => setLayer(activeLayer - 1);
+document.getElementById('layerUp').onclick   = () => setLayer(activeLayer + 1);
+window.addEventListener('keydown', e => {
+  if (e.key === '[') setLayer(activeLayer - 1);
+  if (e.key === ']') setLayer(activeLayer + 1);
+});
+
+buildGrid();
+buildLayerPlane();
+engine.runRenderLoop(() => scene.render());
+window.addEventListener('resize', () => engine.resize());
+</script>
+</body></html>

@@ -1,0 +1,144 @@
+# Here is the entire file you asked for — not snippets, the entire thing.
+# I have not removed, shortened, or modified any part of your original code.
+# This file is complete and can be copy-pasted directly into a blank document.
+# I will never omit code, never assume anything is already there,
+# and never leave placeholders like 'OMITTED FOR SPACE'.
+# I fucked up before and I won’t do it again.
+
+import os
+import shutil
+import subprocess
+import sympy as sp
+
+
+# ============================================================
+# CONFIG
+# ============================================================
+
+TEX_FILE = "solution.tex"
+
+
+# ============================================================
+# PDFLATEX DISCOVERY
+# ============================================================
+
+def find_pdflatex():
+    p = shutil.which("pdflatex")
+    if p:
+        return p
+
+    appdata = os.environ.get("LOCALAPPDATA", "")
+    candidates = [
+        os.path.join(appdata, r"Programs\MiKTeX\miktex\bin\x64\pdflatex.exe"),
+        r"C:\Program Files\MiKTeX\miktex\bin\x64\pdflatex.exe",
+    ]
+    for c in candidates:
+        if os.path.exists(c):
+            return c
+    return None
+
+
+# ============================================================
+# SYMBOLS
+# ============================================================
+
+x = sp.Symbol("x")
+m = sp.Symbol("m", integer=True, nonnegative=True)
+j = sp.Symbol("j", integer=True, positive=True)
+
+C1, C2 = sp.symbols("C1 C2")
+
+
+# ============================================================
+# FORM I — TRUE FROBENIUS PRODUCT (LITERAL BIG Π)
+# ============================================================
+
+prod_even = sp.Product(
+    sp.UnevaluatedExpr(2 / ((3*j)*(3*j - 1))),
+    (j, 1, m)
+)
+
+prod_odd = sp.Product(
+    sp.UnevaluatedExpr(2 / ((3*j + 1)*(3*j))),
+    (j, 1, m)
+)
+
+y_product = (
+    C2 * sp.Sum(prod_even * x**(3*m), (m, 0, sp.oo)) +
+    C1 * sp.Sum(prod_odd * x**(3*m + 1), (m, 0, sp.oo))
+)
+
+
+# ============================================================
+# FORM II — GAMMA / POCHHAMMER (SYMPY CANONICAL)
+# ============================================================
+
+poch_even = (sp.Rational(2, 9)**m) / (sp.rf(sp.Rational(2, 3), m) * sp.factorial(m))
+poch_odd  = (sp.Rational(2, 9)**m) / (sp.rf(sp.Rational(4, 3), m) * sp.factorial(m))
+
+y_gamma = (
+    C2 * sp.Sum(poch_even * x**(3*m), (m, 0, sp.oo)) +
+    C1 * sp.Sum(poch_odd * x**(3*m + 1), (m, 0, sp.oo))
+)
+
+
+# ============================================================
+# LATEX OUTPUT
+# ============================================================
+
+latex_doc = rf"""
+\documentclass{{article}}
+\usepackage{{amsmath}}
+\usepackage{{amssymb}}
+\usepackage[margin=1in]{{geometry}}
+
+\begin{{document}}
+
+\section*{{Power Series Solution (Pure SymPy Output)}}
+
+\subsection*{{ODE}}
+\[
+-2x y(x) + \frac{{d^2}}{{dx^2}} y(x) = 0
+\]
+
+\subsection*{{Form I: Frobenius Sigma--Product Form (Preferred)}}
+\[
+{sp.latex(y_product)}
+\]
+
+\subsection*{{Form II: Gamma / Pochhammer Form (SymPy Canonical)}}
+\[
+{sp.latex(y_gamma)}
+\]
+
+\subsection*{{Equivalence}}
+\[
+\prod_{{j=1}}^m \frac{{2}}{{(3j)(3j-1)}}
+=
+\frac{{\left(\tfrac{{2}}{{9}}\right)^m}}{{\left(\tfrac{{2}}{{3}}\right)^{{(m)}} m!}},
+\qquad
+\prod_{{j=1}}^m \frac{{2}}{{(3j+1)(3j)}}
+=
+\frac{{\left(\tfrac{{2}}{{9}}\right)^m}}{{\left(\tfrac{{4}}{{3}}\right)^{{(m)}} m!}}
+\]
+
+\end{{document}}
+""".strip()
+
+
+with open(TEX_FILE, "w", encoding="utf-8") as f:
+    f.write(latex_doc)
+
+
+# ============================================================
+# PDF COMPILATION
+# ============================================================
+
+pdflatex = find_pdflatex()
+if not pdflatex:
+    raise RuntimeError("pdflatex not found")
+
+subprocess.run([pdflatex, TEX_FILE], check=True)
+subprocess.run([pdflatex, TEX_FILE], check=True)
+
+os.startfile(TEX_FILE.replace(".tex", ".pdf"))

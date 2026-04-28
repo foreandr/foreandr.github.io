@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JSON Formatter — Office Tools</title>
+  <link rel="icon" type="image/x-icon" href="../../images.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=JetBrains+Mono:wght@400;500;700&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0a0a0b; --bg2:#111113; --bg3:#18181b; --border:#252528;
+    --text:#e2e2e6; --muted:#6b6b72; --accent:#c8a96e; --green:#5aab7a; --red:#e05555;
+    --cyan:#5ab4c8;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Crimson Pro', serif; min-height: 100vh; display: flex; flex-direction: column; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  header { padding: 1.5rem 2rem; border-bottom: 1px solid var(--border); }
+  .back-link { font-size: 0.9rem; color: var(--muted); display: inline-flex; align-items: center; gap: 0.4rem; margin-bottom: 1rem; }
+  .back-link:hover { color: var(--accent); text-decoration: none; }
+  .eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--accent); margin-bottom: 0.5rem; }
+  h1 { font-family: 'Cinzel', serif; font-size: 2rem; font-weight: 700; background: linear-gradient(135deg, var(--accent), #e8c98e, var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .subtitle { color: var(--muted); font-style: italic; margin-top: 0.3rem; font-size: 1.05rem; }
+
+  main { flex: 1; padding: 1.5rem 2rem; display: flex; flex-direction: column; gap: 1rem; }
+
+  .tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); }
+  .tab-btn {
+    padding: 0.5rem 1.2rem; background: none; border: none; border-bottom: 2px solid transparent;
+    color: var(--muted); cursor: pointer; font-family: 'Crimson Pro', serif; font-size: 1rem;
+    transition: color 0.15s, border-color 0.15s; margin-bottom: -1px;
+  }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab-btn:hover { color: var(--text); }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: flex; flex-direction: column; gap: 1rem; flex: 1; }
+
+  .pane-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; flex: 1; }
+  @media(max-width:700px) { .pane-row { grid-template-columns: 1fr; } }
+
+  .pane { display: flex; flex-direction: column; gap: 0.5rem; }
+  .pane-label { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
+
+  textarea, .output-box {
+    flex: 1; min-height: 320px; background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 6px; color: var(--text); font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem; padding: 0.75rem; resize: vertical; outline: none; line-height: 1.6;
+  }
+  textarea:focus { border-color: var(--accent); }
+  .output-box {
+    overflow: auto; white-space: pre; word-break: break-all; white-space: pre-wrap;
+    cursor: default; user-select: text;
+  }
+
+  .btn-row { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
+  button {
+    background: var(--bg3); border: 1px solid var(--border); color: var(--text);
+    padding: 0.35rem 0.85rem; border-radius: 4px; cursor: pointer; font-family: 'Crimson Pro', serif;
+    font-size: 0.95rem; transition: border-color 0.15s, background 0.15s; white-space: nowrap;
+  }
+  button:hover { border-color: var(--accent); background: rgba(200,169,110,0.08); }
+  button.primary { border-color: var(--accent); color: var(--accent); }
+
+  .stats-row {
+    display: flex; gap: 1.5rem; flex-wrap: wrap;
+    font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--muted);
+  }
+  .stats-row span strong { color: var(--accent); }
+
+  .error-box {
+    background: rgba(224,85,85,0.1); border: 1px solid var(--red); border-radius: 6px;
+    padding: 0.75rem 1rem; font-family: 'JetBrains Mono', monospace; font-size: 0.78rem;
+    color: var(--red); display: none;
+  }
+
+  .path-bar {
+    background: var(--bg2); border: 1px solid var(--border); border-radius: 4px;
+    padding: 0.4rem 0.75rem; font-family: 'JetBrains Mono', monospace; font-size: 0.78rem;
+    color: var(--accent); min-height: 2rem; display: flex; align-items: center;
+  }
+  .path-bar::before { content: 'Path: '; color: var(--muted); margin-right: 0.4rem; }
+
+  /* Syntax highlighting */
+  .j-str { color: var(--green); }
+  .j-key { color: var(--accent); }
+  .j-num { color: var(--cyan); }
+  .j-bool { color: var(--red); }
+  .j-null { color: var(--muted); }
+  .j-punct { color: var(--muted); }
+
+  .status-inline { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; }
+  .status-inline.ok { color: var(--green); }
+  .status-inline.err { color: var(--red); }
+</style>
+</head>
+<body>
+<header>
+  <a href="../../index.html" class="back-link">← Back Home</a>
+  <div class="eyebrow">Office</div>
+  <h1>JSON Formatter</h1>
+  <p class="subtitle">Format, validate, minify, and explore JSON — with syntax highlighting and key sorting.</p>
+</header>
+<main>
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('json')">JSON Tools</button>
+    <button class="tab-btn" onclick="switchTab('csv')">CSV → JSON</button>
+  </div>
+
+  <div class="tab-panel active" id="tab-json">
+    <div class="btn-row">
+      <button class="primary" onclick="doFormat()">Format</button>
+      <button onclick="doMinify()">Minify</button>
+      <button onclick="doValidate()">Validate</button>
+      <button onclick="doSortKeys()">Sort Keys</button>
+      <button onclick="doFlip()">Flip</button>
+      <span id="validateStatus" class="status-inline"></span>
+    </div>
+    <div class="error-box" id="errorBox"></div>
+    <div class="pane-row">
+      <div class="pane">
+        <div class="pane-label">Input</div>
+        <textarea id="jsonInput" placeholder='Paste JSON here…' oninput="clearError()"></textarea>
+      </div>
+      <div class="pane">
+        <div class="pane-label">Output</div>
+        <div class="output-box" id="jsonOutput" onclick="handleOutputClick(event)"></div>
+      </div>
+    </div>
+    <div class="path-bar" id="pathBar">click output to explore path</div>
+    <div class="stats-row" id="statsRow"></div>
+    <div class="btn-row">
+      <button onclick="copyOutput()">Copy Output</button>
+      <button onclick="downloadJSON()">Download JSON</button>
+    </div>
+  </div>
+
+  <div class="tab-panel" id="tab-csv">
+    <div class="pane-row">
+      <div class="pane">
+        <div class="pane-label">CSV Input</div>
+        <textarea id="csvInput" placeholder="Paste CSV data here…"></textarea>
+      </div>
+      <div class="pane">
+        <div class="pane-label">JSON Output</div>
+        <div class="output-box" id="csvOutput"></div>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="primary" onclick="convertCSV()">Convert to JSON</button>
+      <button onclick="copyCsvOutput()">Copy Output</button>
+      <button onclick="downloadCsvJSON()">Download JSON</button>
+    </div>
+  </div>
+</main>
+
+<script>
+let lastParsed = null;
+let lastOutputText = '';
+
+function switchTab(name) {
+  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', ['json','csv'][i] === name));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+}
+
+function getInput() { return document.getElementById('jsonInput').value.trim(); }
+
+function tryParse(str) {
+  try { return { ok: true, val: JSON.parse(str) }; }
+  catch(e) { return { ok: false, err: e }; }
+}
+
+function showError(e) {
+  const box = document.getElementById('errorBox');
+  box.style.display = 'block';
+  box.textContent = e.message || String(e);
+}
+
+function clearError() {
+  document.getElementById('errorBox').style.display = 'none';
+  document.getElementById('validateStatus').textContent = '';
+}
+
+function highlight(json) {
+  return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(\.\d+)?([eE][+-]?\d+)?)/g, match => {
+    if (/^"/.test(match)) {
+      if (/:$/.test(match)) return `<span class="j-key">${escHtml(match)}</span>`;
+      return `<span class="j-str">${escHtml(match)}</span>`;
+    }
+    if (/true|false/.test(match)) return `<span class="j-bool">${match}</span>`;
+    if (/null/.test(match)) return `<span class="j-null">${match}</span>`;
+    return `<span class="j-num">${match}</span>`;
+  });
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function setOutput(text) {
+  lastOutputText = text;
+  document.getElementById('jsonOutput').innerHTML = highlight(text);
+  updateStats(text);
+}
+
+function doFormat() {
+  const r = tryParse(getInput());
+  if (!r.ok) { showError(r.err); return; }
+  clearError(); lastParsed = r.val;
+  setOutput(JSON.stringify(r.val, null, 2));
+}
+
+function doMinify() {
+  const r = tryParse(getInput());
+  if (!r.ok) { showError(r.err); return; }
+  clearError(); lastParsed = r.val;
+  setOutput(JSON.stringify(r.val));
+}
+
+function doValidate() {
+  const r = tryParse(getInput());
+  const s = document.getElementById('validateStatus');
+  if (r.ok) {
+    s.textContent = '✓ Valid JSON'; s.className = 'status-inline ok';
+    clearError();
+  } else {
+    s.textContent = '✗ Invalid'; s.className = 'status-inline err';
+    showError(r.err);
+  }
+}
+
+function sortKeys(val) {
+  if (Array.isArray(val)) return val.map(sortKeys);
+  if (val !== null && typeof val === 'object') {
+    const sorted = {};
+    Object.keys(val).sort().forEach(k => sorted[k] = sortKeys(val[k]));
+    return sorted;
+  }
+  return val;
+}
+
+function doSortKeys() {
+  const r = tryParse(getInput());
+  if (!r.ok) { showError(r.err); return; }
+  clearError();
+  const sorted = sortKeys(r.val);
+  lastParsed = sorted;
+  document.getElementById('jsonInput').value = JSON.stringify(sorted, null, 2);
+  setOutput(JSON.stringify(sorted, null, 2));
+}
+
+function doFlip() {
+  const r = tryParse(getInput());
+  if (!r.ok) { showError(r.err); return; }
+  clearError();
+  let result;
+  if (Array.isArray(r.val)) {
+    if (r.val.length && typeof r.val[0] === 'object' && r.val[0] !== null) {
+      const keys = Object.keys(r.val[0]);
+      result = {};
+      keys.forEach(k => { result[k] = r.val.map(item => item[k]); });
+    } else { result = Object.fromEntries(r.val.map((v,i) => [i, v])); }
+  } else if (typeof r.val === 'object' && r.val !== null) {
+    result = Object.entries(r.val).map(([k,v]) => ({key:k,value:v}));
+  } else result = r.val;
+  lastParsed = result;
+  document.getElementById('jsonInput').value = JSON.stringify(result, null, 2);
+  setOutput(JSON.stringify(result, null, 2));
+}
+
+function updateStats(text) {
+  if (!text) { document.getElementById('statsRow').innerHTML = ''; return; }
+  const r = tryParse(text);
+  if (!r.ok) return;
+  const val = r.val;
+  const bytes = new TextEncoder().encode(text).length;
+  let depth = 0;
+  const getDepth = (v, d=0) => {
+    if (Array.isArray(v)) return v.reduce((m,i) => Math.max(m, getDepth(i, d+1)), d);
+    if (v && typeof v === 'object') return Object.values(v).reduce((m,i) => Math.max(m, getDepth(i, d+1)), d);
+    return d;
+  };
+  const countKeys = v => {
+    if (Array.isArray(v)) return v.reduce((s,i) => s + countKeys(i), 0);
+    if (v && typeof v === 'object') return Object.keys(v).length + Object.values(v).reduce((s,i) => s + countKeys(i), 0);
+    return 0;
+  };
+  depth = getDepth(val);
+  const keys = countKeys(val);
+  let html = `<span>Keys: <strong>${keys}</strong></span><span>Depth: <strong>${depth}</strong></span><span>Size: <strong>${bytes} B</strong></span>`;
+  if (Array.isArray(val)) html += `<span>Array length: <strong>${val.length}</strong></span>`;
+  document.getElementById('statsRow').innerHTML = html;
+}
+
+function handleOutputClick(e) {
+  const el = e.target.closest('[data-path]');
+  if (el) { document.getElementById('pathBar').textContent = el.dataset.path; return; }
+  const sel = window.getSelection();
+  if (!sel.rangeCount) return;
+  const range = sel.getRangeAt(0);
+  const text = range.startContainer.textContent;
+  document.getElementById('pathBar').textContent = 'click output to explore path';
+}
+
+function copyOutput() {
+  navigator.clipboard.writeText(lastOutputText).then(() => {});
+}
+
+function downloadJSON() {
+  if (!lastOutputText) return;
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([lastOutputText], {type:'application/json'}));
+  a.download = 'output.json'; a.click();
+}
+
+function detectCSVDelim(text) {
+  const fl = text.split('\n')[0];
+  const c = {',':0,';':0,'\t':0,'|':0};
+  for (const ch of fl) if (ch in c) c[ch]++;
+  return Object.entries(c).sort((a,b)=>b[1]-a[1])[0][0];
+}
+
+function parseCSVSimple(text, delim) {
+  const lines = text.trim().split('\n').map(l => l.split(delim).map(c => c.trim().replace(/^"|"$/g,'')));
+  return lines;
+}
+
+function convertCSV() {
+  const text = document.getElementById('csvInput').value.trim();
+  if (!text) return;
+  const delim = detectCSVDelim(text);
+  const lines = parseCSVSimple(text, delim);
+  const headers = lines[0];
+  const arr = lines.slice(1).map(row => {
+    const obj = {};
+    headers.forEach((h,i) => { obj[h] = row[i] || ''; });
+    return obj;
+  });
+  const out = JSON.stringify(arr, null, 2);
+  document.getElementById('csvOutput').innerHTML = highlight(out);
+  document.getElementById('csvOutput').dataset.raw = out;
+}
+
+function copyCsvOutput() {
+  const raw = document.getElementById('csvOutput').dataset.raw || '';
+  navigator.clipboard.writeText(raw);
+}
+
+function downloadCsvJSON() {
+  const raw = document.getElementById('csvOutput').dataset.raw || '';
+  if (!raw) return;
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([raw],{type:'application/json'}));
+  a.download = 'converted.json'; a.click();
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Word Counter</title>
+  <link rel="icon" type="image/x-icon" href="../../images.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=JetBrains+Mono:wght@400;500;700&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root { --bg:#0a0a0b; --bg2:#111113; --bg3:#18181b; --border:#252528; --text:#e2e2e6; --muted:#6b6b72; --accent:#c8a96e; --green:#5aab7a; --red:#e05555; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { background:var(--bg); color:var(--text); font-family:'Crimson Pro',Georgia,serif; font-size:17px; line-height:1.6; min-height:100vh; display:flex; flex-direction:column; }
+
+header {
+  background: linear-gradient(135deg, #0a0a0b 0%, #111113 40%, #18181b 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 2.5rem 2rem 2rem;
+  text-align: center;
+  position: relative;
+}
+.back-btn {
+  position: absolute; top: 1.5rem; left: 1.5rem;
+  color: var(--muted); text-decoration: none;
+  font-family: 'Crimson Pro', serif; font-size: 15px;
+  border: 1px solid var(--border); padding: 0.4rem 0.9rem;
+  border-radius: 4px; transition: color 0.2s, border-color 0.2s;
+}
+.back-btn:hover { color: var(--accent); border-color: var(--accent); }
+.eyebrow {
+  font-family: 'Cinzel', serif; font-size: 11px; font-weight: 600;
+  letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent);
+  margin-bottom: 0.5rem;
+}
+header h1 {
+  font-family: 'Cinzel', serif; font-weight: 700; font-size: clamp(1.8rem, 4vw, 2.8rem);
+  background: linear-gradient(135deg, var(--accent) 0%, #e8c98e 50%, var(--accent) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  letter-spacing: 0.05em; margin-bottom: 0.5rem;
+}
+header p { color: var(--muted); font-size: 15px; max-width: 560px; margin: 0 auto; }
+
+main { flex: 1; max-width: 1100px; width: 100%; margin: 0 auto; padding: 2rem 1.5rem; }
+
+.top-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+
+.panel {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem;
+}
+.panel-title {
+  font-family: 'Cinzel', serif; font-size: 12px; font-weight: 600;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent);
+  margin-bottom: 1.25rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center;
+}
+
+.textarea-wrap { position: relative; }
+textarea {
+  width: 100%; background: var(--bg3); border: 1px solid var(--border);
+  color: var(--text); font-family: 'Crimson Pro', serif; font-size: 16px;
+  padding: 1rem; border-radius: 6px; resize: vertical; line-height: 1.6;
+  outline: none; transition: border-color 0.2s; min-height: 280px;
+}
+textarea:focus { border-color: var(--accent); }
+
+.clear-btn {
+  font-family: 'Cinzel', serif; font-size: 11px; font-weight: 600; letter-spacing: 0.08em;
+  background: transparent; border: 1px solid var(--border); color: var(--muted);
+  padding: 0.25rem 0.7rem; border-radius: 4px; cursor: pointer; transition: color 0.2s, border-color 0.2s;
+}
+.clear-btn:hover { color: var(--red); border-color: var(--red); }
+
+/* Stats grid */
+.stats-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.75rem;
+}
+.stat-card {
+  background: var(--bg3); border: 1px solid var(--border); border-radius: 6px;
+  padding: 0.85rem 1rem;
+}
+.stat-label {
+  font-family: 'Cinzel', serif; font-size: 10px; font-weight: 600;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted);
+  margin-bottom: 0.25rem;
+}
+.stat-value {
+  font-family: 'JetBrains Mono', monospace; font-size: 1.35rem; font-weight: 700;
+  color: var(--accent); line-height: 1.1;
+}
+.stat-sub { font-size: 12px; color: var(--muted); margin-top: 0.15rem; }
+
+/* Flesch */
+.flesch-bar-wrap { margin-top: 0.75rem; }
+.flesch-bar-bg {
+  height: 8px; background: var(--bg3); border-radius: 4px; overflow: hidden;
+  border: 1px solid var(--border);
+}
+.flesch-bar-fill {
+  height: 100%; border-radius: 4px;
+  background: linear-gradient(90deg, var(--red) 0%, var(--accent) 50%, var(--green) 100%);
+  transition: width 0.4s ease;
+}
+.flesch-label { font-size: 13px; color: var(--muted); margin-top: 0.4rem; }
+
+/* Bottom row: two charts */
+.bottom-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1.5rem; }
+
+.word-freq-list { display: flex; flex-direction: column; gap: 0.4rem; max-height: 340px; overflow-y: auto; }
+.freq-item { display: flex; align-items: center; gap: 0.6rem; font-size: 14px; }
+.freq-word { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--text); width: 120px; flex-shrink: 0; }
+.freq-bar-wrap { flex: 1; height: 14px; background: var(--bg3); border-radius: 2px; overflow: hidden; }
+.freq-bar { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.35s; opacity: 0.75; }
+.freq-count { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--muted); width: 32px; text-align: right; flex-shrink: 0; }
+
+.letter-grid {
+  display: grid; grid-template-columns: repeat(13, 1fr); gap: 3px;
+}
+.letter-col { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.letter-bar-wrap { width: 100%; height: 60px; display: flex; align-items: flex-end; }
+.letter-bar { width: 100%; background: var(--accent); border-radius: 2px 2px 0 0; opacity: 0.65; transition: height 0.35s; }
+.letter-lbl { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); text-transform: uppercase; }
+
+footer { text-align:center; padding:1.5rem; color:var(--muted); font-size:13px; border-top:1px solid var(--border); }
+
+@media (max-width: 760px) {
+  .top-row, .bottom-row { grid-template-columns: 1fr; }
+  .letter-grid { grid-template-columns: repeat(7, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <a href="../../index.html" class="back-btn">← Back Home</a>
+  <div class="eyebrow">Office</div>
+  <h1>Word Counter</h1>
+  <p>Paste any text and get instant readability stats, word frequency, and reading time.</p>
+</header>
+
+<main>
+  <div class="top-row">
+    <!-- Textarea -->
+    <div class="panel">
+      <div class="panel-title">
+        Text Input
+        <button class="clear-btn" onclick="clearText()">Clear</button>
+      </div>
+      <textarea id="input-text" placeholder="Paste or type your text here..."></textarea>
+    </div>
+
+    <!-- Stats -->
+    <div class="panel">
+      <div class="panel-title">Statistics</div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Words</div>
+          <div class="stat-value" id="s-words">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Characters</div>
+          <div class="stat-value" id="s-chars">0</div>
+          <div class="stat-sub" id="s-chars-ns">0 without spaces</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Sentences</div>
+          <div class="stat-value" id="s-sents">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Paragraphs</div>
+          <div class="stat-value" id="s-paras">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Unique Words</div>
+          <div class="stat-value" id="s-unique">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Avg Word Len</div>
+          <div class="stat-value" id="s-avgword">0</div>
+          <div class="stat-sub">characters</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Avg Sent Len</div>
+          <div class="stat-value" id="s-avgsent">0</div>
+          <div class="stat-sub">words/sentence</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Reading Time</div>
+          <div class="stat-value" id="s-read">0m</div>
+          <div class="stat-sub">at 238 wpm</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Speaking Time</div>
+          <div class="stat-value" id="s-speak">0m</div>
+          <div class="stat-sub">at 130 wpm</div>
+        </div>
+      </div>
+
+      <!-- Flesch -->
+      <div style="margin-top:1rem;">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:0.4rem;">
+          <span style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);">Flesch Reading Ease</span>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:1.1rem;font-weight:700;color:var(--accent);" id="s-flesch">—</span>
+        </div>
+        <div class="flesch-bar-wrap">
+          <div class="flesch-bar-bg"><div class="flesch-bar-fill" id="flesch-bar" style="width:0%"></div></div>
+        </div>
+        <div class="flesch-label" id="flesch-label">—</div>
+        <div style="margin-top:0.6rem;display:flex;justify-content:space-between;align-items:baseline;">
+          <span style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);">Grade Level (FK)</span>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:1.1rem;font-weight:700;color:var(--accent);" id="s-grade">—</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-row">
+    <!-- Word frequency -->
+    <div class="panel">
+      <div class="panel-title">Top 20 Words</div>
+      <div class="word-freq-list" id="freq-list">
+        <div style="color:var(--muted);font-size:14px;">Enter text to see word frequency.</div>
+      </div>
+    </div>
+
+    <!-- Letter frequency -->
+    <div class="panel">
+      <div class="panel-title">Letter Frequency (A–Z)</div>
+      <div class="letter-grid" id="letter-chart"></div>
+    </div>
+  </div>
+</main>
+
+<footer>Word Counter &mdash; all processing is local, nothing is uploaded.</footer>
+
+<script>
+const inputEl = document.getElementById('input-text');
+
+const STOP_WORDS = new Set([
+  'a','an','the','and','or','but','in','on','at','to','for','of','with','by','from',
+  'up','about','into','through','during','before','after','above','below','is','are',
+  'was','were','be','been','being','have','has','had','do','does','did','will','would',
+  'could','should','may','might','shall','can','need','dare','ought','used','this',
+  'that','these','those','i','my','myself','we','our','ours','you','your','he','him',
+  'his','she','her','it','its','they','them','their','what','which','who','whom','as',
+  'not','no','nor','so','yet','both','either','neither','whether','if','then','than',
+  'too','very','just','because','while','although','though','since','until','unless',
+  'also','when','where','how','all','each','every','few','more','most','other','some',
+  'such','own','same','only','so','than','s','t','don','didn','doesn','isn','aren',
+  'wasn','weren','hasn','haven','hadn','won','wouldn','couldn','shouldn','can\'t',
+  'i\'m','i\'ve','i\'ll','i\'d','it\'s','that\'s','there','here','get','got','made',
+  'make','said','say','says','like','just','know','think','see','come','go','one','two'
+]);
+
+let debounce = null;
+inputEl.addEventListener('input', () => {
+  clearTimeout(debounce);
+  debounce = setTimeout(analyze, 100);
+});
+
+function clearText() {
+  inputEl.value = '';
+  analyze();
+}
+
+function formatTime(words, wpm) {
+  const totalSec = Math.round((words / wpm) * 60);
+  if (totalSec < 60) return totalSec + 's';
+  const m = Math.floor(totalSec / 60), s = totalSec % 60;
+  return m + 'm' + (s > 0 ? ' ' + s + 's' : '');
+}
+
+function fleschLabel(score) {
+  if (score >= 90) return 'Very Easy';
+  if (score >= 80) return 'Easy';
+  if (score >= 70) return 'Fairly Easy';
+  if (score >= 60) return 'Standard';
+  if (score >= 50) return 'Fairly Difficult';
+  if (score >= 30) return 'Difficult';
+  return 'Very Confusing';
+}
+
+function countSyllables(word) {
+  word = word.toLowerCase().replace(/[^a-z]/g, '');
+  if (!word) return 0;
+  if (word.length <= 3) return 1;
+  word = word.replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/, '');
+  word = word.replace(/^y/, '');
+  const m = word.match(/[aeiouy]{1,2}/g);
+  return m ? m.length : 1;
+}
+
+function analyze() {
+  const text = inputEl.value;
+
+  // Basic counts
+  const charCount = text.length;
+  const charNoSpaces = text.replace(/\s/g, '').length;
+  const words = text.trim() === '' ? [] : text.trim().split(/\s+/).filter(w => w.length > 0);
+  const wordCount = words.length;
+
+  // Sentences: split on .!? followed by space or end
+  const sentences = text.trim() === '' ? [] : text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+  const sentCount = sentences.length;
+
+  // Paragraphs: non-empty blocks separated by blank lines
+  const paras = text.trim() === '' ? [] : text.split(/\n\s*\n/).filter(p => p.trim().length > 0);
+  const paraCount = paras.length;
+
+  // Unique words (lowercase, stripped of punctuation)
+  const cleanWords = words.map(w => w.toLowerCase().replace(/[^a-z0-9']/g, ''));
+  const uniqueWords = new Set(cleanWords.filter(w => w.length > 0));
+  const uniqueCount = uniqueWords.size;
+
+  // Avg word length
+  const totalWordChars = cleanWords.reduce((sum, w) => sum + w.replace(/[^a-z]/g, '').length, 0);
+  const avgWordLen = wordCount > 0 ? (totalWordChars / wordCount).toFixed(1) : '0';
+
+  // Avg sentence length
+  const avgSentLen = sentCount > 0 ? (wordCount / sentCount).toFixed(1) : '0';
+
+  // Flesch Reading Ease
+  let flesch = null, fkGrade = null;
+  if (wordCount > 0 && sentCount > 0) {
+    const totalSyllables = cleanWords.reduce((sum, w) => sum + countSyllables(w), 0);
+    const sylPerWord = totalSyllables / wordCount;
+    const wordsPerSent = wordCount / sentCount;
+    flesch = 206.835 - 1.015 * wordsPerSent - 84.6 * sylPerWord;
+    flesch = Math.max(0, Math.min(100, flesch));
+    fkGrade = 0.39 * wordsPerSent + 11.8 * sylPerWord - 15.59;
+    fkGrade = Math.max(0, fkGrade);
+  }
+
+  // Update stat cards
+  document.getElementById('s-words').textContent = wordCount.toLocaleString();
+  document.getElementById('s-chars').textContent = charCount.toLocaleString();
+  document.getElementById('s-chars-ns').textContent = charNoSpaces.toLocaleString() + ' without spaces';
+  document.getElementById('s-sents').textContent = sentCount.toLocaleString();
+  document.getElementById('s-paras').textContent = paraCount.toLocaleString();
+  document.getElementById('s-unique').textContent = uniqueCount.toLocaleString();
+  document.getElementById('s-avgword').textContent = avgWordLen;
+  document.getElementById('s-avgsent').textContent = avgSentLen;
+  document.getElementById('s-read').textContent = wordCount > 0 ? formatTime(wordCount, 238) : '0s';
+  document.getElementById('s-speak').textContent = wordCount > 0 ? formatTime(wordCount, 130) : '0s';
+
+  if (flesch !== null) {
+    document.getElementById('s-flesch').textContent = flesch.toFixed(1);
+    document.getElementById('flesch-bar').style.width = flesch.toFixed(1) + '%';
+    document.getElementById('flesch-label').textContent = fleschLabel(flesch);
+    document.getElementById('s-grade').textContent = 'Grade ' + fkGrade.toFixed(1);
+  } else {
+    document.getElementById('s-flesch').textContent = '—';
+    document.getElementById('flesch-bar').style.width = '0%';
+    document.getElementById('flesch-label').textContent = '—';
+    document.getElementById('s-grade').textContent = '—';
+  }
+
+  // Word frequency (exclude stop words)
+  const freq = {};
+  cleanWords.forEach(w => {
+    if (w.length < 2) return;
+    if (STOP_WORDS.has(w)) return;
+    freq[w] = (freq[w] || 0) + 1;
+  });
+  const sorted = Object.entries(freq).sort((a, b) => b[1] - a[1]).slice(0, 20);
+  renderFreq(sorted);
+
+  // Letter frequency
+  const letterFreq = {};
+  for (let ch of text.toLowerCase()) {
+    if (ch >= 'a' && ch <= 'z') letterFreq[ch] = (letterFreq[ch] || 0) + 1;
+  }
+  renderLetters(letterFreq);
+}
+
+function renderFreq(sorted) {
+  const el = document.getElementById('freq-list');
+  if (sorted.length === 0) {
+    el.innerHTML = '<div style="color:var(--muted);font-size:14px;">No significant words found.</div>';
+    return;
+  }
+  const maxCount = sorted[0][1];
+  el.innerHTML = sorted.map(([word, count]) => {
+    const pct = maxCount > 0 ? (count / maxCount * 100).toFixed(1) : 0;
+    return `<div class="freq-item">
+      <span class="freq-word">${escHtml(word)}</span>
+      <div class="freq-bar-wrap"><div class="freq-bar" style="width:${pct}%"></div></div>
+      <span class="freq-count">${count}</span>
+    </div>`;
+  }).join('');
+}
+
+function renderLetters(freq) {
+  const el = document.getElementById('letter-chart');
+  const letters = 'abcdefghijklmnopqrstuvwxyz'.split('');
+  const maxVal = Math.max(1, ...letters.map(l => freq[l] || 0));
+  el.innerHTML = letters.map(l => {
+    const count = freq[l] || 0;
+    const pct = (count / maxVal * 100).toFixed(1);
+    return `<div class="letter-col">
+      <div class="letter-bar-wrap"><div class="letter-bar" style="height:${pct}%"></div></div>
+      <div class="letter-lbl">${l}</div>
+    </div>`;
+  }).join('');
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// Default text
+inputEl.value = `The art of writing is the art of discovering what you believe. A writer only begins a book; a reader finishes it. To write is human, to edit is divine.
+
+Good writing is clear thinking made visible. Style is the dress of thought, and well-dressed thought attracts readers just as well-dressed people attract attention. The difference between the right word and the almost-right word is the difference between lightning and the lightning bug.
+
+Writing without revision is like a diamond in the rough—it may have potential, but it needs polishing to shine. Every first draft is just the beginning of a journey toward clarity, precision, and resonance.`;
+
+analyze();
+</script>
+</body>
+</html>

@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Materials Lab — Alloy Properties from Theory</title>
+  <link rel="icon" type="image/x-icon" href="../../images.ico">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <style>
+    :root{
+      --bg:#0d1117;--bg2:#161b22;--bg3:#21262d;--bdr:#30363d;
+      --txt:#e6edf3;--mu:#8b949e;
+      --bl:#58a6ff;--gr:#3fb950;--pu:#bc8cff;--or:#f78166;--ye:#e3b341;--te:#39d0c8;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html{font-size:13px}
+    html,body{height:100%;overflow:hidden}
+    body{font-family:"IBM Plex Mono","Fira Code",monospace;background:var(--bg);color:var(--txt);display:flex;flex-direction:column}
+
+    #topbar{display:flex;align-items:center;gap:7px;padding:0 9px;height:44px;background:var(--bg2);border-bottom:1px solid var(--bdr);flex-shrink:0}
+    .topname{font-size:.88rem;font-weight:700;letter-spacing:.06em;flex-shrink:0}
+    .vsep{width:1px;height:22px;background:var(--bdr);flex-shrink:0}
+
+    .el-block{display:flex;align-items:center;gap:6px;flex-shrink:0}
+    .el-sym{width:34px;height:34px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:1.05rem;font-weight:700;flex-shrink:0}
+    .el-meta{display:flex;flex-direction:column;line-height:1.3}
+    .el-name{font-size:.68rem;color:var(--mu)}
+    .el-detail{font-size:.62rem;color:var(--mu)}
+    select.el-sel{background:var(--bg3);border:1px solid var(--bdr);color:var(--txt);border-radius:4px;padding:2px 4px;font-size:.7rem;font-family:inherit;cursor:pointer;width:130px}
+
+    #slider-zone{flex:1;max-width:280px;min-width:80px;display:flex;flex-direction:column;align-items:center;gap:1px;padding:0 5px}
+    #pct-label{font-size:.75rem;color:var(--ye);font-weight:700;white-space:nowrap}
+    #comp-slider{width:100%;accent-color:var(--pu);cursor:pointer}
+    #dot-bar{position:relative;width:100%;height:9px}
+
+    #presets-row{display:flex;gap:3px;flex-shrink:0;overflow-x:auto;max-width:340px}
+    .pbtn{background:var(--bg3);border:1px solid var(--bdr);color:var(--mu);border-radius:3px;padding:2px 8px;font-size:.65rem;cursor:pointer;font-family:inherit;white-space:nowrap}
+    .pbtn:hover{border-color:var(--ye);color:var(--txt)}
+    .pbtn.on{border-color:var(--ye);color:var(--ye)}
+
+    #workspace{display:flex;flex:1;overflow:hidden}
+
+    /* math panel */
+    #mathpanel{width:270px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--bdr);overflow-y:auto;display:flex;flex-direction:column}
+    .eq-sec{padding:9px 11px;border-bottom:1px solid var(--bdr)}
+    .eq-label{font-size:.65rem;color:var(--pu);text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-bottom:5px}
+    .eq-box{background:var(--bg3);border:1px solid var(--bdr);border-radius:4px;padding:6px 8px;overflow-x:auto}
+    .eq-sub{background:var(--bg);border:1px solid var(--ye)28;border-radius:4px;padding:5px 8px;margin-top:4px;font-size:.65rem;line-height:1.8;color:var(--mu)}
+    .eq-sub b{color:var(--ye)}
+    .eq-note{font-size:.63rem;color:var(--mu);margin-top:5px;line-height:1.65}
+    .eq-note b{color:var(--txt)}.eq-note .hl{color:var(--ye)}.eq-note .hg{color:var(--gr)}.eq-note .hp{color:var(--pu)}.eq-note .ht{color:var(--te)}.eq-note .ho{color:var(--or)}
+
+    /* main */
+    #main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+
+    #cards{display:grid;grid-template-columns:repeat(5,1fr);gap:2px;background:var(--bdr);border-bottom:1px solid var(--bdr);flex-shrink:0}
+    .crd{background:var(--bg2);padding:7px 9px;cursor:pointer;display:flex;flex-direction:column;gap:1px}
+    .crd:hover,.crd.on{background:var(--bg3)}
+    .crd.on .crd-name{color:var(--ye)}
+    .crd-name{font-size:.62rem;color:var(--mu);text-transform:uppercase;letter-spacing:.05em}
+    .crd-val{font-size:1.1rem;font-weight:700;line-height:1.15}
+    .crd-unit{font-size:.58rem;color:var(--mu)}
+    .crd-lin{font-size:.58rem;color:var(--mu)}
+    .crd-exp{font-size:.58rem;margin-top:1px}
+    .crd-bar{height:3px;background:var(--bdr);border-radius:2px;margin-top:5px;overflow:hidden}
+    .crd-fill{height:100%;border-radius:2px;transition:width .2s}
+
+    #cvwrap{flex:1;position:relative;overflow:hidden;background:var(--bg);cursor:crosshair;min-height:0}
+    #cv{position:absolute;top:0;left:0;width:100%;height:100%}
+    #zoom-hint{position:absolute;bottom:6px;right:10px;font-size:.62rem;color:var(--mu);pointer-events:none;opacity:.6}
+
+    #tbl-area{height:150px;flex-shrink:0;overflow-y:auto;background:var(--bg2);border-top:1px solid var(--bdr)}
+    table{width:100%;border-collapse:collapse;font-size:.66rem}
+    th{background:var(--bg3);color:var(--pu);font-weight:700;padding:4px 8px;text-align:left;position:sticky;top:0;z-index:2;border-bottom:1px solid var(--bdr);white-space:nowrap}
+    td{padding:3px 8px;border-bottom:1px solid rgba(255,255,255,.03);white-space:nowrap}
+    tr:hover td{background:rgba(255,255,255,.02)}
+    .match{color:var(--gr);font-weight:700}.approx{color:var(--ye)}.off{color:var(--or)}
+
+    .katex{color:var(--txt)!important}
+    .katex-display{margin:3px 0!important}
+    .katex-display>.katex{font-size:1.05em!important}
+    ::-webkit-scrollbar{width:3px;height:3px}
+    ::-webkit-scrollbar-track{background:var(--bg2)}
+    ::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:2px}
+  </style>
+</head>
+<body>
+
+<div id="topbar">
+  <a href="../../index.html" style="text-decoration:none;color:var(--bl);font-size:.62rem;border:1px solid var(--bdr);padding:2px 7px;border-radius:4px;flex-shrink:0">← back</a>
+  <span class="topname">MATERIALS LAB</span>
+  <div class="vsep"></div>
+  <div class="el-block">
+    <div class="el-sym" id="symA">Cu</div>
+    <div class="el-meta">
+      <span class="el-name" id="nameA">Copper</span>
+      <span class="el-detail" id="detailA">FCC · 8.96 g/cm³</span>
+    </div>
+    <select class="el-sel" id="selA"></select>
+  </div>
+  <div id="slider-zone">
+    <span id="pct-label">+10 mol% B</span>
+    <input type="range" id="comp-slider" min="0" max="100" step="0.1" value="10">
+    <div id="dot-bar"></div>
+  </div>
+  <div class="el-block">
+    <div class="el-sym" id="symB">Sn</div>
+    <div class="el-meta">
+      <span class="el-name" id="nameB">Tin</span>
+      <span class="el-detail" id="detailB">BCT · 7.27 g/cm³</span>
+    </div>
+    <select class="el-sel" id="selB"></select>
+  </div>
+  <div class="vsep"></div>
+  <div id="presets-row"></div>
+</div>
+
+<div id="workspace">
+  <div id="mathpanel"></div>
+  <div id="main">
+    <div id="cards">
+      <div class="crd on" data-prop="HV"      onclick="setProp('HV')">
+        <div class="crd-name">Hardness</div><div class="crd-val" id="v-HV">—</div>
+        <div class="crd-unit">HV</div><div class="crd-lin" id="l-HV"></div>
+        <div class="crd-exp" id="e-HV"></div>
+        <div class="crd-bar"><div class="crd-fill" id="f-HV" style="background:var(--ye)"></div></div>
+      </div>
+      <div class="crd" data-prop="rho_el"    onclick="setProp('rho_el')">
+        <div class="crd-name">Resistivity</div><div class="crd-val" id="v-rho_el">—</div>
+        <div class="crd-unit">nΩ·m</div><div class="crd-lin" id="l-rho_el"></div>
+        <div class="crd-exp" id="e-rho_el"></div>
+        <div class="crd-bar"><div class="crd-fill" id="f-rho_el" style="background:var(--te)"></div></div>
+      </div>
+      <div class="crd" data-prop="E"          onclick="setProp('E')">
+        <div class="crd-name">Young's mod.</div><div class="crd-val" id="v-E">—</div>
+        <div class="crd-unit">GPa</div><div class="crd-lin" id="l-E"></div>
+        <div class="crd-exp" id="e-E"></div>
+        <div class="crd-bar"><div class="crd-fill" id="f-E" style="background:var(--bl)"></div></div>
+      </div>
+      <div class="crd" data-prop="density"    onclick="setProp('density')">
+        <div class="crd-name">Density</div><div class="crd-val" id="v-density">—</div>
+        <div class="crd-unit">g/cm³</div><div class="crd-lin" id="l-density"></div>
+        <div class="crd-exp" id="e-density"></div>
+        <div class="crd-bar"><div class="crd-fill" id="f-density" style="background:var(--pu)"></div></div>
+      </div>
+      <div class="crd" data-prop="Tm"         onclick="setProp('Tm')">
+        <div class="crd-name">Melting pt.</div><div class="crd-val" id="v-Tm">—</div>
+        <div class="crd-unit">°C</div><div class="crd-lin" id="l-Tm"></div>
+        <div class="crd-exp" id="e-Tm"></div>
+        <div class="crd-bar"><div class="crd-fill" id="f-Tm" style="background:var(--or)"></div></div>
+      </div>
+    </div>
+    <div id="cvwrap">
+      <canvas id="cv"></canvas>
+      <div id="zoom-hint">scroll = zoom · drag = pan · dbl-click = reset</div>
+    </div>
+    <div id="tbl-area"><table><thead id="thead"></thead><tbody id="tbody"></tbody></table></div>
+  </div>
+</div>
+
+<script>
+'use strict';
+const DPR = window.devicePixelRatio || 1;
+const K  = (s, d=false) => katex.renderToString(s, {throwOnError:false, displayMode:d});
+const Kd = s => K(s, true);
+const Ki = s => K(s, false);
+
+// ═══════════════════════════════════════════════════════════
+//  ELEMENT DATABASE  (Callister, Ashby, CRC Handbook)
+// ═══════════════════════════════════════════════════════════
+const EL = {
+  Al:{name:'Aluminium', M:26.98,  struct:'FCC', a:4.046, n:4, Tm:660,  rho_el:2.65e-8, E:70,  HV:15,  density:2.700, r:1.43, color:'#adb5bd'},
+  Ag:{name:'Silver',    M:107.87, struct:'FCC', a:4.086, n:4, Tm:962,  rho_el:1.59e-8, E:83,  HV:25,  density:10.49, r:1.44, color:'#c8c8c8'},
+  Au:{name:'Gold',      M:196.97, struct:'FCC', a:4.078, n:4, Tm:1064, rho_el:2.44e-8, E:78,  HV:25,  density:19.32, r:1.44, color:'#ffd700'},
+  C: {name:'Carbon*',   M:12.01,  struct:'FCC', a:3.567, n:4, Tm:3550, rho_el:3.5e-5,  E:1050,HV:1000,density:3.515, r:0.77, color:'#555', special:'interstitial'},
+  Co:{name:'Cobalt',    M:58.93,  struct:'HCP', a:2.507, n:2, Tm:1495, rho_el:6.24e-8, E:209, HV:125, density:8.900, r:1.25, color:'#5b8cff'},
+  Cr:{name:'Chromium',  M:52.00,  struct:'BCC', a:2.884, n:2, Tm:1907, rho_el:1.25e-7, E:248, HV:120, density:7.190, r:1.28, color:'#9eb5c0'},
+  Cu:{name:'Copper',    M:63.55,  struct:'FCC', a:3.615, n:4, Tm:1085, rho_el:1.72e-8, E:128, HV:37,  density:8.960, r:1.28, color:'#b87333'},
+  Fe:{name:'Iron',      M:55.85,  struct:'BCC', a:2.870, n:2, Tm:1538, rho_el:9.71e-8, E:211, HV:70,  density:7.874, r:1.26, color:'#a0a0b0'},
+  Mg:{name:'Magnesium', M:24.31,  struct:'HCP', a:3.209, n:2, Tm:650,  rho_el:4.39e-8, E:45,  HV:35,  density:1.738, r:1.60, color:'#aed6f1'},
+  Mn:{name:'Manganese', M:54.94,  struct:'BCC', a:8.913, n:2, Tm:1246, rho_el:1.44e-6, E:198, HV:170, density:7.470, r:1.27, color:'#c97a9e'},
+  Mo:{name:'Molybdenum',M:95.95,  struct:'BCC', a:3.147, n:2, Tm:2623, rho_el:5.34e-8, E:330, HV:180, density:10.28, r:1.39, color:'#7a8c9c'},
+  Ni:{name:'Nickel',    M:58.69,  struct:'FCC', a:3.524, n:4, Tm:1455, rho_el:6.99e-8, E:200, HV:70,  density:8.908, r:1.25, color:'#7fa3c0'},
+  Pb:{name:'Lead',      M:207.2,  struct:'FCC', a:4.950, n:4, Tm:327,  rho_el:2.08e-7, E:16,  HV:4,   density:11.34, r:1.75, color:'#8888aa'},
+  Si:{name:'Silicon',   M:28.09,  struct:'Dia', a:5.431, n:8, Tm:1414, rho_el:640,     E:130, HV:1000,density:2.329, r:1.11, color:'#3d85c8'},
+  Sn:{name:'Tin',       M:118.71, struct:'BCT', a:5.831, n:4, Tm:232,  rho_el:1.09e-7, E:50,  HV:5,   density:7.265, r:1.62, color:'#d4d4d4'},
+  Ti:{name:'Titanium',  M:47.87,  struct:'HCP', a:2.951, n:2, Tm:1668, rho_el:4.20e-7, E:116, HV:100, density:4.507, r:1.45, color:'#8a9ba8'},
+  W: {name:'Tungsten',  M:183.84, struct:'BCC', a:3.165, n:2, Tm:3422, rho_el:5.60e-8, E:411, HV:400, density:19.30, r:1.39, color:'#6a7a9c'},
+  Zn:{name:'Zinc',      M:65.38,  struct:'HCP', a:2.665, n:2, Tm:420,  rho_el:5.96e-8, E:108, HV:35,  density:7.134, r:1.39, color:'#c0c8d0'},
+};
+
+// ═══════════════════════════════════════════════════════════
+//  ALLOY SYSTEM DATABASE
+// ═══════════════════════════════════════════════════════════
+const SYS = {
+  'Cu-Sn':{Cnord:1.26e-6,Ceut:340,presets:[
+    {n:'Bronze (10%)',x:.10,HV:100,E:117,density:8.73,rho_el:1.4e-7,Tm:950,note:'~3000 BC — launched the Bronze Age'},
+    {n:'Bronze (20%)',x:.20,HV:140,E:100,density:8.50,rho_el:1.8e-7,Tm:880,note:'Cannons, bells, cymbals'},
+    {n:'Speculum (33%)',x:.33,HV:180,E:85,density:8.10,rho_el:2.2e-7,Tm:820,note:'Mirror metal'},
+  ]},
+  'Cu-Zn':{Cnord:1.53e-7,Ceut:80,presets:[
+    {n:'Red brass (15%)',x:.15,HV:70,E:110,density:8.75,rho_el:3.9e-8,Tm:1000,note:'Plumbing, hardware'},
+    {n:'Brass (30%)',x:.30,HV:90,E:100,density:8.49,rho_el:6.2e-8,Tm:940,note:'Instruments, valves'},
+    {n:'Yellow brass (35%)',x:.35,HV:100,E:97,density:8.40,rho_el:6.6e-8,Tm:905,note:'Cartridge cases'},
+  ]},
+  'C-Fe':{Cnord:2.5e-6,Ceut:600,special:'interstitial',presets:[
+    {n:'Mild steel (0.2%)',x:.002,HV:130,E:200,density:7.85,rho_el:1.40e-7,Tm:1520,note:'Construction beams'},
+    {n:'Medium steel (0.5%)',x:.005,HV:200,E:200,density:7.84,rho_el:1.50e-7,Tm:1480,note:'Rails, springs'},
+    {n:'High-C steel (1%)',x:.010,HV:300,E:200,density:7.83,rho_el:1.60e-7,Tm:1430,note:'Knives, drill bits'},
+  ]},
+  'Cr-Fe':{Cnord:4.2e-6,Ceut:50,presets:[
+    {n:'Stainless 430 (17%)',x:.17,HV:160,E:200,density:7.70,rho_el:6.0e-7,Tm:1500,note:'Cookware, appliances'},
+    {n:'Stainless 446 (25%)',x:.25,HV:185,E:195,density:7.60,rho_el:7.5e-7,Tm:1490,note:'High-T oxidation resistance'},
+  ]},
+  'Cr-Ni':{Cnord:6.4e-6,Ceut:100,presets:[
+    {n:'Nichrome 80/20',x:.20,HV:65,E:215,density:8.40,rho_el:1.10e-6,Tm:1400,note:'Toaster / hair dryer wire'},
+    {n:'Nichrome 60/40',x:.40,HV:70,E:220,density:8.10,rho_el:1.00e-6,Tm:1350,note:'Furnace elements'},
+  ]},
+  'Al-Cu':{Cnord:5.6e-7,Ceut:200,presets:[
+    {n:'Duralumin (4%)',x:.040,HV:120,E:73,density:2.79,rho_el:4.8e-8,Tm:638,note:'1906 — first aerospace alloy'},
+    {n:'2024-T3 (4.4%)',x:.044,HV:137,E:73,density:2.78,rho_el:5.0e-8,Tm:635,note:'Fuselage skins, wing ribs'},
+  ]},
+  'Pb-Sn':{Cnord:-1.5e-8,Ceut:460,presets:[
+    {n:'60/40 solder',x:.40,HV:15,E:40,density:8.47,rho_el:1.45e-7,Tm:183,note:'Near eutectic — sharp freeze'},
+    {n:'50/50 solder',x:.50,HV:12,E:38,density:9.00,rho_el:1.60e-7,Tm:215,note:'Wide mushy zone — wipeable'},
+  ]},
+  'Ag-Au':{Cnord:1.5e-7,Ceut:50,presets:[
+    {n:'18k gold (25% Ag)',x:.25,HV:135,E:85,density:17.40,rho_el:5.0e-8,Tm:1000,note:'Jewelry — 4× harder than pure Au'},
+    {n:'14k gold (42% Ag)',x:.42,HV:120,E:84,density:15.80,rho_el:6.5e-8,Tm:950,note:'Most common US jewelry alloy'},
+  ]},
+  'Fe-Ni':{Cnord:1.5e-6,Ceut:100,presets:[
+    {n:'Invar (36% Ni)',x:.36,HV:160,E:140,density:8.05,rho_el:8.2e-7,Tm:1430,note:'Near-zero thermal expansion'},
+    {n:'Permalloy (80%)',x:.80,HV:100,E:150,density:8.74,rho_el:1.6e-7,Tm:1450,note:'Max magnetic permeability'},
+  ]},
+  'Al-Mg':{Cnord:3.8e-7,Ceut:150,presets:[
+    {n:'5052 (2.5% Mg)',x:.025,HV:60,E:70,density:2.68,rho_el:4.9e-8,Tm:650,note:'Marine grade'},
+    {n:'5083 (4.5% Mg)',x:.045,HV:75,E:70,density:2.66,rho_el:5.6e-8,Tm:635,note:'Shipbuilding, LNG tanks'},
+  ]},
+  'Fe-W':{Cnord:3.0e-6,Ceut:30,presets:[
+    {n:'W-steel (5%)',x:.05,HV:600,E:220,density:8.30,rho_el:3.0e-7,Tm:1510,note:'High-speed cutting tools'},
+    {n:'W-steel (18%)',x:.18,HV:850,E:230,density:9.60,rho_el:4.0e-7,Tm:1490,note:'M2 HSS — drill bits'},
+  ]},
+  'Al-Si':{Cnord:6.0e-7,Ceut:350,presets:[
+    {n:'Al-7Si casting',x:.07,HV:65,E:71,density:2.65,rho_el:4.5e-8,Tm:610,note:'Engine blocks (A356)'},
+    {n:'Silumin (12%)',x:.12,HV:80,E:72,density:2.62,rho_el:5.0e-8,Tm:577,note:'Near eutectic — best castability'},
+  ]},
+};
+
+// ═══════════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════════
+const S = {A:'Cu', B:'Sn', x:0.10, prop:'HV'};
+
+// View state for zoom/pan
+const VIEW = {xMin:0, xMax:1, yMin:null, yMax:null};
+// Stored canvas geometry for coordinate conversion (set during draw)
+let _PAD, _PW, _PH;
+
+// ═══════════════════════════════════════════════════════════
+//  PHYSICS
+// ═══════════════════════════════════════════════════════════
+function sysKey(a,b){return [a,b].sort().join('-');}
+function getSys(a,b){return SYS[sysKey(a,b)]||null;}
+function getXi(a,b,x){
+  // x is always fraction of element B in the UI.
+  // Internally, the SYS key is alphabetical, so invert if B < A alphabetically.
+  const k=sysKey(a,b); const kb=k.split('-')[1];
+  return b===kb ? x : 1-x;
+}
+
+function calcDensity(A,B,x){
+  const num=(1-x)*A.M+x*B.M, den=(1-x)*A.M/A.density+x*B.M/B.density;
+  return num/den;
+}
+function calcTm(A,B,x,sys){
+  return (1-x)*A.Tm+x*B.Tm - (sys?.Ceut||0)*x*(1-x);
+}
+function calcRhoEl(A,B,x,sys){
+  return (1-x)*A.rho_el+x*B.rho_el+(sys?.Cnord||0)*x*(1-x);
+}
+function calcE(A,B,x){
+  const Ev=(1-x)*A.E+x*B.E, Er=1/((1-x)/A.E+x/B.E);
+  return (Ev+Er)/2;
+}
+function calcHV(A,B,x,sys){
+  const base=(1-x)*A.HV+x*B.HV;
+  if(!sys||x===0||x===1) return base;
+  // Labusch-Fleischer: ΔH = kL·G·ε^(4/3)·[x(1-x)]^(2/3) / 9.81  [GPa→HV]
+  const G=calcE(A,B,x)/2.7;         // approx shear modulus (GPa)
+  const eps=Math.abs(A.r-B.r)/A.r;  // relative size mismatch
+  const kL=0.4;
+  const dH_GPa=kL*G*Math.pow(eps,4/3)*Math.pow(x*(1-x),2/3);
+  return base + dH_GPa*1000/9.81;   // GPa→MPa→HV
+}
+
+function compute(a,b,x){
+  const A=EL[a],B=EL[b],sys=getSys(a,b);
+  const xi=getXi(a,b,x);
+  return {
+    density:  calcDensity(A,B,xi),
+    density_lin:(1-xi)*A.density+xi*B.density,
+    Tm:       calcTm(A,B,xi,sys),
+    Tm_lin:   (1-xi)*A.Tm+xi*B.Tm,
+    rho_el:   calcRhoEl(A,B,xi,sys),
+    rho_el_lin:(1-xi)*A.rho_el+xi*B.rho_el,
+    E:        calcE(A,B,xi),
+    E_lin:    (1-xi)*A.E+xi*B.E,
+    HV:       calcHV(A,B,xi,sys),
+    HV_lin:   (1-xi)*A.HV+xi*B.HV,
+  };
+}
+
+// ═══════════════════════════════════════════════════════════
+//  PROP CONFIG
+// ═══════════════════════════════════════════════════════════
+const PROPS = {
+  HV:     {label:'Hardness',    unit:'HV',    key:'HV',      linKey:'HV_lin',      color:'#e3b341', fmt:v=>v.toFixed(0)},
+  rho_el: {label:'Resistivity', unit:'nΩ·m',  key:'rho_el',  linKey:'rho_el_lin',  color:'#39d0c8', fmt:v=>(v*1e9).toFixed(1)},
+  E:      {label:"Young's mod", unit:'GPa',   key:'E',       linKey:'E_lin',       color:'#58a6ff', fmt:v=>v.toFixed(1)},
+  density:{label:'Density',     unit:'g/cm³', key:'density', linKey:'density_lin', color:'#bc8cff', fmt:v=>v.toFixed(2)},
+  Tm:     {label:'Melting pt',  unit:'°C',    key:'Tm',      linKey:'Tm_lin',      color:'#f78166', fmt:v=>v.toFixed(0)},
+};
+
+// ═══════════════════════════════════════════════════════════
+//  UI
+// ═══════════════════════════════════════════════════════════
+function buildSelects(){
+  const keys=Object.keys(EL).sort();
+  ['selA','selB'].forEach((id,i)=>{
+    const sel=document.getElementById(id);
+    sel.innerHTML=keys.map(k=>`<option value="${k}">${EL[k].name} (${k})</option>`).join('');
+    sel.value=i===0?S.A:S.B;
+  });
+  document.getElementById('selA').onchange=e=>{S.A=e.target.value;resetView();update();};
+  document.getElementById('selB').onchange=e=>{S.B=e.target.value;resetView();update();};
+}
+
+function buildPresets(){
+  const row=document.getElementById('presets-row');
+  const sys=getSys(S.A,S.B);
+  row.innerHTML='';
+  if(!sys) return;
+  sys.presets.forEach(p=>{
+    const b=document.createElement('button');
+    b.className='pbtn';
+    b.textContent=p.n;
+    b.onclick=()=>{
+      S.x=p.x;
+      document.getElementById('comp-slider').value=p.x*100;
+      document.querySelectorAll('.pbtn').forEach(e=>e.classList.remove('on'));
+      b.classList.add('on');
+      update(false);
+    };
+    row.appendChild(b);
+  });
+}
+
+function buildDots(){
+  const bar=document.getElementById('dot-bar');
+  const sys=getSys(S.A,S.B);
+  bar.innerHTML='';
+  if(!sys) return;
+  sys.presets.forEach(p=>{
+    const d=document.createElement('div');
+    d.style.cssText=`position:absolute;left:${p.x*100}%;transform:translateX(-50%);top:1px;
+      width:5px;height:5px;border-radius:50%;background:var(--ye);border:1px solid #000;cursor:pointer;`;
+    d.title=p.n;
+    d.onclick=()=>{S.x=p.x;document.getElementById('comp-slider').value=p.x*100;update();};
+    bar.appendChild(d);
+  });
+}
+
+function updateElTiles(){
+  const A=EL[S.A],B=EL[S.B];
+  const isLight=hex=>{const c=parseInt(hex.replace('#',''),16);return(.299*(c>>16&255)+.587*(c>>8&255)+.114*(c&255))>140;};
+  ['A','B'].forEach(ab=>{
+    const el=ab==='A'?A:B,sym=ab==='A'?S.A:S.B;
+    document.getElementById('sym'+ab).textContent=sym;
+    document.getElementById('sym'+ab).style.background=el.color;
+    document.getElementById('sym'+ab).style.color=isLight(el.color)?'#000':'#fff';
+    document.getElementById('name'+ab).textContent=el.name;
+    document.getElementById('detail'+ab).textContent=`${el.struct} · ${el.density} g/cm³`;
+  });
+}
+
+function updateLabel(){
+  const sys=getSys(S.A,S.B);
+  const near=sys?.presets.reduce((b,p)=>Math.abs(p.x-S.x)<Math.abs((b?.x??99)-S.x)?p:b,null);
+  const snap=near&&Math.abs(near.x-S.x)<0.008;
+  document.getElementById('pct-label').textContent=
+    snap ? `★ ${near.n}` : `${(S.x*100).toFixed(1)}% ${S.B}`;
+}
+
+function updateCards(){
+  const c=compute(S.A,S.B,S.x);
+  const sys=getSys(S.A,S.B);
+  const near=sys?.presets.reduce((b,p)=>Math.abs(p.x-S.x)<Math.abs((b?.x??99)-S.x)?p:b,null);
+  const close=near&&Math.abs(near.x-S.x)<0.02;
+  const A=EL[S.A],B=EL[S.B];
+
+  Object.keys(PROPS).forEach(k=>{
+    const cfg=PROPS[k];
+    const val=c[cfg.key], lin=c[cfg.linKey];
+    const expVal=close?near[k]:null;
+    document.getElementById('v-'+k).textContent=cfg.fmt(val);
+    document.getElementById('l-'+k).textContent=`linear: ${cfg.fmt(lin)}`;
+    const eEl=document.getElementById('e-'+k);
+    if(expVal!=null){
+      const pErr=Math.abs(val-expVal)/expVal*100;
+      const cls=pErr<5?'match':pErr<15?'approx':'off';
+      eEl.innerHTML=`<span class="${cls}">exp ${cfg.fmt(expVal)} (Δ${pErr.toFixed(1)}%)</span>`;
+    } else eEl.textContent='';
+    const maxV=Math.max(A[k]??0,B[k]??0,val);
+    document.getElementById('f-'+k).style.width=(maxV>0?Math.min(100,val/maxV*100):50)+'%';
+  });
+}
+
+// ─── MATH PANEL — equations annotated with curve shapes ────
+function buildMath(){
+  const A=EL[S.A], B=EL[S.B], sys=getSys(S.A,S.B);
+  const xi=getXi(S.A,S.B,S.x);
+  const c=compute(S.A,S.B,S.x);
+  const eps=Math.abs(A.r-B.r)/A.r;
+  const G=c.E/2.7;
+  const isInt=sys?.special==='interstitial';
+  const f3=v=>v.toFixed(3), f2=v=>v.toFixed(2), f1=v=>v.toFixed(1), f0=v=>v.toFixed(0);
+
+  // Computed quantities
+  const VA=A.M/A.density, VB=B.M/B.density;
+  const dNum=(1-xi)*A.M+xi*B.M, dDen=(1-xi)*VA+xi*VB;
+  const Tm_lin=(1-xi)*A.Tm+xi*B.Tm, Tm_dep=(sys?.Ceut||0)*xi*(1-xi);
+  const rlin=(1-xi)*A.rho_el*1e9+xi*B.rho_el*1e9;
+  const rnord=(sys?.Cnord||0)*xi*(1-xi)*1e9;
+  const Ev=(1-xi)*A.E+xi*B.E, Er=1/((1-xi)/A.E+xi/B.E);
+  const base_hv=(1-xi)*A.HV+xi*B.HV;
+  const dH_GPa=0.4*G*Math.pow(eps,4/3)*Math.pow(xi*(1-xi)||1e-9,2/3);
+  const dH_HV=dH_GPa*1000/9.81;
+
+  // ── Curve-shape tags embedded inside \underbrace labels ──
+  // Gray  = straight line   Teal = arch up   Orange = dip down
+  // Yellow = dome           Blue = concave (harmonic)   Purple = ratio
+  const LIN  = `\\textcolor{#8b949e}{\\scriptstyle\\text{straight line}}`;
+  const ARCH = `\\textcolor{#39d0c8}{\\scriptstyle\\text{arch}\\uparrow\\text{ if }C_N>0}`;
+  const DIP  = `\\textcolor{#f78166}{\\scriptstyle\\text{dip}\\downarrow\\text{ if }C_{eut}>0}`;
+  const DOME = `\\textcolor{#e3b341}{\\scriptstyle\\text{dome}\\uparrow\\text{ if }\\varepsilon>0}`;
+  const HARM = `\\textcolor{#58a6ff}{\\scriptstyle\\text{concave (harmonic mean)}}`;
+  const RATIO= `\\textcolor{#bc8cff}{\\scriptstyle\\text{ratio}\\approx\\text{linear if }V_A\\approx V_B}`;
+
+  // Shape strength descriptors (live, change with slider)
+  const Ceut=sys?.Ceut||0, Cnord=sys?.Cnord||0;
+  const dipStr = Ceut>300 ? `<span class="ho">C_eut=${Ceut}°C — big dip ↓ (eutectic)</span>`
+               : Ceut>50  ? `<span class="hl">C_eut=${Ceut}°C — mild dip ↓</span>`
+               :             `<span class="hg">C_eut=0 — flat (linear)</span>`;
+  const archStr= Cnord>1e-6? `<span class="ht">C_N=${f0(Cnord*1e9)} nΩ·m — huge arch ↑</span>`
+               : Cnord>1e-7? `<span class="hl">C_N=${f0(Cnord*1e9)} nΩ·m — moderate arch ↑</span>`
+               :              `<span class="hg">C_N≈0 — nearly flat</span>`;
+  const domeStr= eps>.15    ? `<span class="hl">ε=${f2(eps)} — strong dome ↑, +${f0(dH_HV)} HV bonus</span>`
+               : eps>.06    ? `<span class="hl">ε=${f2(eps)} — mild dome ↑, +${f0(dH_HV)} HV</span>`
+               :               `<span class="hg">ε=${f2(eps)} — nearly flat (same-size atoms)</span>`;
+  const volMatch= Math.abs(VA-VB)/Math.max(VA,VB)<0.08
+               ? `<span class="hg">V_A≈V_B → nearly straight line</span>`
+               : `<span class="hl">V_A≠V_B → mild S-curve</span>`;
+
+  document.getElementById('mathpanel').innerHTML=`
+  <div class="eq-sec">
+    <div class="eq-label">Crystal lattice</div>
+    <div class="eq-box">${Kd('\\hat{H}\\psi=E\\psi\\;\\Rightarrow\\;\\text{bonding orbitals}')}</div>
+    <div class="eq-note">
+      <b>${A.name}</b> ${A.struct} r=${A.r} Å &ensp;·&ensp; <b>${B.name}</b> ${B.struct} r=${B.r} Å<br>
+      ε = |r_A−r_B|/r_A = <span class="hl">${f3(eps)}</span> &ensp; ${isInt?'<span style="color:var(--or)">★ interstitial — B fills lattice holes</span>':''}
+    </div>
+  </div>
+
+  <div class="eq-sec">
+    <div class="eq-label">① Density</div>
+    <div class="eq-box">${Kd(`\\rho = \\frac{\\underbrace{(1-x)M_A+xM_B}_{${LIN}}}{\\underbrace{(1-x)\\tfrac{M_A}{\\rho_A}+x\\tfrac{M_B}{\\rho_B}}_{${RATIO}}}`)}</div>
+    <div class="eq-sub">${f2(dNum)} / ${f3(dDen)} = <b>${f3(c.density)} g/cm³</b><br>V_A=${f1(VA)}, V_B=${f1(VB)} cm³/mol</div>
+    <div class="eq-note">${volMatch}<br>Numerator and denominator are both linear → ratio is <b>flat when molar volumes match</b>, mildly S-curved when they don't.</div>
+  </div>
+
+  <div class="eq-sec">
+    <div class="eq-label">② Melting point</div>
+    <div class="eq-box">${Kd(`T_m = \\underbrace{(1-x)T_A+xT_B}_{${LIN}} - \\underbrace{C_{eut}\\cdot x(1-x)}_{${DIP}}`)}</div>
+    <div class="eq-sub">${f0(Tm_lin)} − ${f0(Tm_dep)} = <b>${f0(c.Tm)} °C</b></div>
+    <div class="eq-note">${dipStr}<br>x(1−x) is zero at both endpoints, peaks at x=½ with value ¼. Subtracting it creates a <b>symmetric dip</b> below the straight line.</div>
+  </div>
+
+  <div class="eq-sec">
+    <div class="eq-label">③ Resistivity (Nordheim)</div>
+    <div class="eq-box">${Kd(`\\rho_{el} = \\underbrace{(1-x)\\rho_A+x\\rho_B}_{${LIN}} + \\underbrace{C_N\\cdot x(1-x)}_{${ARCH}}`)}</div>
+    <div class="eq-sub">${f1(rlin)} + ${f1(rnord)} = <b>${f1(c.rho_el*1e9)} nΩ·m</b></div>
+    <div class="eq-note">${archStr}<br><b>Same parabola as melting point but added, not subtracted</b> → arch bulging above the straight line. Caused by disorder scattering as unlike atoms break crystal periodicity.</div>
+  </div>
+
+  <div class="eq-sec">
+    <div class="eq-label">④ Young's modulus (VRH)</div>
+    <div class="eq-box">${Kd(`E_{\\scriptscriptstyle VRH}=\\tfrac{1}{2}\\!\\left[\\underbrace{(1-x)E_A+xE_B}_{${LIN}}+\\underbrace{\\dfrac{1}{\\tfrac{1-x}{E_A}+\\tfrac{x}{E_B}}}_{${HARM}}\\right]`)}</div>
+    <div class="eq-sub">½(${f1(Ev)} + ${f1(Er)}) = <b>${f1(c.E)} GPa</b></div>
+    <div class="eq-note">Harmonic mean (Reuss) ≤ arithmetic mean (Voigt) — <b>always</b>. So E_VRH is <span class="hp">always slightly concave</span>, always bowing below the straight line connecting E_A and E_B. Degree depends on E_A/E_B ratio = ${f1(A.E/B.E)}.</div>
+  </div>
+
+  <div class="eq-sec">
+    <div class="eq-label">⑤ Hardness (Labusch-Fleischer)</div>
+    <div class="eq-box">${Kd(`H = \\underbrace{(1-x)H_A+xH_B}_{${LIN}} + \\underbrace{k_L G\\,\\varepsilon^{4/3}[x(1-x)]^{2/3}}_{${DOME}}`)}</div>
+    <div class="eq-sub">${f1(base_hv)} + ${f1(dH_HV)} = <b>${f1(c.HV)} HV</b></div>
+    <div class="eq-note">${domeStr}<br>[x(1−x)]^(2/3) is zero at endpoints, peaks at x=½. The whole dome term scales as <b>ε^(4/3)</b> — tiny mismatch → tiny dome, large mismatch → big dome.${isInt?'<br><span class="ho">★ Interstitial: C in Fe has enormous ε → extreme hardness even at 0.1%</span>':''}</div>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  CANVAS — with zoom/pan
+// ═══════════════════════════════════════════════════════════
+function resetView(){VIEW.xMin=0;VIEW.xMax=1;VIEW.yMin=null;VIEW.yMax=null;}
+
+function resizeCanvas(){
+  const cv=document.getElementById('cv');
+  const w=cv.parentElement.clientWidth, h=cv.parentElement.clientHeight;
+  cv.width=w*DPR; cv.height=h*DPR;
+  cv.style.width=w+'px'; cv.style.height=h+'px';
+}
+
+function drawCanvas(){
+  const cv=document.getElementById('cv');
+  const ctx=cv.getContext('2d');
+  const W=cv.width, H=cv.height;
+  ctx.setTransform(1,0,0,1,0,0);
+  ctx.clearRect(0,0,W,H);
+
+  const sys=getSys(S.A,S.B);
+  const A=EL[S.A], B=EL[S.B];
+  const cfg=PROPS[S.prop];
+  const N=300;
+
+  // Build data
+  const pts=[], lpts=[];
+  let dmn=1e18, dmx=-1e18;
+  for(let i=0;i<=N;i++){
+    const xd=i/N, c=compute(S.A,S.B,xd);
+    pts.push(c[cfg.key]); lpts.push(c[cfg.linKey]);
+    dmn=Math.min(dmn,c[cfg.key],c[cfg.linKey]);
+    dmx=Math.max(dmx,c[cfg.key],c[cfg.linKey]);
+  }
+  // include exp points
+  if(sys) sys.presets.forEach(p=>{const v=p[S.prop];if(v!=null){dmn=Math.min(dmn,v);dmx=Math.max(dmx,v);}});
+  if(dmn===dmx){dmn-=1;dmx+=1;}
+
+  // Init auto y-range from data if not set
+  if(VIEW.yMin===null){const m=(dmx-dmn)*.1;VIEW.yMin=dmn-m;VIEW.yMax=dmx+m;}
+
+  // Pad
+  const pad={l:56*DPR,r:18*DPR,t:18*DPR,b:36*DPR};
+  const pw=W-pad.l-pad.r, ph=H-pad.t-pad.b;
+  _PAD=pad;_PW=pw;_PH=ph;
+
+  // Coordinate maps using VIEW
+  const fx=xd=>pad.l+(xd-VIEW.xMin)/(VIEW.xMax-VIEW.xMin)*pw;
+  const fy=v =>pad.t+ph-(v-VIEW.yMin)/(VIEW.yMax-VIEW.yMin)*ph;
+  const TS=11*DPR; // text size
+
+  // BG
+  ctx.fillStyle='#0d1117'; ctx.fillRect(0,0,W,H);
+  // clip to chart area
+  ctx.save();
+  ctx.beginPath();ctx.rect(pad.l,pad.t,pw,ph);ctx.clip();
+
+  // Grid Y
+  ctx.strokeStyle='#21262d'; ctx.lineWidth=1;
+  const nYTick=5;
+  for(let i=0;i<=nYTick;i++){
+    const v=VIEW.yMin+i*(VIEW.yMax-VIEW.yMin)/nYTick;
+    const y=fy(v);
+    ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(pad.l+pw,y);ctx.stroke();
+  }
+  // Grid X
+  const nXTick=6;
+  for(let i=0;i<=nXTick;i++){
+    const xd=VIEW.xMin+i*(VIEW.xMax-VIEW.xMin)/nXTick;
+    const x=fx(xd);
+    ctx.beginPath();ctx.moveTo(x,pad.t);ctx.lineTo(x,pad.t+ph);ctx.stroke();
+  }
+
+  // Linear mixing (dashed)
+  ctx.setLineDash([4*DPR,3*DPR]);ctx.strokeStyle='#30363d';ctx.lineWidth=1.5*DPR;
+  ctx.beginPath();
+  let first=true;
+  for(let i=0;i<=N;i++){
+    const xd=i/N; if(xd<VIEW.xMin||xd>VIEW.xMax){first=true;continue;}
+    const y=fy(lpts[i]); if(isNaN(y)||!isFinite(y)){first=true;continue;}
+    first?(ctx.moveTo(fx(xd),y),first=false):ctx.lineTo(fx(xd),y);
+  }
+  ctx.stroke();ctx.setLineDash([]);
+
+  // Theory shaded fill
+  ctx.beginPath();
+  first=true;
+  for(let i=0;i<=N;i++){const xd=i/N;if(xd<VIEW.xMin||xd>VIEW.xMax)continue;const y=fy(pts[i]);first?(ctx.moveTo(fx(xd),y),first=false):ctx.lineTo(fx(xd),y);}
+  for(let i=N;i>=0;i--){const xd=i/N;if(xd<VIEW.xMin||xd>VIEW.xMax)continue;ctx.lineTo(fx(xd),fy(lpts[i]));}
+  ctx.closePath();ctx.fillStyle=cfg.color+'1a';ctx.fill();
+
+  // Theory curve
+  ctx.strokeStyle=cfg.color;ctx.lineWidth=2.5*DPR;
+  ctx.beginPath();first=true;
+  for(let i=0;i<=N;i++){
+    const xd=i/N;if(xd<VIEW.xMin||xd>VIEW.xMax){first=true;continue;}
+    const y=fy(pts[i]);if(!isFinite(y)){first=true;continue;}
+    first?(ctx.moveTo(fx(xd),y),first=false):ctx.lineTo(fx(xd),y);
+  }
+  ctx.stroke();
+
+  // "bonus" label at peak delta
+  let bi=0,bd=0;
+  for(let i=0;i<=N;i++){const d=Math.abs(pts[i]-lpts[i]);if(d>bd){bd=d;bi=i;}}
+  if(bd/(VIEW.yMax-VIEW.yMin||1)>.03&&bi/N>VIEW.xMin&&bi/N<VIEW.xMax){
+    const xp=fx(bi/N), yT=fy(pts[bi]), yL=fy(lpts[bi]);
+    ctx.fillStyle=cfg.color+'cc';ctx.font=`bold ${TS}px monospace`;ctx.textAlign='left';
+    ctx.fillText(pts[bi]>lpts[bi]?'▲ alloying bonus':'▼ mixing effect',xp+6*DPR,(yT+yL)/2);
+  }
+
+  // Experimental points
+  if(sys) sys.presets.forEach(p=>{
+    const ev=p[S.prop]; if(ev==null||p.x<VIEW.xMin||p.x>VIEW.xMax) return;
+    const xp=fx(p.x), yp=fy(ev);
+    if(!isFinite(yp)) return;
+    ctx.beginPath();ctx.arc(xp,yp,5.5*DPR,0,Math.PI*2);
+    ctx.fillStyle='#fff';ctx.fill();
+    ctx.strokeStyle=cfg.color;ctx.lineWidth=2*DPR;ctx.stroke();
+    ctx.fillStyle='#e6edf3';ctx.font=`${TS}px monospace`;ctx.textAlign='center';
+    ctx.fillText(p.n.length>16?p.n.slice(0,15)+'…':p.n, xp, yp-9*DPR);
+  });
+
+  // Current cursor
+  if(S.x>=VIEW.xMin&&S.x<=VIEW.xMax){
+    const cx=fx(S.x);
+    ctx.strokeStyle='#ffffff22';ctx.lineWidth=1*DPR;ctx.setLineDash([3*DPR,3*DPR]);
+    ctx.beginPath();ctx.moveTo(cx,pad.t);ctx.lineTo(cx,pad.t+ph);ctx.stroke();ctx.setLineDash([]);
+    const ci=Math.round(S.x*N);
+    const cy=fy(pts[Math.min(ci,N)]);
+    if(isFinite(cy)){
+      ctx.beginPath();ctx.arc(cx,cy,6*DPR,0,Math.PI*2);
+      ctx.fillStyle=cfg.color;ctx.fill();
+      ctx.strokeStyle='#0d1117';ctx.lineWidth=2*DPR;ctx.stroke();
+    }
+  }
+  ctx.restore();
+
+  // Y axis tick labels
+  ctx.fillStyle='#8b949e';ctx.font=`${TS}px monospace`;ctx.textAlign='right';
+  for(let i=0;i<=nYTick;i++){
+    const v=VIEW.yMin+i*(VIEW.yMax-VIEW.yMin)/nYTick;
+    ctx.fillText(cfg.fmt(v),pad.l-4*DPR,fy(v)+3.5*DPR);
+  }
+  // X axis tick labels
+  ctx.textAlign='center';ctx.fillStyle='#8b949e';ctx.font=`${TS}px monospace`;
+  for(let i=0;i<=nXTick;i++){
+    const xd=VIEW.xMin+i*(VIEW.xMax-VIEW.xMin)/nXTick;
+    ctx.fillText((xd*100).toFixed(1)+'%',fx(xd),pad.t+ph+13*DPR);
+  }
+
+  // Axis labels
+  ctx.save();ctx.translate(12*DPR,pad.t+ph/2);ctx.rotate(-Math.PI/2);
+  ctx.textAlign='center';ctx.fillStyle='#8b949e';ctx.font=`${TS}px monospace`;
+  ctx.fillText(`${cfg.label} (${cfg.unit})`,0,0);ctx.restore();
+  ctx.textAlign='center';ctx.fillStyle='#8b949e';ctx.font=`${TS}px monospace`;
+  ctx.fillText(`← ${A.name} (${S.A})      mol% ${S.B}      ${B.name} (${S.B}) →`,pad.l+pw/2,pad.t+ph+28*DPR);
+
+  // Legend
+  const lx=pad.l+8*DPR, ly=pad.t+6*DPR;
+  ctx.fillStyle=cfg.color;ctx.fillRect(lx,ly,16*DPR,2*DPR);
+  ctx.fillStyle='#e6edf3';ctx.font=`${TS}px monospace`;ctx.textAlign='left';
+  ctx.fillText('Theory (mixing laws)',lx+20*DPR,ly+4*DPR);
+  ctx.strokeStyle='#30363d';ctx.lineWidth=1.5*DPR;ctx.setLineDash([4*DPR,3*DPR]);
+  ctx.beginPath();ctx.moveTo(lx,ly+13*DPR);ctx.lineTo(lx+16*DPR,ly+13*DPR);ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle='#8b949e';ctx.fillText('Linear mixing',lx+20*DPR,ly+16*DPR);
+  ctx.beginPath();ctx.arc(lx+8*DPR,ly+25*DPR,4*DPR,0,Math.PI*2);
+  ctx.fillStyle='#fff';ctx.fill();ctx.strokeStyle=cfg.color;ctx.lineWidth=1.5*DPR;ctx.stroke();
+  ctx.fillStyle='#8b949e';ctx.fillText('Experimental',lx+20*DPR,ly+29*DPR);
+}
+
+// ─── TABLE ─────────────────────────────────────────────────
+function buildTable(){
+  const sys=getSys(S.A,S.B);
+  const thead=document.getElementById('thead');
+  const tbody=document.getElementById('tbody');
+  if(!sys){
+    thead.innerHTML='';
+    tbody.innerHTML=`<tr><td colspan="8" style="color:var(--mu);padding:10px">No experimental alloy data for this pair. Move the slider to explore theory.</td></tr>`;
+    return;
+  }
+  thead.innerHTML=`<tr><th>Alloy</th><th>%B</th><th>HV theory/exp</th><th>E GPa</th><th>ρ g/cm³</th><th>ρ_el nΩ·m</th><th>Tm °C</th><th>Note</th></tr>`;
+  tbody.innerHTML=sys.presets.map(p=>{
+    const c=compute(S.A,S.B,p.x);
+    const rows=[
+      {th:c.HV,exp:p.HV,fmt:v=>v.toFixed(0)},
+      {th:c.E,exp:p.E,fmt:v=>v.toFixed(0)},
+      {th:c.density,exp:p.density,fmt:v=>v.toFixed(2)},
+      {th:c.rho_el*1e9,exp:p.rho_el*1e9,fmt:v=>v.toFixed(0)},
+      {th:c.Tm,exp:p.Tm,fmt:v=>v.toFixed(0)},
+    ];
+    return `<tr>
+      <td style="font-weight:700;color:var(--ye)">${p.n}</td>
+      <td style="color:var(--mu)">${(p.x*100).toFixed(1)}</td>
+      ${rows.map(r=>{
+        const err=Math.abs(r.th-r.exp)/r.exp*100;
+        const cls=err<5?'match':err<15?'approx':'off';
+        return `<td><span class="${cls}">${r.fmt(r.th)}</span><span style="color:var(--mu)"> / ${r.fmt(r.exp)}</span></td>`;
+      }).join('')}
+      <td style="color:var(--mu)">${p.note}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════════
+//  PAN / ZOOM
+// ═══════════════════════════════════════════════════════════
+function cvToData(cx,cy){
+  if(!_PAD) return {x:0.5,y:0};
+  const xd=VIEW.xMin+(cx*DPR-_PAD.l)/_PW*(VIEW.xMax-VIEW.xMin);
+  const yd=VIEW.yMin+(1-(cy*DPR-_PAD.t)/_PH)*(VIEW.yMax-VIEW.yMin);
+  return {x:xd,y:yd};
+}
+
+(function setupInteraction(){
+  const cv=document.getElementById('cv');
+  let drag=null;
+
+  cv.addEventListener('wheel',e=>{
+    e.preventDefault();
+    const rect=cv.getBoundingClientRect();
+    const {x:dx,y:dy}=cvToData(e.clientX-rect.left,e.clientY-rect.top);
+    const f=e.deltaY<0?0.75:1/0.75;
+    VIEW.xMin=Math.max(0,dx-(dx-VIEW.xMin)*f);
+    VIEW.xMax=Math.min(1,dx+(VIEW.xMax-dx)*f);
+    VIEW.yMin=dy-(dy-VIEW.yMin)*f;
+    VIEW.yMax=dy+(VIEW.yMax-dy)*f;
+    drawCanvas();
+  },{passive:false});
+
+  cv.addEventListener('mousedown',e=>{
+    const rect=cv.getBoundingClientRect();
+    drag={x:e.clientX-rect.left,y:e.clientY-rect.top,xMin:VIEW.xMin,xMax:VIEW.xMax,yMin:VIEW.yMin,yMax:VIEW.yMax};
+    cv.style.cursor='grabbing';
+  });
+  window.addEventListener('mousemove',e=>{
+    if(!drag) return;
+    const rect=cv.getBoundingClientRect();
+    const cx=e.clientX-rect.left, cy=e.clientY-rect.top;
+    const dxPx=(cx-drag.x)*DPR, dyPx=(cy-drag.y)*DPR;
+    const xSpan=drag.xMax-drag.xMin, ySpan=drag.yMax-drag.yMin;
+    const dxD=-dxPx/_PW*xSpan, dyD=dyPx/_PH*ySpan;
+    VIEW.xMin=Math.max(0,Math.min(0.99,drag.xMin+dxD));
+    VIEW.xMax=Math.max(0.01,Math.min(1,drag.xMax+dxD));
+    VIEW.yMin=drag.yMin+dyD;
+    VIEW.yMax=drag.yMax+dyD;
+    drawCanvas();
+  });
+  window.addEventListener('mouseup',()=>{drag=null;document.getElementById('cv').style.cursor='crosshair';});
+
+  cv.addEventListener('dblclick',()=>{resetView();VIEW.yMin=null;VIEW.yMax=null;drawCanvas();});
+
+  // Touch support
+  let lastTouches=null;
+  cv.addEventListener('touchstart',e=>{lastTouches=e.touches;},{passive:true});
+  cv.addEventListener('touchmove',e=>{
+    e.preventDefault();
+    if(e.touches.length===2&&lastTouches?.length===2){
+      const rect=cv.getBoundingClientRect();
+      const t1=e.touches[0],t2=e.touches[1],l1=lastTouches[0],l2=lastTouches[1];
+      const cx=(t1.clientX+t2.clientX)/2-rect.left, cy=(t1.clientY+t2.clientY)/2-rect.top;
+      const d=Math.hypot(t1.clientX-t2.clientX,t1.clientY-t2.clientY);
+      const dl=Math.hypot(l1.clientX-l2.clientX,l1.clientY-l2.clientY);
+      if(dl>0){
+        const {x:dx,y:dy}=cvToData(cx,cy);
+        const f=dl/d;
+        VIEW.xMin=Math.max(0,dx-(dx-VIEW.xMin)*f);
+        VIEW.xMax=Math.min(1,dx+(VIEW.xMax-dx)*f);
+        VIEW.yMin=dy-(dy-VIEW.yMin)*f;
+        VIEW.yMax=dy+(VIEW.yMax-dy)*f;
+      }
+    } else if(e.touches.length===1&&lastTouches?.length===1){
+      const rect=cv.getBoundingClientRect();
+      const dxPx=(e.touches[0].clientX-lastTouches[0].clientX)*DPR;
+      const dyPx=(e.touches[0].clientY-lastTouches[0].clientY)*DPR;
+      const xSpan=VIEW.xMax-VIEW.xMin,ySpan=VIEW.yMax-VIEW.yMin;
+      VIEW.xMin=Math.max(0,VIEW.xMin-dxPx/_PW*xSpan);
+      VIEW.xMax=Math.min(1,VIEW.xMax-dxPx/_PW*xSpan);
+      VIEW.yMin+=dyPx/_PH*ySpan;
+      VIEW.yMax+=dyPx/_PH*ySpan;
+    }
+    lastTouches=e.touches;
+    drawCanvas();
+  },{passive:false});
+})();
+
+// ═══════════════════════════════════════════════════════════
+//  MASTER UPDATE
+// ═══════════════════════════════════════════════════════════
+function setProp(p){
+  S.prop=p;
+  VIEW.yMin=null;VIEW.yMax=null;
+  document.querySelectorAll('.crd').forEach(e=>e.classList.remove('on'));
+  document.querySelector(`.crd[data-prop="${p}"]`)?.classList.add('on');
+  resizeCanvas();drawCanvas();
+}
+
+function update(resetPresets=true){
+  if(resetPresets) document.querySelectorAll('.pbtn').forEach(e=>e.classList.remove('on'));
+  updateElTiles();buildPresets();buildDots();
+  updateLabel();updateCards();buildMath();
+  resizeCanvas();drawCanvas();buildTable();
+}
+
+window.addEventListener('resize',()=>{resizeCanvas();drawCanvas();});
+
+// Slider
+document.getElementById('comp-slider').addEventListener('input',e=>{
+  S.x=parseFloat(e.target.value)/100;
+  document.querySelectorAll('.pbtn').forEach(b=>b.classList.remove('on'));
+  const sys=getSys(S.A,S.B);
+  if(sys){const near=sys.presets.find(p=>Math.abs(p.x-S.x)<0.008);if(near){S.x=near.x;e.target.value=near.x*100;}}
+  updateLabel();updateCards();buildMath();drawCanvas();
+});
+
+// INIT
+buildSelects();
+update();
+</script>
+</body>
+</html>

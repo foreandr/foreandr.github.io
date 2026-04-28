@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Browser LLM</title>
+  <link rel="icon" type="image/x-icon" href="../../images.ico">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --border: #222230;
+    --accent: #00e5ff;
+    --accent2: #ff3cac;
+    --text: #e8e8f0;
+    --muted: #555570;
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 16px 16px;
+  }
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(0,229,255,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,255,0.025) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none; z-index: 0;
+  }
+
+  .page {
+    position: relative; z-index: 1;
+    width: 100%; max-width: 760px;
+    display: flex; flex-direction: column;
+    height: 100%;
+  }
+
+  header { text-align: center; margin-bottom: 20px; flex-shrink: 0; }
+  header h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(1.6rem, 4vw, 2.6rem);
+    font-weight: 800;
+    letter-spacing: -1.5px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  header p { color: var(--muted); font-size: 0.65rem; letter-spacing: 3px; text-transform: uppercase; margin-top: 6px; }
+
+  /* Status bar */
+  .status-bar {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 14px;
+    font-size: 0.62rem; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 12px; flex-shrink: 0;
+  }
+  .dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--muted); flex-shrink: 0;
+    transition: background 0.3s;
+  }
+  .dot.loading { background: #f5a623; animation: pulse 1s infinite; }
+  .dot.ready { background: #00e5a0; }
+  .dot.error { background: #ff3c3c; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  .progress-wrap {
+    height: 2px; background: var(--border); border-radius: 1px;
+    margin-bottom: 12px; flex-shrink: 0; overflow: hidden;
+    display: none;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    width: 0%; transition: width 0.3s ease;
+  }
+
+  /* Chat */
+  .chat-box {
+    flex: 1; overflow-y: auto;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px;
+    display: flex; flex-direction: column; gap: 16px;
+    min-height: 0;
+  }
+  .chat-box::-webkit-scrollbar { width: 4px; }
+  .chat-box::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .msg {
+    display: flex; flex-direction: column; gap: 4px;
+    animation: fadeUp 0.2s ease;
+  }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+
+  .msg-role {
+    font-size: 0.55rem; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--muted);
+  }
+  .msg.user .msg-role { color: var(--accent); }
+  .msg.assistant .msg-role { color: var(--accent2); }
+
+  .msg-body {
+    font-size: 0.82rem; line-height: 1.75;
+    white-space: pre-wrap; word-break: break-word;
+  }
+
+  .thinking {
+    display: flex; gap: 5px; align-items: center; padding: 4px 0;
+  }
+  .thinking span {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--muted); display: inline-block;
+    animation: blink 1.2s infinite;
+  }
+  .thinking span:nth-child(2) { animation-delay: 0.2s; }
+  .thinking span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes blink { 0%,80%,100%{opacity:0.2} 40%{opacity:1} }
+
+  /* Input */
+  .input-row {
+    display: flex; gap: 8px; margin-top: 12px; flex-shrink: 0;
+  }
+  textarea {
+    flex: 1; padding: 12px 14px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--text);
+    font-family: 'Space Mono', monospace; font-size: 0.78rem;
+    resize: none; outline: none; line-height: 1.5;
+    transition: border-color 0.2s;
+    max-height: 120px;
+  }
+  textarea:focus { border-color: var(--accent); }
+  textarea:disabled { opacity: 0.4; cursor: not-allowed; }
+  textarea::placeholder { color: var(--muted); }
+
+  .send-btn {
+    padding: 12px 20px; border: none; border-radius: 8px;
+    background: var(--accent); color: #000;
+    font-family: 'Space Mono', monospace; font-size: 0.65rem;
+    font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+    cursor: pointer; transition: all 0.15s; align-self: flex-end;
+    flex-shrink: 0;
+  }
+  .send-btn:hover:not(:disabled) { filter: brightness(1.15); }
+  .send-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+  .model-note {
+    text-align: center; color: var(--muted);
+    font-size: 0.55rem; letter-spacing: 2px; text-transform: uppercase;
+    margin-top: 10px; flex-shrink: 0;
+  }
+  .browser-notice {
+    background: rgba(245,166,35,0.07); border: 1px solid rgba(245,166,35,0.3);
+    border-left: 4px solid #f5a623; border-radius: 8px;
+    padding: 14px 18px; margin-bottom: 12px; font-size: 0.75rem; line-height: 1.6;
+    flex-shrink: 0;
+  }
+  .browser-notice strong { display: block; color: #f5a623; font-size: 0.75rem; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 5px; }
+  .browser-notice p { color: var(--text); opacity: 0.8; }
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <h1>Browser LLM</h1>
+    <p>SmolLM2 · Runs on your CPU · No server · No API key</p>
+  </header>
+
+  <div class="browser-notice">
+    <strong>⚠ Runs entirely in your browser</strong>
+    <p>This is SmolLM2-135M — a 135 million parameter model that fits in a browser tab. For context, GPT-4 has ~1.8 trillion. Expect short memory, simple reasoning, and occasional nonsense. First load downloads ~270 MB. Do not compare this to ChatGPT or any cloud model.</p>
+  </div>
+
+  <div class="status-bar">
+    <div class="dot loading" id="dot"></div>
+    <span id="status-text">Downloading model — first load only, then cached…</span>
+  </div>
+
+  <div class="progress-wrap" id="progress-wrap">
+    <div class="progress-fill" id="progress-fill"></div>
+  </div>
+
+  <div class="chat-box" id="chat-box">
+    <div class="msg assistant">
+      <div class="msg-role">System</div>
+      <div class="msg-body">Loading SmolLM2-135M-Instruct into your browser. This is a ~90MB download on first run, then cached locally. Inference runs 100% on your CPU via WebAssembly.</div>
+    </div>
+  </div>
+
+  <div class="input-row">
+    <textarea id="input" rows="2" placeholder="Loading model…" disabled></textarea>
+    <button class="send-btn" id="send-btn" disabled>Send</button>
+  </div>
+
+  <div class="model-note">SmolLM2-135M-Instruct · Transformers.js v3 · WebAssembly · GitHub Pages compatible</div>
+</div>
+
+<script type="module">
+import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.5.1/dist/transformers.min.js';
+
+env.allowLocalModels = false;
+env.useBrowserCache = true;
+
+const dot        = document.getElementById('dot');
+const statusText = document.getElementById('status-text');
+const progressWrap = document.getElementById('progress-wrap');
+const progressFill = document.getElementById('progress-fill');
+const chatBox    = document.getElementById('chat-box');
+const inputEl    = document.getElementById('input');
+const sendBtn    = document.getElementById('send-btn');
+
+let generator = null;
+const history = []; // { role, content }
+
+function setStatus(msg, state = 'loading') {
+  statusText.textContent = msg;
+  dot.className = 'dot ' + state;
+}
+
+function setProgress(pct) {
+  progressWrap.style.display = 'block';
+  progressFill.style.width = pct + '%';
+}
+
+function appendMsg(role, content) {
+  const div = document.createElement('div');
+  div.className = 'msg ' + role;
+  div.innerHTML = `<div class="msg-role">${role === 'user' ? 'You' : 'AI'}</div><div class="msg-body"></div>`;
+  div.querySelector('.msg-body').textContent = content;
+  chatBox.appendChild(div);
+  chatBox.scrollTop = chatBox.scrollHeight;
+  return div.querySelector('.msg-body');
+}
+
+function showThinking() {
+  const div = document.createElement('div');
+  div.className = 'msg assistant';
+  div.id = 'thinking';
+  div.innerHTML = `<div class="msg-role">AI</div><div class="thinking"><span></span><span></span><span></span></div>`;
+  chatBox.appendChild(div);
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+function removeThinking() {
+  const el = document.getElementById('thinking');
+  if (el) el.remove();
+}
+
+// ── Load model ──
+async function init() {
+  try {
+    generator = await pipeline(
+      'text-generation',
+      'HuggingFaceTB/SmolLM2-135M-Instruct',
+      {
+        dtype: 'q4',   // quantized — much smaller download
+        device: 'wasm',
+        progress_callback: (p) => {
+          if (p.status === 'downloading' || p.status === 'progress') {
+            const pct = p.progress ?? 0;
+            setProgress(pct);
+            setStatus(`Downloading model… ${pct.toFixed(0)}%`);
+          }
+          if (p.status === 'initiate') setStatus('Initializing…');
+          if (p.status === 'done') setStatus('Loading weights…');
+        }
+      }
+    );
+
+    progressWrap.style.display = 'none';
+    setStatus('Ready — running on your CPU', 'ready');
+    inputEl.disabled = false;
+    inputEl.placeholder = 'Ask anything…';
+    sendBtn.disabled = false;
+    inputEl.focus();
+
+    removeThinking();
+    appendMsg('assistant', 'Model loaded! I\'m SmolLM2-135M running entirely in your browser. Ask me anything — I\'m small so keep expectations reasonable 😄');
+
+  } catch (err) {
+    setStatus('Failed to load model', 'error');
+    appendMsg('assistant', '⚠️ Error loading model: ' + err.message + '\n\nMake sure you\'re on a modern browser (Chrome/Edge recommended). Firefox may have WASM memory limits.');
+    console.error(err);
+  }
+}
+
+// ── Chat ──
+async function send() {
+  const text = inputEl.value.trim();
+  if (!text || !generator) return;
+
+  inputEl.value = '';
+  inputEl.disabled = true;
+  sendBtn.disabled = true;
+  setStatus('Thinking…', 'loading');
+
+  appendMsg('user', text);
+  history.push({ role: 'user', content: text });
+
+  showThinking();
+
+  try {
+    const result = await generator(history, {
+      max_new_tokens: 200,
+      temperature: 0.7,
+      do_sample: true,
+      top_k: 40,
+      repetition_penalty: 1.1,
+    });
+
+    removeThinking();
+
+    // Transformers.js v3 returns generated_text as array of message objects
+    const generated = result[0].generated_text;
+    const lastMsg = Array.isArray(generated)
+      ? generated[generated.length - 1].content
+      : generated;
+
+    history.push({ role: 'assistant', content: lastMsg });
+    appendMsg('assistant', lastMsg);
+    setStatus('Ready', 'ready');
+
+  } catch (err) {
+    removeThinking();
+    appendMsg('assistant', '⚠️ Generation error: ' + err.message);
+    setStatus('Error', 'error');
+    console.error(err);
+  }
+
+  inputEl.disabled = false;
+  sendBtn.disabled = false;
+  inputEl.focus();
+}
+
+sendBtn.addEventListener('click', send);
+inputEl.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+});
+
+// Auto-resize textarea
+inputEl.addEventListener('input', () => {
+  inputEl.style.height = 'auto';
+  inputEl.style.height = Math.min(inputEl.scrollHeight, 120) + 'px';
+});
+
+init();
+</script>
+</body>
+</html>

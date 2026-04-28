@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Text Diff</title>
+  <link rel="icon" type="image/x-icon" href="../../images.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/diff/5.1.0/diff.min.js"></script>
+  <style>
+    :root {
+      --bg: #0b111a;
+      --panel: #121b29;
+      --panel-2: #182238;
+      --border: #273857;
+      --text: #e7edf7;
+      --muted: #9fb2c7;
+      --accent: #a78bfa;
+      --add: #22c55e;
+      --remove: #ef4444;
+      --shadow: 0 14px 30px rgba(0,0,0,0.4);
+      --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+      --sans: "Space Grotesk", system-ui, -apple-system, Segoe UI, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--sans);
+      color: var(--text);
+      background:
+        radial-gradient(900px 500px at 10% -20%, rgba(167, 139, 250, 0.2), transparent 60%),
+        radial-gradient(900px 500px at 90% -20%, rgba(34, 197, 94, 0.18), transparent 60%),
+        var(--bg);
+      min-height: 100vh;
+    }
+    header {
+      padding: 26px 36px 18px;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(18, 27, 41, 0.95), rgba(11, 17, 26, 0.9));
+      position: sticky; top: 0; z-index: 10;
+    }
+    header .wrap { max-width: 1200px; margin: 0 auto; }
+    .back {
+      display: inline-flex; align-items: center; gap: 8px;
+      color: var(--muted); text-decoration: none; font-size: 12px;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      border: 1px solid var(--border); padding: 6px 12px; border-radius: 999px;
+      font-family: var(--mono);
+    }
+    h1 { margin-top: 12px; font-size: clamp(1.6rem, 2.6vw, 2.4rem); }
+    .sub { margin-top: 6px; color: var(--muted); }
+    main { max-width: 1200px; margin: 0 auto; padding: 30px 36px 80px; display: grid; gap: 22px; }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 22px;
+      box-shadow: var(--shadow);
+    }
+    textarea {
+      width: 100%;
+      min-height: 200px;
+      background: var(--panel-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      resize: vertical;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 12px;
+    }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 12px; }
+    .btn {
+      background: var(--accent); color: #0d0617; border: none; border-radius: 10px;
+      padding: 10px 16px; font-weight: 700; cursor: pointer; font-family: var(--mono);
+      text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.72rem;
+    }
+    .btn.secondary { background: transparent; border: 1px solid var(--border); color: var(--text); }
+    select {
+      background: var(--panel-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-family: var(--mono);
+      font-size: 0.8rem;
+    }
+    .diff {
+      font-family: var(--mono);
+      font-size: 0.82rem;
+      line-height: 1.5;
+      white-space: pre-wrap;
+    }
+    .diff span.add { background: rgba(34, 197, 94, 0.2); color: #b9f6ce; }
+    .diff span.remove { background: rgba(239, 68, 68, 0.2); color: #fecaca; text-decoration: line-through; }
+    .diff-line {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .diff-box {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      background: var(--panel-2);
+      min-height: 200px;
+      font-family: var(--mono);
+      font-size: 0.82rem;
+      white-space: pre-wrap;
+    }
+    .tag { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
+    @media (max-width: 900px) {
+      .diff-line { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 640px) {
+      header, main { padding-left: 20px; padding-right: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <a class="back" href="../../index.html">Back Home</a>
+      <h1>Text Diff</h1>
+      <p class="sub">Compare two texts with line, word, or character diffs.</p>
+    </div>
+  </header>
+
+  <main>
+    <section class="panel">
+      <div class="grid">
+        <div>
+          <span class="tag">Original</span>
+          <textarea id="leftText" placeholder="Paste original text..."></textarea>
+        </div>
+        <div>
+          <span class="tag">Modified</span>
+          <textarea id="rightText" placeholder="Paste modified text..."></textarea>
+        </div>
+      </div>
+      <div class="row">
+        <select id="diffMode">
+          <option value="line">Line</option>
+          <option value="word">Word</option>
+          <option value="char">Char</option>
+        </select>
+        <select id="viewMode">
+          <option value="unified">Unified</option>
+          <option value="split">Split</option>
+        </select>
+        <button class="btn" id="runDiff">Run Diff</button>
+        <button class="btn secondary" id="swap">Swap</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Diff Output</h2>
+      <div id="diffUnified" class="diff"></div>
+      <div id="diffSplit" class="diff-line" style="display:none;">
+        <div class="diff-box" id="diffLeft"></div>
+        <div class="diff-box" id="diffRight"></div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const leftText = document.getElementById('leftText');
+    const rightText = document.getElementById('rightText');
+    const diffMode = document.getElementById('diffMode');
+    const viewMode = document.getElementById('viewMode');
+    const diffUnified = document.getElementById('diffUnified');
+    const diffSplit = document.getElementById('diffSplit');
+    const diffLeft = document.getElementById('diffLeft');
+    const diffRight = document.getElementById('diffRight');
+
+    function escapeHtml(s) {
+      return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function runDiff() {
+      const left = leftText.value || '';
+      const right = rightText.value || '';
+      let parts = [];
+      if (diffMode.value === 'word') parts = Diff.diffWordsWithSpace(left, right);
+      else if (diffMode.value === 'char') parts = Diff.diffChars(left, right);
+      else parts = Diff.diffLines(left, right);
+
+      const unifiedHtml = parts.map(p => {
+        const cls = p.added ? 'add' : p.removed ? 'remove' : '';
+        const safe = escapeHtml(p.value);
+        return cls ? `<span class="${cls}">${safe}</span>` : safe;
+      }).join('');
+      diffUnified.innerHTML = unifiedHtml;
+
+      const leftHtml = parts.map(p => {
+        if (p.added) return '';
+        const safe = escapeHtml(p.value);
+        return p.removed ? `<span class="remove">${safe}</span>` : safe;
+      }).join('');
+      const rightHtml = parts.map(p => {
+        if (p.removed) return '';
+        const safe = escapeHtml(p.value);
+        return p.added ? `<span class="add">${safe}</span>` : safe;
+      }).join('');
+      diffLeft.innerHTML = leftHtml;
+      diffRight.innerHTML = rightHtml;
+
+      if (viewMode.value === 'split') {
+        diffUnified.style.display = 'none';
+        diffSplit.style.display = 'grid';
+      } else {
+        diffUnified.style.display = 'block';
+        diffSplit.style.display = 'none';
+      }
+    }
+
+    document.getElementById('runDiff').addEventListener('click', runDiff);
+    document.getElementById('swap').addEventListener('click', () => {
+      const tmp = leftText.value;
+      leftText.value = rightText.value;
+      rightText.value = tmp;
+      runDiff();
+    });
+    viewMode.addEventListener('change', runDiff);
+    diffMode.addEventListener('change', runDiff);
+  </script>
+</body>
+</html>

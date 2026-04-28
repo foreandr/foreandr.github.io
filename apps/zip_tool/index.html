@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ZIP Archiver</title>
+  <link rel="icon" type="image/x-icon" href="../../images.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <style>
+    :root {
+      --bg: #0b1119;
+      --panel: #121a27;
+      --panel-2: #182236;
+      --border: #273857;
+      --text: #e7edf7;
+      --muted: #9fb2c7;
+      --accent: #f59e0b;
+      --accent-2: #3b82f6;
+      --good: #34d399;
+      --shadow: 0 14px 30px rgba(0,0,0,0.4);
+      --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+      --sans: "Space Grotesk", system-ui, -apple-system, Segoe UI, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--sans);
+      color: var(--text);
+      background:
+        radial-gradient(900px 500px at 10% -20%, rgba(245, 158, 11, 0.2), transparent 60%),
+        radial-gradient(900px 500px at 90% -20%, rgba(59, 130, 246, 0.18), transparent 60%),
+        var(--bg);
+      min-height: 100vh;
+    }
+    header {
+      padding: 26px 36px 18px;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(18, 26, 39, 0.95), rgba(11, 17, 25, 0.9));
+      position: sticky; top: 0; z-index: 10;
+    }
+    header .wrap { max-width: 1100px; margin: 0 auto; }
+    .back {
+      display: inline-flex; align-items: center; gap: 8px;
+      color: var(--muted); text-decoration: none; font-size: 12px;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      border: 1px solid var(--border); padding: 6px 12px; border-radius: 999px;
+      font-family: var(--mono);
+    }
+    h1 { margin-top: 12px; font-size: clamp(1.6rem, 2.6vw, 2.4rem); }
+    .sub { margin-top: 6px; color: var(--muted); }
+    main { max-width: 1100px; margin: 0 auto; padding: 30px 36px 80px; display: grid; gap: 22px; }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 22px;
+      box-shadow: var(--shadow);
+    }
+    .drop {
+      border: 2px dashed var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      text-align: center;
+      background: rgba(20, 31, 51, 0.8);
+      cursor: pointer;
+    }
+    .drop.drag { border-color: var(--accent-2); background: rgba(59, 130, 246, 0.08); }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 12px; }
+    .btn {
+      background: var(--accent); color: #1d1403; border: none; border-radius: 10px;
+      padding: 10px 16px; font-weight: 700; cursor: pointer; font-family: var(--mono);
+      text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.72rem;
+    }
+    .btn.secondary { background: transparent; border: 1px solid var(--border); color: var(--text); }
+    .list { display: grid; gap: 8px; margin-top: 10px; }
+    .file {
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      font-family: var(--mono);
+      font-size: 0.82rem;
+      align-items: center;
+    }
+    .file span { color: var(--muted); font-size: 0.72rem; }
+    select {
+      background: var(--panel-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-family: var(--mono);
+      font-size: 0.8rem;
+    }
+    @media (max-width: 640px) {
+      header, main { padding-left: 20px; padding-right: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <a class="back" href="../../index.html">Back Home</a>
+      <h1>ZIP Archiver</h1>
+      <p class="sub">Create ZIPs from files or extract existing archives in the browser.</p>
+    </div>
+  </header>
+
+  <main>
+    <section class="panel">
+      <h2>Create ZIP</h2>
+      <div class="drop" id="createDrop">
+        <strong>Drop files to add</strong>
+        <div class="muted">or click to browse</div>
+        <input type="file" id="createInput" multiple hidden>
+      </div>
+      <div class="row">
+        <select id="compression">
+          <option value="STORE">Store (no compression)</option>
+          <option value="DEFLATE" selected>Deflate</option>
+        </select>
+        <select id="level">
+          <option value="1">Level 1</option>
+          <option value="3">Level 3</option>
+          <option value="6" selected>Level 6</option>
+          <option value="9">Level 9</option>
+        </select>
+        <button class="btn" id="buildZip">Build ZIP</button>
+      </div>
+      <div class="list" id="createList"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Extract ZIP</h2>
+      <div class="drop" id="extractDrop">
+        <strong>Drop a ZIP file</strong>
+        <div class="muted">or click to browse</div>
+        <input type="file" id="extractInput" accept=".zip" hidden>
+      </div>
+      <div class="row">
+        <button class="btn secondary" id="extractAll" disabled>Extract All</button>
+      </div>
+      <div class="list" id="extractList"></div>
+    </section>
+  </main>
+
+  <script>
+    const createDrop = document.getElementById('createDrop');
+    const createInput = document.getElementById('createInput');
+    const createList = document.getElementById('createList');
+    const buildZip = document.getElementById('buildZip');
+    const compression = document.getElementById('compression');
+    const level = document.getElementById('level');
+
+    const extractDrop = document.getElementById('extractDrop');
+    const extractInput = document.getElementById('extractInput');
+    const extractList = document.getElementById('extractList');
+    const extractAll = document.getElementById('extractAll');
+
+    let createFiles = [];
+    let zipFile = null;
+
+    function renderCreateList() {
+      createList.innerHTML = '';
+      createFiles.forEach((file, idx) => {
+        const el = document.createElement('div');
+        el.className = 'file';
+        el.innerHTML = `<div>${file.name}<br><span>${(file.size/1024).toFixed(1)} KB</span></div>
+                        <button class="btn secondary" data-remove="${idx}">Remove</button>`;
+        createList.appendChild(el);
+      });
+      createList.querySelectorAll('button[data-remove]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          createFiles.splice(parseInt(btn.dataset.remove, 10), 1);
+          renderCreateList();
+        });
+      });
+    }
+
+    createDrop.addEventListener('click', () => createInput.click());
+    createDrop.addEventListener('dragover', (e) => { e.preventDefault(); createDrop.classList.add('drag'); });
+    createDrop.addEventListener('dragleave', () => createDrop.classList.remove('drag'));
+    createDrop.addEventListener('drop', (e) => {
+      e.preventDefault();
+      createDrop.classList.remove('drag');
+      if (e.dataTransfer.files.length) {
+        createFiles = createFiles.concat(Array.from(e.dataTransfer.files));
+        renderCreateList();
+      }
+    });
+    createInput.addEventListener('change', () => {
+      createFiles = createFiles.concat(Array.from(createInput.files));
+      renderCreateList();
+      createInput.value = '';
+    });
+
+    buildZip.addEventListener('click', async () => {
+      if (!createFiles.length) return;
+      const zip = new JSZip();
+      createFiles.forEach(file => zip.file(file.name, file));
+      const options = { type: 'blob', compression: compression.value, compressionOptions: { level: parseInt(level.value, 10) } };
+      const blob = await zip.generateAsync(options);
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'archive.zip';
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+    });
+
+    extractDrop.addEventListener('click', () => extractInput.click());
+    extractDrop.addEventListener('dragover', (e) => { e.preventDefault(); extractDrop.classList.add('drag'); });
+    extractDrop.addEventListener('dragleave', () => extractDrop.classList.remove('drag'));
+    extractDrop.addEventListener('drop', (e) => {
+      e.preventDefault();
+      extractDrop.classList.remove('drag');
+      if (e.dataTransfer.files[0]) {
+        extractInput.files = e.dataTransfer.files;
+        handleZip();
+      }
+    });
+    extractInput.addEventListener('change', handleZip);
+
+    async function handleZip() {
+      const file = extractInput.files[0];
+      if (!file) return;
+      zipFile = await JSZip.loadAsync(file);
+      extractList.innerHTML = '';
+      zipFile.forEach((path, entry) => {
+        if (entry.dir) return;
+        const el = document.createElement('div');
+        el.className = 'file';
+        el.innerHTML = `<div>${path}</div><button class="btn secondary" data-file="${path}">Download</button>`;
+        extractList.appendChild(el);
+      });
+      extractList.querySelectorAll('button[data-file]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const fileName = btn.dataset.file;
+          const content = await zipFile.file(fileName).async('blob');
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(content);
+          a.download = fileName.split('/').pop();
+          a.click();
+          setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+        });
+      });
+      extractAll.disabled = false;
+    }
+
+    extractAll.addEventListener('click', async () => {
+      if (!zipFile) return;
+      const zip = new JSZip();
+      const entries = Object.keys(zipFile.files).filter(name => !zipFile.files[name].dir);
+      for (const name of entries) {
+        const content = await zipFile.file(name).async('blob');
+        zip.file(name, content);
+      }
+      const blob = await zip.generateAsync({ type: 'blob' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'extracted-files.zip';
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+    });
+  </script>
+</body>
+</html>

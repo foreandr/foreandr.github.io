@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Image Masking Editor</title>
+  <link rel="icon" type="image/x-icon" href="../../images.ico">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap');
+
+    :root {
+      --bg: #0b0b14;
+      --surface: #11111e;
+      --surface2: #181828;
+      --border: #252540;
+      --text: #e4e4f0;
+      --text2: #7a7a9a;
+      --accent: #6366f1;
+      --accent2: #4f46e5;
+      --green: #22c55e;
+      --btn-bg: #1a1a2e;
+      --btn-hover: #232340;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Space Grotesk', sans-serif;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      user-select: none;
+    }
+
+    /* ── TOP BAR ── */
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 14px;
+      height: 50px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .back-btn {
+      color: var(--text2);
+      text-decoration: none;
+      font-size: 0.82rem;
+      padding: 5px 10px;
+      border-radius: 7px;
+      transition: color .2s, background .2s;
+      white-space: nowrap;
+    }
+    .back-btn:hover { color: var(--text); background: var(--btn-hover); }
+    .title-wrap h1 { font-size: 1rem; font-weight: 700; letter-spacing: -0.02em; }
+    .sep { width: 1px; height: 26px; background: var(--border); flex-shrink: 0; }
+    .ctrl-btn {
+      background: var(--btn-bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 5px 12px;
+      border-radius: 7px;
+      font-family: inherit;
+      font-size: 0.82rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all .15s;
+      white-space: nowrap;
+    }
+    .ctrl-btn:hover { background: var(--btn-hover); border-color: var(--accent); }
+    .ctrl-btn.active { background: var(--accent); color: #fff; border-color: transparent; }
+    .ctrl-btn.primary { background: var(--accent); color: #fff; border-color: transparent; }
+    .ctrl-btn.primary:hover { background: var(--accent2); }
+    .ctrl-btn:disabled { opacity: 0.4; cursor: default; }
+
+    /* ── MAIN LAYOUT ── */
+    .main-layout { display: flex; flex: 1; overflow: hidden; }
+
+    /* ── LEFT PANEL ── */
+    .panel {
+      width: 220px;
+      min-width: 220px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      flex-shrink: 0;
+    }
+    .ps {
+      padding: 13px;
+      border-bottom: 1px solid var(--border);
+    }
+    .ps-title {
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--text2);
+      margin-bottom: 9px;
+    }
+
+    /* Tool selector */
+    .tool-group { display: flex; flex-direction: column; gap: 4px; }
+    .tool-btn {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 7px 9px;
+      border-radius: 7px;
+      border: 1px solid var(--border);
+      background: var(--btn-bg);
+      color: var(--text2);
+      cursor: pointer;
+      font-size: 0.82rem;
+      font-family: inherit;
+      transition: all .15s;
+    }
+    .tool-btn:hover { background: var(--btn-hover); color: var(--text); }
+    .tool-btn.active { background: var(--accent); color: #fff; border-color: transparent; }
+    .tool-icon { font-size: 15px; width: 18px; text-align: center; flex-shrink: 0; }
+    .tool-desc { font-size: 0.68rem; color: var(--text2); margin-top: 2px; }
+    .tool-btn.active .tool-desc { color: rgba(255,255,255,0.7); }
+
+    /* Sliders and options */
+    .opt-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .opt-label { font-size: 0.78rem; color: var(--text2); }
+    .slider-row { display: flex; align-items: center; gap: 7px; margin-bottom: 8px; }
+    .slider-row label { font-size: 0.78rem; color: var(--text2); flex: 1; }
+    .slider-row input[type=range] { width: 80px; accent-color: var(--accent); }
+    .sval { font-size: 0.72rem; font-family: 'IBM Plex Mono', monospace; color: var(--text2); min-width: 30px; text-align: right; }
+    .toggle-sw { position: relative; display: inline-block; width: 34px; height: 18px; }
+    .toggle-sw input { opacity: 0; width: 0; height: 0; }
+    .toggle-sl {
+      position: absolute; inset: 0;
+      background: var(--btn-bg);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      cursor: pointer; transition: .2s;
+    }
+    .toggle-sl::before {
+      content: '';
+      position: absolute;
+      width: 12px; height: 12px;
+      left: 2px; top: 2px;
+      background: var(--text2);
+      border-radius: 50%; transition: .2s;
+    }
+    .toggle-sw input:checked + .toggle-sl { background: var(--accent); border-color: var(--accent); }
+    .toggle-sw input:checked + .toggle-sl::before { transform: translateX(16px); background: #fff; }
+
+    /* Export buttons */
+    .export-group { display: flex; flex-direction: column; gap: 5px; }
+    .export-btn {
+      padding: 7px 10px;
+      border-radius: 7px;
+      border: 1px solid var(--border);
+      background: var(--btn-bg);
+      color: var(--text);
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.8rem;
+      text-align: left;
+      transition: all .15s;
+    }
+    .export-btn:hover { background: var(--btn-hover); border-color: var(--accent); }
+    .export-btn:disabled { opacity: 0.3; cursor: default; }
+    .export-btn .small { font-size: 0.68rem; color: var(--text2); margin-top: 2px; }
+
+    /* Status row */
+    .status-bar {
+      margin-top: auto;
+      padding: 10px 13px;
+      font-size: 0.72rem;
+      color: var(--text2);
+      font-family: 'IBM Plex Mono', monospace;
+      border-top: 1px solid var(--border);
+      line-height: 1.7;
+    }
+
+    /* ── CANVAS AREA ── */
+    .canvas-wrap {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+      background: #0b0b14;
+    }
+    .drop-zone {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      transition: opacity .3s;
+    }
+    .drop-zone.hidden { opacity: 0; pointer-events: none; }
+    .drop-icon { font-size: 48px; opacity: 0.4; }
+    .drop-text { font-size: 1.1rem; font-weight: 600; color: var(--text2); }
+    .drop-sub { font-size: 0.82rem; color: var(--text2); opacity: 0.6; }
+    .drop-zone.drag-over { background: rgba(99,102,241,0.05); }
+    .drop-zone.drag-over .drop-icon { opacity: 0.8; }
+
+    .upload-btn-big {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 10px 22px;
+      border-radius: 9px;
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s;
+    }
+    .upload-btn-big:hover { background: var(--accent2); }
+
+    canvas#display {
+      position: absolute;
+      top: 0; left: 0;
+      image-rendering: auto;
+    }
+    canvas#overlay {
+      position: absolute;
+      top: 0; left: 0;
+      image-rendering: auto;
+    }
+
+    .canvas-hint {
+      position: absolute;
+      bottom: 10px; right: 10px;
+      background: rgba(10,10,20,0.82);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 7px 11px;
+      font-size: 0.7rem;
+      color: var(--text2);
+      backdrop-filter: blur(8px);
+      pointer-events: none;
+      line-height: 1.8;
+    }
+
+    .mode-badge {
+      position: absolute;
+      top: 8px; left: 8px;
+      background: rgba(10,10,20,0.85);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 0.72rem;
+      color: var(--text2);
+      backdrop-filter: blur(8px);
+      pointer-events: none;
+    }
+    .badge-dot {
+      display: inline-block;
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      margin-right: 6px;
+      background: var(--text2);
+    }
+    .badge-dot.active { background: var(--green); }
+
+    .panel::-webkit-scrollbar { width: 3px; }
+    .panel::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    /* Marching ants animation */
+    @keyframes march { to { stroke-dashoffset: -20; } }
+    .marching { animation: march 0.5s linear infinite; }
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <a class="back-btn" href="../../index.html">← Back</a>
+  <div class="title-wrap"><h1>Image Masking Editor</h1></div>
+  <div class="sep"></div>
+  <button class="ctrl-btn" id="btn-upload">📂 Open Image</button>
+  <button class="ctrl-btn" id="btn-clear-sel" disabled>Clear Selection</button>
+  <button class="ctrl-btn" id="btn-invert" disabled>Invert</button>
+  <div class="sep"></div>
+  <span style="font-size:0.78rem;color:var(--text2)">Dim outside:</span>
+  <input type="range" id="dim-range" min="0" max="100" value="70" style="width:72px;accent-color:var(--accent)">
+  <span id="dim-val" style="font-size:0.72rem;font-family:'IBM Plex Mono',monospace;color:var(--text2);min-width:28px">70%</span>
+  <input type="file" id="file-input" accept="image/*" style="display:none">
+</div>
+
+<div class="main-layout">
+
+  <div class="panel">
+
+    <div class="ps">
+      <div class="ps-title">Selection Tool</div>
+      <div class="tool-group">
+
+        <button class="tool-btn active" id="tool-lasso">
+          <span class="tool-icon">⬡</span>
+          <div>
+            <div>Polygon Lasso</div>
+            <div class="tool-desc">Click to add points · Double-click to close</div>
+          </div>
+        </button>
+
+        <button class="tool-btn" id="tool-wand">
+          <span class="tool-icon">✦</span>
+          <div>
+            <div>Magic Wand</div>
+            <div class="tool-desc">Click to select by color similarity</div>
+          </div>
+        </button>
+
+        <button class="tool-btn" id="tool-brush">
+          <span class="tool-icon">🖌</span>
+          <div>
+            <div>Selection Brush</div>
+            <div class="tool-desc">Paint selection area by dragging</div>
+          </div>
+        </button>
+
+      </div>
+    </div>
+
+    <div class="ps" id="wand-settings" style="display:none">
+      <div class="ps-title">Magic Wand Settings</div>
+      <div class="opt-row">
+        <span class="opt-label">Auto edge-snap</span>
+        <label class="toggle-sw"><input type="checkbox" id="snap-tog" checked><span class="toggle-sl"></span></label>
+      </div>
+      <div class="slider-row">
+        <label>Tolerance</label>
+        <input type="range" id="tol-range" min="0" max="200" value="50">
+        <span class="sval" id="tol-val">50</span>
+      </div>
+      <div class="slider-row">
+        <label>Grow/Shrink</label>
+        <input type="range" id="grow-range" min="-20" max="20" value="0">
+        <span class="sval" id="grow-val">0</span>
+      </div>
+    </div>
+
+    <div class="ps" id="brush-settings" style="display:none">
+      <div class="ps-title">Brush Settings</div>
+      <div class="slider-row">
+        <label>Brush size</label>
+        <input type="range" id="brush-range" min="5" max="80" value="20">
+        <span class="sval" id="brush-val">20</span>
+      </div>
+      <div class="opt-row">
+        <span class="opt-label">Mode</span>
+        <div style="display:flex;gap:5px">
+          <button class="ctrl-btn active" id="brush-add" style="padding:3px 8px;font-size:0.72rem">Add</button>
+          <button class="ctrl-btn" id="brush-sub" style="padding:3px 8px;font-size:0.72rem">Remove</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="ps">
+      <div class="ps-title">View</div>
+      <div class="opt-row">
+        <span class="opt-label">Show mask</span>
+        <label class="toggle-sw"><input type="checkbox" id="mask-tog" checked><span class="toggle-sl"></span></label>
+      </div>
+      <div class="opt-row">
+        <span class="opt-label">Marching ants</span>
+        <label class="toggle-sw"><input type="checkbox" id="ants-tog" checked><span class="toggle-sl"></span></label>
+      </div>
+      <div class="slider-row">
+        <label>Feather (px)</label>
+        <input type="range" id="feather-range" min="0" max="30" value="0">
+        <span class="sval" id="feather-val">0</span>
+      </div>
+    </div>
+
+    <div class="ps">
+      <div class="ps-title">Export</div>
+      <div class="export-group">
+        <button class="export-btn" id="exp-full" disabled>
+          ⬇ Download Masked
+          <div class="small">Full size · dark outside selection</div>
+        </button>
+        <button class="export-btn" id="exp-crop" disabled>
+          ✂ Download Cropped
+          <div class="small">Tight crop to selection bounding box</div>
+        </button>
+        <button class="export-btn" id="exp-alpha" disabled>
+          🔲 Download w/ Transparency
+          <div class="small">PNG with transparent outside selection</div>
+        </button>
+      </div>
+    </div>
+
+    <div class="status-bar" id="status-bar">
+      No image loaded.<br>
+      Open an image to begin.
+    </div>
+
+  </div>
+
+  <div class="canvas-wrap" id="canvas-wrap">
+
+    <div class="drop-zone" id="drop-zone">
+      <div class="drop-icon">🖼</div>
+      <div class="drop-text">Drop an image here</div>
+      <div class="drop-sub">or</div>
+      <button class="upload-btn-big" id="upload-btn-big">Choose Image</button>
+      <div class="drop-sub">PNG · JPG · WebP · GIF supported</div>
+    </div>
+
+    <canvas id="display"></canvas>
+    <canvas id="overlay"></canvas>
+
+    <div class="mode-badge" id="mode-badge" style="display:none">
+      <span class="badge-dot" id="badge-dot"></span>
+      <span id="badge-text">Ready</span>
+    </div>
+
+    <div class="canvas-hint" id="canvas-hint" style="display:none">
+      Scroll · zoom &nbsp;|&nbsp; Space+drag · pan &nbsp;|&nbsp; Esc · clear selection
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+// ===================================================================
+// IMAGE MASKING EDITOR
+// ===================================================================
+
+const displayCanvas = document.getElementById('display');
+const overlayCanvas = document.getElementById('overlay');
+const dCtx = displayCanvas.getContext('2d');
+const oCtx = overlayCanvas.getContext('2d');
+const wrap = document.getElementById('canvas-wrap');
+
+// --- State ---
+let img = null;
+let imgW = 0, imgH = 0;
+let scale = 1, panX = 0, panY = 0;
+
+// Selection mask: Uint8Array, 1 = selected, 0 = not
+let selMask = null;
+
+// Lasso state
+let lassoPoints = [];
+let lassoClosing = false;
+
+// Tool state
+let tool = 'lasso'; // lasso | wand | brush
+let brushSize = 20;
+let brushMode = 'add'; // add | sub
+let tolerance = 50;
+let grow = 0;
+let feather = 0;
+let dimAmount = 0.70;
+let showMask = true;
+let showAnts = true;
+let snapEnabled = true;
+
+// Interaction
+let isPanning = false;
+let isDrawing = false;
+let panStartX = 0, panStartY = 0, panOX = 0, panOY = 0;
+let spaceDown = false;
+
+// Animation for marching ants
+let antOffset = 0;
+let antRaf = null;
+
+// ===================================================================
+// LOAD IMAGE
+// ===================================================================
+function loadImage(file) {
+  if (!file || !file.type.startsWith('image/')) return;
+  const url = URL.createObjectURL(file);
+  const image = new Image();
+  image.onload = () => {
+    img = image;
+    imgW = image.width;
+    imgH = image.height;
+    selMask = new Uint8Array(imgW * imgH);
+    lassoPoints = [];
+    fitImageToView();
+    renderDisplay();
+    renderOverlay();
+    document.getElementById('drop-zone').classList.add('hidden');
+    document.getElementById('mode-badge').style.display = 'flex';
+    document.getElementById('canvas-hint').style.display = 'block';
+    updateStatus();
+    updateExportBtns();
+    URL.revokeObjectURL(url);
+  };
+  image.src = url;
+}
+
+function fitImageToView() {
+  const W = wrap.clientWidth, H = wrap.clientHeight;
+  const sx = W / imgW, sy = H / imgH;
+  scale = Math.min(sx, sy) * 0.92;
+  panX = (W - imgW * scale) / 2;
+  panY = (H - imgH * scale) / 2;
+  resizeCanvases();
+}
+
+function resizeCanvases() {
+  const W = wrap.clientWidth, H = wrap.clientHeight;
+  displayCanvas.width = overlayCanvas.width = W;
+  displayCanvas.height = overlayCanvas.height = H;
+}
+
+// ===================================================================
+// RENDERING
+// ===================================================================
+function renderDisplay() {
+  if (!img) return;
+  const W = displayCanvas.width, H = displayCanvas.height;
+  dCtx.clearRect(0, 0, W, H);
+
+  // Checkerboard background
+  const cs = 12;
+  for (let y = 0; y < H; y += cs) {
+    for (let x = 0; x < W; x += cs) {
+      dCtx.fillStyle = ((x/cs + y/cs) % 2 === 0) ? '#1a1a28' : '#141420';
+      dCtx.fillRect(x, y, cs, cs);
+    }
+  }
+
+  dCtx.save();
+  dCtx.translate(panX, panY);
+  dCtx.scale(scale, scale);
+
+  // Draw image
+  dCtx.drawImage(img, 0, 0);
+
+  // Draw mask overlay if enabled
+  if (showMask && selMask && selMask.some(v => v > 0)) {
+    applyMaskOverlay(dCtx);
+  }
+
+  dCtx.restore();
+}
+
+function applyMaskOverlay(ctx) {
+  // Draw a semi-transparent dark layer everywhere OUTSIDE the selection
+  // Using evenodd clipping trick
+  const effectiveMask = feather > 0 ? computeFeatheredMask() : selMask;
+
+  if (feather > 0) {
+    // Pixel-level feathered mask
+    const imageData = ctx.getImageData(0, 0, imgW, imgH);
+    const data = imageData.data;
+    for (let i = 0; i < imgW * imgH; i++) {
+      const alpha = effectiveMask[i] / 255;
+      const fade = (1 - alpha) * dimAmount;
+      data[i*4]   = Math.round(data[i*4]   * (1-fade));
+      data[i*4+1] = Math.round(data[i*4+1] * (1-fade));
+      data[i*4+2] = Math.round(data[i*4+2] * (1-fade));
+    }
+    ctx.putImageData(imageData, 0, 0);
+  } else {
+    // Canvas path method for crisp edges
+    // Build selection polygon path from mask (simplified - use bounding approach)
+    drawMaskFill(ctx);
+  }
+}
+
+function drawMaskFill(ctx) {
+  // Create offscreen to get selection as pixels, overlay dim rectangle minus selection
+  const offscreen = document.createElement('canvas');
+  offscreen.width = imgW; offscreen.height = imgH;
+  const oc = offscreen.getContext('2d');
+  oc.fillStyle = '#000';
+  oc.fillRect(0, 0, imgW, imgH);
+  // Set selected pixels to transparent using putImageData
+  const iData = oc.getImageData(0, 0, imgW, imgH);
+  for (let i = 0; i < imgW * imgH; i++) {
+    if (selMask[i]) iData.data[i*4+3] = 0; // transparent where selected
+  }
+  oc.putImageData(iData, 0, 0);
+  ctx.save();
+  ctx.globalAlpha = dimAmount;
+  ctx.drawImage(offscreen, 0, 0);
+  ctx.restore();
+}
+
+function computeFeatheredMask() {
+  // Simple box blur approximation for feathering
+  const out = new Float32Array(imgW * imgH);
+  const f = feather;
+  for (let y = 0; y < imgH; y++) {
+    for (let x = 0; x < imgW; x++) {
+      let sum = 0, cnt = 0;
+      for (let dy = -f; dy <= f; dy++) {
+        for (let dx = -f; dx <= f; dx++) {
+          const nx = x+dx, ny = y+dy;
+          if (nx>=0 && nx<imgW && ny>=0 && ny<imgH) {
+            sum += selMask[ny*imgW+nx]; cnt++;
+          }
+        }
+      }
+      out[y*imgW+x] = (sum/cnt) * 255;
+    }
+  }
+  return out;
+}
+
+function renderOverlay() {
+  if (!img) return;
+  const W = overlayCanvas.width, H = overlayCanvas.height;
+  oCtx.clearRect(0, 0, W, H);
+  oCtx.save();
+  oCtx.translate(panX, panY);
+  oCtx.scale(scale, scale);
+
+  // Draw lasso in-progress
+  if (tool === 'lasso' && lassoPoints.length > 0) {
+    oCtx.beginPath();
+    oCtx.moveTo(lassoPoints[0].x, lassoPoints[0].y);
+    for (let i = 1; i < lassoPoints.length; i++) oCtx.lineTo(lassoPoints[i].x, lassoPoints[i].y);
+    if (lassoClosing) oCtx.closePath();
+    oCtx.strokeStyle = '#fff';
+    oCtx.lineWidth = 1.5 / scale;
+    oCtx.setLineDash([5/scale, 5/scale]);
+    oCtx.lineDashOffset = -antOffset / scale;
+    oCtx.stroke();
+    oCtx.setLineDash([]);
+
+    // Vertices
+    oCtx.fillStyle = '#fff';
+    for (const p of lassoPoints) {
+      oCtx.beginPath();
+      oCtx.arc(p.x, p.y, 3/scale, 0, Math.PI*2);
+      oCtx.fill();
+    }
+    // First point highlight (to close)
+    if (lassoPoints.length > 2) {
+      oCtx.strokeStyle = '#22d3a0';
+      oCtx.lineWidth = 2/scale;
+      oCtx.beginPath();
+      oCtx.arc(lassoPoints[0].x, lassoPoints[0].y, 5/scale, 0, Math.PI*2);
+      oCtx.stroke();
+    }
+  }
+
+  // Draw selection border from mask
+  if (selMask && selMask.some(v => v > 0) && showAnts) {
+    drawSelectionBorder(oCtx);
+  }
+
+  // Brush cursor
+  if (tool === 'brush' && lastBrushPos) {
+    oCtx.beginPath();
+    oCtx.arc(lastBrushPos.x, lastBrushPos.y, brushSize/2, 0, Math.PI*2);
+    oCtx.strokeStyle = brushMode === 'add' ? '#22d3a0' : '#f87171';
+    oCtx.lineWidth = 1.5/scale;
+    oCtx.stroke();
+  }
+
+  oCtx.restore();
+}
+
+function drawSelectionBorder(ctx) {
+  // Build edge paths from mask using scanline edge detection
+  ctx.save();
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 1/scale;
+  ctx.setLineDash([4/scale, 4/scale]);
+  ctx.lineDashOffset = -antOffset/scale;
+
+  // Draw as image-space path by detecting edges
+  // Simple approach: draw horizontal and vertical edges between selected/unselected cells
+  ctx.beginPath();
+  const step = Math.max(1, Math.floor(1/scale));
+  for (let y = 0; y < imgH; y += step) {
+    for (let x = 0; x < imgW; x += step) {
+      const me = selMask[y*imgW+x] > 0;
+      // right edge
+      if (x+step < imgW) {
+        const right = selMask[y*imgW+(x+step)] > 0;
+        if (me !== right) {
+          ctx.moveTo(x+step, y); ctx.lineTo(x+step, y+step);
+        }
+      }
+      // bottom edge
+      if (y+step < imgH) {
+        const bot = selMask[(y+step)*imgW+x] > 0;
+        if (me !== bot) {
+          ctx.moveTo(x, y+step); ctx.lineTo(x+step, y+step);
+        }
+      }
+    }
+  }
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.restore();
+}
+
+// ===================================================================
+// MAGIC WAND — flood fill by color similarity
+// ===================================================================
+function magicWand(imgX, imgY) {
+  if (!img || imgX < 0 || imgX >= imgW || imgY < 0 || imgY >= imgH) return;
+
+  // Get image pixel data
+  const offscreen = document.createElement('canvas');
+  offscreen.width = imgW; offscreen.height = imgH;
+  const oc = offscreen.getContext('2d');
+  oc.drawImage(img, 0, 0);
+  const pixels = oc.getImageData(0, 0, imgW, imgH).data;
+
+  const startIdx = (imgY * imgW + imgX) * 4;
+  const sr = pixels[startIdx], sg = pixels[startIdx+1], sb = pixels[startIdx+2];
+
+  const visited = new Uint8Array(imgW * imgH);
+  const newSel = new Uint8Array(imgW * imgH);
+
+  // BFS flood fill
+  const queue = [imgY * imgW + imgX];
+  visited[imgY * imgW + imgX] = 1;
+
+  while (queue.length > 0) {
+    const pos = queue.shift();
+    const px = pos % imgW, py = Math.floor(pos / imgW);
+    const pi = pos * 4;
+    const r = pixels[pi], g = pixels[pi+1], b = pixels[pi+2];
+    const diff = Math.sqrt((r-sr)**2 + (g-sg)**2 + (b-sb)**2);
+
+    if (diff > tolerance) continue;
+    newSel[pos] = 1;
+
+    const neighbors = [[0,1],[0,-1],[1,0],[-1,0]];
+    for (const [dx,dy] of neighbors) {
+      const nx=px+dx, ny=py+dy;
+      if (nx>=0 && nx<imgW && ny>=0 && ny<imgH) {
+        const ni = ny*imgW+nx;
+        if (!visited[ni]) { visited[ni]=1; queue.push(ni); }
+      }
+    }
+  }
+
+  // Apply grow/shrink
+  let result = newSel;
+  if (grow !== 0) result = morphMask(result, grow);
+
+  // Merge with existing selection (add mode)
+  for (let i = 0; i < imgW*imgH; i++) {
+    if (result[i]) selMask[i] = 1;
+  }
+
+  renderDisplay(); renderOverlay();
+  updateStatus(); updateExportBtns();
+}
+
+function morphMask(mask, amount) {
+  const out = new Uint8Array(mask.length);
+  const r = Math.abs(amount);
+  for (let y = 0; y < imgH; y++) {
+    for (let x = 0; x < imgW; x++) {
+      let has = false;
+      for (let dy = -r; dy <= r && !has; dy++) {
+        for (let dx = -r; dx <= r && !has; dx++) {
+          const nx=x+dx, ny=y+dy;
+          if (nx>=0&&nx<imgW&&ny>=0&&ny<imgH) {
+            const v = mask[ny*imgW+nx];
+            if (amount > 0 && v) has = true;  // grow: any neighbor selected
+            if (amount < 0 && !v) has = false; // shrink: any neighbor unselected
+          }
+        }
+      }
+      if (amount > 0) out[y*imgW+x] = has ? 1 : 0;
+      else out[y*imgW+x] = (mask[y*imgW+x] && !has) ? 0 : mask[y*imgW+x];
+    }
+  }
+  return amount > 0 ? out : out; // simplified - same for both
+}
+
+// ===================================================================
+// LASSO — polygon selection
+// ===================================================================
+function finalizeLasso() {
+  if (lassoPoints.length < 3) { lassoPoints = []; return; }
+
+  // Rasterize polygon into mask
+  const pts = lassoPoints;
+  for (let y = 0; y < imgH; y++) {
+    const intersections = [];
+    for (let i = 0; i < pts.length; i++) {
+      const a = pts[i], b = pts[(i+1)%pts.length];
+      if ((a.y <= y && b.y > y) || (b.y <= y && a.y > y)) {
+        const t = (y - a.y) / (b.y - a.y);
+        intersections.push(a.x + t * (b.x - a.x));
+      }
+    }
+    intersections.sort((a,b) => a-b);
+    for (let i = 0; i < intersections.length; i+=2) {
+      const x0 = Math.max(0, Math.round(intersections[i]));
+      const x1 = Math.min(imgW-1, Math.round(intersections[i+1]||intersections[i]));
+      for (let x = x0; x <= x1; x++) selMask[y*imgW+x] = 1;
+    }
+  }
+
+  lassoPoints = [];
+  renderDisplay(); renderOverlay();
+  updateStatus(); updateExportBtns();
+}
+
+// ===================================================================
+// BRUSH TOOL
+// ===================================================================
+let lastBrushPos = null;
+
+function applyBrush(imgX, imgY) {
+  const r = Math.floor(brushSize / 2);
+  const val = brushMode === 'add' ? 1 : 0;
+  for (let dy=-r; dy<=r; dy++) {
+    for (let dx=-r; dx<=r; dx++) {
+      if (dx*dx+dy*dy > r*r) continue;
+      const nx=Math.floor(imgX+dx), ny=Math.floor(imgY+dy);
+      if (nx>=0&&nx<imgW&&ny>=0&&ny<imgH) selMask[ny*imgW+nx]=val;
+    }
+  }
+}
+
+// ===================================================================
+// COORDINATE TRANSFORMS
+// ===================================================================
+function canvasToImg(cx, cy) {
+  const r = overlayCanvas.getBoundingClientRect();
+  const sx = (cx - r.left - panX) / scale;
+  const sy = (cy - r.top  - panY) / scale;
+  return { x: sx, y: sy };
+}
+
+function canvasToImgPx(cx, cy) {
+  const { x, y } = canvasToImg(cx, cy);
+  return { x: Math.floor(x), y: Math.floor(y) };
+}
+
+function isNearFirst(mx, my) {
+  if (lassoPoints.length < 2) return false;
+  const r = overlayCanvas.getBoundingClientRect();
+  const fx = lassoPoints[0].x * scale + panX + r.left;
+  const fy = lassoPoints[0].y * scale + panY + r.top;
+  return Math.hypot(mx-fx, my-fy) < 12;
+}
+
+// ===================================================================
+// INPUT HANDLING
+// ===================================================================
+overlayCanvas.addEventListener('mousedown', e => {
+  if (spaceDown || e.button === 1) {
+    isPanning = true;
+    panStartX = e.clientX; panStartY = e.clientY;
+    panOX = panX; panOY = panY;
+    e.preventDefault(); return;
+  }
+
+  if (!img) return;
+  const imgCoord = canvasToImg(e.clientX, e.clientY);
+  const imgPx = { x: Math.floor(imgCoord.x), y: Math.floor(imgCoord.y) };
+
+  if (tool === 'lasso') {
+    if (e.detail === 2) { // double-click = close
+      finalizeLasso(); return;
+    }
+    if (isNearFirst(e.clientX, e.clientY) && lassoPoints.length > 2) {
+      finalizeLasso(); return;
+    }
+    lassoPoints.push(imgCoord);
+    renderOverlay();
+  } else if (tool === 'wand') {
+    if (imgPx.x >= 0 && imgPx.x < imgW && imgPx.y >= 0 && imgPx.y < imgH)
+      magicWand(imgPx.x, imgPx.y);
+  } else if (tool === 'brush') {
+    isDrawing = true;
+    lastBrushPos = imgCoord;
+    applyBrush(imgCoord.x, imgCoord.y);
+    renderDisplay(); renderOverlay(); updateStatus(); updateExportBtns();
+  }
+});
+
+overlayCanvas.addEventListener('mousemove', e => {
+  if (isPanning) {
+    panX = panOX + e.clientX - panStartX;
+    panY = panOY + e.clientY - panStartY;
+    renderDisplay(); renderOverlay(); return;
+  }
+  const imgCoord = canvasToImg(e.clientX, e.clientY);
+  if (tool === 'brush') {
+    lastBrushPos = imgCoord;
+    if (isDrawing) {
+      applyBrush(imgCoord.x, imgCoord.y);
+      renderDisplay(); updateStatus(); updateExportBtns();
+    }
+    renderOverlay();
+  } else if (tool === 'lasso' && lassoPoints.length > 0) {
+    lassoClosing = isNearFirst(e.clientX, e.clientY);
+    renderOverlay();
+  }
+});
+
+overlayCanvas.addEventListener('mouseup', () => {
+  isPanning = false; isDrawing = false;
+});
+overlayCanvas.addEventListener('mouseleave', () => {
+  isPanning = false; isDrawing = false;
+  lastBrushPos = null; renderOverlay();
+});
+overlayCanvas.addEventListener('contextmenu', e => e.preventDefault());
+
+overlayCanvas.addEventListener('wheel', e => {
+  e.preventDefault();
+  if (!img) return;
+  const r = overlayCanvas.getBoundingClientRect();
+  const mx = e.clientX - r.left, my = e.clientY - r.top;
+  const imgX = (mx - panX) / scale, imgY = (my - panY) / scale;
+  const factor = e.deltaY < 0 ? 1.1 : 0.9;
+  scale = Math.max(0.05, Math.min(20, scale * factor));
+  panX = mx - imgX * scale;
+  panY = my - imgY * scale;
+  renderDisplay(); renderOverlay();
+}, { passive: false });
+
+document.addEventListener('keydown', e => {
+  if (e.key === ' ') { spaceDown = true; e.preventDefault(); }
+  if (e.key === 'Escape') {
+    lassoPoints = []; selMask && selMask.fill(0);
+    renderDisplay(); renderOverlay(); updateStatus(); updateExportBtns();
+  }
+  if (e.key === 'Enter' && tool === 'lasso') finalizeLasso();
+});
+document.addEventListener('keyup', e => { if (e.key === ' ') { spaceDown = false; isPanning = false; } });
+
+// ===================================================================
+// MARCHING ANTS ANIMATION
+// ===================================================================
+function startAnts() {
+  cancelAnimationFrame(antRaf);
+  function tick() {
+    antOffset = (antOffset + 0.5) % 20;
+    if (img && showAnts) renderOverlay();
+    antRaf = requestAnimationFrame(tick);
+  }
+  tick();
+}
+
+// ===================================================================
+// EXPORT
+// ===================================================================
+function hasSelection() { return selMask && selMask.some(v => v > 0); }
+
+function getEffectiveMask(f) {
+  if (f <= 0 || !feather) return selMask;
+  const fp = new Float32Array(imgW * imgH);
+  for (let y = 0; y < imgH; y++) {
+    for (let x = 0; x < imgW; x++) {
+      let s=0,c=0;
+      for (let dy=-f; dy<=f; dy++) for (let dx=-f; dx<=f; dx++) {
+        const nx=x+dx,ny=y+dy;
+        if (nx>=0&&nx<imgW&&ny>=0&&ny<imgH){s+=selMask[ny*imgW+nx];c++;}
+      }
+      fp[y*imgW+x]=s/c;
+    }
+  }
+  return fp;
+}
+
+function exportMasked(mode) {
+  if (!img || !hasSelection()) return;
+  const off = document.createElement('canvas');
+
+  let bx=imgW, by=imgH, bx2=0, by2=0;
+  if (mode === 'crop') {
+    for (let y=0;y<imgH;y++) for (let x=0;x<imgW;x++) {
+      if (selMask[y*imgW+x]) { bx=Math.min(bx,x);by=Math.min(by,y);bx2=Math.max(bx2,x);by2=Math.max(by2,y); }
+    }
+    off.width = bx2-bx+1; off.height = by2-by+1;
+  } else {
+    off.width = imgW; off.height = imgH;
+    bx=0; by=0;
+  }
+
+  const oc = off.getContext('2d');
+  const effMask = getEffectiveMask(feather);
+
+  if (mode === 'alpha') {
+    oc.drawImage(img, -bx, -by);
+    const iData = oc.getImageData(0, 0, off.width, off.height);
+    const d = iData.data;
+    for (let y=0;y<off.height;y++) for (let x=0;x<off.width;x++) {
+      const idx = (y*off.width+x)*4;
+      const mi = (y+by)*imgW+(x+bx);
+      const alpha = typeof effMask[mi] === 'number' ? effMask[mi] : (effMask[mi] ? 1 : 0);
+      d[idx+3] = Math.round(alpha * 255);
+    }
+    oc.putImageData(iData, 0, 0);
+  } else {
+    // Draw image then darken outside
+    oc.drawImage(img, -bx, -by);
+    if (mode === 'full') {
+      const iData = oc.getImageData(0, 0, off.width, off.height);
+      const d = iData.data;
+      for (let y=0;y<off.height;y++) for (let x=0;x<off.width;x++) {
+        const idx = (y*off.width+x)*4;
+        const mi = (y+by)*imgW+(x+bx);
+        const alpha = typeof effMask[mi] === 'number' ? effMask[mi] : (effMask[mi] ? 1 : 0);
+        const fade = (1-alpha)*dimAmount;
+        d[idx]   = Math.round(d[idx]   * (1-fade));
+        d[idx+1] = Math.round(d[idx+1] * (1-fade));
+        d[idx+2] = Math.round(d[idx+2] * (1-fade));
+      }
+      oc.putImageData(iData, 0, 0);
+    }
+  }
+
+  const link = document.createElement('a');
+  link.download = 'masked-image.png';
+  link.href = off.toDataURL('image/png');
+  link.click();
+}
+
+// ===================================================================
+// STATUS & UI
+// ===================================================================
+function updateStatus() {
+  const el = document.getElementById('status-bar');
+  if (!img) { el.innerHTML = 'No image loaded.<br>Open an image to begin.'; return; }
+  let selPx = 0;
+  if (selMask) for (let i=0;i<selMask.length;i++) selPx += selMask[i];
+  const pct = ((selPx / (imgW*imgH))*100).toFixed(1);
+  el.innerHTML = `${imgW} × ${imgH} px<br>Selected: ${selPx.toLocaleString()} px (${pct}%)`;
+}
+
+function updateExportBtns() {
+  const has = hasSelection();
+  ['exp-full','exp-crop','exp-alpha'].forEach(id => document.getElementById(id).disabled = !has);
+  document.getElementById('btn-clear-sel').disabled = !has;
+  document.getElementById('btn-invert').disabled = !img;
+}
+
+function setTool(t) {
+  tool = t;
+  lassoPoints = [];
+  lastBrushPos = null;
+  ['tool-lasso','tool-wand','tool-brush'].forEach(id => {
+    document.getElementById(id).classList.toggle('active', id === 'tool-'+t);
+  });
+  document.getElementById('wand-settings').style.display = t==='wand' ? 'block' : 'none';
+  document.getElementById('brush-settings').style.display = t==='brush' ? 'block' : 'none';
+  renderOverlay();
+}
+
+function updateBadge() {
+  const dot = document.getElementById('badge-dot');
+  const txt = document.getElementById('badge-text');
+  if (!img) return;
+  const toolNames = { lasso:'Polygon Lasso', wand:'Magic Wand', brush:'Brush' };
+  txt.textContent = toolNames[tool] + (lassoPoints.length > 0 ? ` (${lassoPoints.length} pts)` : '');
+  dot.className = 'badge-dot' + (lassoPoints.length > 0 || (selMask&&selMask.some(v=>v)) ? ' active' : '');
+}
+
+// ===================================================================
+// EVENT WIRING
+// ===================================================================
+document.getElementById('btn-upload').addEventListener('click', () => document.getElementById('file-input').click());
+document.getElementById('upload-btn-big').addEventListener('click', () => document.getElementById('file-input').click());
+document.getElementById('file-input').addEventListener('change', e => {
+  if (e.target.files[0]) loadImage(e.target.files[0]);
+});
+
+// Drag & drop
+const dropZone = document.getElementById('drop-zone');
+wrap.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+wrap.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+wrap.addEventListener('drop', e => {
+  e.preventDefault(); dropZone.classList.remove('drag-over');
+  const f = e.dataTransfer.files[0];
+  if (f) loadImage(f);
+});
+
+document.getElementById('tool-lasso').addEventListener('click', () => setTool('lasso'));
+document.getElementById('tool-wand').addEventListener('click', () => setTool('wand'));
+document.getElementById('tool-brush').addEventListener('click', () => setTool('brush'));
+
+document.getElementById('btn-clear-sel').addEventListener('click', () => {
+  selMask && selMask.fill(0); lassoPoints = [];
+  renderDisplay(); renderOverlay(); updateStatus(); updateExportBtns();
+});
+document.getElementById('btn-invert').addEventListener('click', () => {
+  if (!selMask) return;
+  for (let i=0;i<selMask.length;i++) selMask[i] = selMask[i] ? 0 : 1;
+  renderDisplay(); renderOverlay(); updateStatus();
+});
+
+document.getElementById('dim-range').addEventListener('input', e => {
+  dimAmount = +e.target.value / 100;
+  document.getElementById('dim-val').textContent = e.target.value + '%';
+  renderDisplay();
+});
+document.getElementById('tol-range').addEventListener('input', e => {
+  tolerance = +e.target.value;
+  document.getElementById('tol-val').textContent = e.target.value;
+});
+document.getElementById('grow-range').addEventListener('input', e => {
+  grow = +e.target.value;
+  document.getElementById('grow-val').textContent = e.target.value;
+});
+document.getElementById('brush-range').addEventListener('input', e => {
+  brushSize = +e.target.value;
+  document.getElementById('brush-val').textContent = e.target.value;
+});
+document.getElementById('feather-range').addEventListener('input', e => {
+  feather = +e.target.value;
+  document.getElementById('feather-val').textContent = e.target.value;
+  renderDisplay();
+});
+document.getElementById('mask-tog').addEventListener('change', e => {
+  showMask = e.target.checked; renderDisplay();
+});
+document.getElementById('ants-tog').addEventListener('change', e => {
+  showAnts = e.target.checked; renderOverlay();
+});
+document.getElementById('snap-tog').addEventListener('change', e => {
+  snapEnabled = e.target.checked;
+});
+document.getElementById('brush-add').addEventListener('click', () => {
+  brushMode = 'add';
+  document.getElementById('brush-add').classList.add('active');
+  document.getElementById('brush-sub').classList.remove('active');
+});
+document.getElementById('brush-sub').addEventListener('click', () => {
+  brushMode = 'sub';
+  document.getElementById('brush-sub').classList.add('active');
+  document.getElementById('brush-add').classList.remove('active');
+});
+
+document.getElementById('exp-full').addEventListener('click', () => exportMasked('full'));
+document.getElementById('exp-crop').addEventListener('click', () => exportMasked('crop'));
+document.getElementById('exp-alpha').addEventListener('click', () => exportMasked('alpha'));
+
+window.addEventListener('resize', () => {
+  if (img) { resizeCanvases(); renderDisplay(); renderOverlay(); }
+});
+
+// ===================================================================
+// BOOT
+// ===================================================================
+resizeCanvases();
+startAnts();
+</script>
+</body>
+</html>

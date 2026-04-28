@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="UTF-8">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { overflow:hidden; background:#fff; font-family:system-ui,sans-serif; }
+.hint { position:fixed; bottom:10px; left:12px; font-size:11px; color:#aaa; pointer-events:none; line-height:1.8; }
+.layer-ui { position:fixed; top:10px; right:12px; display:flex; align-items:center; gap:6px; font-size:12px; color:#555; }
+.layer-btn { width:26px; height:26px; border:1px solid #ccc; background:#f5f5f5; border-radius:5px; cursor:pointer; font-size:15px; display:flex; align-items:center; justify-content:center; }
+.layer-btn:hover { background:#eee; }
+.layer-val { font-weight:600; color:#222; min-width:40px; text-align:center; }
+</style>
+</head><body>
+
+<div class="hint">
+  Left-click · place/erase block<br>
+  Right-drag · orbit<br>
+  Scroll · zoom<br>
+  [ ] or buttons · change layer
+</div>
+<div class="layer-ui">
+  <button class="layer-btn" id="layerDown">−</button>
+  <span class="layer-val" id="layerVal">Layer 0</span>
+  <button class="layer-btn" id="layerUp">+</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const N = 10;
+
+// ── RENDERER & SCENE ──────────────────────────────────────────────────────────
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.setClearColor(0xffffff);
+document.body.appendChild(renderer.domElement);
+
+const scene  = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, 0.1, 10000);
+
+scene.add(new THREE.AmbientLight(0xffffff, 0.7));
+const dl = new THREE.DirectionalLight(0xffffff, 0.6);
+dl.position.set(5, 10, 8);
+scene.add(dl);
+
+// ── GRID LINES ────────────────────────────────────────────────────────────────
+const gridGroup = new THREE.Group();
+scene.add(gridGroup);
+
+function buildGrid() {
+  gridGroup.clear();
+  const dimMat    = new THREE.LineBasicMaterial({ color: 0xdddddd });
+  const activeMat = new THREE.LineBasicMaterial({ color: 0x888888 });
+  for (let i = 0; i <= N; i++) {
+    for (let j = 0; j <= N; j++) {
+      // X lines
+      const gx = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,i,j), new THREE.Vector3(N,i,j)]);
+      gridGroup.add(new THREE.Line(gx, (i === activeLayer || i === activeLayer+1) ? activeMat : dimMat));
+      // Z lines
+      const gz = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(i,j,0), new THREE.Vector3(i,j,N)]);
+      gridGroup.add(new THREE.Line(gz, (j === activeLayer || j === activeLayer+1) ? activeMat : dimMat));
+      // Y lines
+      const gy = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(i,0,j), new THREE.Vector3(i,N,j)]);
+      gridGroup.add(new THREE.Line(gy, dimMat));
+    }
+  }
+}
+
+// ── BLOCKS ────────────────────────────────────────────────────────────────────
+const cells    = new Map(); // "x,y,z" → Mesh
+const cellGeo  = new THREE.BoxGeometry(0.88, 0.88, 0.88);
+const cellMat  = new THREE.MeshPhongMaterial({ color: 0x111111 });
+const ghostGeo = new THREE.BoxGeometry(0.88, 0.88, 0.88);
+const ghostMat = new THREE.MeshPhongMaterial({ color: 0x6366f1, transparent: true, opacity: 0.45 });
+const ghost    = new THREE.Mesh(ghostGeo, ghostMat);
+ghost.visible  = false;
+scene.add(ghost);
+
+function key(x,y,z) { return `${x},${y},${z}`; }
+
+function toggleCell(x,y,z) {
+  const k = key(x,y,z);
+  if (cells.has(k)) {
+    scene.remove(cells.get(k));
+    cells.delete(k);
+  } else {
+    const m = new THREE.Mesh(cellGeo, cellMat);
+    m.position.set(x + 0.5, y + 0.5, z + 0.5);
+    scene.add(m);
+    cells.set(k, m);
+  }
+}
+
+// ── LAYER ─────────────────────────────────────────────────────────────────────
+let activeLayer = 0;
+function setLayer(l) {
+  activeLayer = Math.max(0, Math.min(N - 1, l));
+  document.getElementById('layerVal').textContent = 'Layer ' + activeLayer;
+  buildGrid();
+}
+
+document.getElementById('layerDown').onclick = () => setLayer(activeLayer - 1);
+document.getElementById('layerUp').onclick   = () => setLayer(activeLayer + 1);
+
+// ── RAYCAST ───────────────────────────────────────────────────────────────────
+const raycaster = new THREE.Raycaster();
+const mouse2    = new THREE.Vector2();
+
+function getCell(e) {
+  const rect = renderer.domElement.getBoundingClientRect();
+  mouse2.x = ((e.clientX - rect.left) / rect.width)  * 2 - 1;
+  mouse2.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+  raycaster.setFromCamera(mouse2, camera);
+  const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -(activeLayer + 0.5));
+  const hit   = new THREE.Vector3();
+  if (!raycaster.ray.intersectPlane(plane, hit)) return null;
+  const x = Math.floor(hit.x);
+  const z = Math.floor(hit.z);
+  if (x < 0 || x >= N || z < 0 || z >= N) return null;
+  return { x, y: activeLayer, z };
+}
+
+// ── ORBIT (right-drag) ────────────────────────────────────────────────────────
+const target  = new THREE.Vector3(N/2, N/2, N/2);
+let theta     = 0.6, phi = 1.05, radius = N * 2.2;
+let orbiting  = false, lx = 0, ly = 0;
+
+function updateCam() {
+  phi = Math.max(0.05, Math.min(Math.PI - 0.05, phi));
+  camera.position.set(
+    target.x + radius * Math.sin(phi) * Math.sin(theta),
+    target.y + radius * Math.cos(phi),
+    target.z + radius * Math.sin(phi) * Math.cos(theta)
+  );
+  camera.lookAt(target);
+}
+updateCam();
+
+let painting = false, paintMode = null;
+
+renderer.domElement.addEventListener('mousedown', e => {
+  if (e.button === 2) { orbiting = true; lx = e.clientX; ly = e.clientY; return; }
+  if (e.button === 0) {
+    const c = getCell(e);
+    if (!c) return;
+    paintMode = cells.has(key(c.x,c.y,c.z)) ? 'erase' : 'draw';
+    painting = true;
+    toggleCell(c.x, c.y, c.z);
+  }
+});
+renderer.domElement.addEventListener('mousemove', e => {
+  if (orbiting) {
+    theta -= (e.clientX - lx) * 0.008;
+    phi   += (e.clientY - ly) * 0.008;
+    lx = e.clientX; ly = e.clientY;
+    updateCam(); return;
+  }
+  // Ghost
+  const c = getCell(e);
+  if (c) {
+    ghost.position.set(c.x + 0.5, c.y + 0.5, c.z + 0.5);
+    ghost.visible = true;
+  } else {
+    ghost.visible = false;
+  }
+  // Paint drag
+  if (painting && c) {
+    const k = key(c.x,c.y,c.z);
+    if (paintMode === 'draw' && !cells.has(k))  toggleCell(c.x,c.y,c.z);
+    if (paintMode === 'erase' && cells.has(k))  toggleCell(c.x,c.y,c.z);
+  }
+});
+addEventListener('mouseup',   e => { if (e.button===2) orbiting=false; painting=false; });
+renderer.domElement.addEventListener('contextmenu', e => e.preventDefault());
+addEventListener('wheel', e => {
+  radius = Math.max(2, radius * (e.deltaY > 0 ? 1.08 : 0.93));
+  updateCam();
+}, { passive: true });
+addEventListener('keydown', e => {
+  if (e.key === '[') setLayer(activeLayer - 1);
+  if (e.key === ']') setLayer(activeLayer + 1);
+});
+addEventListener('resize', () => {
+  renderer.setSize(innerWidth, innerHeight);
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+});
+
+// ── INIT & LOOP ───────────────────────────────────────────────────────────────
+buildGrid();
+(function loop() { requestAnimationFrame(loop); renderer.render(scene, camera); })();
+</script>
+</body></html>

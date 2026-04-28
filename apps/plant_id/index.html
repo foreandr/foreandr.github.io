@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Plant ID — Foliage Classifier</title>
+<link rel="icon" type="image/x-icon" href="../../images.ico">
+<style>
+:root {
+  --bg:      #0a0f0a;
+  --panel:   #111811;
+  --panel2:  #161e16;
+  --border:  #1f2e1f;
+  --text:    #dff0df;
+  --muted:   #5a7a5a;
+  --green:   #4ade80;
+  --green2:  #22c55e;
+  --green3:  #16a34a;
+  --accent:  #86efac;
+  --yellow:  #fbbf24;
+  --red:     #f87171;
+  --mono:    "JetBrains Mono", ui-monospace, monospace;
+  --sans:    "Segoe UI", system-ui, sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  background: var(--bg); color: var(--text); font-family: var(--sans);
+  display: flex; flex-direction: column; min-height: 100vh;
+}
+
+/* ── Top bar ── */
+.topbar {
+  display: flex; align-items: center; gap: 12px; padding: 0 16px; height: 48px;
+  background: var(--panel); border-bottom: 1px solid var(--border);
+  flex-shrink: 0; z-index: 20;
+}
+.back { color: var(--muted); text-decoration: none; font-size: 13px; transition: color .2s; }
+.back:hover { color: var(--accent); }
+.app-title { font-size: 14px; font-weight: 700; color: var(--green); }
+.topbar-spacer { flex: 1; }
+.settings-btn {
+  background: none; border: 1px solid var(--border); color: var(--muted);
+  border-radius: 6px; padding: 4px 11px; font-size: 12px; cursor: pointer; transition: all .15s;
+}
+.settings-btn:hover { border-color: var(--green); color: var(--green); }
+
+/* ── Main ── */
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+
+/* ── Image area ── */
+.img-area {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; position: relative; overflow: hidden; background: #000;
+  min-height: 0;
+}
+
+/* Placeholder shown before any image */
+.placeholder {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 16px; padding: 32px; text-align: center; height: 100%; width: 100%;
+}
+.placeholder-icon { font-size: 72px; opacity: 0.25; line-height: 1; }
+.placeholder-title { font-size: 18px; font-weight: 700; color: var(--muted); }
+.placeholder-sub   { font-size: 13px; color: var(--muted); opacity: .7; max-width: 260px; line-height: 1.6; }
+
+/* Preview image */
+#previewImg {
+  width: 100%; height: 100%; object-fit: contain;
+  display: none; background: #000;
+}
+
+/* Scanning overlay */
+.scan-overlay {
+  position: absolute; inset: 0; background: rgba(0,0,0,0.65);
+  display: none; flex-direction: column; align-items: center; justify-content: center;
+  gap: 18px; z-index: 10;
+}
+.scan-overlay.show { display: flex; }
+.scan-ring {
+  width: 64px; height: 64px; border-radius: 50%;
+  border: 3px solid rgba(74,222,128,0.2); border-top-color: var(--green);
+  animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.scan-lbl { font-size: 14px; color: var(--green); font-family: var(--mono); }
+
+/* ── Controls ── */
+.controls {
+  background: var(--panel); border-top: 1px solid var(--border);
+  padding: 14px 18px 20px; flex-shrink: 0;
+}
+.organ-row {
+  display: flex; align-items: center; gap: 6px; margin-bottom: 14px; flex-wrap: wrap;
+}
+.organ-lbl { font-size: 10px; color: var(--muted); letter-spacing: 1.2px; text-transform: uppercase; }
+.organ-btn {
+  background: var(--panel2); border: 1px solid var(--border); color: var(--muted);
+  border-radius: 20px; padding: 4px 13px; font-size: 12px; cursor: pointer; transition: all .15s;
+}
+.organ-btn.active { background: rgba(74,222,128,0.15); border-color: var(--green); color: var(--green); font-weight: 600; }
+.organ-btn:hover:not(.active) { border-color: var(--muted); color: var(--text); }
+
+/* Action buttons row */
+.action-row { display: flex; gap: 10px; align-items: stretch; }
+
+.btn-camera {
+  flex: 1; background: var(--green); color: #050a05; border: none;
+  border-radius: 14px; padding: 15px 10px; font-size: 15px; font-weight: 700;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  gap: 8px; transition: background .15s;
+}
+.btn-camera:hover { background: var(--green2); }
+.btn-camera:active { transform: scale(0.97); }
+
+.btn-gallery {
+  background: var(--panel2); border: 1px solid var(--border); color: var(--muted);
+  border-radius: 14px; padding: 15px 18px; font-size: 14px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+  transition: all .15s;
+}
+.btn-gallery:hover { border-color: var(--green); color: var(--green); }
+
+.btn-retake {
+  background: var(--panel2); border: 1px solid var(--border); color: var(--muted);
+  border-radius: 14px; padding: 15px 18px; font-size: 14px; cursor: pointer;
+  display: none; align-items: center; justify-content: center; gap: 7px;
+  transition: all .15s;
+}
+.btn-retake:hover { border-color: var(--red); color: var(--red); }
+.btn-retake.show { display: flex; }
+
+/* ── Results panel ── */
+.results-panel {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  background: var(--panel); border-top: 1px solid var(--border);
+  border-radius: 20px 20px 0 0; max-height: 80vh; overflow-y: auto;
+  transform: translateY(100%); transition: transform .35s cubic-bezier(.32,.72,0,1);
+  z-index: 30;
+}
+.results-panel.open { transform: translateY(0); }
+.results-panel::-webkit-scrollbar { width: 3px; }
+.results-panel::-webkit-scrollbar-thumb { background: var(--border); }
+
+.rp-head {
+  display: flex; align-items: center; gap: 10px; padding: 14px 18px 12px;
+  position: sticky; top: 0; background: var(--panel);
+  border-bottom: 1px solid var(--border); z-index: 1;
+}
+.rp-pill { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 10px; }
+.rp-title { font-size: 15px; font-weight: 700; color: var(--green); flex: 1; }
+.rp-close {
+  background: var(--panel2); border: 1px solid var(--border); color: var(--muted);
+  border-radius: 8px; padding: 4px 10px; font-size: 13px; cursor: pointer; transition: all .15s;
+}
+.rp-close:hover { border-color: var(--red); color: var(--red); }
+
+.rp-body { padding: 16px 18px 28px; display: flex; flex-direction: column; gap: 14px; }
+
+.top-card {
+  background: var(--panel2); border: 1px solid rgba(74,222,128,0.25);
+  border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 14px;
+}
+.top-head { display: flex; gap: 14px; }
+.match-thumb {
+  width: 86px; height: 86px; border-radius: 10px; object-fit: cover; flex-shrink: 0;
+  border: 1px solid var(--border); background: var(--bg);
+}
+.match-info { flex: 1; min-width: 0; }
+.match-common { font-size: 19px; font-weight: 700; line-height: 1.25; margin-bottom: 4px; }
+.match-alt    { font-size: 12px; color: var(--accent); margin-bottom: 4px; }
+.match-sci    { font-size: 13px; color: var(--muted); font-style: italic; margin-bottom: 6px; }
+.match-fam    { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+.badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  border-radius: 20px; padding: 3px 11px; font-size: 12px; font-weight: 700; font-family: var(--mono);
+}
+.wiki-body {
+  font-size: 13px; line-height: 1.75; color: var(--text); opacity: .88;
+  border-top: 1px solid var(--border); padding-top: 13px;
+}
+.wiki-src { font-size: 11px; color: var(--muted); margin-top: 8px; }
+.wiki-src a { color: var(--green); text-decoration: none; }
+
+.sec-lbl { font-size: 10px; letter-spacing: 1.8px; text-transform: uppercase; color: var(--muted); }
+
+.cand {
+  background: var(--panel2); border: 1px solid var(--border); border-radius: 10px;
+  padding: 10px 14px; display: flex; align-items: center; gap: 12px;
+}
+.cand-info { flex: 1; min-width: 0; }
+.cand-name { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+.cand-sci  { font-size: 11px; color: var(--muted); font-style: italic; }
+.cand-bar  { height: 4px; background: var(--bg); border-radius: 2px; margin-top: 6px; overflow: hidden; }
+.cand-fill { height: 100%; background: var(--green3); border-radius: 2px; }
+.cand-pct  { font-size: 12px; font-family: var(--mono); color: var(--muted); min-width: 36px; text-align: right; }
+
+.err-msg { font-size: 14px; color: var(--muted); line-height: 1.7; }
+
+/* ── API modal ── */
+.modal-bg {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.88);
+  display: flex; align-items: flex-end; justify-content: center; z-index: 100;
+}
+.modal-bg.hidden { display: none; }
+.modal-sheet {
+  background: var(--panel); border: 1px solid var(--border); border-bottom: none;
+  border-radius: 22px 22px 0 0; padding: 26px 22px 40px;
+  width: 100%; max-width: 580px; display: flex; flex-direction: column; gap: 15px;
+}
+.modal-title { font-size: 17px; font-weight: 700; color: var(--green); }
+.modal-steps {
+  background: var(--panel2); border: 1px solid var(--border); border-radius: 10px;
+  padding: 13px 16px; font-size: 13px; color: var(--muted); line-height: 1.85;
+}
+.modal-steps a { color: var(--green); }
+.api-input {
+  background: var(--panel2); border: 1px solid var(--border); color: var(--text);
+  border-radius: 10px; padding: 13px 15px; font-size: 14px; font-family: var(--mono);
+  width: 100%; outline: none; transition: border-color .15s;
+}
+.api-input:focus { border-color: var(--green); }
+.api-input::placeholder { color: var(--muted); }
+.modal-save {
+  background: var(--green); color: #050a05; border: none; border-radius: 12px;
+  padding: 14px; font-size: 15px; font-weight: 700; cursor: pointer; width: 100%;
+}
+.modal-save:hover { background: var(--green2); }
+.modal-skip { background: none; border: none; color: var(--muted); font-size: 12px; cursor: pointer; text-align: center; }
+.modal-skip:hover { color: var(--text); }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a class="back" href="../../index.html">← Back</a>
+  <span class="app-title">🌿 Plant ID</span>
+  <div class="topbar-spacer"></div>
+  <button class="settings-btn" id="settingsBtn">⚙ API Key</button>
+</div>
+
+<div class="main">
+
+  <!-- Image preview area -->
+  <div class="img-area" id="imgArea">
+    <div class="placeholder" id="placeholder">
+      <div class="placeholder-icon">🌿</div>
+      <div class="placeholder-title">Point at a plant</div>
+      <div class="placeholder-sub">Tap <strong style="color:var(--green)">Take Photo</strong> to open your camera, or <strong style="color:var(--green)">Upload</strong> a photo from your device.</div>
+    </div>
+    <img id="previewImg" alt="plant photo">
+    <div class="scan-overlay" id="scanOverlay">
+      <div class="scan-ring"></div>
+      <div class="scan-lbl" id="scanLbl">Identifying plant...</div>
+    </div>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls">
+    <div class="organ-row">
+      <span class="organ-lbl">Showing:</span>
+      <button class="organ-btn active" data-organ="auto">🌿 Auto</button>
+      <button class="organ-btn" data-organ="leaf">🍃 Leaf</button>
+      <button class="organ-btn" data-organ="flower">🌸 Flower</button>
+      <button class="organ-btn" data-organ="fruit">🍎 Fruit</button>
+      <button class="organ-btn" data-organ="bark">🪵 Bark</button>
+    </div>
+    <div class="action-row">
+      <!-- Opens native camera app on mobile -->
+      <label class="btn-camera" id="cameraLabel">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+          <circle cx="12" cy="13" r="4"/>
+        </svg>
+        Take Photo
+        <input type="file" accept="image/*" capture="environment" id="cameraInput" style="display:none">
+      </label>
+      <!-- Gallery / file upload -->
+      <label class="btn-gallery" title="Upload from gallery">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
+          <polyline points="21 15 16 10 5 21"/>
+        </svg>
+        Gallery
+        <input type="file" accept="image/*" id="galleryInput" style="display:none">
+      </label>
+      <!-- Retake — shown after image selected -->
+      <button class="btn-retake" id="retakeBtn">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.57"/>
+        </svg>
+        Retake
+      </button>
+    </div>
+  </div>
+
+  <!-- Results panel -->
+  <div class="results-panel" id="resultsPanel">
+    <div class="rp-head">
+      <div style="flex:1">
+        <div class="rp-pill"></div>
+        <div class="rp-title" id="rpTitle">Results</div>
+      </div>
+      <button class="rp-close" id="rpClose">✕ Close</button>
+    </div>
+    <div class="rp-body" id="rpBody"></div>
+  </div>
+
+</div>
+
+<!-- API key modal -->
+<div class="modal-bg hidden" id="apiModal">
+  <div class="modal-sheet">
+    <div class="modal-title">🔑 PlantNet API Key</div>
+    <div class="modal-steps">
+      Uses the free <strong>PlantNet API</strong> — 500 IDs/day, no credit card.<br>
+      1. Go to <a href="https://my.plantnet.org/" target="_blank">my.plantnet.org</a> → create free account<br>
+      2. Open <a href="https://my.plantnet.org/account/api" target="_blank">Account → API</a> → copy your key<br>
+      3. Paste below — saved in your browser only
+    </div>
+    <input class="api-input" id="apiKeyInput" type="text" placeholder="2b10xxxxxxxxxxxxxxxxxxxxxxx" autocomplete="off" spellcheck="false">
+    <button class="modal-save" id="apiKeySave">Save &amp; Go 🌿</button>
+    <button class="modal-skip" id="apiKeySkip">Skip</button>
+  </div>
+</div>
+
+<script>
+const DEFAULT_KEY = '2b10T6qYdkKVXeCYNL9DjbXJpO';
+const _stored = localStorage.getItem('plantnet_api_key');
+// Only use stored key if it looks like a real PlantNet key, otherwise always use default
+let apiKey = (_stored && _stored.startsWith('2b10') && _stored.length >= 20) ? _stored : DEFAULT_KEY;
+let organ        = 'auto';
+let capturedBlob = null;
+
+const previewImg   = document.getElementById('previewImg');
+const placeholder  = document.getElementById('placeholder');
+const scanOverlay  = document.getElementById('scanOverlay');
+const scanLbl      = document.getElementById('scanLbl');
+const resultsPanel = document.getElementById('resultsPanel');
+const rpTitle      = document.getElementById('rpTitle');
+const rpBody       = document.getElementById('rpBody');
+const retakeBtn    = document.getElementById('retakeBtn');
+const apiModal     = document.getElementById('apiModal');
+const apiKeyInput  = document.getElementById('apiKeyInput');
+
+// ── Organ selector ────────────────────────────────────────────────────────────
+document.querySelectorAll('.organ-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.organ-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    organ = btn.dataset.organ;
+  });
+});
+
+// ── File inputs ───────────────────────────────────────────────────────────────
+function handleFile(file) {
+  if (!file) return;
+  capturedBlob = file;
+  placeholder.style.display  = 'none';
+  previewImg.style.display   = 'block';
+  previewImg.src = URL.createObjectURL(file);
+  retakeBtn.classList.add('show');
+  resultsPanel.classList.remove('open');
+  identify();
+}
+
+document.getElementById('cameraInput').addEventListener('change',  e => handleFile(e.target.files[0]));
+document.getElementById('galleryInput').addEventListener('change', e => handleFile(e.target.files[0]));
+
+// ── Retake ────────────────────────────────────────────────────────────────────
+retakeBtn.addEventListener('click', () => {
+  capturedBlob = null;
+  previewImg.style.display  = 'none';
+  previewImg.src = '';
+  placeholder.style.display = 'flex';
+  retakeBtn.classList.remove('show');
+  resultsPanel.classList.remove('open');
+  // reset file inputs so same file can be re-selected
+  document.getElementById('cameraInput').value  = '';
+  document.getElementById('galleryInput').value = '';
+});
+
+// ── Identify ──────────────────────────────────────────────────────────────────
+async function identify() {
+  if (!apiKey) { openApiModal(); return; }
+  if (!capturedBlob) return;
+
+  scanLbl.textContent = 'Identifying plant...';
+  scanOverlay.classList.add('show');
+  resultsPanel.classList.remove('open');
+
+  try {
+    const fd = new FormData();
+    fd.append('images', capturedBlob instanceof File ? capturedBlob : new File([capturedBlob], 'plant.jpg', { type: 'image/jpeg' }), 'plant.jpg');
+    fd.append('organs', organ === 'auto' ? 'auto' : organ);
+
+    const res = await fetch(
+      `https://my-api.plantnet.org/v2/identify/all?api-key=${encodeURIComponent(apiKey)}&lang=en&nb-results=6`,
+      { method: 'POST', body: fd }
+    );
+
+    if (res.status === 404) { showErr('No plant detected — try a clearer photo of a leaf, flower, or bark.'); return; }
+    if (res.status === 401 || res.status === 403) { showErr('Invalid API key. Tap <strong>⚙ API Key</strong> to update.'); return; }
+    if (res.status === 429) { showErr('Daily limit reached (500/day). Try again tomorrow.'); return; }
+    if (!res.ok) { showErr(`PlantNet error ${res.status} — please try again.`); return; }
+
+    const data = await res.json();
+    if (!data.results?.length) { showErr('No match found — try different lighting or a different angle.'); return; }
+
+    // Fetch Wikipedia description for top match
+    scanLbl.textContent = 'Looking up details...';
+    const top    = data.results[0];
+    const sciRaw = top.species?.scientificNameWithoutAuthor || top.species?.scientificName || '';
+    let wikiText = '', wikiUrl = '', wikiThumb = '';
+
+    try {
+      const wr = await fetch(
+        `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(sciRaw)}`,
+        { headers: { Accept: 'application/json' } }
+      );
+      if (wr.ok) {
+        const w = await wr.json();
+        wikiText  = w.extract || '';
+        wikiUrl   = w.content_urls?.desktop?.page || `https://en.wikipedia.org/wiki/${encodeURIComponent(sciRaw)}`;
+        wikiThumb = w.thumbnail?.source || '';
+      }
+    } catch { /* optional */ }
+
+    renderResults(data.results, wikiText, wikiUrl, wikiThumb);
+
+  } catch (err) {
+    showErr(`Network error: ${err.message || err}`);
+  } finally {
+    scanOverlay.classList.remove('show');
+  }
+}
+
+// ── Render results ────────────────────────────────────────────────────────────
+function renderResults(results, wikiText, wikiUrl, wikiThumb) {
+  const top    = results[0];
+  const rest   = results.slice(1, 5);
+  const commons = top.species?.commonNames || [];
+  const primary = commons[0] || top.species?.scientificNameWithoutAuthor || 'Unknown Plant';
+  const alts    = commons.slice(1, 4).join(' · ');
+  const sciName = top.species?.scientificNameWithoutAuthor || '';
+  const family  = top.species?.family?.scientificName || '';
+  const genus   = top.species?.genus?.scientificName || '';
+  const score   = Math.round((top.score || 0) * 100);
+  const imgSrc  = wikiThumb || top.images?.[0]?.url?.o || top.images?.[0]?.url?.m || '';
+
+  const confColor = score >= 70 ? 'var(--green)' : score >= 40 ? 'var(--yellow)' : 'var(--red)';
+  const confLabel = score >= 70 ? 'High confidence' : score >= 40 ? 'Possible match' : 'Low confidence';
+
+  rpTitle.textContent = `🌿 ${primary}`;
+  rpBody.innerHTML = `
+    <div class="top-card">
+      <div class="top-head">
+        ${imgSrc ? `<img class="match-thumb" src="${imgSrc}" alt="" onerror="this.style.display='none'">` : ''}
+        <div class="match-info">
+          <div class="match-common">${primary}</div>
+          ${alts    ? `<div class="match-alt">${alts}</div>` : ''}
+          ${sciName ? `<div class="match-sci">${sciName}</div>` : ''}
+          ${family  ? `<div class="match-fam">Family <strong>${family}</strong>${genus ? ` · Genus <strong>${genus}</strong>` : ''}</div>` : ''}
+          <span class="badge" style="background:${confColor}18;border:1px solid ${confColor}44;color:${confColor}">
+            ✓ ${score}% — ${confLabel}
+          </span>
+        </div>
+      </div>
+      ${wikiText ? `
+        <div class="wiki-body">
+          ${wikiText.slice(0, 700)}${wikiText.length > 700 ? '…' : ''}
+          <div class="wiki-src">📖 <a href="${wikiUrl}" target="_blank">Read more on Wikipedia</a></div>
+        </div>` : ''}
+    </div>
+    ${rest.length ? `
+      <div class="sec-lbl">Other possibilities</div>
+      ${rest.map(r => {
+        const cn  = r.species?.commonNames?.[0] || r.species?.scientificNameWithoutAuthor || '?';
+        const sn  = r.species?.scientificNameWithoutAuthor || '';
+        const pct = Math.round((r.score || 0) * 100);
+        return `<div class="cand">
+          <div class="cand-info">
+            <div class="cand-name">${cn}</div>
+            ${sn && sn !== cn ? `<div class="cand-sci">${sn}</div>` : ''}
+            <div class="cand-bar"><div class="cand-fill" style="width:${pct}%"></div></div>
+          </div>
+          <div class="cand-pct">${pct}%</div>
+        </div>`;
+      }).join('')}` : ''}`;
+
+  resultsPanel.classList.add('open');
+}
+
+function showErr(msg) {
+  scanOverlay.classList.remove('show');
+  rpTitle.textContent = '⚠ Could not identify';
+  rpBody.innerHTML    = `<div class="err-msg">${msg}</div>`;
+  resultsPanel.classList.add('open');
+}
+
+document.getElementById('rpClose').addEventListener('click', () => resultsPanel.classList.remove('open'));
+
+// ── API modal ─────────────────────────────────────────────────────────────────
+function openApiModal() { apiKeyInput.value = apiKey; apiModal.classList.remove('hidden'); }
+function closeApiModal() { apiModal.classList.add('hidden'); }
+
+document.getElementById('settingsBtn').addEventListener('click', openApiModal);
+document.getElementById('apiKeySkip').addEventListener('click', closeApiModal);
+apiModal.addEventListener('click', e => { if (e.target === apiModal) closeApiModal(); });
+
+document.getElementById('apiKeySave').addEventListener('click', () => {
+  const key = apiKeyInput.value.trim();
+  if (!key) { apiKeyInput.style.borderColor = 'var(--red)'; return; }
+  apiKey = key;
+  localStorage.setItem('plantnet_api_key', key);
+  closeApiModal();
+  if (capturedBlob) identify();
+});
+</script>
+</body>
+</html>

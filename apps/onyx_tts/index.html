@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Text to Speech</title>
+<link rel="icon" type="image/x-icon" href="../../images.ico">
+<style>
+:root {
+  --bg: #0d0d0f; --panel: #141417; --panel2: #1a1a1f;
+  --border: #2a2a35; --text: #e8e8f0; --muted: #5a5a72;
+  --accent: #f97316; --green: #22c55e;
+  --hl-bg: rgba(249,115,22,0.18);
+  --sans: "Segoe UI", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: var(--sans); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+.topbar { height: 50px; flex-shrink: 0; background: var(--panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 16px; padding: 0 20px; }
+.back { color: var(--muted); text-decoration: none; font-size: 13px; }
+.back:hover { color: var(--accent); }
+.app-title { font-size: 15px; font-weight: 700; }
+.spacer { flex: 1; }
+.pill { font-size: 11px; font-family: var(--mono); padding: 4px 12px; border-radius: 20px; border: 1px solid rgba(34,197,94,.35); color: var(--green); }
+
+.main { flex: 1; display: grid; grid-template-columns: 400px 1fr; overflow: hidden; }
+
+.left { background: var(--panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
+.left-head { padding: 14px 18px 10px; flex-shrink: 0; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--border); }
+.textarea-wrap { flex: 1; display: flex; overflow: hidden; }
+textarea { flex: 1; resize: none; background: transparent; border: none; outline: none; color: var(--text); font-size: 15px; line-height: 1.7; font-family: var(--sans); padding: 18px 20px; caret-color: var(--accent); }
+textarea::placeholder { color: var(--muted); }
+textarea::-webkit-scrollbar { width: 4px; }
+textarea::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.controls { border-top: 1px solid var(--border); padding: 14px 18px; flex-shrink: 0; display: flex; flex-direction: column; gap: 10px; }
+.ctrl-row { display: flex; align-items: center; gap: 10px; }
+label { font-size: 11px; color: var(--muted); letter-spacing: .5px; white-space: nowrap; min-width: 42px; }
+select { flex: 1; background: var(--panel2); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 6px 10px; font-size: 12px; font-family: var(--mono); outline: none; cursor: pointer; }
+select:focus { border-color: var(--accent); }
+.play-btn { width: 100%; padding: 11px; border-radius: 8px; background: var(--accent); border: none; color: #000; font-weight: 700; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: filter .15s; font-family: var(--sans); }
+.play-btn:hover { filter: brightness(1.1); }
+
+.right { display: flex; flex-direction: column; overflow: hidden; }
+.right-head { padding: 14px 24px 10px; flex-shrink: 0; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--border); }
+
+.reader { flex: 1; overflow-y: auto; padding: 36px 48px; font-size: 20px; line-height: 1.9; color: #bbc0d0; }
+.reader::-webkit-scrollbar { width: 6px; }
+.reader::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+.reader-placeholder { color: var(--muted); font-size: 13px; text-transform: uppercase; letter-spacing: 2px; }
+
+.word { display: inline; border-radius: 3px; padding: 0 1px; transition: background .07s, color .07s; }
+.word.active { background: var(--hl-bg); color: var(--accent); }
+.word.done   { color: #565870; }
+
+.playbar { flex-shrink: 0; background: var(--panel); border-top: 1px solid var(--border); padding: 10px 24px 12px; display: flex; align-items: center; gap: 12px; }
+.prog { flex: 1; height: 4px; border-radius: 2px; background: var(--border); overflow: hidden; }
+.prog-fill { height: 100%; background: var(--accent); width: 0%; transition: width .1s; }
+.time { font-size: 11px; font-family: var(--mono); color: var(--muted); white-space: nowrap; }
+.skip-btn { background: var(--panel2); border: 1px solid var(--border); color: var(--muted); border-radius: 6px; padding: 5px 11px; font-size: 12px; cursor: pointer; transition: all .15s; font-family: var(--mono); }
+.skip-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.skip-btn:disabled { opacity: .3; cursor: not-allowed; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a class="back" href="../../index.html">- Back</a>
+  <span class="app-title">Text to Speech</span>
+  <div class="spacer"></div>
+  <span class="pill">Native TTS</span>
+</div>
+
+<div class="main">
+  <div class="left">
+    <div class="left-head">Input Text</div>
+    <div class="textarea-wrap">
+      <textarea id="inputText" placeholder="Paste or type text here...&#10;&#10;Click Play when ready."></textarea>
+    </div>
+    <div class="controls">
+      <div class="ctrl-row">
+        <label>VOICE</label>
+        <span style="font-size:12px;font-family:var(--mono);color:var(--green)">Google UK English Male (en-GB)</span>
+      </div>
+      <div class="ctrl-row">
+        <label>SPEED</label>
+        <select id="speedSel">
+          <option value="0.7">0.7x</option>
+          <option value="0.85">0.85x</option>
+          <option value="1" selected>1.0x</option>
+          <option value="1.2">1.2x</option>
+          <option value="1.5">1.5x</option>
+          <option value="2">2.0x</option>
+        </select>
+      </div>
+      <div class="ctrl-row">
+        <label>PITCH</label>
+        <select id="pitchSel">
+          <option value="0.8">Low</option>
+          <option value="1" selected>Normal</option>
+          <option value="1.2">High</option>
+        </select>
+      </div>
+      <button class="play-btn" id="playBtn">&#9654; Play</button>
+    </div>
+  </div>
+
+  <div class="right">
+    <div class="right-head">Reader</div>
+    <div class="reader" id="reader">
+      <span class="reader-placeholder">Text will appear here</span>
+    </div>
+    <div class="playbar">
+      <button class="skip-btn" id="restartBtn" disabled>&#8635; Restart</button>
+      <span class="time" id="wordCount"></span>
+      <div class="prog"><div class="prog-fill" id="progFill"></div></div>
+      <button class="skip-btn" id="stopBtn" disabled>&#9632; Stop</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const inputText = document.getElementById('inputText');
+const voiceSel  = document.getElementById('voiceSel');
+const speedSel  = document.getElementById('speedSel');
+const pitchSel  = document.getElementById('pitchSel');
+const playBtn   = document.getElementById('playBtn');
+const reader    = document.getElementById('reader');
+const wordCount = document.getElementById('wordCount');
+const restartBtn= document.getElementById('restartBtn');
+const stopBtn   = document.getElementById('stopBtn');
+const progFill  = document.getElementById('progFill');
+
+let words = [], isPlaying = false;
+
+function getVoice() {
+  const voices = speechSynthesis.getVoices();
+  return voices.find(v => v.name === 'Google UK English Male') || voices.find(v => v.lang === 'en-GB') || voices.find(v => v.lang.startsWith('en')) || null;
+}
+speechSynthesis.onvoiceschanged = () => {}; // voices load async, getVoice() called at speak time
+
+playBtn.addEventListener('click', () => {
+  if (isPlaying) { pause(); return; }
+  const text = inputText.value.trim();
+  if (!text) return;
+  words = text.split(/\s+/).filter(Boolean);
+  renderWords();
+  speak(text);
+});
+
+function speak(text) {
+  speechSynthesis.cancel();
+  const utt = new SpeechSynthesisUtterance(text);
+  const chosen = getVoice();
+  if (chosen) utt.voice = chosen;
+  utt.rate  = parseFloat(speedSel.value) || 1;
+  utt.pitch = parseFloat(pitchSel.value) || 1;
+
+  utt.onboundary = e => {
+    if (e.name !== 'word') return;
+    let cum = 0, idx = 0;
+    for (let i = 0; i < words.length; i++) {
+      if (cum + words[i].length > e.charIndex) { idx = i; break; }
+      cum += words[i].length + 1; idx = i;
+    }
+    reader.querySelectorAll('.word').forEach((s, i) => {
+      s.className = 'word' + (i < idx ? ' done' : i === idx ? ' active' : '');
+    });
+    const active = document.getElementById('w' + idx);
+    if (active) {
+      const r = active.getBoundingClientRect(), rr = reader.getBoundingClientRect();
+      if (r.top < rr.top + 60 || r.bottom > rr.bottom - 60) active.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    progFill.style.width = (idx / words.length * 100) + '%';
+    wordCount.textContent = idx + ' / ' + words.length;
+  };
+
+  utt.onend = () => {
+    isPlaying = false; updatePlayBtn();
+    restartBtn.disabled = true; stopBtn.disabled = true;
+    reader.querySelectorAll('.word').forEach(s => s.className = 'word done');
+    progFill.style.width = '100%';
+    wordCount.textContent = words.length + ' / ' + words.length;
+  };
+  utt.onerror = () => { isPlaying = false; updatePlayBtn(); };
+
+  isPlaying = true; updatePlayBtn();
+  restartBtn.disabled = false; stopBtn.disabled = false;
+  speechSynthesis.speak(utt);
+}
+
+function pause() {
+  speechSynthesis.cancel();
+  isPlaying = false; updatePlayBtn();
+}
+
+restartBtn.addEventListener('click', () => {
+  const text = inputText.value.trim();
+  if (!text) return;
+  words = text.split(/\s+/).filter(Boolean);
+  renderWords();
+  speak(text);
+});
+stopBtn.addEventListener('click', () => {
+  speechSynthesis.cancel();
+  isPlaying = false; updatePlayBtn();
+  restartBtn.disabled = true; stopBtn.disabled = true;
+  reader.querySelectorAll('.word').forEach(s => s.className = 'word');
+  wordCount.textContent = ''; progFill.style.width = '0%';
+});
+
+function renderWords() {
+  reader.innerHTML = '';
+  words.forEach((w, i) => {
+    const span = document.createElement('span');
+    span.className = 'word'; span.id = 'w' + i;
+    span.textContent = w + ' ';
+    reader.appendChild(span);
+  });
+  wordCount.textContent = '0 / ' + words.length;
+  progFill.style.width = '0%';
+}
+
+function updatePlayBtn() { playBtn.innerHTML = isPlaying ? '&#9646;&#9646; Pause' : '&#9654; Play'; }
+</script>
+</body>
+</html>

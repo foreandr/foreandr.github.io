@@ -1,0 +1,267 @@
+import json
+import numpy as np
+from astroquery.jplhorizons import Horizons
+from astropy.time import Time
+import astropy.units as u
+
+def get_vectors(body_id, start, stop, step_days):
+    epochs = {"start": start.utc.isot, "stop": stop.utc.isot, "step": f"{int(step_days)} d"}
+    obj = Horizons(id=body_id, location="@sun", epochs=epochs)
+    vec = obj.vectors()
+    x = np.array(vec["x"]) * u.au
+    y = np.array(vec["y"]) * u.au
+    z = np.array(vec["z"]) * u.au
+    return x.to(u.au).value.tolist(), y.to(u.au).value.tolist(), z.to(u.au).value.tolist()
+
+start = Time.now()
+span_years = 10
+span_days = 365 * span_years
+step_days = 1
+end = start + span_days * u.day
+
+planet_ids = {
+    "mercury": "199",
+    "venus": "299",
+    "earth": "399",
+    "mars": "499",
+    "jupiter": "599",
+    "saturn": "699",
+    "uranus": "799",
+    "neptune": "899",
+}
+
+planet_data = {}
+for name, pid in planet_ids.items():
+    vec = get_vectors(pid, start, end, step_days)
+    planet_data[name] = {"x": vec[0], "y": vec[1], "z": vec[2]}
+
+payload = {
+    "meta": {
+        "start_utc": start.utc.isot,
+        "end_utc": end.utc.isot,
+        "step_days": int(step_days),
+        "span_years": int(span_years),
+        "source": "JPL Horizons (NASA/JPL)",
+        "center": "@sun",
+        "frame": "ICRF",
+    },
+    "planets": planet_data,
+}
+
+with open("data/ephemeris.json", "w", encoding="utf-8") as f:
+    json.dump(payload, f)
+
+with open("data/ephemeris.js", "w", encoding="utf-8") as f:
+    f.write("window.EPHEMERIS = ")
+    json.dump(payload, f)
+    f.write(";")
+
+html = """<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>JPL Horizons 3D Orbits</title>
+    <style>
+      :root { --bg:#0b0d12; --fg:#e8eef5; --muted:#aab7c4; --accent:#ffb347; --accent2:#4cc9f0; }
+      html, body { margin:0; padding:0; height:100%; background:radial-gradient(1200px 800px at 70% 10%, #121826, var(--bg)); color:var(--fg); font-family:"Space Grotesk","Segoe UI",system-ui,sans-serif; overflow:hidden; }
+      canvas { display:block; }
+      #hud { position:fixed; top:16px; left:16px; padding:12px 14px; background:rgba(10,12,18,0.7); border:1px solid rgba(255,255,255,0.08); border-radius:10px; backdrop-filter:blur(8px); z-index:2; }
+      #title { font-size:16px; letter-spacing:0.6px; color:var(--accent); }
+      #meta { margin-top:6px; font-size:12px; color:var(--muted); }
+      #sources { margin-top:8px; font-size:11px; color:var(--muted); line-height:1.35; max-width:360px; }
+      #sources a { color:var(--accent2); text-decoration:none; }
+      #sources a:hover { text-decoration:underline; }
+      #error { position:fixed; bottom:16px; left:16px; right:16px; padding:12px 14px; background:rgba(90,12,12,0.85); border:1px solid rgba(255,255,255,0.08); border-radius:10px; color:#ffd2d2; z-index:3; font-size:13px; }
+    </style>
+  </head>
+  <body>
+    <div id="hud">
+      <div id="title">JPL Horizons 3D Orbits</div>
+      <div id="meta">Loading ephemeris...</div>
+      <div id="sources"></div>
+    </div>
+    <div id="error" hidden></div>
+    <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+    <script src="data/ephemeris.js"></script>
+    <script>
+      const hud = document.getElementById("meta");
+      const sources = document.getElementById("sources");
+      const errorBox = document.getElementById("error");
+
+      const scene = new THREE.Scene();
+      scene.fog = new THREE.Fog(0x0b0d12, 8, 60);
+
+      const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.01, 2000);
+      let radius = 12;
+      let theta = 0.9;
+      let phi = 0.9;
+
+      function updateCamera() {
+        const x = radius * Math.sin(phi) * Math.cos(theta);
+        const y = radius * Math.cos(phi);
+        const z = radius * Math.sin(phi) * Math.sin(theta);
+        camera.position.set(x, y, z);
+        camera.lookAt(0, 0, 0);
+      }
+
+      updateCamera();
+
+      const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(window.devicePixelRatio || 1);
+      document.body.appendChild(renderer.domElement);
+
+      const light = new THREE.PointLight(0xfff1d0, 1.2, 100);
+      light.position.set(0, 0, 0);
+      scene.add(light);
+
+      const ambient = new THREE.AmbientLight(0x334455, 0.6);
+      scene.add(ambient);
+
+      const sun = new THREE.Mesh(new THREE.SphereGeometry(0.18, 32, 32), new THREE.MeshBasicMaterial({ color: 0xffc857 }));
+      scene.add(sun);
+
+      const planetStyles = {
+        mercury: { color: 0xb8b8b8, size: 0.035 },
+        venus: { color: 0xe6c78f, size: 0.05 },
+        earth: { color: 0x4cc9f0, size: 0.06 },
+        mars: { color: 0xd9704a, size: 0.045 },
+        jupiter: { color: 0xffb347, size: 0.12 },
+        saturn: { color: 0xd9c27a, size: 0.105 },
+        uranus: { color: 0x8fe3ff, size: 0.08 },
+        neptune: { color: 0x4f7cff, size: 0.078 }
+      };
+
+      const planetOrder = ["mercury", "venus", "earth", "mars", "jupiter", "saturn", "uranus", "neptune"];
+      const planets = {};
+      let frame = 0;
+      let data = null;
+
+      function setError(msg) {
+        errorBox.hidden = false;
+        errorBox.textContent = msg;
+      }
+
+      function buildLine(points, material) {
+        const geo = new THREE.BufferGeometry().setFromPoints(points);
+        const line = new THREE.Line(geo, material);
+        line.geometry.setDrawRange(0, 1);
+        return line;
+      }
+
+      function createPlanet(name) {
+        const style = planetStyles[name] || { color: 0xffffff, size: 0.05 };
+        const mesh = new THREE.Mesh(
+          new THREE.SphereGeometry(style.size, 20, 20),
+          new THREE.MeshStandardMaterial({ color: style.color, roughness: 0.4, metalness: 0.05 })
+        );
+        const lineMat = new THREE.LineBasicMaterial({ color: style.color, linewidth: 1 });
+        scene.add(mesh);
+        planets[name] = { mesh, lineMat, line: null, points: [] };
+      }
+
+      planetOrder.forEach(createPlanet);
+
+      function updateBodies() {
+        const samplePlanet = planetOrder.find((name) => planets[name].points.length);
+        if (!samplePlanet) return;
+        const i = frame % planets[samplePlanet].points.length;
+        const rows = [];
+
+        planetOrder.forEach((name) => {
+          const planet = planets[name];
+          if (!planet.points.length) return;
+          planet.mesh.position.copy(planet.points[i]);
+          if (planet.line) {
+            planet.line.geometry.setDrawRange(0, i + 1);
+          }
+          const point = planet.points[i];
+          rows.push(`${name[0].toUpperCase() + name.slice(1)} (AU): ${point.x.toFixed(3)}, ${point.y.toFixed(3)}, ${point.z.toFixed(3)}`);
+        });
+
+        hud.textContent = `Source: ${data.meta.source} | ${data.meta.start_utc} -> ${data.meta.end_utc}`;
+        sources.innerHTML = `Data: NASA/JPL Horizons API<br>Center: ${data.meta.center} | Frame: ${data.meta.frame}<br>Span: ${data.meta.span_years} years @ ${data.meta.step_days} day step<br>${rows.join("<br>")}<br><a href="https://ssd.jpl.nasa.gov/horizons/" target="_blank" rel="noreferrer">JPL Horizons</a>`;
+        frame += 1;
+      }
+
+      function animate() {
+        requestAnimationFrame(animate);
+        if (planetOrder.some((name) => planets[name].points.length)) {
+          updateBodies();
+        }
+        renderer.render(scene, camera);
+      }
+
+      function onResize() {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      }
+
+      window.addEventListener("resize", onResize);
+
+      let dragging = false;
+      let lastX = 0;
+      let lastY = 0;
+
+      function onDown(e) {
+        dragging = true;
+        lastX = e.clientX;
+        lastY = e.clientY;
+      }
+
+      function onMove(e) {
+        if (!dragging) return;
+        const dx = e.clientX - lastX;
+        const dy = e.clientY - lastY;
+        lastX = e.clientX;
+        lastY = e.clientY;
+        theta -= dx * 0.005;
+        phi -= dy * 0.005;
+        phi = Math.max(0.15, Math.min(Math.PI - 0.15, phi));
+        updateCamera();
+      }
+
+      function onUp() {
+        dragging = false;
+      }
+
+      function onWheel(e) {
+        radius += e.deltaY * 0.01;
+        radius = Math.max(3, Math.min(40, radius));
+        updateCamera();
+      }
+
+      renderer.domElement.addEventListener("mousedown", onDown);
+      window.addEventListener("mousemove", onMove);
+      window.addEventListener("mouseup", onUp);
+      renderer.domElement.addEventListener("wheel", onWheel, { passive: true });
+
+      if (!window.EPHEMERIS) {
+        setError("Missing data/ephemeris.js. Run fetch_data.py first.");
+      } else {
+        data = window.EPHEMERIS;
+        const sourcePlanets = data.planets || {};
+        planetOrder.forEach((name) => {
+          const coords = sourcePlanets[name];
+          if (!coords || !coords.x || !coords.y || !coords.z) return;
+          const n = Math.min(coords.x.length, coords.y.length, coords.z.length);
+          for (let i = 0; i < n; i++) {
+            planets[name].points.push(new THREE.Vector3(coords.x[i], coords.y[i], coords.z[i]));
+          }
+          planets[name].line = buildLine(planets[name].points, planets[name].lineMat);
+          scene.add(planets[name].line);
+        });
+        hud.textContent = `Source: ${data.meta.source} | ${data.meta.start_utc} -> ${data.meta.end_utc}`;
+        sources.innerHTML = `Data: NASA/JPL Horizons API<br>Center: ${data.meta.center} | Frame: ${data.meta.frame}<br>Span: ${data.meta.span_years} years @ ${data.meta.step_days} day step<br><a href="https://ssd.jpl.nasa.gov/horizons/" target="_blank" rel="noreferrer">JPL Horizons</a>`;
+      }
+
+      animate();
+    </script>
+  </body>
+</html>
+"""
+
+with open("index.html", "w", encoding="utf-8") as f:
+    f.write(html)

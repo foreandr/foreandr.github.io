@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Star ID</title>
+<link rel="icon" type="image/x-icon" href="../../images.ico">
+<style>
+:root {
+  --bg: #02030f; --panel: #080a1a; --panel2: #0d1025;
+  --border: #1a1e40; --text: #e8eaff; --muted: #4a5090;
+  --accent: #c4b5fd; --accent2: #a78bfa; --accent3: #7c3aed;
+  --gold: #fbbf24; --mono: "JetBrains Mono", ui-monospace, monospace;
+  --sans: "Segoe UI", system-ui, sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--text); font-family: var(--sans); display: flex; flex-direction: column; min-height: 100vh; }
+.topbar { display: flex; align-items: center; gap: 12px; padding: 0 16px; height: 48px; background: var(--panel); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.back { color: var(--muted); text-decoration: none; font-size: 13px; } .back:hover { color: var(--accent); }
+.app-title { font-size: 14px; font-weight: 700; color: var(--accent); } .spacer { flex: 1; }
+
+/* Sky view */
+.sky-container { position: relative; flex: 1; background: var(--bg); min-height: 0; overflow: hidden; }
+canvas#skyCanvas { width: 100%; height: 100%; display: block; }
+.compass { position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); background: rgba(8,10,26,.8); border: 1px solid var(--border); border-radius: 20px; padding: 6px 14px; font-size: 13px; font-family: var(--mono); color: var(--accent); letter-spacing: .5px; backdrop-filter: blur(4px); }
+.aim-ring { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 64px; height: 64px; border-radius: 50%; border: 2px solid rgba(196,181,253,.5); pointer-events: none; }
+.aim-ring::before, .aim-ring::after { content:''; position: absolute; background: rgba(196,181,253,.5); }
+.aim-ring::before { width: 2px; height: 14px; top: -8px; left: 50%; transform: translateX(-50%); }
+.aim-ring::after { width: 14px; height: 2px; left: -8px; top: 50%; transform: translateY(-50%); }
+
+/* Info panel */
+.info-panel { background: var(--panel); border-top: 1px solid var(--border); padding: 16px 18px 22px; flex-shrink: 0; min-height: 160px; display: flex; flex-direction: column; gap: 12px; }
+.perm-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 20px; text-align: center; flex: 1; }
+.perm-icon { font-size: 48px; }
+.perm-title { font-size: 16px; font-weight: 700; color: var(--accent); }
+.perm-sub { font-size: 13px; color: var(--muted); line-height: 1.7; max-width: 280px; }
+.btn-perm { background: var(--accent3); color: #fff; border: none; border-radius: 12px; padding: 13px 28px; font-size: 14px; font-weight: 700; cursor: pointer; }
+.btn-perm:hover { background: var(--accent2); color: #000; }
+.star-display { display: flex; gap: 14px; align-items: flex-start; }
+.star-icon-big { font-size: 38px; flex-shrink: 0; }
+.star-info { flex: 1; min-width: 0; }
+.star-name { font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.star-const { font-size: 13px; color: var(--accent); margin-bottom: 8px; }
+.star-badges { display: flex; flex-wrap: wrap; gap: 6px; }
+.badge { border-radius: 20px; padding: 3px 10px; font-size: 11px; font-weight: 700; font-family: var(--mono); background: rgba(196,181,253,.12); border: 1px solid rgba(196,181,253,.25); color: var(--accent); }
+.badge.gold { background: rgba(251,191,36,.12); border-color: rgba(251,191,36,.3); color: var(--gold); }
+.star-desc { font-size: 13px; line-height: 1.7; color: var(--text); opacity: .85; border-top: 1px solid var(--border); padding-top: 10px; }
+.coords-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.coord-chip { background: var(--panel2); border: 1px solid var(--border); border-radius: 8px; padding: 5px 10px; font-size: 11px; font-family: var(--mono); color: var(--muted); }
+.no-star { display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; padding: 10px; }
+.no-star-icon { font-size: 32px; opacity: .3; }
+.no-star-text { font-size: 14px; color: var(--muted); }
+.manual-fallback { display: none; flex-direction: column; gap: 10px; padding: 4px 0; }
+.manual-fallback.show { display: flex; }
+.manual-row { display: flex; gap: 8px; }
+.m-input { background: var(--panel2); border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 8px 10px; font-size: 13px; font-family: var(--mono); flex: 1; }
+.m-label { font-size: 11px; color: var(--muted); margin-bottom: 2px; }
+.btn-go { background: var(--accent3); color: #fff; border: none; border-radius: 8px; padding: 9px 16px; font-size: 13px; font-weight: 700; cursor: pointer; }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <a class="back" href="../../index.html">← Back</a>
+  <span class="app-title">✨ Star ID</span>
+  <div class="spacer"></div>
+</div>
+
+<div class="sky-container">
+  <canvas id="skyCanvas"></canvas>
+  <div class="aim-ring"></div>
+  <div class="compass" id="compass">Az: — · Alt: —</div>
+</div>
+
+<div class="info-panel" id="infoPanel">
+  <div class="perm-screen" id="permScreen">
+    <div class="perm-icon">🔭</div>
+    <div class="perm-title">Point your phone at the sky</div>
+    <div class="perm-sub">Star ID uses your device's compass and tilt sensor to identify stars and constellations in real time. No internet needed.</div>
+    <button class="btn-perm" id="btnStart">Enable Motion Sensors</button>
+    <div id="permErr" style="font-size:12px;color:#f87171;display:none"></div>
+  </div>
+  <div id="starDisplay" style="display:none"></div>
+</div>
+
+<script>
+// ── Star catalog: [name, constellation, RA hours, Dec degrees, magnitude, color_temp, desc]
+const STARS = [
+  ['Sirius','Canis Major',6.7525,-16.7161,-1.46,'A1','The brightest star in the night sky. About twice the mass of the Sun and 25× more luminous. Part of the "Winter Triangle". The ancient Egyptians used its heliacal rising to predict Nile floods.'],
+  ['Canopus','Carina',6.3992,-52.6957,-0.74,'F0','Second brightest star. A yellow-white supergiant 313 light-years away. Invisible from most of North America. Used as a navigation star by spacecraft including Voyager.'],
+  ['Arcturus','Boötes',14.2612,19.1822,-0.05,'K1','Third brightest star and the brightest in the northern celestial hemisphere. An orange giant ~37 light-years away. The first star seen in daylight through a telescope (1635).'],
+  ['Rigel Kentaurus','Centaurus',14.6601,-60.8322,-0.01,'G2','Alpha Centauri A — the primary component of the closest star system to Earth at 4.37 light-years. Very similar to our Sun. Its companion Proxima Centauri hosts a potentially habitable exoplanet.'],
+  ['Vega','Lyra',18.6157,38.7836,0.03,'A0','The brightest star in Lyra. 5th brightest star overall. 25 light-years away. It was the North Star around 12,000 BCE and will be again in ~13,000 CE. Part of the "Summer Triangle".'],
+  ['Capella','Auriga',5.2781,45.9980,0.08,'G8','A binary star system of two giant stars orbiting each other. 6th brightest overall. ~43 light-years away. Nearly identical in color to our Sun but much larger.'],
+  ['Rigel','Orion',5.2423,-8.2016,0.13,'B8','Orion\'s brightest star and 7th brightest overall. A blue supergiant ~860 light-years away, with a luminosity ~130,000× the Sun. Marks the hunter\'s foot.'],
+  ['Procyon','Canis Minor',7.6553,5.2250,0.34,'F5','8th brightest star. A binary system just 11.5 light-years away. Its companion is a white dwarf. Forms the "Winter Triangle" with Sirius and Betelgeuse.'],
+  ['Achernar','Eridanus',1.6285,-57.2367,0.46,'B3','9th brightest. One of the most oblate stars known — it spins so fast it bulges significantly at its equator. Marks the end of the river constellation Eridanus.'],
+  ['Betelgeuse','Orion',5.9195,7.4071,0.58,'M2','A red supergiant and one of the largest stars visible — if placed where the Sun is, it would engulf Jupiter. Expected to explode as a supernova within 100,000 years. Marks Orion\'s right shoulder.'],
+  ['Hadar','Centaurus',14.0637,-60.3730,0.61,'B1','Beta Centauri — a triple star system about 390 light-years away. A blue giant. Often used alongside Alpha Centauri to point toward the Southern Cross.'],
+  ['Altair','Aquila',19.8461,8.8683,0.77,'A7','Part of the "Summer Triangle". Rotates extremely fast (~9 hours vs Sun\'s 25 days), causing an oblate shape. Only 17 light-years from Earth. In Japanese mythology it is Hikoboshi, the cowherd star.'],
+  ['Aldebaran','Taurus',4.5987,16.5093,0.85,'K5','The bull\'s red eye. An orange giant ~65 light-years away. The Voyager 1 probe is headed in its general direction and will pass near it in 2 million years.'],
+  ['Antares','Scorpius',16.4901,-26.4320,0.96,'M1','The heart of the scorpion. A red supergiant so large that if placed at the Sun, it would extend beyond Mars. Its name means "rival of Ares (Mars)" due to its red color and brightness.'],
+  ['Spica','Virgo',13.4199,-11.1613,0.98,'B1','Brightest star in Virgo. A binary system of two massive stars orbiting each other every 4 days. The tidal forces keep them non-spherical. Hipparchus used it to discover Earth\'s axial precession.'],
+  ['Pollux','Gemini',7.7553,28.0262,1.14,'K0','The brighter of the Gemini twins. An orange giant ~34 light-years away known to have an exoplanet (Pollux b). Slightly brighter than its twin Castor despite the name ordering.'],
+  ['Fomalhaut','Piscis Austrinus',22.9609,-29.6223,1.16,'A3','The "Autumn Star" — one of the few bright stars visible from autumn northern latitudes. Has a prominent debris disk and a directly imaged exoplanet candidate. 25 light-years away.'],
+  ['Deneb','Cygnus',20.6905,45.2803,1.25,'A2','The tail of the Swan and a vertex of the Summer Triangle. One of the most luminous stars in the Milky Way — perhaps 200,000× the Sun. If as close as Sirius, it would cast shadows at night.'],
+  ['Mimosa','Crux',12.7953,-59.6887,1.25,'B0','Beta Crucis — the second brightest star in the Southern Cross. A massive, hot blue-white giant about 280 light-years away. Features on the flags of Australia, New Zealand, Brazil, Samoa, and Papua New Guinea.'],
+  ['Regulus','Leo',10.1395,11.9672,1.36,'B7','The heart of the Lion. A fast-rotating blue-white star that bulges at its equator. Lies almost exactly on the ecliptic — the Sun, Moon, and planets pass very close to it.'],
+  ['Castor','Gemini',7.5769,31.8883,1.57,'A2','The head of one of the Gemini twins. Actually a sextuple star system — three binary pairs all bound gravitationally. About 51 light-years away.'],
+  ['Gacrux','Crux',12.5194,-57.1133,1.59,'M3','Gamma Crucis — the top star of the Southern Cross. A red giant about 88 light-years away. The Southern Cross is used for navigation to find south in the Southern Hemisphere.'],
+  ['Shaula','Scorpius',17.5600,-37.1033,1.62,'B2','Lambda Scorpii — the stinger of the scorpion. A multiple star system. One of the brighter members of the Scorpius-Centaurus OB association, a group of young hot stars.'],
+  ['Bellatrix','Orion',5.4188,6.3497,1.64,'B2','Orion\'s left shoulder. A blue-white giant sometimes called the "Amazon Star". About 250 light-years away and ~6000× more luminous than the Sun.'],
+  ['Elnath','Taurus',5.4382,28.6074,1.65,'B7','The tip of Taurus\'s northern horn. Marks the border between Taurus and Auriga. A blue-white giant ~130 light-years away.'],
+  ['Miaplacidus','Carina',9.2199,-69.7172,1.67,'A2','Beta Carinae — second brightest in the constellation Carina and one of the brightest southern stars. About 111 light-years away.'],
+  ['Alnilam','Orion',5.6036,-1.2019,1.69,'B0','The central star of Orion\'s Belt — the middle "button". A blue supergiant about 1340 light-years away, and one of the most luminous stars known. The Belt is one of the most recognized asterisms.'],
+  ['Gamma Velorum','Vela',8.1588,-47.3366,1.72,'WC8','The brightest Wolf-Rayet star visible to the naked eye. A remarkable multiple system containing a rare stripped stellar core shedding mass at tremendous rate.'],
+  ['Alnitak','Orion',5.6800,-1.9428,1.74,'O9','The easternmost star of Orion\'s Belt. A triple star system dominated by a hot blue supergiant. The Horsehead Nebula lies just south of it.'],
+  ['Alioth','Ursa Major',12.9003,55.9598,1.76,'A0','The brightest star in Ursa Major (the Great Bear) and in the Big Dipper asterism. Part of the Ursa Major Moving Group. Only 83 light-years from Earth.'],
+  ['Mirfak','Perseus',3.4053,49.8612,1.79,'F5','Alpha Persei — the brightest star in Perseus. A yellow-white supergiant surrounded by the Alpha Persei Cluster, a group of hot blue stars visible to the naked eye.'],
+  ['Dubhe','Ursa Major',11.0621,61.7511,1.79,'K0','The pointer star — along with Merak, it points toward Polaris (North Star). Part of the Big Dipper. An orange giant ~120 light-years away.'],
+  ['Wezen','Canis Major',7.1398,-26.3932,1.83,'F8','A yellow-white supergiant so intrinsically luminous that if it were as close as Sirius, it would be as bright as a crescent moon. About 1600 light-years away.'],
+  ['Alkaid','Ursa Major',13.7923,49.3133,1.85,'B3','The end of the Big Dipper\'s handle. A hot blue-white star not part of the Ursa Major Moving Group despite its position.'],
+  ['Sargas','Scorpius',17.6217,-42.9978,1.86,'F0','Theta Scorpii — a bright supergiant in the tail of the Scorpius. Visible mainly from the Southern Hemisphere and low northern latitudes.'],
+  ['Avior','Carina',8.3748,-59.5094,1.86,'K3','Epsilon Carinae — a bright binary in the False Cross asterism (sometimes confused with the Southern Cross). An orange giant paired with a hot blue companion.'],
+  ['Menkib','Perseus',3.9864,35.7911,1.87,'O7','Xi Persei — one of the hottest, most luminous naked-eye stars. An O-type supergiant with powerful stellar winds. Part of the Per OB2 association.'],
+  ['Polaris','Ursa Minor',2.5302,89.2641,2.02,'F7','The North Star — within 0.7° of the celestial north pole. A Cepheid variable and the nearest bright star to the pole. Has been the key navigation star for over 1000 years. Will remain the pole star until ~2100 CE.'],
+  ['Kochab','Ursa Minor',14.8450,74.1555,2.07,'K4','Beta Ursae Minoris — the guardian of the pole. An orange giant and the second brightest star in Ursa Minor. It was the pole star from about 1500 BCE to 500 CE.'],
+  ['Alhena','Gemini',6.6285,16.3993,1.93,'A0','Gamma Geminorum — the foot of the twin Pollux. A binary system 109 light-years away. Lies near the ecliptic so planets occasionally pass close to it.'],
+  ['Peacock','Pavo',18.7724,-56.7350,1.94,'B2','Alpha Pavonis — the brightest star in the Pavo (Peacock) constellation. A blue-white subgiant about 179 light-years away. Used as a navigation star.'],
+  ['Alphecca','Corona Borealis',15.5781,26.7147,2.22,'A0','The gem in the Northern Crown. A binary star where the companion eclipses the primary. One of the most perfect circular coronae constellations in the sky.'],
+  ['Saiph','Orion',5.7959,-9.6697,2.06,'B0','The southeastern foot of Orion. A blue supergiant similar to Rigel in absolute luminosity but farther away at ~650 light-years, making it appear dimmer.'],
+  ['Mintaka','Orion',5.5334,-0.2991,2.23,'O9','The westernmost star of Orion\'s Belt. Rises almost exactly due east and sets almost exactly due west — making it a useful cardinal direction guide. A multiple star system.'],
+];
+
+// Constellation groups
+const CONSTELLATIONS = {
+  'Orion': ['Betelgeuse','Rigel','Alnilam','Alnitak','Mintaka','Saiph','Bellatrix'],
+  'Ursa Major (Big Dipper)': ['Alioth','Alkaid','Dubhe'],
+  'Ursa Minor (Little Dipper)': ['Polaris','Kochab'],
+  'Summer Triangle': ['Vega','Altair','Deneb'],
+  'Winter Triangle': ['Sirius','Procyon','Betelgeuse'],
+  'Southern Cross': ['Mimosa','Gacrux'],
+};
+
+const DEG = Math.PI / 180;
+const canvas = document.getElementById('skyCanvas');
+const ctx = canvas.getContext('2d');
+let az = 0, alt = 45, hasOrientation = false, animFrame;
+
+function toRad(d) { return d * DEG; }
+function toDeg(r) { return r / DEG; }
+
+// Get Local Sidereal Time
+function getLST(lng) {
+  const now = new Date();
+  const JD = now / 86400000 + 2440587.5;
+  const T = (JD - 2451545.0) / 36525;
+  let GMST = 280.46061837 + 360.98564736629 * (JD - 2451545) + T * T * (0.000387933 - T / 38710000);
+  GMST = ((GMST % 360) + 360) % 360;
+  return ((GMST + lng) % 360 + 360) % 360; // LST in degrees
+}
+
+// RA/Dec → Azimuth/Altitude given observer lat/lng
+function equatorialToHorizontal(ra_h, dec_deg, lat_deg, lst_deg) {
+  const HA = toRad(((lst_deg - ra_h * 15) % 360 + 360) % 360);
+  const dec = toRad(dec_deg);
+  const lat = toRad(lat_deg);
+  const sinAlt = Math.sin(dec) * Math.sin(lat) + Math.cos(dec) * Math.cos(lat) * Math.cos(HA);
+  const altitude = Math.asin(Math.max(-1, Math.min(1, sinAlt)));
+  const cosAz = (Math.sin(dec) - Math.sin(altitude) * Math.sin(lat)) / (Math.cos(altitude) * Math.cos(lat));
+  let azimuth = Math.acos(Math.max(-1, Math.min(1, cosAz)));
+  if (Math.sin(HA) > 0) azimuth = 2 * Math.PI - azimuth;
+  return { az: toDeg(azimuth), alt: toDeg(altitude) };
+}
+
+function angularDistance(az1, alt1, az2, alt2) {
+  const dAz = (az2 - az1 + 360) % 360;
+  const dAzN = dAz > 180 ? dAz - 360 : dAz;
+  const dAlt = alt2 - alt1;
+  return Math.sqrt(dAzN * dAzN + dAlt * dAlt);
+}
+
+let lat = 40, lng = -74; // default NYC
+let lstDeg = getLST(lng);
+
+// Try to get user location
+navigator.geolocation?.getCurrentPosition(pos => {
+  lat = pos.coords.latitude;
+  lng = pos.coords.longitude;
+  lstDeg = getLST(lng);
+}, () => {});
+
+function computeStarPositions() {
+  lstDeg = getLST(lng);
+  return STARS.map(s => {
+    const [name, const_, ra, dec, mag, color, desc] = s;
+    const pos = equatorialToHorizontal(ra, dec, lat, lstDeg);
+    return { name, const: const_, ra, dec, mag, color, desc, az: pos.az, alt: pos.alt };
+  }).filter(s => s.alt > -10);
+}
+
+function magToSize(mag) {
+  return Math.max(1.5, 6 - mag * 1.2);
+}
+
+function colorTemp(code) {
+  const map = { O:'#9bb0ff', B:'#aabfff', A:'#cad7ff', F:'#f8f7ff', G:'#fff4e8', K:'#ffd2a1', M:'#ffaa5a', WC8:'#88ffcc' };
+  for (const k of Object.keys(map)) { if (code.startsWith(k)) return map[k]; }
+  return '#ffffff';
+}
+
+function drawSky(stars) {
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+
+  // Background gradient
+  const grad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, Math.max(W, H) * .7);
+  grad.addColorStop(0, '#06081a');
+  grad.addColorStop(1, '#02030f');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+
+  // Field of view ~ 60 degrees
+  const FOV = 60;
+  const scale = Math.min(W, H) / FOV;
+
+  // Draw stars
+  const visible = [];
+  for (const star of stars) {
+    const dAz = ((star.az - az + 540) % 360) - 180;
+    const dAlt = star.alt - alt;
+    if (Math.abs(dAz) > FOV || Math.abs(dAlt) > FOV) continue;
+
+    const x = W / 2 + dAz * scale;
+    const y = H / 2 - dAlt * scale;
+    const r = magToSize(star.mag);
+    const col = colorTemp(star.color);
+
+    // Glow
+    if (r > 3) {
+      const glow = ctx.createRadialGradient(x, y, 0, x, y, r * 4);
+      glow.addColorStop(0, col + '60');
+      glow.addColorStop(1, 'transparent');
+      ctx.beginPath(); ctx.arc(x, y, r * 4, 0, Math.PI * 2);
+      ctx.fillStyle = glow; ctx.fill();
+    }
+
+    // Star dot
+    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fillStyle = col; ctx.fill();
+
+    visible.push({ ...star, x, y, r });
+  }
+
+  // Label bright stars
+  ctx.font = '11px "Segoe UI", sans-serif';
+  ctx.textAlign = 'center';
+  for (const star of visible) {
+    if (star.mag < 1.5) {
+      ctx.fillStyle = 'rgba(196,181,253,0.7)';
+      ctx.fillText(star.name, star.x, star.y - star.r - 6);
+    }
+  }
+
+  return visible;
+}
+
+let visibleStars = [];
+
+function render() {
+  const W = canvas.offsetWidth;
+  const H = canvas.offsetHeight;
+  if (canvas.width !== W || canvas.height !== H) { canvas.width = W; canvas.height = H; }
+
+  const stars = computeStarPositions();
+  visibleStars = drawSky(stars);
+
+  // Find closest star to center
+  const FOV = 60;
+  const scale = Math.min(W, H) / FOV;
+  let closest = null, minDist = Infinity;
+  for (const s of visibleStars) {
+    const dx = s.x - W / 2, dy = s.y - H / 2;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist < minDist) { minDist = dist; closest = s; }
+  }
+
+  const threshold = 80; // pixels
+  updateDisplay(minDist < threshold ? closest : null, minDist);
+
+  document.getElementById('compass').textContent =
+    `Az: ${az.toFixed(1)}° · Alt: ${alt.toFixed(1)}°`;
+
+  animFrame = requestAnimationFrame(render);
+}
+
+function updateDisplay(star, dist) {
+  const disp = document.getElementById('starDisplay');
+  if (!star) {
+    disp.innerHTML = `<div class="no-star"><div class="no-star-icon">🌌</div><div class="no-star-text">Point at a bright star</div></div>`;
+    return;
+  }
+  const constNames = Object.entries(CONSTELLATIONS).filter(([k, v]) => v.includes(star.name)).map(([k]) => k);
+  const magLabel = star.mag < 0 ? 'Exceptionally bright' : star.mag < 1 ? 'Very bright' : star.mag < 2 ? 'Bright' : 'Visible';
+  disp.innerHTML = `<div class="star-display">
+    <div class="star-icon-big">⭐</div>
+    <div class="star-info">
+      <div class="star-name">${star.name}</div>
+      <div class="star-const">${star.const}</div>
+      <div class="star-badges">
+        <span class="badge gold">Mag ${star.mag}</span>
+        <span class="badge">${magLabel}</span>
+        ${constNames.map(c => `<span class="badge">${c}</span>`).join('')}
+      </div>
+    </div>
+  </div>
+  <div class="star-desc">${star.desc}</div>
+  <div class="coords-row">
+    <span class="coord-chip">RA ${star.ra.toFixed(2)}h</span>
+    <span class="coord-chip">Dec ${star.dec.toFixed(1)}°</span>
+    <span class="coord-chip">Az ${star.az.toFixed(1)}°</span>
+    <span class="coord-chip">Alt ${star.alt.toFixed(1)}°</span>
+  </div>`;
+}
+
+// Manual mode fallback
+function showManual() {
+  document.getElementById('permScreen').innerHTML = `
+    <div class="perm-icon">🔭</div>
+    <div class="perm-title">Motion sensors unavailable</div>
+    <div class="perm-sub">Enter your compass direction manually to identify stars.</div>
+    <div class="manual-fallback show">
+      <div class="manual-row">
+        <div style="flex:1"><div class="m-label">Azimuth (compass, 0–360°)</div><input class="m-input" id="manAz" type="number" placeholder="e.g. 180 = South" min="0" max="360"></div>
+        <div style="flex:1"><div class="m-label">Altitude (above horizon, 0–90°)</div><input class="m-input" id="manAlt" type="number" placeholder="e.g. 45" min="0" max="90"></div>
+      </div>
+      <button class="btn-go" onclick="applyManual()">Look up stars</button>
+    </div>`;
+}
+
+function applyManual() {
+  const newAz = parseFloat(document.getElementById('manAz').value) || 0;
+  const newAlt = parseFloat(document.getElementById('manAlt').value) || 45;
+  az = newAz; alt = newAlt;
+  document.getElementById('permScreen').style.display = 'none';
+  document.getElementById('starDisplay').style.display = 'block';
+  if (!animFrame) render();
+}
+
+document.getElementById('btnStart').addEventListener('click', async () => {
+  const errEl = document.getElementById('permErr');
+  errEl.style.display = 'none';
+
+  // iOS 13+ requires explicit permission request
+  if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+    try {
+      const perm = await DeviceOrientationEvent.requestPermission();
+      if (perm !== 'granted') { showManual(); return; }
+    } catch (e) { showManual(); return; }
+  }
+
+  // Check if device supports orientation
+  let gotEvent = false;
+  const testHandler = (e) => {
+    if (e.alpha !== null) gotEvent = true;
+    window.removeEventListener('deviceorientationabsolute', testHandler);
+    window.removeEventListener('deviceorientation', testHandler);
+  };
+  window.addEventListener('deviceorientationabsolute', testHandler, { once: true });
+  window.addEventListener('deviceorientation', testHandler, { once: true });
+  await new Promise(r => setTimeout(r, 500));
+
+  if (!gotEvent) { showManual(); return; }
+
+  // Listen for orientation
+  const orientHandler = (e) => {
+    if (e.alpha === null) return;
+    hasOrientation = true;
+    // alpha = compass heading (0=N), beta = tilt fwd/back, gamma = tilt left/right
+    az = ((e.alpha || 0) + 360) % 360;
+    // altitude: beta is phone tilt. 0=flat on table, 90=upright.
+    // When pointing at sky, beta approaches 90. Map to altitude 0-90.
+    alt = Math.max(0, Math.min(90, (e.beta || 45) - 45 + 45));
+  };
+
+  window.addEventListener('deviceorientationabsolute', orientHandler);
+  window.addEventListener('deviceorientation', orientHandler);
+
+  document.getElementById('permScreen').style.display = 'none';
+  document.getElementById('starDisplay').style.display = 'block';
+  render();
+});
+</script>
+</body>
+</html>

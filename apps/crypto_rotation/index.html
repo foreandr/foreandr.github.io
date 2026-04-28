@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crypto Market Cap Rotation</title>
+<link rel="icon" type="image/x-icon" href="../../images.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Instrument+Serif:ital@0;1&family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:        #08080c;
+  --surface:   #101018;
+  --surface2:  #181824;
+  --surface3:  #20202e;
+  --border:    #2a2a3a;
+  --text:      #e8e8f0;
+  --text-dim:  #8888a0;
+  --text-muted:#4a4a62;
+  --accent:    #6ee7b7;
+  --accent2:   #38bdf8;
+  --accent3:   #f472b6;
+  --gold:      #fbbf24;
+  --red:       #f87171;
+  --green:     #4ade80;
+  --font-display: 'Instrument Serif', Georgia, serif;
+  --font-body:    'Manrope', system-ui, sans-serif;
+  --font-mono:    'DM Mono', 'Consolas', monospace;
+  --radius: 10px;
+}
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { font-size: 15px; }
+body {
+  background: var(--bg); color: var(--text);
+  font-family: var(--font-body); min-height: 100vh;
+  overflow-x: hidden; display: flex; flex-direction: column;
+}
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 0%, rgba(110,231,183,0.04) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 100%, rgba(251,191,36,0.03) 0%, transparent 60%);
+  pointer-events: none; z-index: 0;
+}
+nav {
+  position: sticky; top: 0; z-index: 100;
+  display: flex; align-items: center; gap: 16px;
+  padding: 0 28px; height: 52px;
+  background: rgba(8,8,12,.92); backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border); flex-shrink: 0;
+}
+.back-link { color: var(--text-dim); text-decoration: none; font-family: var(--font-mono); font-size: .82rem; transition: color .2s; }
+.back-link:before { content: '← '; }
+.back-link:hover { color: var(--accent); }
+.nav-title { font-family: var(--font-display); font-size: 1.05rem; }
+.nav-spacer { flex: 1; }
+.data-status { font-family: var(--font-mono); font-size: .72rem; color: var(--text-muted); }
+
+/* ── NO DATA SCREEN ── */
+#no-data {
+  position: relative; z-index: 1;
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  padding: 48px;
+}
+.no-data-box {
+  max-width: 560px; width: 100%;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; padding: 36px 40px; text-align: center;
+}
+.no-data-box h2 { font-family: var(--font-display); font-size: 1.6rem; margin-bottom: 14px; }
+.no-data-box p { color: var(--text-dim); font-size: .92rem; line-height: 1.75; margin-bottom: 16px; }
+.code-block {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 14px 18px; text-align: left; margin: 14px 0;
+}
+.code-block pre { font-family: var(--font-mono); font-size: .84rem; color: var(--accent); }
+
+/* ── MAIN LAYOUT ── */
+#app { display: none; position: relative; z-index: 1; flex: 1; flex-direction: column; }
+#app.ready { display: flex; }
+
+.app-header {
+  padding: 28px 28px 0;
+  display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+}
+.app-header h1 { font-family: var(--font-display); font-size: 2rem; font-weight: 400; }
+.app-header h1 em { color: var(--accent); font-style: italic; }
+
+/* ── CONTROLS ── */
+.controls {
+  padding: 20px 28px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+.ctrl-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 16px 18px;
+}
+.ctrl-label {
+  font-family: var(--font-mono); font-size: .68rem; text-transform: uppercase;
+  letter-spacing: .1em; color: var(--text-muted); margin-bottom: 10px; display: block;
+}
+.coin-selector {
+  display: flex; flex-wrap: wrap; gap: 6px; max-height: 120px; overflow-y: auto;
+}
+.coin-selector::-webkit-scrollbar { width: 4px; }
+.coin-selector::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+.coin-chip {
+  padding: 4px 10px; border-radius: 20px;
+  background: var(--surface2); border: 1px solid var(--border);
+  font-family: var(--font-mono); font-size: .72rem; cursor: pointer;
+  transition: all .15s; color: var(--text-dim);
+}
+.coin-chip.on { background: rgba(110,231,183,.12); border-color: var(--accent); color: var(--accent); }
+.coin-chip:hover:not(.on) { border-color: var(--text-muted); color: var(--text); }
+
+.ctrl-row { display: flex; align-items: center; gap: 10px; }
+.ctrl-input {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 7px; padding: 7px 12px;
+  font-family: var(--font-mono); font-size: .9rem; color: var(--text);
+  width: 100%; outline: none; transition: border-color .15s;
+}
+.ctrl-input:focus { border-color: var(--accent); }
+.ctrl-input-sm { width: 80px; }
+select.ctrl-input { cursor: pointer; }
+
+.run-btn {
+  width: 100%; padding: 11px;
+  background: var(--accent); color: var(--bg);
+  border: none; border-radius: 8px;
+  font-family: var(--font-mono); font-size: .82rem; font-weight: 700;
+  letter-spacing: .06em; cursor: pointer; transition: opacity .15s;
+}
+.run-btn:hover { opacity: .85; }
+
+/* ── RESULTS ── */
+.results { padding: 0 28px 32px; flex: 1; }
+
+.summary-row {
+  display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 24px;
+}
+.sum-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 16px 20px; flex: 1; min-width: 150px;
+}
+.sum-card .val { font-family: var(--font-display); font-size: 1.7rem; }
+.sum-card .lbl { font-family: var(--font-mono); font-size: .65rem; text-transform: uppercase; letter-spacing: .1em; color: var(--text-muted); margin-top: 4px; }
+.positive { color: var(--green); }
+.negative { color: var(--red); }
+.neutral  { color: var(--accent); }
+
+/* ── CHART ── */
+.chart-wrap {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 20px; margin-bottom: 20px;
+}
+.chart-title { font-family: var(--font-mono); font-size: .72rem; text-transform: uppercase; letter-spacing: .1em; color: var(--text-muted); margin-bottom: 14px; }
+canvas#chart { width: 100%; height: 320px; display: block; }
+
+/* ── TABLE ── */
+.table-wrap {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); overflow: hidden;
+}
+table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+th, td { padding: 10px 16px; text-align: left; border-bottom: 1px solid var(--border); }
+th { background: var(--surface2); font-family: var(--font-mono); font-size: .68rem; text-transform: uppercase; letter-spacing: .08em; color: var(--text-muted); }
+td:first-child { font-family: var(--font-mono); color: var(--accent); }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--surface2); }
+
+/* ── ALLOCATION PIE ── */
+.alloc-wrap {
+  display: grid; grid-template-columns: 200px 1fr; gap: 20px; align-items: center;
+  margin-bottom: 20px;
+}
+canvas#pie { width: 200px; height: 200px; }
+.alloc-legend { display: flex; flex-direction: column; gap: 6px; }
+.legend-row { display: flex; align-items: center; gap: 10px; font-size: .82rem; }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.legend-coin { color: var(--text); font-weight: 600; min-width: 60px; }
+.legend-pct  { color: var(--text-dim); font-family: var(--font-mono); }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="back-link" href="../../index.html">Home</a>
+  <span class="nav-title">Crypto Market Cap Rotation</span>
+  <div class="nav-spacer"></div>
+  <span class="data-status" id="dataStatus"></span>
+</nav>
+
+<!-- NO DATA STATE -->
+<div id="no-data">
+  <div class="no-data-box">
+    <h2>📡 Fetch the data first</h2>
+    <p>This app needs historical CoinMarketCap data. Run the Python script once to generate <code style="color:var(--accent)">crypto_history.js</code>, then reload this page.</p>
+    <div class="code-block">
+      <pre>pip install requests tqdm
+python fetch_data.py</pre>
+    </div>
+    <p>The script pulls monthly snapshots of the top 200 coins from 2010 to today (~a few minutes). Data is saved locally — no API key required.</p>
+  </div>
+</div>
+
+<!-- MAIN APP (hidden until data loads) -->
+<div id="app">
+  <div class="app-header">
+    <h1>Crypto Market Cap <em>Rotation</em></h1>
+  </div>
+
+  <div class="controls">
+    <!-- Coin selector -->
+    <div class="ctrl-card" style="grid-column: 1 / -1;">
+      <span class="ctrl-label">Coins to include (click to toggle)</span>
+      <div class="coin-selector" id="coinSelector"></div>
+    </div>
+
+    <!-- DCA settings -->
+    <div class="ctrl-card">
+      <span class="ctrl-label">Monthly DCA Amount ($)</span>
+      <input type="number" class="ctrl-input" id="dcaAmount" value="200" min="1" step="50">
+    </div>
+    <div class="ctrl-card">
+      <span class="ctrl-label">Rebalancing Strategy</span>
+      <select class="ctrl-input" id="strategy">
+        <option value="market_cap_weighted">Market-cap weighted (hold % = coin's share of total)</option>
+        <option value="equal_weight">Equal weighted (split evenly across selected coins)</option>
+        <option value="top1">Single coin — always hold #1 by market cap</option>
+        <option value="top3_equal">Top 3 only — equal weight</option>
+      </select>
+    </div>
+    <div class="ctrl-card">
+      <span class="ctrl-label">Date Range</span>
+      <div class="ctrl-row">
+        <input type="text" class="ctrl-input ctrl-input-sm" id="startDate" placeholder="2015-01">
+        <span style="color:var(--text-muted)">→</span>
+        <input type="text" class="ctrl-input ctrl-input-sm" id="endDate" placeholder="today">
+      </div>
+    </div>
+    <div class="ctrl-card" style="display:flex;align-items:flex-end;">
+      <button class="run-btn" id="runBtn">▶ Run Backtest</button>
+    </div>
+  </div>
+
+  <div class="results" id="results" style="display:none;">
+    <div class="summary-row" id="summaryRow"></div>
+
+    <div class="chart-wrap" style="margin-bottom:20px;">
+      <div class="chart-title">Portfolio Value Over Time</div>
+      <canvas id="chart"></canvas>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;">
+      <div class="chart-wrap" style="margin-bottom:0;">
+        <div class="chart-title">Current Allocation</div>
+        <div class="alloc-wrap" id="allocWrap">
+          <canvas id="pie"></canvas>
+          <div class="alloc-legend" id="allocLegend"></div>
+        </div>
+      </div>
+
+      <div class="chart-wrap" style="margin-bottom:0;">
+        <div class="chart-title">Market Dominance Over Time (%)</div>
+        <canvas id="domChart" style="width:100%;height:200px;display:block;"></canvas>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table id="resultTable">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Invested</th>
+            <th>Portfolio Value</th>
+            <th>P&L</th>
+            <th>Return %</th>
+            <th>Top Coin</th>
+            <th>Allocation this month</th>
+          </tr>
+        </thead>
+        <tbody id="resultBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────────────────────────
+// BOOTSTRAP — wait for CRYPTO_DATA global or show no-data
+// ─────────────────────────────────────────────────────────────────
+function init() {
+  if (typeof CRYPTO_DATA === 'undefined') {
+    document.getElementById('no-data').style.display = 'flex';
+    return;
+  }
+  document.getElementById('no-data').style.display = 'none';
+  document.getElementById('app').classList.add('ready');
+
+  // Support both YYYY-MM and YYYY-MM-DD date keys in series
+  // Normalise: series uses YYYY-MM keys; dates array may be YYYY-MM-DD
+  const labels = CRYPTO_DATA.date_labels || CRYPTO_DATA.dates.map(d => d.slice(0,7));
+  CRYPTO_DATA._labels = labels;  // YYYY-MM for series lookup
+
+  document.getElementById('dataStatus').textContent =
+    'Data: ' + labels[0] + ' → ' + labels[labels.length-1];
+  setupUI();
+}
+
+// ─────────────────────────────────────────────────────────────────
+// UI SETUP
+// ─────────────────────────────────────────────────────────────────
+const COIN_COLORS = [
+  '#f7931a','#627eea','#26a17b','#e84142','#f3ba2f','#00d4d5',
+  '#9945ff','#e91e63','#16c784','#ff6b35','#00b4d8','#f472b6',
+  '#a78bfa','#34d399','#fb923c','#60a5fa','#fbbf24','#c084fc',
+  '#4ade80','#f87171',
+];
+
+let selectedCoins = new Set();
+let allDates = [];
+let allCoins = {};  // symbol → {name}
+
+function setupUI() {
+  allDates = CRYPTO_DATA.dates;
+  allCoins = CRYPTO_DATA.coins;
+
+  // Use YYYY-MM labels for everything
+  allDates = CRYPTO_DATA._labels;
+
+  // Default: top coins that have data (most months covered)
+  const topByPresence = Object.entries(CRYPTO_DATA.series)
+    .map(([sym, ts]) => [sym, Object.keys(ts).length])
+    .sort((a,b) => b[1]-a[1])
+    .slice(0, 40)
+    .map(x => x[0]);
+
+  // Common defaults
+  const defaults = ['BTC','ETH','BNB','SOL','XRP','ADA','DOGE','LTC','XLM','LINK'];
+  defaults.forEach(s => { if (CRYPTO_DATA.series[s]) selectedCoins.add(s); });
+
+  const sel = document.getElementById('coinSelector');
+  topByPresence.forEach((sym, i) => {
+    const chip = document.createElement('div');
+    chip.className = 'coin-chip' + (selectedCoins.has(sym) ? ' on' : '');
+    chip.textContent = sym;
+    chip.title = (allCoins[sym] || {}).name || sym;
+    chip.dataset.sym = sym;
+    chip.addEventListener('click', () => {
+      if (selectedCoins.has(sym)) { selectedCoins.delete(sym); chip.classList.remove('on'); }
+      else { selectedCoins.add(sym); chip.classList.add('on'); }
+    });
+    sel.appendChild(chip);
+  });
+
+  // Date defaults — use YYYY-MM labels
+  const idx2015 = allDates.findIndex(d => d >= '2015-01');
+  document.getElementById('startDate').value = allDates[Math.max(0, idx2015)];
+  document.getElementById('endDate').value   = allDates[allDates.length-1];
+
+  document.getElementById('runBtn').addEventListener('click', runBacktest);
+}
+
+// ─────────────────────────────────────────────────────────────────
+// BACKTEST ENGINE
+// ─────────────────────────────────────────────────────────────────
+function runBacktest() {
+  const dca       = parseFloat(document.getElementById('dcaAmount').value) || 200;
+  const strategy  = document.getElementById('strategy').value;
+  const startD    = document.getElementById('startDate').value.trim();
+  const endD      = document.getElementById('endDate').value.trim();
+  const coins     = [...selectedCoins];
+
+  if (!coins.length) { alert('Select at least one coin.'); return; }
+
+  // Filter dates
+  const dates = allDates.filter(d => {
+    if (startD && d < startD) return false;
+    if (endD   && d > endD)   return false;
+    return true;
+  });
+  if (!dates.length) { alert('No data in that date range.'); return; }
+
+  // Holdings: {symbol: quantity}
+  const holdings = {};
+  coins.forEach(s => { holdings[s] = 0; });
+
+  const rows = [];
+  let totalInvested = 0;
+
+  for (const d of dates) {
+    // Get prices for this month — series keyed by YYYY-MM
+    const prices = {};
+    const mcs    = {};
+    let totalMC  = 0;
+    for (const sym of coins) {
+      const entry = (CRYPTO_DATA.series[sym] || {})[d];
+      if (entry && entry.p > 0) {
+        prices[sym] = entry.p;
+        mcs[sym]    = entry.mc;
+        totalMC    += entry.mc;
+      }
+    }
+
+    // Determine allocation weights
+    const weights = computeWeights(strategy, mcs, totalMC, coins, d);
+
+    // Portfolio value before DCA (using last known prices if needed)
+    let portfolioValue = 0;
+    for (const sym of coins) {
+      if (prices[sym]) portfolioValue += holdings[sym] * prices[sym];
+    }
+
+    // DCA: invest $dca according to weights
+    totalInvested += dca;
+    for (const sym of coins) {
+      const w = weights[sym] || 0;
+      if (w > 0 && prices[sym]) {
+        holdings[sym] += (dca * w) / prices[sym];
+      }
+    }
+
+    // Recalculate portfolio value after DCA
+    portfolioValue = 0;
+    for (const sym of coins) {
+      if (prices[sym]) portfolioValue += holdings[sym] * prices[sym];
+    }
+
+    const pnl    = portfolioValue - totalInvested;
+    const retPct = totalInvested > 0 ? (portfolioValue / totalInvested - 1) * 100 : 0;
+    const topCoin = Object.entries(mcs).sort((a,b) => b[1]-a[1])[0]?.[0] || '—';
+
+    // Allocation breakdown for this month
+    const allocBreakdown = coins
+      .filter(s => prices[s] && holdings[s] > 0)
+      .map(s => ({ sym: s, pct: portfolioValue > 0 ? holdings[s] * prices[s] / portfolioValue * 100 : 0 }))
+      .sort((a,b) => b.pct - a.pct)
+      .slice(0, 5);
+
+    rows.push({ d, totalInvested, portfolioValue, pnl, retPct, topCoin, weights, mcs, allocBreakdown });
+  }
+
+  renderResults(rows, coins, dca, strategy);
+}
+
+function computeWeights(strategy, mcs, totalMC, coins, d) {
+  const w = {};
+  const validCoins = coins.filter(s => mcs[s] > 0);
+  if (!validCoins.length) { coins.forEach(s => { w[s] = 0; }); return w; }
+
+  if (strategy === 'market_cap_weighted') {
+    validCoins.forEach(s => { w[s] = totalMC > 0 ? mcs[s] / totalMC : 0; });
+  } else if (strategy === 'equal_weight') {
+    const share = 1 / validCoins.length;
+    validCoins.forEach(s => { w[s] = share; });
+  } else if (strategy === 'top1') {
+    const top = validCoins.sort((a,b) => mcs[b]-mcs[a])[0];
+    validCoins.forEach(s => { w[s] = s === top ? 1 : 0; });
+  } else if (strategy === 'top3_equal') {
+    const top3 = [...validCoins].sort((a,b) => mcs[b]-mcs[a]).slice(0,3);
+    validCoins.forEach(s => { w[s] = top3.includes(s) ? 1/top3.length : 0; });
+  }
+  return w;
+}
+
+// ─────────────────────────────────────────────────────────────────
+// RENDER RESULTS
+// ─────────────────────────────────────────────────────────────────
+function renderResults(rows, coins, dca, strategy) {
+  document.getElementById('results').style.display = 'block';
+
+  const last = rows[rows.length-1];
+  const first = rows[0];
+  const totalInvested = last.totalInvested;
+  const finalValue    = last.portfolioValue;
+  const totalReturn   = (finalValue / totalInvested - 1) * 100;
+  const pnl           = finalValue - totalInvested;
+  const best          = Math.max(...rows.map(r => r.retPct));
+  const worst         = Math.min(...rows.map(r => r.retPct));
+
+  // Summary cards
+  document.getElementById('summaryRow').innerHTML = `
+    <div class="sum-card">
+      <div class="val ${finalValue>=totalInvested?'positive':'negative'}">$${fmtNum(finalValue)}</div>
+      <div class="lbl">Final Portfolio Value</div>
+    </div>
+    <div class="sum-card">
+      <div class="val neutral">$${fmtNum(totalInvested)}</div>
+      <div class="lbl">Total Invested ($${dca}/mo)</div>
+    </div>
+    <div class="sum-card">
+      <div class="val ${pnl>=0?'positive':'negative'}">${pnl>=0?'+':''}$${fmtNum(pnl)}</div>
+      <div class="lbl">Total P&L</div>
+    </div>
+    <div class="sum-card">
+      <div class="val ${totalReturn>=0?'positive':'negative'}">${totalReturn>=0?'+':''}${totalReturn.toFixed(1)}%</div>
+      <div class="lbl">Total Return</div>
+    </div>
+    <div class="sum-card">
+      <div class="val positive">${best.toFixed(1)}%</div>
+      <div class="lbl">Peak Return</div>
+    </div>`;
+
+  // Portfolio value chart
+  drawLineChart('chart', rows.map(r=>r.d), [
+    { label: 'Portfolio', values: rows.map(r=>r.portfolioValue), color: '#6ee7b7' },
+    { label: 'Invested',  values: rows.map(r=>r.totalInvested),  color: '#4a4a62', dash: true },
+  ]);
+
+  // Dominance chart (top 5 coins by avg MC)
+  const avgMC = {};
+  coins.forEach(s => {
+    const vals = rows.map(r => r.mcs[s] || 0);
+    avgMC[s] = vals.reduce((a,b)=>a+b,0) / vals.length;
+  });
+  const top5 = [...coins].sort((a,b) => avgMC[b]-avgMC[a]).slice(0, 5);
+  const domSeries = top5.map((sym, i) => ({
+    label: sym,
+    values: rows.map(r => {
+      const tot = Object.values(r.mcs).reduce((a,b)=>a+b,0);
+      return tot > 0 ? (r.mcs[sym]||0) / tot * 100 : 0;
+    }),
+    color: COIN_COLORS[i % COIN_COLORS.length],
+  }));
+  drawLineChart('domChart', rows.map(r=>r.d), domSeries);
+
+  // Pie: current allocation
+  const lastPrices = {};
+  coins.forEach(s => {
+    const entry = (CRYPTO_DATA.series[s] || {})[last.d];
+    if (entry) lastPrices[s] = entry.p;
+  });
+  const allocData = coins
+    .map((s,i) => ({ sym: s, val: (lastPrices[s]||0) * 0, color: COIN_COLORS[i%COIN_COLORS.length] }));
+  // Use last allocBreakdown
+  const lastAlloc = last.allocBreakdown;
+  drawPie('pie', lastAlloc.map((a,i) => ({ label: a.sym, value: a.pct, color: COIN_COLORS[coins.indexOf(a.sym) % COIN_COLORS.length || i] })));
+
+  // Legend
+  document.getElementById('allocLegend').innerHTML = lastAlloc.map((a,i) =>
+    `<div class="legend-row">
+      <div class="legend-dot" style="background:${COIN_COLORS[coins.indexOf(a.sym) % COIN_COLORS.length || i]}"></div>
+      <span class="legend-coin">${a.sym}</span>
+      <span class="legend-pct">${a.pct.toFixed(1)}%</span>
+    </div>`
+  ).join('');
+
+  // Table
+  const tbody = document.getElementById('resultBody');
+  tbody.innerHTML = '';
+  [...rows].reverse().slice(0, 60).forEach(r => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${r.d.slice(0,7)}</td>
+      <td>$${fmtNum(r.totalInvested)}</td>
+      <td>$${fmtNum(r.portfolioValue)}</td>
+      <td class="${r.pnl>=0?'positive':'negative'}">${r.pnl>=0?'+':''}$${fmtNum(r.pnl)}</td>
+      <td class="${r.retPct>=0?'positive':'negative'}">${r.retPct>=0?'+':''}${r.retPct.toFixed(1)}%</td>
+      <td>${r.topCoin}</td>
+      <td style="font-size:.78rem;color:var(--text-dim)">${r.allocBreakdown.map(a=>a.sym+'('+a.pct.toFixed(0)+'%)').join(' ')}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+// ─────────────────────────────────────────────────────────────────
+// CHARTING
+// ─────────────────────────────────────────────────────────────────
+function drawLineChart(id, labels, series) {
+  const canvas = document.getElementById(id);
+  const dpr = devicePixelRatio;
+  const W = canvas.parentElement.clientWidth - 40;
+  const H = parseInt(canvas.style.height) || 320;
+  canvas.width  = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.width  = W + 'px';
+  canvas.style.height = H + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  const pad = { t:20, r:20, b:40, l:68 };
+  const cw = W - pad.l - pad.r;
+  const ch = H - pad.t - pad.b;
+
+  const allVals = series.flatMap(s => s.values).filter(v=>isFinite(v));
+  const minV = Math.min(...allVals, 0);
+  const maxV = Math.max(...allVals, 1);
+  const range = maxV - minV || 1;
+
+  function fx(i) { return pad.l + (i / (labels.length-1)) * cw; }
+  function fy(v) { return pad.t + ch - ((v - minV) / range) * ch; }
+
+  // Grid
+  ctx.strokeStyle = 'rgba(42,42,58,.7)';
+  ctx.lineWidth = 1;
+  for (let i=0; i<=4; i++) {
+    const y = pad.t + (i/4)*ch;
+    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(pad.l+cw, y); ctx.stroke();
+    const v = maxV - (i/4)*range;
+    ctx.fillStyle = 'rgba(136,136,160,.7)';
+    ctx.font = '10px DM Mono,monospace';
+    ctx.textAlign = 'right';
+    ctx.fillText('$'+fmtNum(v), pad.l-6, y+4);
+  }
+  // X labels
+  const step = Math.ceil(labels.length / 8);
+  labels.forEach((l, i) => {
+    if (i % step !== 0) return;
+    ctx.fillStyle = 'rgba(136,136,160,.7)';
+    ctx.font = '10px DM Mono,monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(l.slice(0,7), fx(i), H-pad.b+16);
+  });
+
+  // Lines
+  series.forEach(s => {
+    ctx.save();
+    ctx.strokeStyle = s.color;
+    ctx.lineWidth   = 2;
+    if (s.dash) ctx.setLineDash([5,5]);
+    ctx.beginPath();
+    s.values.forEach((v,i) => {
+      if (!isFinite(v)) return;
+      i===0 ? ctx.moveTo(fx(i), fy(v)) : ctx.lineTo(fx(i), fy(v));
+    });
+    ctx.stroke();
+
+    // Fill under main line
+    if (!s.dash) {
+      ctx.globalAlpha = 0.08;
+      ctx.fillStyle   = s.color;
+      ctx.lineTo(fx(s.values.length-1), pad.t+ch);
+      ctx.lineTo(fx(0), pad.t+ch);
+      ctx.closePath();
+      ctx.fill();
+    }
+    ctx.restore();
+  });
+}
+
+function drawPie(id, slices) {
+  const canvas = document.getElementById(id);
+  const size = 200;
+  canvas.width = canvas.height = size * devicePixelRatio;
+  canvas.style.width = canvas.style.height = size + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(devicePixelRatio, devicePixelRatio);
+
+  const cx = size/2, cy = size/2, r = size*0.4;
+  const total = slices.reduce((a,s)=>a+s.value,0)||1;
+  let angle = -Math.PI/2;
+  slices.forEach(s => {
+    const arc = (s.value/total) * Math.PI*2;
+    ctx.beginPath();
+    ctx.moveTo(cx,cy);
+    ctx.arc(cx,cy,r,angle,angle+arc);
+    ctx.closePath();
+    ctx.fillStyle = s.color;
+    ctx.fill();
+    ctx.strokeStyle = '#08080c';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    angle += arc;
+  });
+  // Center hole
+  ctx.beginPath();
+  ctx.arc(cx,cy,r*0.55,0,Math.PI*2);
+  ctx.fillStyle = '#101018';
+  ctx.fill();
+}
+
+function fmtNum(n) {
+  if (!isFinite(n)) return '—';
+  if (Math.abs(n) >= 1e9) return (n/1e9).toFixed(2)+'B';
+  if (Math.abs(n) >= 1e6) return (n/1e6).toFixed(2)+'M';
+  if (Math.abs(n) >= 1e3) return (n/1e3).toFixed(1)+'K';
+  return n.toFixed(2);
+}
+
+// Try to load data file (works if served via http, not file://)
+const script = document.createElement('script');
+script.src = './crypto_history.js';
+script.onload = init;
+script.onerror = init;   // init() handles the no-data case
+document.head.appendChild(script);
+</script>
+</body>
+</html>

@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ArXiv Zeitgeist — Research Trend Explorer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="icon" type="image/x-icon" href="../../images.ico">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Instrument+Serif:ital@0;1&family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #08080c;
+  --surface: #101018;
+  --surface2: #181824;
+  --surface3: #20202e;
+  --border: #2a2a3a;
+  --border-light: #3a3a50;
+  --text: #e8e8f0;
+  --text-dim: #888898;
+  --text-muted: #55556a;
+  --accent: #6ee7b7;
+  --accent2: #38bdf8;
+  --accent3: #f472b6;
+  --accent4: #fbbf24;
+  --hot: #ef4444;
+  --warm: #f97316;
+  --font-display: 'Instrument Serif', Georgia, serif;
+  --font-body: 'Manrope', system-ui, sans-serif;
+  --font-mono: 'DM Mono', 'Consolas', monospace;
+  --radius: 8px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { font-size: 15px; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: 
+    radial-gradient(ellipse 80% 50% at 20% 0%, rgba(110,231,183,0.04) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 100%, rgba(56,189,248,0.03) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── HEADER ── */
+header {
+  position: relative; z-index: 1;
+  padding: 48px 48px 0;
+  max-width: 1440px; margin: 0 auto;
+}
+
+.header-top {
+  display: flex; align-items: baseline; gap: 20px; margin-bottom: 8px;
+}
+
+h1 {
+  font-family: var(--font-display);
+  font-size: 3.2rem; font-weight: 400;
+  letter-spacing: -0.02em; line-height: 1;
+}
+
+h1 em { font-style: italic; color: var(--accent); }
+
+.header-meta {
+  font-family: var(--font-mono); font-size: 0.7rem;
+  color: var(--text-muted); letter-spacing: 0.08em;
+  text-transform: uppercase; padding-bottom: 4px;
+}
+
+.subtitle {
+  font-size: 1.05rem; color: var(--text-dim); font-weight: 300;
+  margin-bottom: 32px; max-width: 600px; line-height: 1.5;
+}
+
+/* ── STATS ── */
+.stats-row { display: flex; gap: 24px; margin-bottom: 36px; flex-wrap: wrap; }
+
+.stat-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 14px 22px; min-width: 130px;
+}
+.stat-card .label {
+  font-family: var(--font-mono); font-size: 0.58rem;
+  text-transform: uppercase; letter-spacing: 0.12em;
+  color: var(--text-muted); margin-bottom: 4px;
+}
+.stat-card .value {
+  font-family: var(--font-display); font-size: 1.6rem;
+}
+
+/* ── CONTROLS ── */
+.controls-section {
+  position: relative; z-index: 1;
+  max-width: 1440px; margin: 0 auto; padding: 0 48px 32px;
+}
+
+.control-bar {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 24px 28px;
+}
+
+.control-row {
+  display: flex; align-items: center; gap: 24px; flex-wrap: wrap;
+}
+
+.control-group { display: flex; flex-direction: column; gap: 6px; }
+
+.control-label {
+  font-family: var(--font-mono); font-size: 0.58rem;
+  text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-muted);
+}
+
+.range-display {
+  font-family: var(--font-display); font-size: 1.3rem;
+  color: var(--accent); min-width: 220px;
+}
+.range-display .arrow { color: var(--text-muted); margin: 0 8px; font-size: 1rem; }
+
+/* DUAL RANGE */
+.slider-container {
+  flex: 1; min-width: 280px; position: relative; height: 48px;
+  display: flex; align-items: center;
+}
+
+.slider-track {
+  position: relative; width: 100%; height: 4px;
+  background: var(--surface3); border-radius: 2px;
+}
+
+.slider-fill {
+  position: absolute; height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  border-radius: 2px; transition: left 0.1s, width 0.1s;
+}
+
+.slider-track input[type="range"] {
+  position: absolute; width: 100%; top: -8px; height: 20px;
+  -webkit-appearance: none; appearance: none;
+  background: none; pointer-events: none; margin: 0;
+}
+
+.slider-track input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%;
+  background: var(--accent); border: 3px solid var(--bg);
+  cursor: pointer; pointer-events: all;
+  box-shadow: 0 0 12px rgba(110,231,183,0.3);
+  transition: transform 0.15s;
+}
+.slider-track input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.2); box-shadow: 0 0 20px rgba(110,231,183,0.5);
+}
+.slider-track input[type="range"]::-moz-range-thumb {
+  width: 20px; height: 20px; border-radius: 50%;
+  background: var(--accent); border: 3px solid var(--bg);
+  cursor: pointer; pointer-events: all;
+}
+
+/* Toggles */
+.toggle-group {
+  display: flex; background: var(--bg);
+  border-radius: 6px; overflow: hidden; border: 1px solid var(--border);
+}
+
+.toggle-btn {
+  padding: 8px 14px; background: none; border: none;
+  color: var(--text-dim); font-family: var(--font-mono);
+  font-size: 0.62rem; text-transform: uppercase;
+  letter-spacing: 0.08em; cursor: pointer; transition: all 0.2s;
+}
+.toggle-btn.active { background: var(--accent); color: var(--bg); }
+.toggle-btn:hover:not(.active) { background: var(--surface3); color: var(--text); }
+
+/* ── MAIN GRID ── */
+.main-content {
+  position: relative; z-index: 1;
+  max-width: 1440px; margin: 0 auto; padding: 0 48px 80px;
+  display: grid; grid-template-columns: 1fr 380px; gap: 24px;
+}
+
+/* ── RANKING ── */
+.ranking-panel {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; overflow: hidden;
+}
+
+.panel-header {
+  padding: 18px 24px 14px; border-bottom: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.panel-title { font-family: var(--font-display); font-size: 1.25rem; }
+.panel-count {
+  font-family: var(--font-mono); font-size: 0.62rem;
+  color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em;
+}
+
+.ranking-list { padding: 6px 0; max-height: 72vh; overflow-y: auto; }
+.ranking-list::-webkit-scrollbar { width: 5px; }
+.ranking-list::-webkit-scrollbar-track { background: transparent; }
+.ranking-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+.rank-item {
+  display: grid; grid-template-columns: 36px 1fr 72px 72px;
+  align-items: center; padding: 9px 24px; gap: 12px;
+  cursor: pointer; transition: background 0.15s;
+}
+.rank-item:hover { background: var(--surface2); }
+.rank-item.selected { background: var(--surface2); box-shadow: inset 3px 0 0 var(--accent); }
+
+.rank-num { font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-muted); text-align: right; }
+.rank-num.top3 { color: var(--accent); font-weight: 500; }
+
+.rank-term {
+  font-weight: 500; font-size: 0.88rem;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.rank-term.bigram { color: var(--accent2); }
+
+.rank-bar-cell {
+  position: relative; height: 5px;
+  background: var(--surface3); border-radius: 3px; overflow: hidden;
+}
+.rank-bar { height: 100%; border-radius: 3px; transition: width 0.4s ease; }
+
+.rank-count { font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-dim); text-align: right; }
+
+.bar-hot { background: linear-gradient(90deg, var(--hot), var(--warm)); }
+.bar-warm { background: linear-gradient(90deg, var(--warm), var(--accent4)); }
+.bar-accent { background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+.bar-cool { background: linear-gradient(90deg, var(--accent2), #818cf8); }
+.bar-muted { background: var(--border-light); }
+
+/* ── DETAIL ── */
+.detail-panel { display: flex; flex-direction: column; gap: 16px; }
+
+.detail-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 24px;
+  position: sticky; top: 20px;
+}
+
+.detail-card h3 { font-family: var(--font-display); font-size: 1.15rem; margin-bottom: 4px; }
+
+.detail-term {
+  font-family: var(--font-mono); font-size: 1.05rem;
+  color: var(--accent); margin-bottom: 12px; display: block;
+}
+
+.detail-stat {
+  display: flex; justify-content: space-between;
+  padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 0.82rem;
+}
+.detail-stat .dl { color: var(--text-muted); }
+.detail-stat .dv { font-family: var(--font-mono); }
+
+.sample-list { list-style: none; margin-top: 14px; display: flex; flex-direction: column; gap: 8px; }
+
+.sample-item {
+  padding: 10px 12px; background: var(--bg);
+  border: 1px solid var(--border); border-radius: 6px; transition: border-color 0.2s;
+}
+.sample-item:hover { border-color: var(--accent); }
+.sample-item a {
+  color: var(--text); text-decoration: none; font-size: 0.78rem; line-height: 1.45; display: block;
+}
+.sample-item a:hover { color: var(--accent); }
+.sample-item .paper-id {
+  font-family: var(--font-mono); font-size: 0.58rem; color: var(--text-muted); margin-top: 3px;
+}
+
+/* Sparkline */
+.sparkline-section { margin-top: 14px; }
+.sparkline-label {
+  font-family: var(--font-mono); font-size: 0.58rem;
+  color: var(--text-muted); text-transform: uppercase;
+  letter-spacing: 0.08em; margin-bottom: 6px;
+}
+canvas.sparkline { width: 100%; height: 56px; display: block; }
+
+/* Empty / No data */
+.empty-state {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; height: 260px; color: var(--text-muted); text-align: center;
+}
+.empty-state .empty-icon { font-size: 2.5rem; margin-bottom: 12px; opacity: 0.3; }
+.empty-state p { font-size: 0.82rem; line-height: 1.6; }
+
+.no-data-overlay {
+  position: fixed; inset: 0; z-index: 100; background: var(--bg);
+  display: flex; align-items: center; justify-content: center;
+}
+.no-data-box { text-align: center; max-width: 480px; }
+.no-data-box h2 { font-family: var(--font-display); font-size: 2rem; margin-bottom: 16px; }
+.no-data-box p { color: var(--text-dim); line-height: 1.7; margin-bottom: 10px; font-size: 0.88rem; }
+.no-data-box code {
+  font-family: var(--font-mono); background: var(--surface2);
+  padding: 2px 8px; border-radius: 4px; font-size: 0.78rem; color: var(--accent);
+}
+
+.back-button {
+  display: inline-block;
+  margin-left: auto;
+  padding: 6px 16px;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: 5px;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.back-button:hover {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+@keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+.animate-in { animation: fadeIn 0.4s ease both; }
+
+@media (max-width: 960px) {
+  header, .controls-section, .main-content { padding-left: 20px; padding-right: 20px; }
+  h1 { font-size: 2.2rem; }
+  .main-content { grid-template-columns: 1fr; }
+  .range-display { min-width: auto; }
+  .detail-card { position: static; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <h1>ArXiv <em>Zeitgeist</em></h1>
+    <span class="header-meta" id="headerMeta">loading…</span>
+    <a class="back-button" href="../../index.html">← Back to Home</a>
+  </div>
+  <p class="subtitle">
+    Explore what the research community is studying — 
+    track the most frequent terms in paper titles across time.
+  </p>
+  <div class="stats-row" id="statsRow"></div>
+</header>
+
+<div class="controls-section">
+  <div class="control-bar">
+    <div class="control-row">
+      <div class="control-group">
+        <span class="control-label">Time Range</span>
+        <div class="range-display" id="rangeDisplay">—</div>
+      </div>
+      <div class="slider-container">
+        <div class="slider-track" id="sliderTrack">
+          <div class="slider-fill" id="sliderFill"></div>
+          <input type="range" id="sliderMin" min="0" max="1" value="0" step="1">
+          <input type="range" id="sliderMax" min="0" max="1" value="1" step="1">
+        </div>
+      </div>
+      <div class="control-group">
+        <span class="control-label">View</span>
+        <div class="toggle-group">
+          <button class="toggle-btn active" data-mode="unigrams" onclick="setMode('unigrams')">Words</button>
+          <button class="toggle-btn" data-mode="bigrams" onclick="setMode('bigrams')">Phrases</button>
+          <button class="toggle-btn" data-mode="both" onclick="setMode('both')">Both</button>
+        </div>
+      </div>
+      <div class="control-group">
+        <span class="control-label">Show</span>
+        <div class="toggle-group">
+          <button class="toggle-btn active" data-count="50" onclick="setCount(50)">50</button>
+          <button class="toggle-btn" data-count="100" onclick="setCount(100)">100</button>
+          <button class="toggle-btn" data-count="200" onclick="setCount(200)">All</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="main-content">
+  <div class="ranking-panel" id="rankingPanel">
+    <div class="panel-header">
+      <span class="panel-title" id="panelTitle">Top Terms</span>
+      <span class="panel-count" id="panelCount"></span>
+    </div>
+    <div class="ranking-list" id="rankingList"></div>
+  </div>
+  <div class="detail-panel" id="detailPanel">
+    <div class="detail-card">
+      <div class="empty-state" id="emptyDetail">
+        <div class="empty-icon">◎</div>
+        <p>Select a term from the ranking<br>to see sample papers and trends</p>
+      </div>
+      <div id="detailContent" style="display:none;"></div>
+    </div>
+  </div>
+</div>
+
+<div class="no-data-overlay" id="noDataOverlay" style="display:none;">
+  <div class="no-data-box">
+    <h2>No data loaded</h2>
+    <p>Place <code>arxiv_data.js</code> in the same folder as this HTML file.</p>
+    <p>Generate it by running:</p>
+    <p><code>python3 process_arxiv.py</code></p>
+  </div>
+</div>
+
+<script src="arxiv_data.js"></script>
+<script>
+(() => {
+  'use strict';
+
+  if (typeof ARXIV_DATA === 'undefined') {
+    document.getElementById('noDataOverlay').style.display = 'flex';
+    return;
+  }
+
+  const DATA = ARXIV_DATA;
+  const allMonths = Object.keys(DATA.months).sort();
+  if (!allMonths.length) { document.getElementById('noDataOverlay').style.display='flex'; return; }
+
+  let state = { minIdx: 0, maxIdx: allMonths.length-1, mode: 'unigrams', showCount: 50, selectedTerm: null };
+
+  const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const fmtMonth = k => { const [y,m]=k.split('-'); return MONTH_NAMES[+m-1]+' '+y; };
+  const fmtNum = n => n>=1e6?(n/1e6).toFixed(1)+'M':n>=1e3?(n/1e3).toFixed(1)+'K':n.toLocaleString();
+  const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+  // ── HEADER ──
+  function initHeader() {
+    const m = DATA.meta;
+    document.getElementById('headerMeta').textContent =
+      `${fmtNum(m.totalPapers)} papers · ${m.totalMonths} months`;
+
+    const topTerm = DATA.globalUnigrams[0]?.term || '—';
+    const topPhrase = DATA.globalBigrams[0]?.term || '—';
+    document.getElementById('statsRow').innerHTML = [
+      { l:'Total Papers', v:fmtNum(m.totalPapers) },
+      { l:'Time Span', v:`${fmtMonth(m.monthRange[0])} — ${fmtMonth(m.monthRange[1])}` },
+      { l:'Months Covered', v:m.totalMonths },
+      { l:'#1 Word', v:topTerm },
+      { l:'#1 Phrase', v:topPhrase },
+    ].map((s,i) => `<div class="stat-card animate-in" style="animation-delay:${i*60}ms"><div class="label">${s.l}</div><div class="value">${esc(String(s.v))}</div></div>`).join('');
+  }
+
+  // ── SLIDER ──
+  function initSlider() {
+    const sMin = document.getElementById('sliderMin'), sMax = document.getElementById('sliderMax');
+    const mx = allMonths.length-1;
+    sMin.max = sMax.max = mx; sMin.value = 0; sMax.value = mx;
+
+    sMin.addEventListener('input', () => {
+      let v = +sMin.value; if(v>state.maxIdx){v=state.maxIdx;sMin.value=v;} state.minIdx=v; syncSlider();
+    });
+    sMax.addEventListener('input', () => {
+      let v = +sMax.value; if(v<state.minIdx){v=state.minIdx;sMax.value=v;} state.maxIdx=v; syncSlider();
+    });
+    syncSlider();
+  }
+
+  function syncSlider() {
+    const fill = document.getElementById('sliderFill');
+    const mx = allMonths.length-1||1;
+    fill.style.left = (state.minIdx/mx*100)+'%';
+    fill.style.width = ((state.maxIdx-state.minIdx)/mx*100)+'%';
+    document.getElementById('rangeDisplay').innerHTML =
+      `${fmtMonth(allMonths[state.minIdx])}<span class="arrow">→</span>${fmtMonth(allMonths[state.maxIdx])}`;
+    renderRanking();
+  }
+
+  // ── AGGREGATE ──
+  function getAgg() {
+    const uC={}, bC={}; let tp=0; const sm={};
+    for(let i=state.minIdx;i<=state.maxIdx;i++){
+      const md=DATA.months[allMonths[i]]; if(!md)continue; tp+=md.paperCount;
+      for(const x of md.unigrams){uC[x.term]=(uC[x.term]||0)+x.count; if(!sm[x.term]&&md.samples[x.term])sm[x.term]=md.samples[x.term];}
+      for(const x of md.bigrams){bC[x.term]=(bC[x.term]||0)+x.count; if(!sm[x.term]&&md.samples[x.term])sm[x.term]=md.samples[x.term];}
+    }
+    const s=obj=>Object.entries(obj).map(([t,c])=>({term:t,count:c,isBigram:t.includes(' ')})).sort((a,b)=>b.count-a.count);
+    return {unigrams:s(uC), bigrams:s(bC), totalPapers:tp, samples:sm};
+  }
+
+  // ── RENDER RANKING ──
+  function renderRanking() {
+    const agg = getAgg();
+    let items;
+    if(state.mode==='unigrams') items=agg.unigrams;
+    else if(state.mode==='bigrams') items=agg.bigrams;
+    else {
+      const dd={}; for(const x of [...agg.unigrams,...agg.bigrams]) if(!dd[x.term]||dd[x.term].count<x.count)dd[x.term]=x;
+      items=Object.values(dd).sort((a,b)=>b.count-a.count);
+    }
+    items = items.slice(0, state.showCount);
+    const maxC = items[0]?.count||1;
+    const list = document.getElementById('rankingList');
+
+    document.getElementById('panelTitle').textContent =
+      state.mode==='unigrams'?'Top Words':state.mode==='bigrams'?'Top Phrases':'All Terms';
+    document.getElementById('panelCount').textContent =
+      `${items.length} terms · ${fmtNum(agg.totalPapers)} papers`;
+
+    if(!items.length){ list.innerHTML='<div class="empty-state"><div class="empty-icon">∅</div><p>No terms in this range</p></div>'; return; }
+
+    list.innerHTML = items.map((it,idx) => {
+      const pct=(it.count/maxC*100);
+      const bc = idx<3?'bar-hot':idx<10?'bar-warm':idx<25?'bar-accent':idx<50?'bar-cool':'bar-muted';
+      const nc = idx<3?'rank-num top3':'rank-num';
+      const sc = it.term===state.selectedTerm?' selected':'';
+      const tc = it.isBigram?' bigram':'';
+      const termSafe = esc(it.term).replace(/'/g,"\\'");
+      return `<div class="rank-item${sc}" data-term="${esc(it.term)}" onclick="selectTerm('${termSafe}')">
+        <span class="${nc}">${idx+1}</span>
+        <span class="rank-term${tc}">${esc(it.term)}</span>
+        <div class="rank-bar-cell"><div class="rank-bar ${bc}" style="width:${pct}%"></div></div>
+        <span class="rank-count">${fmtNum(it.count)}</span>
+      </div>`;
+    }).join('');
+
+    if(state.selectedTerm){
+      const f=items.find(i=>i.term===state.selectedTerm);
+      if(f) renderDetail(state.selectedTerm,f.count,agg.samples[state.selectedTerm]||[],items);
+    }
+  }
+
+  // ── SELECT TERM ──
+  window.selectTerm = function(term) {
+    state.selectedTerm = term;
+    document.querySelectorAll('.rank-item').forEach(el=>el.classList.toggle('selected',el.dataset.term===term));
+    const agg=getAgg(); const all=[...agg.unigrams,...agg.bigrams];
+    const m=all.find(i=>i.term===term); const c=m?m.count:0;
+    let pool; if(state.mode==='bigrams')pool=agg.bigrams; else if(state.mode==='unigrams')pool=agg.unigrams;
+    else { const dd={}; for(const x of all)if(!dd[x.term]||dd[x.term].count<x.count)dd[x.term]=x; pool=Object.values(dd).sort((a,b)=>b.count-a.count); }
+    renderDetail(term,c,agg.samples[term]||[],pool);
+  };
+
+  function renderDetail(term, count, samples, pool) {
+    document.getElementById('emptyDetail').style.display='none';
+    const dc=document.getElementById('detailContent'); dc.style.display='block';
+
+    const trend=[]; for(let i=0;i<allMonths.length;i++){
+      const md=DATA.months[allMonths[i]]; let c=0;
+      if(md){const u=md.unigrams.find(x=>x.term===term); const b=md.bigrams.find(x=>x.term===term); c=(u?.count||0)+(b?.count||0);}
+      trend.push({month:allMonths[i],count:c});
+    }
+    const rank = pool ? pool.findIndex(i=>i.term===term)+1 : 0;
+    const monthsPresent = trend.filter(t=>t.count>0).length;
+    const peakMonth = trend.reduce((a,b)=>b.count>a.count?b:a,{count:0});
+
+    dc.innerHTML = `
+      <h3>Term Details</h3>
+      <span class="detail-term">${esc(term)}</span>
+      <div class="detail-stat"><span class="dl">Rank</span><span class="dv">#${rank||'—'}</span></div>
+      <div class="detail-stat"><span class="dl">Occurrences</span><span class="dv">${fmtNum(count)}</span></div>
+      <div class="detail-stat"><span class="dl">Months present</span><span class="dv">${monthsPresent} / ${allMonths.length}</span></div>
+      <div class="detail-stat"><span class="dl">Peak month</span><span class="dv">${peakMonth.count>0?fmtMonth(peakMonth.month)+' ('+peakMonth.count+')':'—'}</span></div>
+      <div class="sparkline-section">
+        <div class="sparkline-label">Trend (all months)</div>
+        <canvas class="sparkline" id="sparkCanvas"></canvas>
+      </div>
+      ${samples.length?`<div style="margin-top:18px;"><div class="sparkline-label">Sample Papers</div><ul class="sample-list">
+        ${samples.map(s=>`<li class="sample-item"><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title)}</a><div class="paper-id">${s.url.split('/').pop()}</div></li>`).join('')}
+      </ul></div>`:''}`;
+    requestAnimationFrame(()=>drawSparkline(trend));
+  }
+
+  function drawSparkline(trend) {
+    const canvas=document.getElementById('sparkCanvas'); if(!canvas)return;
+    const dpr=devicePixelRatio||1; const r=canvas.getBoundingClientRect();
+    canvas.width=r.width*dpr; canvas.height=r.height*dpr;
+    const ctx=canvas.getContext('2d'); ctx.scale(dpr,dpr);
+    const w=r.width, h=r.height, vals=trend.map(t=>t.count), mx=Math.max(...vals,1);
+    const p={t:4,b:4,l:2,r:2}, pw=w-p.l-p.r, ph=h-p.t-p.b;
+
+    // Range highlight
+    const rl=p.l+(state.minIdx/(vals.length-1||1))*pw;
+    const rr=p.l+(state.maxIdx/(vals.length-1||1))*pw;
+    ctx.fillStyle='rgba(110,231,183,0.1)'; ctx.fillRect(rl,0,rr-rl,h);
+
+    // Line
+    ctx.beginPath(); ctx.strokeStyle='#6ee7b7'; ctx.lineWidth=1.5; ctx.lineJoin='round';
+    vals.forEach((v,i)=>{
+      const x=p.l+(i/(vals.length-1||1))*pw, y=p.t+ph-(v/mx)*ph;
+      i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+    });
+    ctx.stroke();
+
+    // Fill
+    ctx.lineTo(p.l+pw, p.t+ph); ctx.lineTo(p.l, p.t+ph); ctx.closePath();
+    ctx.fillStyle='rgba(110,231,183,0.06)'; ctx.fill();
+  }
+
+  // ── TOGGLES ──
+  window.setMode = function(mode) {
+    state.mode=mode; state.selectedTerm=null;
+    document.querySelectorAll('[data-mode]').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));
+    document.getElementById('emptyDetail').style.display=''; document.getElementById('detailContent').style.display='none';
+    renderRanking();
+  };
+  window.setCount = function(c) {
+    state.showCount=c;
+    document.querySelectorAll('[data-count]').forEach(b=>b.classList.toggle('active',+b.dataset.count===c));
+    renderRanking();
+  };
+
+  initHeader(); initSlider();
+})();
+</script>
+</body>
+</html>

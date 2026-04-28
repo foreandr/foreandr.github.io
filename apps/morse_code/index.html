@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Morse Code</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0b0c10;--s1:#12141c;--s2:#1a1d28;--s3:#222538;
+  --border:#2a2e48;--border2:#3a3f60;
+  --text:#e8eaff;--dim:#6870a8;--dimmer:#363a60;
+  --accent:#f5a623;--cyan:#22ddff;--green:#22dd88;--red:#ff4466;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);
+  font-family:'Segoe UI',system-ui,sans-serif;overflow:hidden}
+
+/* ── HEADER ── */
+header{height:50px;background:var(--s1);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 20px;gap:14px}
+.logo{font-size:18px;font-weight:900;letter-spacing:2px;
+  background:linear-gradient(90deg,var(--accent),#ffcc44);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.logo-sub{font-size:11px;color:var(--dim);letter-spacing:3px;text-transform:uppercase;margin-left:2px}
+.header-tabs{display:flex;gap:4px;margin-left:auto}
+.htab{background:none;border:1px solid var(--border);border-radius:6px;color:var(--dim);
+  font-size:11px;padding:5px 14px;cursor:pointer;font-family:inherit;letter-spacing:.5px;
+  text-transform:uppercase;transition:all .15s}
+.htab:hover{border-color:var(--accent);color:var(--accent)}
+.htab.active{background:rgba(245,166,35,.12);border-color:var(--accent);color:var(--accent)}
+
+/* ── LAYOUT ── */
+.layout{display:flex;height:calc(100vh - 50px)}
+.main{flex:1;display:flex;flex-direction:column;padding:20px;gap:16px;overflow-y:auto;min-width:0}
+.sidebar{width:260px;flex-shrink:0;background:var(--s1);border-left:1px solid var(--border);
+  padding:16px;overflow-y:auto;display:flex;flex-direction:column;gap:14px}
+
+/* ── LAMP ── */
+.lamp-wrap{display:flex;justify-content:center;margin-bottom:4px}
+.lamp{width:72px;height:72px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#2a2510,#111);
+  border:3px solid #2a2200;box-shadow:0 0 0 3px #1a1500;
+  transition:background .02s,box-shadow .02s;flex-shrink:0;cursor:default}
+.lamp.on{background:radial-gradient(circle at 35% 35%,#fff7cc,#f5a623 40%,#cc7700);
+  border-color:#f5a623;box-shadow:0 0 30px 10px rgba(245,166,35,.6),0 0 60px 20px rgba(245,166,35,.25)}
+
+/* ── SPEED / CONTROLS ── */
+.controls-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.ctrl-label{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--dim);white-space:nowrap}
+.ctrl-val{font-size:13px;font-weight:700;color:var(--text);min-width:40px}
+input[type=range]{accent-color:var(--accent)}
+.play-btn{background:var(--accent);border:none;border-radius:8px;color:#000;
+  font-size:12px;font-weight:800;padding:8px 18px;cursor:pointer;font-family:inherit;
+  letter-spacing:1px;text-transform:uppercase;transition:all .15s}
+.play-btn:hover{opacity:.85}
+.play-btn:disabled{opacity:.4;cursor:default}
+.stop-btn{background:none;border:1px solid var(--red);border-radius:8px;color:var(--red);
+  font-size:12px;font-weight:700;padding:8px 14px;cursor:pointer;font-family:inherit;
+  letter-spacing:1px;text-transform:uppercase;transition:all .15s}
+.stop-btn:hover{background:rgba(255,68,102,.1)}
+
+/* ── TEXT PANELS ── */
+.panel{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:16px}
+.panel-label{font-size:9px;text-transform:uppercase;letter-spacing:2px;color:var(--dim);margin-bottom:10px}
+textarea{width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;
+  color:var(--text);font-family:inherit;font-size:14px;padding:12px;resize:none;outline:none;
+  line-height:1.6;transition:border-color .15s}
+textarea:focus{border-color:var(--accent)}
+.morse-display{min-height:60px;background:var(--s2);border:1px solid var(--border);border-radius:8px;
+  padding:12px;font-family:'Courier New',monospace;font-size:15px;font-weight:700;
+  color:var(--accent);line-height:1.8;letter-spacing:2px;word-break:break-word;cursor:default;
+  user-select:all}
+.morse-display .hit{color:#fff;background:rgba(245,166,35,.25);border-radius:3px;padding:0 1px;
+  transition:all .1s}
+.copy-row{display:flex;justify-content:flex-end;margin-top:6px}
+.copy-btn{background:none;border:1px solid var(--border);border-radius:6px;color:var(--dim);
+  font-size:10px;padding:4px 10px;cursor:pointer;font-family:inherit;transition:all .15s}
+.copy-btn:hover{border-color:var(--cyan);color:var(--cyan)}
+
+/* ── DECODE PANEL ── */
+.decode-row{display:flex;gap:10px;align-items:flex-start}
+.decode-row textarea{flex:1}
+.decode-result{flex:1;min-height:80px;background:var(--s2);border:1px solid var(--border);
+  border-radius:8px;padding:12px;font-size:16px;font-weight:600;color:var(--green);
+  line-height:1.6;word-break:break-word}
+
+/* ── TAP PANEL ── */
+.tap-zone{background:var(--s2);border:2px dashed var(--border);border-radius:12px;
+  padding:32px;text-align:center;cursor:pointer;transition:all .15s;user-select:none;
+  font-size:13px;color:var(--dim);letter-spacing:1px}
+.tap-zone:hover,.tap-zone.active{border-color:var(--accent);background:rgba(245,166,35,.06)}
+.tap-zone.active{background:rgba(245,166,35,.14);border-style:solid}
+.tap-decoded{margin-top:10px;background:var(--s2);border:1px solid var(--border);border-radius:8px;
+  padding:12px;font-size:16px;font-weight:600;color:var(--green);min-height:48px;word-break:break-word}
+.tap-morse{margin-top:6px;font-family:monospace;font-size:13px;color:var(--accent);letter-spacing:2px;
+  min-height:28px}
+.tap-hint{font-size:10px;color:var(--dimmer);margin-top:8px;letter-spacing:.5px}
+
+/* ── REFERENCE SIDEBAR ── */
+.ref-title{font-size:9px;text-transform:uppercase;letter-spacing:2px;color:var(--dim)}
+.ref-grid{display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-top:8px}
+.ref-item{display:flex;align-items:center;justify-content:space-between;
+  background:var(--s2);border-radius:5px;padding:4px 8px;gap:6px}
+.ref-char{font-size:13px;font-weight:800;color:var(--text);min-width:16px}
+.ref-code{font-family:'Courier New',monospace;font-size:11px;color:var(--accent);letter-spacing:1.5px;flex:1;text-align:right}
+.ref-item:hover{background:var(--s3);cursor:pointer}
+
+/* ── SIDEBAR STATS ── */
+.stat-row{display:flex;justify-content:space-between;font-size:11px;padding:3px 0;
+  border-bottom:1px solid var(--border);color:var(--dim)}
+.stat-val{color:var(--text);font-weight:700}
+.wpm-display{font-size:28px;font-weight:900;color:var(--accent);text-align:center;
+  letter-spacing:2px;margin:4px 0}
+.wpm-label{font-size:9px;text-transform:uppercase;letter-spacing:2px;color:var(--dim);text-align:center}
+
+/* ── PANE VISIBILITY ── */
+.pane{display:none}
+.pane.active{display:block}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <span class="logo">· — ·</span>
+    <span class="logo-sub">&nbsp;Morse Code</span>
+  </div>
+  <div class="header-tabs">
+    <button class="htab active" onclick="switchTab('encode',this)">Encode</button>
+    <button class="htab" onclick="switchTab('decode',this)">Decode</button>
+    <button class="htab" onclick="switchTab('tap',this)">Tap Key</button>
+  </div>
+</header>
+
+<div class="layout">
+  <div class="main">
+
+    <!-- ── ENCODE PANE ── -->
+    <div class="pane active" id="pane-encode">
+
+      <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-bottom:4px">
+        <div class="lamp-wrap"><div class="lamp" id="lamp"></div></div>
+        <div style="flex:1">
+          <div class="controls-row">
+            <span class="ctrl-label">Speed</span>
+            <input type="range" id="wpm-slider" min="5" max="40" step="1" value="20"
+                   oninput="updateWPM(+this.value)" style="width:120px">
+            <span class="ctrl-val" id="wpm-lbl">20 WPM</span>
+            <span class="ctrl-label" style="margin-left:8px">Freq</span>
+            <input type="range" id="freq-slider" min="400" max="1000" step="50" value="650"
+                   oninput="updateFreq(+this.value)" style="width:100px">
+            <span class="ctrl-val" id="freq-lbl">650 Hz</span>
+          </div>
+          <div class="controls-row" style="margin-top:10px">
+            <button class="play-btn" id="play-btn" onclick="playMorse()">▶ Play</button>
+            <button class="stop-btn" id="stop-btn" onclick="stopMorse()" style="display:none">■ Stop</button>
+            <span id="play-status" style="font-size:11px;color:var(--dim);margin-left:4px"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-label">Text</div>
+        <textarea id="input-text" rows="3" placeholder="Type something to encode…"
+          oninput="encodeText()"></textarea>
+      </div>
+
+      <div class="panel">
+        <div class="panel-label">Morse Code</div>
+        <div class="morse-display" id="morse-out">—</div>
+        <div class="copy-row">
+          <button class="copy-btn" onclick="copyMorse()">Copy morse</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── DECODE PANE ── -->
+    <div class="pane" id="pane-decode">
+      <div class="panel" style="margin-bottom:14px">
+        <div class="panel-label">Enter Morse code &nbsp;<span style="color:var(--dimmer);font-size:9px">· = dot &nbsp; - = dash &nbsp; space = letter gap &nbsp; / = word gap</span></div>
+        <textarea id="decode-input" rows="4"
+          placeholder="· − − / · − / −− −· −−· · ···"
+          oninput="decodeMorse()" style="font-family:monospace;letter-spacing:2px;font-size:15px"></textarea>
+      </div>
+      <div class="panel">
+        <div class="panel-label">Decoded Text</div>
+        <div class="decode-result" id="decode-result">—</div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:14px">
+        <button class="play-btn" onclick="playDecodeInput()">▶ Play</button>
+        <button class="stop-btn" onclick="stopMorse()" style="display:inline-block">■ Stop</button>
+      </div>
+    </div>
+
+    <!-- ── TAP PANE ── -->
+    <div class="pane" id="pane-tap">
+      <div class="panel" style="margin-bottom:14px">
+        <div class="panel-label">Tap Key — press and hold SPACE or click below</div>
+        <div class="tap-zone" id="tap-zone">
+          HOLD TO TRANSMIT
+          <div class="tap-hint">Short tap = · &nbsp;&nbsp; Long press = −</div>
+        </div>
+        <div class="tap-morse" id="tap-morse-display"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
+          <div class="tap-hint">Space key works too &nbsp;·&nbsp; <span id="tap-letter-timer" style="color:var(--accent)"></span></div>
+          <button class="copy-btn" onclick="clearTap()">Clear</button>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-label">Decoded</div>
+        <div class="tap-decoded" id="tap-decoded">—</div>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+
+  <!-- ── SIDEBAR ── -->
+  <div class="sidebar">
+    <div>
+      <div class="ref-title">Speed</div>
+      <div class="wpm-display" id="sidebar-wpm">20</div>
+      <div class="wpm-label">words per minute</div>
+      <div style="margin-top:8px;font-size:10px;color:var(--dimmer);line-height:1.8">
+        <div>1 unit = <span id="unit-ms">60</span>ms</div>
+        <div>· = 1u &nbsp; − = 3u &nbsp; char gap = 3u &nbsp; word gap = 7u</div>
+      </div>
+    </div>
+
+    <div>
+      <div class="ref-title">Stats</div>
+      <div style="margin-top:8px">
+        <div class="stat-row"><span>Characters</span><span class="stat-val" id="stat-chars">0</span></div>
+        <div class="stat-row"><span>Words</span><span class="stat-val" id="stat-words">0</span></div>
+        <div class="stat-row"><span>Morse units</span><span class="stat-val" id="stat-units">0</span></div>
+        <div class="stat-row" style="border:none"><span>Play time</span><span class="stat-val" id="stat-time">0s</span></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="ref-title">Reference — click to insert</div>
+      <div class="ref-grid" id="ref-grid"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+// ═══════════════════════════════════════════════════════
+// MORSE TABLE
+// ═══════════════════════════════════════════════════════
+const MORSE = {
+  'A':'·−','B':'−···','C':'−·−·','D':'−··','E':'·',
+  'F':'··−·','G':'−−·','H':'····','I':'··','J':'·−−−',
+  'K':'−·−','L':'·−··','M':'−−','N':'−·','O':'−−−',
+  'P':'·−−·','Q':'−−·−','R':'·−·','S':'···','T':'−',
+  'U':'··−','V':'···−','W':'·−−','X':'−··−','Y':'−·−−',
+  'Z':'−−··',
+  '0':'−−−−−','1':'·−−−−','2':'··−−−','3':'···−−',
+  '4':'····−','5':'·····','6':'−····','7':'−−···',
+  '8':'−−−··','9':'−−−−·',
+  '.':'·−·−·−',',':'−−··−−','?':'··−−··','!':'−·−·−−',
+  '/':'−··−·','-':'−····−','@':'·−−·−·','=':'−···−',
+  "'":"·−−−−·",'(':'-·--·',')':'−·−−·−',
+  '+':'·−·−·','"':'·−··−·',';':'−·−·−·',':':'−−−···',
+};
+// Reverse map (used in decode)
+const REVERSE = {};
+for (const [ch, code] of Object.entries(MORSE)) REVERSE[code] = ch;
+
+// ═══════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════
+let wpm  = 20;
+let freq = 650;
+let audioCtx   = null;
+let stopFlag   = false;
+let playing    = false;
+
+function unitMs() { return 1200 / wpm; }
+
+// ═══════════════════════════════════════════════════════
+// ENCODE
+// ═══════════════════════════════════════════════════════
+function textToMorse(text) {
+  return text.toUpperCase().split('').map(ch => {
+    if (ch === ' ') return '/';
+    return MORSE[ch] || '';
+  }).filter(x => x !== '').join(' ');
+}
+
+function encodeText() {
+  const text = document.getElementById('input-text').value;
+  const morse = textToMorse(text);
+  document.getElementById('morse-out').textContent = morse || '—';
+  updateStats(text, morse);
+}
+
+function updateStats(text, morse) {
+  const chars = text.replace(/\s/g,'').length;
+  const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+  // Count units
+  let units = 0;
+  const syms = morse.split(' ');
+  for (let i = 0; i < syms.length; i++) {
+    const s = syms[i];
+    if (s === '/') { units += 7; continue; }
+    for (const c of s) units += c === '·' ? 1 : 3;
+    // inter-element gaps
+    units += (s.length - 1);
+    // inter-letter gap (3 units, but we already added 1 for element gap = +2 net)
+    if (i < syms.length - 1 && syms[i+1] !== '/') units += 2;
+  }
+  const ms = units * unitMs();
+  document.getElementById('stat-chars').textContent = chars;
+  document.getElementById('stat-words').textContent = words;
+  document.getElementById('stat-units').textContent = units;
+  document.getElementById('stat-time').textContent = ms >= 1000 ? (ms/1000).toFixed(1)+'s' : ms+'ms';
+}
+
+function copyMorse() {
+  const txt = document.getElementById('morse-out').textContent;
+  if (txt === '—') return;
+  navigator.clipboard.writeText(txt).catch(()=>{});
+  const btn = event.target;
+  btn.textContent = 'Copied!';
+  setTimeout(() => btn.textContent = 'Copy morse', 1500);
+}
+
+// ═══════════════════════════════════════════════════════
+// AUDIO ENGINE
+// ═══════════════════════════════════════════════════════
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function tone(ctx, start, dur) {
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.connect(gain); gain.connect(ctx.destination);
+  osc.frequency.value = freq;
+  osc.type = 'sine';
+  // Smooth edges to avoid clicks
+  gain.gain.setValueAtTime(0, start);
+  gain.gain.linearRampToValueAtTime(0.5, start + 0.005);
+  gain.gain.setValueAtTime(0.5, start + dur - 0.005);
+  gain.gain.linearRampToValueAtTime(0, start + dur);
+  osc.start(start); osc.stop(start + dur);
+}
+
+async function playSequence(morse, highlightFn) {
+  const ctx = getAudioCtx();
+  const U = unitMs() / 1000;
+  const symbols = morse.split(' ');
+  let t = ctx.currentTime + 0.1;
+
+  stopFlag = false;
+  playing  = true;
+  showStop(true);
+  setLamp(false);
+
+  for (let si = 0; si < symbols.length; si++) {
+    if (stopFlag) break;
+    const sym = symbols[si];
+
+    if (sym === '/') {
+      // word gap = 7U (we already consumed 3U as inter-letter, so +4U)
+      if (highlightFn) highlightFn(si, false);
+      await waitUntil(ctx, t + 4 * U);
+      t += 4 * U;
+      continue;
+    }
+
+    if (highlightFn) highlightFn(si, true);
+
+    for (let ci = 0; ci < sym.length; ci++) {
+      if (stopFlag) break;
+      const isDot = sym[ci] === '·';
+      const dur   = isDot ? U : 3 * U;
+      // Schedule tone
+      tone(ctx, t, dur);
+      // Animate lamp
+      const tStart = t, tEnd = t + dur;
+      animateLamp(tStart, tEnd, ctx);
+      t += dur;
+      // Inter-element gap (1U) unless last element
+      if (ci < sym.length - 1) t += U;
+    }
+    // Inter-letter gap (3U)
+    if (si < symbols.length - 1 && symbols[si + 1] !== '/') {
+      await waitUntil(ctx, t + U); // wait one unit in, then highlight next
+      if (highlightFn) highlightFn(si + 1, true);
+      t += 2 * U; // remaining 2U = total 3U inter-letter
+    } else {
+      await waitUntil(ctx, t);
+    }
+  }
+
+  // Wait for audio to finish
+  await waitUntil(ctx, t + 0.1);
+  playing = false; stopFlag = false;
+  showStop(false); setLamp(false);
+  if (highlightFn) highlightFn(-1, false);
+  document.getElementById('play-status').textContent = '';
+}
+
+function waitUntil(ctx, when) {
+  return new Promise(resolve => {
+    const delay = (when - ctx.currentTime) * 1000;
+    if (delay <= 0) resolve();
+    else {
+      const check = () => {
+        if (stopFlag) { resolve(); return; }
+        if (ctx.currentTime >= when - 0.005) resolve();
+        else requestAnimationFrame(check);
+      };
+      setTimeout(check, Math.max(0, delay - 20));
+    }
+  });
+}
+
+function animateLamp(tStart, tEnd, ctx) {
+  const loop = () => {
+    if (stopFlag) { setLamp(false); return; }
+    const now = ctx.currentTime;
+    setLamp(now >= tStart && now <= tEnd + 0.01);
+    if (now <= tEnd + 0.05) requestAnimationFrame(loop);
+    else setLamp(false);
+  };
+  requestAnimationFrame(loop);
+}
+
+function setLamp(on) {
+  document.getElementById('lamp').classList.toggle('on', on);
+}
+function showStop(on) {
+  document.getElementById('play-btn').style.display  = on ? 'none' : '';
+  document.getElementById('stop-btn').style.display  = on ? '' : 'none';
+}
+function stopMorse() {
+  stopFlag = true;
+  playing  = false;
+  setLamp(false);
+  showStop(false);
+  document.getElementById('play-status').textContent = '';
+}
+
+// Highlight current symbol in morse-out
+let _lastHighlightIdx = -1;
+function highlightSymbol(idx, active) {
+  const el = document.getElementById('morse-out');
+  const morse = textToMorse(document.getElementById('input-text').value);
+  const syms  = morse.split(' ');
+  if (idx < 0) {
+    el.textContent = morse || '—';
+    return;
+  }
+  el.innerHTML = syms.map((s, i) => {
+    const span = i === idx && active
+      ? `<span class="hit">${s}</span>`
+      : s;
+    return span;
+  }).join(' ') || '—';
+}
+
+async function playMorse() {
+  if (playing) return;
+  const text  = document.getElementById('input-text').value.trim();
+  if (!text) return;
+  const morse = textToMorse(text);
+  document.getElementById('play-status').textContent = 'Transmitting…';
+  await playSequence(morse, highlightSymbol);
+}
+
+async function playDecodeInput() {
+  if (playing) return;
+  const raw   = document.getElementById('decode-input').value.trim();
+  const morse = normalizeMorseInput(raw);
+  if (!morse) return;
+  showStop(true);
+  await playSequence(morse, null);
+}
+
+// ═══════════════════════════════════════════════════════
+// DECODE
+// ═══════════════════════════════════════════════════════
+function normalizeMorseInput(raw) {
+  // Accept . or · for dot, - or – or — for dash
+  return raw.replace(/\./g,'·').replace(/[-–—]/g,'−').replace(/\|/g,'/');
+}
+function decodeMorse() {
+  const raw  = document.getElementById('decode-input').value;
+  const norm = normalizeMorseInput(raw);
+  const words = norm.split(/\s*\/\s*/);
+  const result = words.map(word =>
+    word.trim().split(/\s+/).map(sym => REVERSE[sym] || (sym ? '?' : '')).join('')
+  ).join(' ').trim();
+  document.getElementById('decode-result').textContent = result || '—';
+}
+
+// ═══════════════════════════════════════════════════════
+// TAP KEY
+// ═══════════════════════════════════════════════════════
+const TAP_DOT_MAX_MS = 200; // taps ≤ this = dot
+const LETTER_GAP_MS  = 600;
+const WORD_GAP_MS    = 1400;
+
+let tapState = {
+  pressStart: 0,
+  currentLetter: '',   // dots/dashes for current letter
+  fullMorse: '',       // all letters + / for words
+  decoded: '',
+  letterTimer: null,
+  wordTimer: null,
+  tapCtx: null,
+  tapOsc: null,
+  tapGain: null,
+};
+
+function tapDown() {
+  clearTimeout(tapState.letterTimer);
+  clearTimeout(tapState.wordTimer);
+  tapState.pressStart = Date.now();
+  document.getElementById('tap-zone').classList.add('active');
+  setLamp(true);
+  // Start beep
+  const ctx = getAudioCtx();
+  tapState.tapCtx = ctx;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.connect(gain); gain.connect(ctx.destination);
+  osc.frequency.value = freq; osc.type = 'sine';
+  gain.gain.setValueAtTime(0, ctx.currentTime);
+  gain.gain.linearRampToValueAtTime(0.4, ctx.currentTime + 0.005);
+  osc.start();
+  tapState.tapOsc = osc; tapState.tapGain = gain;
+}
+
+function tapUp() {
+  if (!tapState.pressStart) return;
+  const held = Date.now() - tapState.pressStart;
+  tapState.pressStart = 0;
+  document.getElementById('tap-zone').classList.remove('active');
+  setLamp(false);
+  // Stop beep
+  if (tapState.tapOsc) {
+    const ctx = tapState.tapCtx;
+    tapState.tapGain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.005);
+    tapState.tapOsc.stop(ctx.currentTime + 0.01);
+    tapState.tapOsc = null;
+  }
+  const sym = held <= TAP_DOT_MAX_MS ? '·' : '−';
+  tapState.currentLetter += sym;
+  updateTapDisplay();
+
+  // Set timers for letter/word gap detection
+  tapState.letterTimer = setTimeout(() => {
+    // Commit letter
+    const letter = REVERSE[tapState.currentLetter] || '?';
+    if (tapState.fullMorse) tapState.fullMorse += ' ';
+    tapState.fullMorse += tapState.currentLetter;
+    tapState.decoded += letter;
+    tapState.currentLetter = '';
+    updateTapDisplay();
+    updateTapDecoded();
+    document.getElementById('tap-letter-timer').textContent = '';
+
+    tapState.wordTimer = setTimeout(() => {
+      tapState.fullMorse += ' /';
+      tapState.decoded += ' ';
+      updateTapDisplay();
+      updateTapDecoded();
+    }, WORD_GAP_MS - LETTER_GAP_MS);
+  }, LETTER_GAP_MS);
+}
+
+function updateTapDisplay() {
+  const el = document.getElementById('tap-morse-display');
+  el.textContent = (tapState.fullMorse + (tapState.currentLetter ? ' ' + tapState.currentLetter : '')) || '';
+}
+function updateTapDecoded() {
+  const el = document.getElementById('tap-decoded');
+  el.textContent = tapState.decoded || '—';
+}
+function clearTap() {
+  clearTimeout(tapState.letterTimer);
+  clearTimeout(tapState.wordTimer);
+  tapState.currentLetter = '';
+  tapState.fullMorse = '';
+  tapState.decoded = '';
+  updateTapDisplay();
+  updateTapDecoded();
+}
+
+// Mouse events on tap zone
+const tapZone = document.getElementById('tap-zone');
+tapZone.addEventListener('mousedown', e => { e.preventDefault(); tapDown(); });
+tapZone.addEventListener('mouseup',   () => tapUp());
+tapZone.addEventListener('mouseleave',() => { if (tapState.pressStart) tapUp(); });
+tapZone.addEventListener('touchstart', e => { e.preventDefault(); tapDown(); }, {passive:false});
+tapZone.addEventListener('touchend',   e => { e.preventDefault(); tapUp();   }, {passive:false});
+
+// Keyboard spacebar
+window.addEventListener('keydown', e => {
+  if (activeTab !== 'tap') return;
+  if (e.code === 'Space' && !tapState.pressStart) { e.preventDefault(); tapDown(); }
+});
+window.addEventListener('keyup', e => {
+  if (activeTab !== 'tap') return;
+  if (e.code === 'Space') { e.preventDefault(); tapUp(); }
+});
+
+// ═══════════════════════════════════════════════════════
+// CONTROLS
+// ═══════════════════════════════════════════════════════
+function updateWPM(v) {
+  wpm = v;
+  document.getElementById('wpm-lbl').textContent = v + ' WPM';
+  document.getElementById('sidebar-wpm').textContent = v;
+  document.getElementById('unit-ms').textContent = Math.round(unitMs());
+  // Recompute stats
+  const text  = document.getElementById('input-text').value;
+  const morse = textToMorse(text);
+  updateStats(text, morse);
+}
+function updateFreq(v) {
+  freq = v;
+  document.getElementById('freq-lbl').textContent = v + ' Hz';
+}
+
+// ═══════════════════════════════════════════════════════
+// TABS
+// ═══════════════════════════════════════════════════════
+let activeTab = 'encode';
+function switchTab(name, btn) {
+  activeTab = name;
+  document.querySelectorAll('.htab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.pane').forEach(p => p.classList.remove('active'));
+  document.getElementById('pane-' + name).classList.add('active');
+  if (playing) stopMorse();
+}
+
+// ═══════════════════════════════════════════════════════
+// REFERENCE SIDEBAR
+// ═══════════════════════════════════════════════════════
+function buildRefGrid() {
+  const grid = document.getElementById('ref-grid');
+  const entries = Object.entries(MORSE);
+  grid.innerHTML = entries.map(([ch, code]) =>
+    `<div class="ref-item" onclick="insertChar('${ch}')" title="Click to insert '${ch}'">
+      <span class="ref-char">${ch}</span>
+      <span class="ref-code">${code}</span>
+    </div>`
+  ).join('');
+}
+
+function insertChar(ch) {
+  if (activeTab === 'encode') {
+    const ta = document.getElementById('input-text');
+    const s = ta.selectionStart, e = ta.selectionEnd;
+    ta.value = ta.value.slice(0,s) + ch + ta.value.slice(e);
+    ta.selectionStart = ta.selectionEnd = s + 1;
+    ta.focus();
+    encodeText();
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════
+buildRefGrid();
+// Default text
+document.getElementById('input-text').value = 'HELLO WORLD';
+encodeText();
+</script>
+</body>
+</html>

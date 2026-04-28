@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Game of Life · 3D</title>
+<link rel="icon" type="image/x-icon" href="../../images.ico">
+<style>
+:root {
+  --bg:#0a0a0f; --bg2:#0f0f16; --bg3:#16161f;
+  --border:rgba(255,255,255,.06); --text:#dde1f0; --text2:#6b7099;
+  --accent:#6366f1; --accent2:#818cf8;
+  --green:#10b981; --red:#ef4444;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;font-size:13px;height:100vh;overflow:hidden;display:flex;flex-direction:column}
+
+/* ── TOPBAR ── */
+.topbar{height:50px;min-height:50px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;padding:0 14px}
+.back{color:var(--text2);text-decoration:none;font-size:12px;padding:4px 8px;border-radius:6px;transition:all .15s;white-space:nowrap}
+.back:hover{background:var(--bg3);color:var(--text)}
+h1{font-size:15px;font-weight:600;white-space:nowrap}
+h1 span{color:var(--text2);font-weight:400}
+.sep{width:1px;height:22px;background:var(--border);flex-shrink:0}
+.btn{background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:5px 12px;border-radius:6px;cursor:pointer;font-size:12px;white-space:nowrap;transition:all .15s}
+.btn:hover{border-color:rgba(255,255,255,.14);background:#1c1c28}
+.btn.primary{background:rgba(99,102,241,.18);border-color:rgba(99,102,241,.4);color:var(--accent2)}
+.btn.primary:hover{background:rgba(99,102,241,.28)}
+.btn.active{background:rgba(16,185,129,.15);border-color:rgba(16,185,129,.4);color:var(--green)}
+.stat-group{display:flex;gap:14px;margin-left:auto;flex-shrink:0}
+.stat{font-size:12px;color:var(--text2)}
+.stat b{color:var(--text);font-weight:600}
+
+/* ── LAYOUT ── */
+.body{display:flex;flex:1;min-height:0;overflow:hidden}
+
+/* ── SIDEBAR ── */
+.sidebar{width:240px;min-width:240px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:row;overflow:hidden;position:relative;transition:width .2s,min-width .2s}
+.sidebar.collapsed{width:22px;min-width:22px}
+.sb-toggle{position:absolute;top:50%;right:0;transform:translateY(-50%);width:16px;height:38px;background:var(--bg3);border:1px solid var(--border);border-right:none;border-radius:5px 0 0 5px;color:var(--text2);cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;z-index:2}
+.sb-toggle:hover{color:var(--text)}
+.sidebar.collapsed .sb-toggle{transform:translateY(-50%) scaleX(-1)}
+.sb-inner{flex:1;min-width:0;overflow-y:auto;overflow-x:hidden;padding:10px 20px 10px 10px;display:flex;flex-direction:column;gap:12px}
+.sidebar.collapsed .sb-inner{display:none}
+.sb-inner::-webkit-scrollbar{width:3px}
+.sb-inner::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:2px}
+.sb-title{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text2);margin-bottom:5px}
+
+/* Rule toggles */
+.presets{display:flex;flex-wrap:wrap;gap:3px;margin-bottom:4px}
+.preset-btn{background:var(--bg3);border:1px solid var(--border);color:var(--text2);padding:3px 7px;border-radius:4px;cursor:pointer;font-size:10px;transition:all .12s}
+.preset-btn:hover{color:var(--text);background:#1c1c28}
+.preset-btn.active{background:rgba(99,102,241,.2);border-color:rgba(99,102,241,.4);color:var(--accent2)}
+.rule-row{display:flex;flex-direction:column;gap:3px}
+.rule-lbl{font-size:10px;color:var(--text2)}
+.toggles{display:flex;flex-wrap:wrap;gap:2px}
+.rtog{width:20px;height:20px;border-radius:3px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);cursor:pointer;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;transition:all .12s;flex-shrink:0}
+.rtog:hover{background:#1c1c28}
+.rtog.on{background:rgba(99,102,241,.25);border-color:rgba(99,102,241,.5);color:var(--accent2)}
+.rule-notation{font-family:monospace;font-size:11px;color:var(--accent2);margin-top:2px}
+
+/* Layer */
+.layer-row{display:flex;align-items:center;gap:5px}
+.layer-btn{width:24px;height:24px;background:var(--bg3);border:1px solid var(--border);color:var(--text2);border-radius:5px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .12s}
+.layer-btn:hover{background:#1c1c28;color:var(--text)}
+.layer-disp{flex:1;text-align:center;font-size:12px;color:var(--text);background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:3px 6px}
+
+/* Sliders */
+.slider-row{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2)}
+.slider-row input[type=range]{flex:1;accent-color:var(--accent);cursor:pointer;height:3px}
+.slider-row span{color:var(--text);min-width:28px;text-align:right}
+
+/* Toggle switch */
+.tog-row{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.tog-lbl{font-size:11px;color:var(--text2)}
+.toggle{display:inline-flex;align-items:center;cursor:pointer;position:relative;width:36px;height:20px}
+.toggle input{display:none}
+.toggle-slider{position:absolute;inset:0;background:var(--bg3);border:1px solid var(--border);border-radius:10px;transition:all .12s}
+.toggle-slider::before{content:'';position:absolute;left:2px;top:2px;width:14px;height:14px;background:var(--text2);border-radius:50%;transition:left .12s}
+.toggle input:checked+.toggle-slider{background:rgba(99,102,241,.25);border-color:rgba(99,102,241,.5)}
+.toggle input:checked+.toggle-slider::before{left:18px;background:var(--accent2)}
+
+/* Canvas */
+.canvas-wrap{flex:1;position:relative;overflow:hidden;background:var(--bg)}
+#c{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:crosshair}
+.canvas-hint{position:absolute;bottom:10px;left:12px;font-size:10px;color:rgba(255,255,255,.2);pointer-events:none;line-height:1.8}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a class="back" href="../../index.html">← Back</a>
+  <h1>Game of Life &nbsp;<span>3D</span></h1>
+  <div class="sep"></div>
+  <button class="btn primary" id="btnStep">Step</button>
+  <button class="btn" id="btnPlay">▶ Play</button>
+  <button class="btn" id="btnClear">Clear</button>
+  <button class="btn" id="btnRandom">Random</button>
+  <div class="sep"></div>
+  <div class="slider-row" style="width:140px">
+    <span>Speed</span>
+    <input type="range" min="1" max="20" value="10" id="speed">
+    <span id="speedVal">10/s</span>
+  </div>
+  <div class="stat-group">
+    <span class="stat">Gen <b id="stGen">0</b></span>
+    <span class="stat">Cells <b id="stCells">0</b></span>
+    <span class="stat">Layer <b id="stLayer">0</b></span>
+  </div>
+</div>
+
+<div class="body">
+  <div class="sidebar" id="sidebar">
+    <div class="sb-inner">
+
+      <!-- Layer -->
+      <div>
+        <div class="sb-title">Active Layer (Y)</div>
+        <div class="layer-row">
+          <button class="layer-btn" onclick="setLayer(activeLayer-1)">−</button>
+          <div class="layer-disp" id="layerDisp">Y = 0</div>
+          <button class="layer-btn" onclick="setLayer(activeLayer+1)">+</button>
+        </div>
+        <div style="font-size:10px;color:var(--text2);margin-top:4px">[ ] keys also change layer</div>
+      </div>
+
+      <!-- Grid size -->
+      <div>
+        <div class="sb-title">Grid Size</div>
+        <div class="slider-row">
+          <input type="range" min="6" max="60" value="30" id="gridSize">
+          <span id="gridSizeVal">30³</span>
+        </div>
+        <button class="btn" style="width:100%;margin-top:4px;font-size:11px" onclick="applyGrid()">Apply &amp; Reset</button>
+      </div>
+
+      <!-- Presets -->
+      <div>
+        <div class="sb-title">Rule Presets</div>
+        <div class="presets" id="presets"></div>
+        <div class="rule-row" style="margin-top:6px">
+          <div class="rule-lbl">Born (B)</div>
+          <div class="toggles" id="bornToggles"></div>
+        </div>
+        <div class="rule-row" style="margin-top:4px">
+          <div class="rule-lbl">Survive (S)</div>
+          <div class="toggles" id="survToggles"></div>
+        </div>
+        <div class="rule-notation" id="ruleNotation">B5678/S45678</div>
+      </div>
+
+      <!-- Options -->
+      <div>
+        <div class="sb-title">Options</div>
+        <div class="tog-row">
+          <span class="tog-lbl">Bounding box</span>
+          <label class="toggle"><input type="checkbox" id="optBbox" checked onchange="rebuildBbox()"><span class="toggle-slider"></span></label>
+        </div>
+        <div class="tog-row" style="margin-top:5px">
+          <span class="tog-lbl">Layer grid</span>
+          <label class="toggle"><input type="checkbox" id="optGrid" checked onchange="rebuildLayerGrid()"><span class="toggle-slider"></span></label>
+        </div>
+        <div class="tog-row" style="margin-top:5px">
+          <span class="tog-lbl">Ghost preview</span>
+          <label class="toggle"><input type="checkbox" id="optGhost" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="tog-row" style="margin-top:5px">
+          <span class="tog-lbl">Wrap edges</span>
+          <label class="toggle"><input type="checkbox" id="optWrap"><span class="toggle-slider"></span></label>
+        </div>
+      </div>
+
+      <!-- Cell style -->
+      <div>
+        <div class="sb-title">Cell Color</div>
+        <div class="presets" id="colorPresets">
+          <button class="preset-btn active" onclick="setCellColor(0x818cf8,'indigo',this)">Indigo</button>
+          <button class="preset-btn" onclick="setCellColor(0xffffff,'white',this)">White</button>
+          <button class="preset-btn" onclick="setCellColor(0x10b981,'green',this)">Green</button>
+          <button class="preset-btn" onclick="setCellColor(0xf97316,'orange',this)">Orange</button>
+          <button class="preset-btn" onclick="setCellColor(0xef4444,'red',this)">Red</button>
+          <button class="preset-btn" onclick="setCellColor(0xfbbf24,'gold',this)">Gold</button>
+        </div>
+      </div>
+
+    </div>
+    <button class="sb-toggle" onclick="document.getElementById('sidebar').classList.toggle('collapsed')">‹</button>
+  </div>
+
+  <div class="canvas-wrap">
+    <canvas id="c"></canvas>
+    <div class="canvas-hint">Left-click · draw &nbsp;·&nbsp; Right-drag · orbit &nbsp;·&nbsp; Scroll · zoom</div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// ─── CONFIG ────────────────────────────────────────────────────────────────────
+let N = 30;
+let activeLayer = Math.floor(N / 2);
+let generation  = 0;
+let playing     = false;
+let playHandle  = null;
+
+const bornSet  = new Set([5,6,7,8]);
+const survSet  = new Set([4,5,6,7,8]);
+
+const PRESETS = [
+  { name:'445',    b:[4,5],     s:[4,5]     },
+  { name:'5766',   b:[5,7,6,6], s:[6,6,6]   },
+  { name:'Builder',b:[2,6],     s:[4,6]     },
+  { name:'Dense',  b:[4,5,6],   s:[3,4,5,6] },
+  { name:'Sparse', b:[3],       s:[2,3,4]   },
+  { name:'Coral',  b:[3,7],     s:[3,6]     },
+  { name:'Amoeba', b:[3,5,7],   s:[1,3,5,7] },
+  { name:'Clouds', b:[5,6,7,8], s:[5,6,7,8] },
+];
+
+// ─── THREE.JS SETUP ────────────────────────────────────────────────────────────
+const canvasEl = document.getElementById('c');
+const wrap     = canvasEl.parentElement;
+
+const renderer = new THREE.WebGLRenderer({ canvas: canvasEl, antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setClearColor(0x0a0a0f);
+
+const scene  = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 5000);
+
+scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+const dl = new THREE.DirectionalLight(0xffffff, 0.8);
+dl.position.set(1, 2, 1.5);
+scene.add(dl);
+const dl2 = new THREE.DirectionalLight(0x8888ff, 0.3);
+dl2.position.set(-1, -1, -1);
+scene.add(dl2);
+
+// ─── CELL DATA ─────────────────────────────────────────────────────────────────
+let grid = new Uint8Array(N * N * N); // flat: x + y*N + z*N*N
+
+function idx(x, y, z) { return x + y * N + z * N * N; }
+function cellCount() {
+  let n = 0;
+  for (let i = 0; i < grid.length; i++) if (grid[i]) n++;
+  return n;
+}
+
+// ─── INSTANCED MESH ─────────────────────────────────────────────────────────────
+let cellGeo  = new THREE.BoxGeometry(0.85, 0.85, 0.85);
+let cellMat  = new THREE.MeshStandardMaterial({ color: 0x818cf8, emissive: 0x3a3cab, roughness: 0.4, metalness: 0.1 });
+let instMesh = new THREE.InstancedMesh(cellGeo, cellMat, N * N * N);
+instMesh.count = 0;
+scene.add(instMesh);
+
+const dummy = new THREE.Object3D();
+
+function syncMesh() {
+  const half = (N - 1) / 2;
+  let i = 0;
+  for (let z = 0; z < N; z++)
+  for (let y = 0; y < N; y++)
+  for (let x = 0; x < N; x++) {
+    if (grid[idx(x, y, z)]) {
+      dummy.position.set(x - half, y - half, z - half);
+      dummy.updateMatrix();
+      instMesh.setMatrixAt(i++, dummy.matrix);
+    }
+  }
+  instMesh.count = i;
+  instMesh.instanceMatrix.needsUpdate = true;
+  document.getElementById('stCells').textContent = i;
+}
+
+function setCellColor(hex, name, btn) {
+  const emHex = Math.round(hex * 0.45);
+  cellMat.color.setHex(hex);
+  cellMat.emissive.setHex(emHex);
+  document.querySelectorAll('#colorPresets .preset-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ─── BOUNDING BOX ──────────────────────────────────────────────────────────────
+let bboxMesh = null;
+function rebuildBbox() {
+  if (bboxMesh) { scene.remove(bboxMesh); bboxMesh = null; }
+  if (!document.getElementById('optBbox').checked) return;
+  const geo   = new THREE.BoxGeometry(N, N, N);
+  const edges = new THREE.EdgesGeometry(geo);
+  bboxMesh    = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x333355, transparent: true, opacity: 0.6 }));
+  scene.add(bboxMesh);
+  geo.dispose();
+}
+
+// ─── LAYER GRID ────────────────────────────────────────────────────────────────
+let layerGridGroup = new THREE.Group();
+scene.add(layerGridGroup);
+
+function rebuildLayerGrid() {
+  layerGridGroup.clear();
+  if (!document.getElementById('optGrid').checked) return;
+  const half  = (N - 1) / 2;
+  const yOff  = activeLayer - half;
+  const hl    = N / 2;
+  const mat   = new THREE.LineBasicMaterial({ color: 0x2a2a3f, transparent: true, opacity: 0.8 });
+  for (let i = 0; i <= N; i++) {
+    const v = i - hl + 0.5 - 0.5; // offset so lines sit at cell edges
+    const gx = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(-hl, yOff - 0.5, v), new THREE.Vector3(hl, yOff - 0.5, v)]);
+    const gz = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(v, yOff - 0.5, -hl), new THREE.Vector3(v, yOff - 0.5, hl)]);
+    layerGridGroup.add(new THREE.Line(gx, mat));
+    layerGridGroup.add(new THREE.Line(gz, mat));
+  }
+}
+
+// ─── GHOST BLOCK ──────────────────────────────────────────────────────────────
+const ghostMesh = new THREE.Mesh(
+  new THREE.BoxGeometry(0.85, 0.85, 0.85),
+  new THREE.MeshStandardMaterial({ color: 0x6366f1, transparent: true, opacity: 0.35, emissive: 0x3a3cab })
+);
+ghostMesh.visible = false;
+scene.add(ghostMesh);
+
+// ─── ORBIT CONTROLS ────────────────────────────────────────────────────────────
+let orbRadius = N * 1.8;
+let orbTheta  = 0.6;
+let orbPhi    = 1.1;
+const orbTarget = new THREE.Vector3(0, 0, 0);
+
+function updateCam() {
+  orbPhi = Math.max(0.05, Math.min(Math.PI - 0.05, orbPhi));
+  camera.position.set(
+    orbTarget.x + orbRadius * Math.sin(orbPhi) * Math.sin(orbTheta),
+    orbTarget.y + orbRadius * Math.cos(orbPhi),
+    orbTarget.z + orbRadius * Math.sin(orbPhi) * Math.cos(orbTheta)
+  );
+  camera.lookAt(orbTarget);
+}
+
+// ─── RAYCASTING ────────────────────────────────────────────────────────────────
+const rc     = new THREE.Raycaster();
+const mouse  = new THREE.Vector2();
+
+function getHitCell(e) {
+  const rect = canvasEl.getBoundingClientRect();
+  mouse.x =  ((e.clientX - rect.left) / rect.width)  * 2 - 1;
+  mouse.y = -((e.clientY - rect.top)  / rect.height) * 2 + 1;
+  rc.setFromCamera(mouse, camera);
+
+  const half   = (N - 1) / 2;
+  const worldY = activeLayer - half;
+  const plane  = new THREE.Plane(new THREE.Vector3(0, 1, 0), -worldY);
+  const hitPt  = new THREE.Vector3();
+  if (!rc.ray.intersectPlane(plane, hitPt)) return null;
+
+  const x = Math.round(hitPt.x + half);
+  const y = activeLayer;
+  const z = Math.round(hitPt.z + half);
+  if (x < 0 || x >= N || z < 0 || z >= N) return null;
+  return { x, y, z };
+}
+
+// ─── MOUSE EVENTS ─────────────────────────────────────────────────────────────
+let orbiting = false, lx = 0, ly = 0;
+let painting = false, paintVal = true;
+
+canvasEl.addEventListener('mousedown', e => {
+  if (e.button === 2) { orbiting = true; lx = e.clientX; ly = e.clientY; return; }
+  if (e.button === 0) {
+    const c = getHitCell(e);
+    if (!c) return;
+    paintVal = !grid[idx(c.x, c.y, c.z)]; // toggle: if already on, erase
+    painting = true;
+    if (paintVal) grid[idx(c.x,c.y,c.z)] = 1;
+    else          grid[idx(c.x,c.y,c.z)] = 0;
+    syncMesh();
+  }
+});
+
+canvasEl.addEventListener('mousemove', e => {
+  if (orbiting) {
+    orbTheta -= (e.clientX - lx) * 0.007;
+    orbPhi   += (e.clientY - ly) * 0.007;
+    lx = e.clientX; ly = e.clientY;
+    updateCam(); return;
+  }
+  const c = getHitCell(e);
+  if (c && document.getElementById('optGhost').checked) {
+    const half = (N-1)/2;
+    ghostMesh.position.set(c.x - half, c.y - half, c.z - half);
+    ghostMesh.visible = true;
+  } else ghostMesh.visible = false;
+
+  if (painting && c) {
+    if (paintVal)  grid[idx(c.x,c.y,c.z)] = 1;
+    else           grid[idx(c.x,c.y,c.z)] = 0;
+    syncMesh();
+  }
+});
+
+window.addEventListener('mouseup', e => {
+  if (e.button === 2) orbiting = false;
+  painting = false;
+});
+canvasEl.addEventListener('contextmenu', e => e.preventDefault());
+canvasEl.addEventListener('wheel', e => {
+  orbRadius = Math.max(2, orbRadius * (e.deltaY > 0 ? 1.07 : 0.935));
+  updateCam();
+}, { passive: true });
+
+// ─── KEYBOARD ─────────────────────────────────────────────────────────────────
+window.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT') return;
+  if (e.key === '[') setLayer(activeLayer - 1);
+  if (e.key === ']') setLayer(activeLayer + 1);
+  if (e.key === ' ') { e.preventDefault(); togglePlay(); }
+  if (e.key === 'Enter') stepOnce();
+});
+
+// ─── GAME OF LIFE ─────────────────────────────────────────────────────────────
+function stepOnce() {
+  const wrap = document.getElementById('optWrap').checked;
+  const next = new Uint8Array(N * N * N);
+  for (let z = 0; z < N; z++)
+  for (let y = 0; y < N; y++)
+  for (let x = 0; x < N; x++) {
+    let n = 0;
+    for (let dz = -1; dz <= 1; dz++)
+    for (let dy = -1; dy <= 1; dy++)
+    for (let dx = -1; dx <= 1; dx++) {
+      if (dx===0 && dy===0 && dz===0) continue;
+      let nx = x+dx, ny = y+dy, nz = z+dz;
+      if (wrap) {
+        nx = (nx+N)%N; ny = (ny+N)%N; nz = (nz+N)%N;
+      } else {
+        if (nx<0||nx>=N||ny<0||ny>=N||nz<0||nz>=N) continue;
+      }
+      n += grid[idx(nx,ny,nz)];
+    }
+    const alive = grid[idx(x,y,z)];
+    if (alive  && survSet.has(n)) next[idx(x,y,z)] = 1;
+    if (!alive && bornSet.has(n)) next[idx(x,y,z)] = 1;
+  }
+  grid = next;
+  generation++;
+  document.getElementById('stGen').textContent = generation;
+  syncMesh();
+}
+
+function togglePlay() {
+  playing = !playing;
+  const btn = document.getElementById('btnPlay');
+  btn.textContent = playing ? '⏸ Pause' : '▶ Play';
+  btn.classList.toggle('active', playing);
+  if (playing) schedulePlay(); else { clearInterval(playHandle); playHandle = null; }
+}
+
+function schedulePlay() {
+  if (playHandle) clearInterval(playHandle);
+  const fps = +document.getElementById('speed').value;
+  playHandle = setInterval(() => { if (playing) stepOnce(); }, 1000 / fps);
+}
+
+// ─── CONTROLS ─────────────────────────────────────────────────────────────────
+document.getElementById('btnStep').addEventListener('click', stepOnce);
+document.getElementById('btnPlay').addEventListener('click', togglePlay);
+document.getElementById('btnClear').addEventListener('click', () => {
+  grid.fill(0); generation = 0;
+  document.getElementById('stGen').textContent = 0;
+  syncMesh();
+});
+document.getElementById('btnRandom').addEventListener('click', () => {
+  for (let i = 0; i < grid.length; i++) grid[i] = Math.random() < 0.12 ? 1 : 0;
+  generation = 0;
+  document.getElementById('stGen').textContent = 0;
+  syncMesh();
+});
+document.getElementById('speed').addEventListener('input', e => {
+  document.getElementById('speedVal').textContent = e.target.value + '/s';
+  if (playing) schedulePlay();
+});
+document.getElementById('gridSize').addEventListener('input', e => {
+  document.getElementById('gridSizeVal').textContent = e.target.value + '³';
+});
+
+// ─── LAYER ────────────────────────────────────────────────────────────────────
+function setLayer(l) {
+  activeLayer = Math.max(0, Math.min(N - 1, l));
+  document.getElementById('layerDisp').textContent = 'Y = ' + activeLayer;
+  document.getElementById('stLayer').textContent = activeLayer;
+  rebuildLayerGrid();
+}
+
+function applyGrid() {
+  N = +document.getElementById('gridSize').value;
+  grid = new Uint8Array(N * N * N);
+  generation = 0;
+  activeLayer = Math.floor(N / 2);
+  document.getElementById('stGen').textContent = 0;
+  document.getElementById('layerDisp').textContent = 'Y = ' + activeLayer;
+  document.getElementById('stLayer').textContent = activeLayer;
+  // Rebuild instanced mesh
+  scene.remove(instMesh);
+  instMesh.dispose();
+  instMesh = new THREE.InstancedMesh(cellGeo, cellMat, N * N * N);
+  instMesh.count = 0;
+  scene.add(instMesh);
+  orbRadius = N * 1.8;
+  updateCam();
+  rebuildBbox();
+  rebuildLayerGrid();
+  syncMesh();
+}
+
+// ─── RULES UI ────────────────────────────────────────────────────────────────
+function buildRuleUI() {
+  const bCont = document.getElementById('bornToggles');
+  const sCont = document.getElementById('survToggles');
+  bCont.innerHTML = ''; sCont.innerHTML = '';
+  for (let i = 0; i <= 26; i++) {
+    const bt = document.createElement('button');
+    bt.className = 'rtog' + (bornSet.has(i) ? ' on' : '');
+    bt.textContent = i;
+    bt.addEventListener('click', () => {
+      bornSet.has(i) ? bornSet.delete(i) : bornSet.add(i);
+      bt.classList.toggle('on', bornSet.has(i));
+      updateRuleText(); highlightPreset();
+    });
+    bCont.appendChild(bt);
+    const st = document.createElement('button');
+    st.className = 'rtog' + (survSet.has(i) ? ' on' : '');
+    st.textContent = i;
+    st.addEventListener('click', () => {
+      survSet.has(i) ? survSet.delete(i) : survSet.add(i);
+      st.classList.toggle('on', survSet.has(i));
+      updateRuleText(); highlightPreset();
+    });
+    sCont.appendChild(st);
+  }
+}
+
+function updateRuleText() {
+  const b = [...bornSet].sort((a,b)=>a-b).join('');
+  const s = [...survSet].sort((a,b)=>a-b).join('');
+  document.getElementById('ruleNotation').textContent = `B${b}/S${s}`;
+}
+
+function applyPreset(p) {
+  bornSet.clear(); p.b.forEach(n => bornSet.add(n));
+  survSet.clear(); p.s.forEach(n => survSet.add(n));
+  buildRuleUI(); updateRuleText(); highlightPreset();
+}
+
+function highlightPreset() {
+  const ba = [...bornSet].sort((a,b)=>a-b).join(',');
+  const sa = [...survSet].sort((a,b)=>a-b).join(',');
+  document.querySelectorAll('#presets .preset-btn').forEach((btn, i) => {
+    const p = PRESETS[i];
+    btn.classList.toggle('active',
+      [...p.b].sort((a,b)=>a-b).join(',') === ba &&
+      [...p.s].sort((a,b)=>a-b).join(',') === sa);
+  });
+}
+
+const presetsCont = document.getElementById('presets');
+PRESETS.forEach(p => {
+  const b = document.createElement('button');
+  b.className = 'preset-btn';
+  b.textContent = p.name;
+  b.addEventListener('click', () => applyPreset(p));
+  presetsCont.appendChild(b);
+});
+
+// ─── RESIZE ──────────────────────────────────────────────────────────────────
+function onResize() {
+  const w = wrap.clientWidth, h = wrap.clientHeight;
+  renderer.setSize(w, h);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+}
+new ResizeObserver(onResize).observe(wrap);
+
+// ─── ANIMATE ──────────────────────────────────────────────────────────────────
+(function loop() {
+  requestAnimationFrame(loop);
+  renderer.render(scene, camera);
+})();
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+buildRuleUI();
+updateRuleText();
+highlightPreset();
+rebuildBbox();
+rebuildLayerGrid();
+setLayer(Math.floor(N / 2));
+updateCam();
+onResize();
+</script>
+</body>
+</html>

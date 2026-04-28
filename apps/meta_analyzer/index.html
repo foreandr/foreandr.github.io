@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Project Meta Analyzer</title>
+  <link rel="icon" type="image/x-icon" href="../../images.ico">
+  <style>
+    :root {
+      --bg:    #0d1117;
+      --bg2:   #161b22;
+      --bg3:   #21262d;
+      --bdr:   #30363d;
+      --txt:   #e6edf3;
+      --mu:    #8b949e;
+      --bl:    #58a6ff;
+      --gr:    #3fb950;
+      --pu:    #bc8cff;
+      --or:    #f78166;
+      --ye:    #e3b341;
+      --te:    #39d0c8;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--txt);
+      font-family: "IBM Plex Mono", "Fira Code", "Cascadia Code", monospace;
+      min-height: 100vh;
+      padding: 0 0 60px 0;
+    }
+
+    /* Back button */
+    #back-btn {
+      position: fixed;
+      top: 14px;
+      left: 16px;
+      z-index: 100;
+      background: var(--bg3);
+      border: 1px solid var(--bdr);
+      color: var(--bl);
+      text-decoration: none;
+      font-size: .78rem;
+      padding: 5px 13px;
+      border-radius: 6px;
+      transition: background .15s, border-color .15s;
+    }
+    #back-btn:hover { background: var(--bdr); border-color: var(--bl); }
+
+    /* Top bar */
+    #topbar {
+      background: var(--bg2);
+      border-bottom: 1px solid var(--bdr);
+      padding: 0 24px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #topbar h1 {
+      font-size: .9rem;
+      font-weight: 700;
+      letter-spacing: .1em;
+      color: var(--txt);
+    }
+
+    /* Drop zone */
+    #drop-zone {
+      margin: 40px auto 0;
+      max-width: 640px;
+      border: 2px dashed var(--bdr);
+      border-radius: 14px;
+      padding: 60px 32px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color .2s, background .2s;
+      background: var(--bg2);
+    }
+    #drop-zone:hover, #drop-zone.drag-over {
+      border-color: var(--bl);
+      background: rgba(88, 166, 255, .06);
+    }
+    #drop-zone h2 {
+      font-size: 1.1rem;
+      color: var(--txt);
+      margin-bottom: 10px;
+    }
+    #drop-zone p { font-size: .78rem; color: var(--mu); line-height: 1.7; }
+    #drop-zone .big-icon { font-size: 3rem; margin-bottom: 16px; }
+    #pick-btn {
+      margin-top: 22px;
+      background: var(--bl);
+      color: #000;
+      border: none;
+      border-radius: 7px;
+      padding: 9px 24px;
+      font-size: .82rem;
+      font-family: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity .15s;
+    }
+    #pick-btn:hover { opacity: .85; }
+    #no-support {
+      display: none;
+      margin-top: 16px;
+      padding: 10px 16px;
+      background: rgba(247, 129, 102, .12);
+      border: 1px solid var(--or);
+      border-radius: 7px;
+      color: var(--or);
+      font-size: .76rem;
+    }
+
+    /* Progress */
+    #progress-wrap {
+      display: none;
+      margin: 32px auto 0;
+      max-width: 640px;
+      text-align: center;
+    }
+    #progress-label { font-size: .78rem; color: var(--mu); margin-bottom: 8px; }
+    #progress-bar-outer {
+      width: 100%;
+      height: 8px;
+      background: var(--bg3);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    #progress-bar-inner {
+      height: 100%;
+      width: 0%;
+      background: var(--bl);
+      border-radius: 4px;
+      transition: width .1s;
+    }
+
+    /* Results */
+    #results {
+      display: none;
+      max-width: 1100px;
+      margin: 36px auto 0;
+      padding: 0 20px;
+    }
+
+    .section {
+      background: var(--bg2);
+      border: 1px solid var(--bdr);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+    .section-title {
+      font-size: .78rem;
+      font-weight: 700;
+      letter-spacing: .12em;
+      color: var(--mu);
+      text-transform: uppercase;
+      margin-bottom: 18px;
+    }
+
+    /* Summary cards */
+    #summary-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+    .card {
+      background: var(--bg3);
+      border: 1px solid var(--bdr);
+      border-radius: 10px;
+      padding: 18px 20px;
+    }
+    .card-label { font-size: .7rem; color: var(--mu); margin-bottom: 6px; letter-spacing: .08em; }
+    .card-value { font-size: 1.5rem; font-weight: 700; color: var(--bl); }
+    .card-sub { font-size: .7rem; color: var(--mu); margin-top: 4px; }
+
+    /* Bar chart */
+    #chart-canvas {
+      width: 100%;
+      display: block;
+      border-radius: 6px;
+    }
+
+    /* Type table */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .76rem;
+    }
+    .data-table th {
+      text-align: left;
+      color: var(--mu);
+      font-weight: 600;
+      letter-spacing: .06em;
+      padding: 6px 10px;
+      border-bottom: 1px solid var(--bdr);
+      cursor: pointer;
+      user-select: none;
+      white-space: nowrap;
+    }
+    .data-table th:hover { color: var(--bl); }
+    .data-table th .sort-arrow { opacity: .4; margin-left: 4px; }
+    .data-table th.sorted .sort-arrow { opacity: 1; color: var(--bl); }
+    .data-table td {
+      padding: 6px 10px;
+      border-bottom: 1px solid rgba(48,54,61,.6);
+      color: var(--txt);
+    }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:hover td { background: rgba(88,166,255,.05); }
+    .pill {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: .68rem;
+      font-weight: 700;
+      background: var(--bg3);
+      color: var(--bl);
+      border: 1px solid var(--bdr);
+    }
+    .bar-cell { width: 120px; }
+    .bar-mini {
+      height: 6px;
+      border-radius: 3px;
+      background: var(--bl);
+      min-width: 2px;
+      opacity: .7;
+    }
+
+    /* Word cloud / frequency list */
+    #word-cloud {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      line-height: 1.5;
+    }
+    .word-chip {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 5px;
+      background: var(--bg3);
+      border: 1px solid var(--bdr);
+      color: var(--bl);
+      cursor: default;
+      transition: background .15s, border-color .15s;
+    }
+    .word-chip:hover {
+      background: rgba(88,166,255,.12);
+      border-color: var(--bl);
+    }
+    .word-chip .wc-count {
+      font-size: .68em;
+      color: var(--mu);
+      margin-left: 5px;
+    }
+
+    /* File tree */
+    #file-tree-list {
+      font-size: .75rem;
+      color: var(--mu);
+    }
+    .tree-ext-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 5px 0;
+      border-bottom: 1px solid rgba(48,54,61,.5);
+    }
+    .tree-ext-row:last-child { border-bottom: none; }
+    .tree-ext { min-width: 60px; color: var(--bl); font-weight: 700; }
+    .tree-count { min-width: 60px; text-align: right; color: var(--txt); }
+    .tree-size  { min-width: 80px; text-align: right; color: var(--mu); }
+    .tree-bar-wrap { flex: 1; height: 6px; background: var(--bg3); border-radius: 3px; overflow: hidden; }
+    .tree-bar-fill { height: 100%; border-radius: 3px; }
+
+    /* Per-file table wrapper */
+    #files-table-wrap {
+      max-height: 420px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--bdr) transparent;
+    }
+    #files-table-wrap::-webkit-scrollbar { width: 6px; }
+    #files-table-wrap::-webkit-scrollbar-track { background: transparent; }
+    #files-table-wrap::-webkit-scrollbar-thumb { background: var(--bdr); border-radius: 3px; }
+
+    #search-box {
+      width: 100%;
+      background: var(--bg3);
+      border: 1px solid var(--bdr);
+      color: var(--txt);
+      border-radius: 7px;
+      padding: 7px 12px;
+      font-size: .76rem;
+      font-family: inherit;
+      margin-bottom: 12px;
+      outline: none;
+      transition: border-color .15s;
+    }
+    #search-box:focus { border-color: var(--bl); }
+    #search-box::placeholder { color: var(--mu); }
+
+    /* Reset button */
+    #reset-btn {
+      display: none;
+      margin: 0 auto 8px;
+      background: var(--bg3);
+      border: 1px solid var(--bdr);
+      color: var(--mu);
+      border-radius: 7px;
+      padding: 6px 18px;
+      font-size: .76rem;
+      font-family: inherit;
+      cursor: pointer;
+      transition: border-color .15s, color .15s;
+    }
+    #reset-btn:hover { border-color: var(--bl); color: var(--bl); }
+
+    /* Color palette for ext types */
+    /* assigned dynamically */
+
+    @media (max-width: 640px) {
+      .bar-cell { display: none; }
+      #summary-cards { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<a href="../../index.html" id="back-btn">← Back</a>
+
+<div id="topbar"><h1>PROJECT META ANALYZER</h1></div>
+
+<!-- Drop zone -->
+<div id="drop-zone">
+  <div class="big-icon">📁</div>
+  <h2>Drop a project folder here</h2>
+  <p>Or click the button below to pick a directory.<br>All analysis runs entirely in your browser — nothing is uploaded.</p>
+  <button id="pick-btn">Choose Folder</button>
+  <div id="no-support">
+    Your browser does not support the Directory Picker API.<br>
+    Please use <strong>Chrome 86+</strong> or <strong>Edge 86+</strong>.<br>
+    You can still drag-and-drop a folder onto this page.
+  </div>
+</div>
+
+<!-- Progress -->
+<div id="progress-wrap">
+  <div id="progress-label">Reading files…</div>
+  <div id="progress-bar-outer"><div id="progress-bar-inner"></div></div>
+</div>
+
+<!-- Results -->
+<div id="results">
+  <button id="reset-btn">← Analyze another folder</button>
+
+  <!-- Summary cards -->
+  <div id="summary-cards">
+    <div class="card"><div class="card-label">TOTAL FILES</div><div class="card-value" id="stat-files">0</div><div class="card-sub">across all types</div></div>
+    <div class="card"><div class="card-label">TOTAL LINES</div><div class="card-value" id="stat-lines">0</div><div class="card-sub">across readable files</div></div>
+    <div class="card"><div class="card-label">TOTAL SIZE</div><div class="card-value" id="stat-size">0</div><div class="card-sub" id="stat-size-sub"></div></div>
+    <div class="card"><div class="card-label">UNIQUE TYPES</div><div class="card-value" id="stat-types">0</div><div class="card-sub">file extensions</div></div>
+  </div>
+
+  <!-- Bar chart -->
+  <div class="section">
+    <div class="section-title">Lines of Code by File Type</div>
+    <canvas id="chart-canvas" height="220"></canvas>
+    <div id="type-table-wrap" style="margin-top:20px;"></div>
+  </div>
+
+  <!-- File tree summary -->
+  <div class="section">
+    <div class="section-title">File Tree Summary</div>
+    <div id="file-tree-list"></div>
+  </div>
+
+  <!-- Word frequency -->
+  <div class="section">
+    <div class="section-title">Top 50 Tokens / Word Frequency</div>
+    <div id="word-cloud"></div>
+  </div>
+
+  <!-- Per-file table -->
+  <div class="section">
+    <div class="section-title">Per-File Breakdown</div>
+    <input type="text" id="search-box" placeholder="Filter by filename or extension…">
+    <div id="files-table-wrap">
+      <table class="data-table" id="files-table">
+        <thead>
+          <tr>
+            <th data-col="name">Filename <span class="sort-arrow">↕</span></th>
+            <th data-col="ext">Type <span class="sort-arrow">↕</span></th>
+            <th data-col="lines" style="text-align:right;">Lines <span class="sort-arrow">↕</span></th>
+            <th data-col="size" style="text-align:right;">Size <span class="sort-arrow">↕</span></th>
+            <th class="bar-cell"></th>
+          </tr>
+        </thead>
+        <tbody id="files-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+const TEXT_EXTS = new Set([
+  'html','css','js','ts','jsx','tsx','py','json','md','txt','csv','yaml','yml',
+  'toml','ini','cfg','sh','bash','zsh','fish','bat','ps1','rs','go','java',
+  'c','cpp','h','hpp','cs','rb','php','swift','kt','lua','r','m','sql',
+  'xml','svg','vue','svelte','astro','njk','liquid','handlebars','hbs',
+  'graphql','gql','proto','tf','hcl','dockerfile','makefile','gitignore',
+  'env','lock','log','conf','config','properties','gradle','cmake',
+]);
+
+const STOPWORDS = new Set([
+  'the','a','an','and','or','but','in','on','at','to','for','of','with',
+  'is','are','was','were','be','been','being','have','has','had','do','does',
+  'did','will','would','could','should','may','might','shall','can','need',
+  'if','then','else','this','that','these','those','it','its','as','by',
+  'from','up','out','so','no','not','more','also','into','than','about',
+  'var','let','const','function','return','class','import','export','default',
+  'new','true','false','null','undefined','void','typeof','instanceof',
+  'while','for','break','continue','switch','case','try','catch','finally',
+  'async','await','yield','get','set','static','public','private','protected',
+  'type','interface','extends','implements','super','self','none','pass',
+  'def','end','do','begin','rescue','raise','print','echo','use','mod',
+  'fn','let','mut','struct','enum','impl','trait','where','ref','box',
+  'i','we','you','he','she','they','them','their','our','your','my',
+  'all','each','any','some','one','two','three','four','five','six',
+  'http','https','www','com','org','net','io','dev','api','url','href',
+  'src','id','div','span','class','style','data','value','key','name',
+  'console','log','error','warn','info','debug','window','document','object',
+  'string','number','boolean','array','list','dict','map','set',
+]);
+
+const EXT_COLORS = [
+  '#58a6ff','#3fb950','#bc8cff','#f78166','#e3b341','#39d0c8',
+  '#ff7b72','#ffa657','#d2a8ff','#7ee787','#79c0ff','#ffb86c',
+  '#50fa7b','#ff79c6','#8be9fd','#bd93f9','#ffff54','#6be5fd',
+];
+
+// ─── State ────────────────────────────────────────────────────────────────────
+
+let allFiles = [];   // { name, path, ext, lines, size, text? }
+let sortCol  = 'size';
+let sortDir  = -1;   // -1 = desc
+
+// ─── DOM refs ─────────────────────────────────────────────────────────────────
+
+const dropZone    = document.getElementById('drop-zone');
+const pickBtn     = document.getElementById('pick-btn');
+const noSupport   = document.getElementById('no-support');
+const progressW   = document.getElementById('progress-wrap');
+const progressL   = document.getElementById('progress-label');
+const progressBar = document.getElementById('progress-bar-inner');
+const resultsEl   = document.getElementById('results');
+const resetBtn    = document.getElementById('reset-btn');
+
+// ─── Browser support check ───────────────────────────────────────────────────
+
+const supportsFilePicker = 'showDirectoryPicker' in window;
+if (!supportsFilePicker) {
+  noSupport.style.display = 'block';
+  pickBtn.disabled = true;
+  pickBtn.style.opacity = '.4';
+  pickBtn.style.cursor = 'not-allowed';
+}
+
+// ─── Pick button ─────────────────────────────────────────────────────────────
+
+pickBtn.addEventListener('click', async () => {
+  if (!supportsFilePicker) return;
+  try {
+    const dirHandle = await window.showDirectoryPicker({ mode: 'read' });
+    await processDirectoryHandle(dirHandle);
+  } catch (e) {
+    if (e.name !== 'AbortError') console.error(e);
+  }
+});
+
+// ─── Drag-and-drop ────────────────────────────────────────────────────────────
+
+document.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+document.addEventListener('dragleave', e => { if (!e.relatedTarget) dropZone.classList.remove('drag-over'); });
+document.addEventListener('drop', async e => {
+  e.preventDefault();
+  dropZone.classList.remove('drag-over');
+  const items = [...e.dataTransfer.items];
+  const entries = items.map(i => i.webkitGetAsEntry?.()).filter(Boolean);
+  if (entries.length === 0) return;
+  await processEntries(entries);
+});
+
+// ─── File System Access API path ─────────────────────────────────────────────
+
+async function processDirectoryHandle(dirHandle, prefix = '') {
+  showProgress(0, 'Scanning…');
+  const raw = [];
+  await walkHandle(dirHandle, prefix || dirHandle.name, raw);
+  await analyzeRaw(raw);
+}
+
+async function walkHandle(handle, path, out) {
+  if (handle.kind === 'file') {
+    out.push({ handle, path });
+  } else {
+    for await (const [, child] of handle.entries()) {
+      if (child.name.startsWith('.') || child.name === 'node_modules') continue;
+      await walkHandle(child, path + '/' + child.name, out);
+    }
+  }
+}
+
+// ─── webkitGetAsEntry path ────────────────────────────────────────────────────
+
+async function processEntries(entries) {
+  showProgress(0, 'Scanning…');
+  const raw = [];
+  for (const entry of entries) {
+    await walkEntry(entry, entry.name, raw);
+  }
+  await analyzeRaw(raw);
+}
+
+function walkEntry(entry, path, out) {
+  return new Promise(resolve => {
+    if (entry.isFile) {
+      out.push({ entry, path });
+      resolve();
+    } else if (entry.isDirectory) {
+      if (entry.name === 'node_modules' || entry.name.startsWith('.')) { resolve(); return; }
+      const reader = entry.createReader();
+      let allEntries = [];
+      const readAll = () => {
+        reader.readEntries(async batch => {
+          if (batch.length === 0) {
+            for (const child of allEntries) {
+              await walkEntry(child, path + '/' + child.name, out);
+            }
+            resolve();
+          } else {
+            allEntries = allEntries.concat([...batch]);
+            readAll();
+          }
+        });
+      };
+      readAll();
+    } else {
+      resolve();
+    }
+  });
+}
+
+// ─── Core analysis ───────────────────────────────────────────────────────────
+
+async function analyzeRaw(raw) {
+  allFiles = [];
+  const totalRaw = raw.length;
+  let done = 0;
+
+  for (const item of raw) {
+    done++;
+    const pct = Math.round((done / totalRaw) * 100);
+    updateProgress(pct, `Reading ${done}/${totalRaw} files…`);
+
+    // Yield to UI every 50 files
+    if (done % 50 === 0) await new Promise(r => setTimeout(r, 0));
+
+    try {
+      let fileObj;
+      if (item.handle) {
+        fileObj = await item.handle.getFile();
+      } else {
+        fileObj = await getFileFromEntry(item.entry);
+      }
+      const ext  = extOf(item.path);
+      const size = fileObj.size;
+      let lines = null;
+      let text  = null;
+
+      if (TEXT_EXTS.has(ext) && size < 3_000_000) {
+        try {
+          text  = await fileObj.text();
+          lines = text.split('\n').length;
+        } catch {}
+      }
+
+      allFiles.push({
+        name: fileObj.name,
+        path: item.path,
+        ext,
+        size,
+        lines,
+        text,
+      });
+    } catch {}
+  }
+
+  renderResults();
+}
+
+function getFileFromEntry(entry) {
+  return new Promise((res, rej) => entry.file(res, rej));
+}
+
+function extOf(path) {
+  const base = path.split('/').pop();
+  const dot  = base.lastIndexOf('.');
+  if (dot < 1) return base.toLowerCase(); // no ext, use full name
+  return base.slice(dot + 1).toLowerCase();
+}
+
+// ─── Render ───────────────────────────────────────────────────────────────────
+
+function renderResults() {
+  hideProgress();
+  dropZone.style.display    = 'none';
+  resultsEl.style.display   = 'block';
+  resetBtn.style.display    = 'block';
+
+  const totalFiles = allFiles.length;
+  const totalLines = allFiles.reduce((a, f) => a + (f.lines ?? 0), 0);
+  const totalSize  = allFiles.reduce((a, f) => a + f.size, 0);
+  const exts       = [...new Set(allFiles.map(f => f.ext))];
+
+  document.getElementById('stat-files').textContent = fmtNum(totalFiles);
+  document.getElementById('stat-lines').textContent = fmtNum(totalLines);
+  document.getElementById('stat-size').textContent  = fmtBytes(totalSize);
+  document.getElementById('stat-size-sub').textContent = fmtNum(totalSize) + ' bytes';
+  document.getElementById('stat-types').textContent = exts.length;
+
+  // Group by extension
+  const byExt = {};
+  for (const f of allFiles) {
+    if (!byExt[f.ext]) byExt[f.ext] = { files: 0, lines: 0, size: 0, ext: f.ext };
+    byExt[f.ext].files++;
+    byExt[f.ext].lines += f.lines ?? 0;
+    byExt[f.ext].size  += f.size;
+  }
+  const extList = Object.values(byExt).sort((a, b) => b.lines - a.lines);
+  const extColorMap = {};
+  extList.forEach((e, i) => { extColorMap[e.ext] = EXT_COLORS[i % EXT_COLORS.length]; });
+
+  drawBarChart(extList, extColorMap);
+  renderTypeTable(extList, extColorMap, totalLines);
+  renderFileTree(extList, extColorMap, totalSize);
+  renderWordCloud();
+  renderFilesTable(extColorMap);
+  setupSortable(extColorMap);
+  setupSearch(extColorMap);
+}
+
+// ─── Bar chart (Canvas) ───────────────────────────────────────────────────────
+
+function drawBarChart(extList, extColorMap) {
+  const canvas = document.getElementById('chart-canvas');
+  const dpr    = window.devicePixelRatio || 1;
+  const W      = canvas.parentElement.clientWidth;
+  const H      = 220;
+
+  canvas.width  = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.width  = W + 'px';
+  canvas.style.height = H + 'px';
+
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  // Only show exts with lines
+  const data = extList.filter(e => e.lines > 0).slice(0, 20);
+  if (data.length === 0) {
+    ctx.fillStyle = '#8b949e';
+    ctx.font = '13px IBM Plex Mono, monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('No line data available', W / 2, H / 2);
+    return;
+  }
+
+  const padL = 60, padR = 24, padT = 16, padB = 50;
+  const chartW = W - padL - padR;
+  const chartH = H - padT - padB;
+  const maxVal = Math.max(...data.map(d => d.lines));
+
+  // Grid lines
+  const gridSteps = 4;
+  ctx.strokeStyle = '#30363d';
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= gridSteps; i++) {
+    const y = padT + chartH - (i / gridSteps) * chartH;
+    ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(padL + chartW, y); ctx.stroke();
+    ctx.fillStyle = '#8b949e';
+    ctx.font = `10px IBM Plex Mono, monospace`;
+    ctx.textAlign = 'right';
+    ctx.fillText(fmtNum(Math.round((i / gridSteps) * maxVal)), padL - 6, y + 4);
+  }
+
+  // Bars
+  const barW = Math.min(40, (chartW / data.length) * 0.65);
+  const gap  = chartW / data.length;
+
+  data.forEach((d, i) => {
+    const x    = padL + i * gap + gap / 2 - barW / 2;
+    const barH = (d.lines / maxVal) * chartH;
+    const y    = padT + chartH - barH;
+
+    ctx.fillStyle = extColorMap[d.ext] || EXT_COLORS[0];
+    ctx.beginPath();
+    ctx.roundRect(x, y, barW, barH, [4, 4, 0, 0]);
+    ctx.fill();
+
+    // Label
+    ctx.fillStyle = '#8b949e';
+    ctx.font = `10px IBM Plex Mono, monospace`;
+    ctx.textAlign = 'center';
+    ctx.fillText('.' + d.ext, x + barW / 2, padT + chartH + 16);
+    ctx.fillText(fmtNum(d.lines), x + barW / 2, padT + chartH + 28);
+  });
+}
+
+// ─── Type summary table ───────────────────────────────────────────────────────
+
+function renderTypeTable(extList, extColorMap, totalLines) {
+  const wrap = document.getElementById('type-table-wrap');
+  const tbl = document.createElement('table');
+  tbl.className = 'data-table';
+  tbl.innerHTML = `<thead><tr>
+    <th>Extension</th>
+    <th style="text-align:right;">Files</th>
+    <th style="text-align:right;">Lines</th>
+    <th style="text-align:right;">Size</th>
+    <th style="text-align:right;">% Lines</th>
+    <th class="bar-cell"></th>
+  </tr></thead>`;
+  const tbody = document.createElement('tbody');
+  const maxLines = Math.max(...extList.map(e => e.lines), 1);
+  extList.forEach(e => {
+    const pct   = totalLines > 0 ? ((e.lines / totalLines) * 100).toFixed(1) : '0.0';
+    const barPct = ((e.lines / maxLines) * 100).toFixed(1);
+    const color  = extColorMap[e.ext];
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><span class="pill" style="color:${color};border-color:${color}33;">.${e.ext}</span></td>
+      <td style="text-align:right;">${fmtNum(e.files)}</td>
+      <td style="text-align:right;">${fmtNum(e.lines)}</td>
+      <td style="text-align:right;">${fmtBytes(e.size)}</td>
+      <td style="text-align:right;">${pct}%</td>
+      <td class="bar-cell"><div class="bar-mini" style="width:${barPct}%;background:${color};"></div></td>
+    `;
+    tbody.appendChild(tr);
+  });
+  tbl.appendChild(tbody);
+  wrap.innerHTML = '';
+  wrap.appendChild(tbl);
+}
+
+// ─── File tree summary ────────────────────────────────────────────────────────
+
+function renderFileTree(extList, extColorMap, totalSize) {
+  const container = document.getElementById('file-tree-list');
+  container.innerHTML = '';
+  const maxSize = Math.max(...extList.map(e => e.size), 1);
+  extList.forEach(e => {
+    const color   = extColorMap[e.ext];
+    const barPct  = ((e.size / maxSize) * 100).toFixed(1);
+    const row = document.createElement('div');
+    row.className = 'tree-ext-row';
+    row.innerHTML = `
+      <span class="tree-ext">.${e.ext}</span>
+      <span class="tree-count">${fmtNum(e.files)} file${e.files !== 1 ? 's' : ''}</span>
+      <span class="tree-size">${fmtBytes(e.size)}</span>
+      <div class="tree-bar-wrap"><div class="tree-bar-fill" style="width:${barPct}%;background:${color};"></div></div>
+    `;
+    container.appendChild(row);
+  });
+}
+
+// ─── Word cloud ───────────────────────────────────────────────────────────────
+
+function renderWordCloud() {
+  const container = document.getElementById('word-cloud');
+  container.innerHTML = '';
+
+  const freq = {};
+  for (const f of allFiles) {
+    if (!f.text) continue;
+    // Tokenize: split on non-alphanumeric (keep hyphens inside words)
+    const tokens = f.text.toLowerCase().match(/[a-z][a-z0-9_\-]{1,}/g) || [];
+    for (const tok of tokens) {
+      if (STOPWORDS.has(tok)) continue;
+      if (tok.length < 3 || tok.length > 40) continue;
+      // Skip pure numbers or hex
+      if (/^[\da-f]+$/i.test(tok) && tok.length > 4) continue;
+      freq[tok] = (freq[tok] || 0) + 1;
+    }
+  }
+
+  const sorted = Object.entries(freq).sort((a, b) => b[1] - a[1]).slice(0, 50);
+  if (sorted.length === 0) {
+    container.textContent = 'No text content found.';
+    return;
+  }
+
+  const maxCount = sorted[0][1];
+  const minCount = sorted[sorted.length - 1][1];
+  const fontMin  = 0.72, fontMax = 1.55;
+
+  sorted.forEach(([word, count]) => {
+    const t   = maxCount === minCount ? 1 : (count - minCount) / (maxCount - minCount);
+    const fs  = fontMin + t * (fontMax - fontMin);
+    const idx = Math.floor(t * (EXT_COLORS.length - 1));
+    const chip = document.createElement('span');
+    chip.className = 'word-chip';
+    chip.style.fontSize   = fs + 'rem';
+    chip.style.color      = EXT_COLORS[idx];
+    chip.style.borderColor = EXT_COLORS[idx] + '44';
+    chip.title = `"${word}" appears ${count} times`;
+    chip.innerHTML = word + `<span class="wc-count">${count}</span>`;
+    container.appendChild(chip);
+  });
+}
+
+// ─── Per-file table ───────────────────────────────────────────────────────────
+
+function renderFilesTable(extColorMap, filter = '') {
+  const tbody = document.getElementById('files-tbody');
+  tbody.innerHTML = '';
+  const lc = filter.toLowerCase();
+  const maxSize = Math.max(...allFiles.map(f => f.size), 1);
+
+  let rows = allFiles.filter(f =>
+    !filter || f.name.toLowerCase().includes(lc) || f.ext.includes(lc)
+  );
+
+  rows.sort((a, b) => {
+    let av = a[sortCol], bv = b[sortCol];
+    if (av === null || av === undefined) av = -1;
+    if (bv === null || bv === undefined) bv = -1;
+    if (typeof av === 'string') return sortDir * av.localeCompare(bv);
+    return sortDir * (av - bv);
+  });
+
+  const frag = document.createDocumentFragment();
+  for (const f of rows) {
+    const color  = extColorMap[f.ext] || EXT_COLORS[0];
+    const barPct = ((f.size / maxSize) * 100).toFixed(1);
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td title="${f.path}">${f.name}</td>
+      <td><span class="pill" style="color:${color};border-color:${color}33;">.${f.ext}</span></td>
+      <td style="text-align:right;">${f.lines !== null ? fmtNum(f.lines) : '—'}</td>
+      <td style="text-align:right;">${fmtBytes(f.size)}</td>
+      <td class="bar-cell"><div class="bar-mini" style="width:${barPct}%;background:${color};"></div></td>
+    `;
+    frag.appendChild(tr);
+  }
+  tbody.appendChild(frag);
+}
+
+function setupSortable(extColorMap) {
+  document.querySelectorAll('#files-table th[data-col]').forEach(th => {
+    th.addEventListener('click', () => {
+      const col = th.dataset.col;
+      if (sortCol === col) { sortDir *= -1; }
+      else { sortCol = col; sortDir = -1; }
+      document.querySelectorAll('#files-table th').forEach(h => h.classList.remove('sorted'));
+      th.classList.add('sorted');
+      const arrow = th.querySelector('.sort-arrow');
+      if (arrow) arrow.textContent = sortDir === -1 ? '↓' : '↑';
+      renderFilesTable(extColorMap, document.getElementById('search-box').value);
+    });
+  });
+}
+
+function setupSearch(extColorMap) {
+  document.getElementById('search-box').addEventListener('input', e => {
+    renderFilesTable(extColorMap, e.target.value);
+  });
+}
+
+// ─── Reset ────────────────────────────────────────────────────────────────────
+
+resetBtn.addEventListener('click', () => {
+  allFiles = [];
+  sortCol  = 'size';
+  sortDir  = -1;
+  dropZone.style.display  = 'block';
+  resultsEl.style.display = 'none';
+  resetBtn.style.display  = 'none';
+  document.getElementById('word-cloud').innerHTML    = '';
+  document.getElementById('files-tbody').innerHTML   = '';
+  document.getElementById('file-tree-list').innerHTML = '';
+  document.getElementById('type-table-wrap').innerHTML = '';
+});
+
+// ─── Progress helpers ─────────────────────────────────────────────────────────
+
+function showProgress(pct, label) {
+  dropZone.style.display = 'none';
+  progressW.style.display = 'block';
+  progressBar.style.width  = pct + '%';
+  progressL.textContent    = label;
+}
+function updateProgress(pct, label) {
+  progressBar.style.width = pct + '%';
+  progressL.textContent   = label;
+}
+function hideProgress() {
+  progressW.style.display = 'none';
+}
+
+// ─── Formatting helpers ───────────────────────────────────────────────────────
+
+function fmtNum(n) {
+  if (n === null || n === undefined) return '—';
+  return n.toLocaleString();
+}
+function fmtBytes(b) {
+  if (b === 0) return '0 B';
+  const u = ['B','KB','MB','GB'];
+  const i = Math.floor(Math.log(b) / Math.log(1024));
+  return (b / Math.pow(1024, i)).toFixed(i > 0 ? 1 : 0) + ' ' + u[i];
+}
+
+// ─── Resize chart on window resize ───────────────────────────────────────────
+
+let resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    if (allFiles.length === 0) return;
+    const byExt = {};
+    for (const f of allFiles) {
+      if (!byExt[f.ext]) byExt[f.ext] = { files: 0, lines: 0, size: 0, ext: f.ext };
+      byExt[f.ext].lines += f.lines ?? 0;
+    }
+    const extList = Object.values(byExt).sort((a, b) => b.lines - a.lines);
+    const extColorMap = {};
+    extList.forEach((e, i) => { extColorMap[e.ext] = EXT_COLORS[i % EXT_COLORS.length]; });
+    drawBarChart(extList, extColorMap);
+  }, 200);
+});
+</script>
+</body>
+</html>

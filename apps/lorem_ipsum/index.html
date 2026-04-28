@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lorem Ipsum Generator</title>
+  <link rel="icon" type="image/x-icon" href="../../images.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b0f16;
+      --panel: #111826;
+      --panel-2: #172235;
+      --border: #23324c;
+      --text: #e7edf7;
+      --muted: #9fb2c7;
+      --accent: #f472b6;
+      --shadow: 0 14px 30px rgba(0,0,0,0.4);
+      --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+      --sans: "Space Grotesk", system-ui, -apple-system, Segoe UI, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--sans);
+      color: var(--text);
+      background:
+        radial-gradient(900px 500px at 10% -20%, rgba(244, 114, 182, 0.2), transparent 60%),
+        radial-gradient(900px 500px at 90% -20%, rgba(125, 211, 252, 0.18), transparent 60%),
+        var(--bg);
+      min-height: 100vh;
+    }
+    header {
+      padding: 26px 36px 18px;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(17, 24, 38, 0.95), rgba(11, 15, 22, 0.9));
+      position: sticky; top: 0; z-index: 10;
+    }
+    header .wrap { max-width: 1000px; margin: 0 auto; }
+    .back {
+      display: inline-flex; align-items: center; gap: 8px;
+      color: var(--muted); text-decoration: none; font-size: 12px;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      border: 1px solid var(--border); padding: 6px 12px; border-radius: 999px;
+      font-family: var(--mono);
+    }
+    h1 { margin-top: 12px; font-size: clamp(1.6rem, 2.6vw, 2.4rem); }
+    .sub { margin-top: 6px; color: var(--muted); }
+    main { max-width: 1000px; margin: 0 auto; padding: 30px 36px 80px; display: grid; gap: 22px; }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 22px;
+      box-shadow: var(--shadow);
+    }
+    .panel h2 { font-size: 1.1rem; margin-bottom: 12px; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+    }
+    label { font-size: 0.78rem; color: var(--muted); font-family: var(--mono); letter-spacing: 0.1em; text-transform: uppercase; }
+    input, select, textarea {
+      width: 100%;
+      background: var(--panel-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-family: var(--mono);
+      font-size: 0.85rem;
+    }
+    textarea { min-height: 220px; resize: vertical; }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 12px; }
+    .btn {
+      background: var(--accent); color: #1b0b13; border: none; border-radius: 10px;
+      padding: 10px 16px; font-weight: 700; cursor: pointer; font-family: var(--mono);
+      text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.72rem;
+    }
+    .btn.secondary { background: transparent; border: 1px solid var(--border); color: var(--text); }
+    @media (max-width: 640px) {
+      header, main { padding-left: 20px; padding-right: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <a class="back" href="../../index.html">Back Home</a>
+      <h1>Lorem Ipsum Generator</h1>
+      <p class="sub">Generate words, sentences, or paragraphs in classic or modern variants.</p>
+    </div>
+  </header>
+
+  <main>
+    <section class="panel">
+      <h2>Settings</h2>
+      <div class="grid">
+        <div>
+          <label>Unit</label>
+          <select id="unit">
+            <option value="words">Words</option>
+            <option value="sentences">Sentences</option>
+            <option value="paragraphs">Paragraphs</option>
+          </select>
+        </div>
+        <div>
+          <label>Count</label>
+          <input id="count" type="number" value="3" min="1" max="50">
+        </div>
+        <div>
+          <label>Style</label>
+          <select id="style">
+            <option value="classic">Classic Lorem</option>
+            <option value="latin">Latin Variant</option>
+            <option value="english">English Filler</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <button class="btn" id="generate">Generate</button>
+        <button class="btn secondary" id="copy">Copy</button>
+        <button class="btn secondary" id="clear">Clear</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Output</h2>
+      <textarea id="output"></textarea>
+    </section>
+  </main>
+
+  <script>
+    const WORDS = {
+      classic: "lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua".split(' '),
+      latin: "vestibulum viverra nulla feugiat nunc pharetra mauris laoreet cursus varius habitasse aliquam volutpat iaculis".split(' '),
+      english: "cloud drift market vector pulse signal quiet valley horizon brick canvas breeze ember orbit".split(' ')
+    };
+    function randomChoice(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+    function makeSentence(words) {
+      const len = 6 + Math.floor(Math.random() * 10);
+      const parts = [];
+      for (let i = 0; i < len; i++) parts.push(randomChoice(words));
+      let s = parts.join(' ');
+      return s.charAt(0).toUpperCase() + s.slice(1) + '.';
+    }
+    function makeParagraph(words) {
+      const count = 3 + Math.floor(Math.random() * 4);
+      const sentences = [];
+      for (let i = 0; i < count; i++) sentences.push(makeSentence(words));
+      return sentences.join(' ');
+    }
+    function generateText() {
+      const unit = document.getElementById('unit').value;
+      const count = Math.max(1, parseInt(document.getElementById('count').value, 10) || 1);
+      const style = document.getElementById('style').value;
+      const words = WORDS[style];
+      let output = '';
+      if (unit === 'words') {
+        const list = [];
+        for (let i = 0; i < count; i++) list.push(randomChoice(words));
+        output = list.join(' ');
+      } else if (unit === 'sentences') {
+        const list = [];
+        for (let i = 0; i < count; i++) list.push(makeSentence(words));
+        output = list.join(' ');
+      } else {
+        const list = [];
+        for (let i = 0; i < count; i++) list.push(makeParagraph(words));
+        output = list.join('\n\n');
+      }
+      document.getElementById('output').value = output;
+    }
+    document.getElementById('generate').addEventListener('click', generateText);
+    document.getElementById('copy').addEventListener('click', () => {
+      const text = document.getElementById('output').value;
+      if (text) navigator.clipboard.writeText(text);
+    });
+    document.getElementById('clear').addEventListener('click', () => {
+      document.getElementById('output').value = '';
+    });
+    generateText();
+  </script>
+</body>
+</html>

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recurrence Relation Lab</title>
+  <link rel="icon" type="image/x-icon" href="../../images.ico">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="page-shell">
+    <header class="hero panel">
+      <a class="back-link" href="../../index.html">Back Home</a>
+      <div class="hero-copy">
+        <p class="eyebrow">Mathematics</p>
+        <h1>Recurrence Relation Lab</h1>
+        <p class="lede">Pick a recurrence family, set the initial conditions, and watch the pattern unfold. It is built for side-by-side exploration of stable linear sequences, Painleve-inspired nonlinear recurrences, and chaotic maps.</p>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="panel controls-panel">
+        <div class="section-head">
+          <h2>Controls</h2>
+          <p>Choose a preset, tune its parameters, and generate as many terms as you want.</p>
+        </div>
+
+        <div class="control-grid">
+          <label>
+            <span>Category</span>
+            <select id="category-filter"></select>
+          </label>
+          <label>
+            <span>Preset</span>
+            <select id="preset-select"></select>
+          </label>
+          <label>
+            <span>Terms To Generate</span>
+            <input id="term-count" type="number" min="5" max="250" step="1" value="20">
+          </label>
+          <label>
+            <span>Plot Mode</span>
+            <select id="plot-mode">
+              <option value="sequence">Sequence Values</option>
+              <option value="delta">Step Differences</option>
+              <option value="magnitude">Absolute Value</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="button-row">
+          <button id="generate-btn" class="btn primary">Generate</button>
+          <button id="randomize-btn" class="btn">Randomize Seeds</button>
+          <button id="reset-btn" class="btn ghost">Reset Preset Defaults</button>
+        </div>
+
+        <div class="panel inset">
+          <div class="mini-head"><h3>Preset Info</h3></div>
+          <div class="formula-box">
+            <div id="preset-name" class="formula-title"></div>
+            <div id="preset-formula" class="formula-text"></div>
+          </div>
+          <div class="meta-grid">
+            <div>
+              <span class="meta-label">Behavior</span>
+              <p id="preset-behavior" class="meta-value"></p>
+            </div>
+            <div>
+              <span class="meta-label">Complexity</span>
+              <p id="preset-complexity" class="meta-value"></p>
+            </div>
+          </div>
+          <p id="preset-description" class="helper-copy"></p>
+          <p id="preset-note" class="note-copy"></p>
+        </div>
+
+        <div class="panel inset">
+          <div class="mini-head"><h3>Parameters</h3></div>
+          <div id="param-fields" class="dynamic-fields"></div>
+        </div>
+
+        <div class="panel inset">
+          <div class="mini-head"><h3>Initial Conditions</h3></div>
+          <div id="seed-fields" class="dynamic-fields"></div>
+        </div>
+      </section>
+
+      <section class="panel output-panel">
+        <div class="section-head">
+          <h2>Pattern View</h2>
+          <p>The chart is meant for fast visual pattern recognition, similar to a Collatz run viewer but generalized to many recurrence families.</p>
+        </div>
+
+        <div class="stats-grid">
+          <article class="stat-card"><span class="meta-label">Generated Terms</span><strong id="stat-count">0</strong></article>
+          <article class="stat-card"><span class="meta-label">Min</span><strong id="stat-min">0</strong></article>
+          <article class="stat-card"><span class="meta-label">Max</span><strong id="stat-max">0</strong></article>
+          <article class="stat-card"><span class="meta-label">Final</span><strong id="stat-final">0</strong></article>
+          <article class="stat-card"><span class="meta-label">Sign Changes</span><strong id="stat-sign">0</strong></article>
+          <article class="stat-card"><span class="meta-label">Approx. Cycle</span><strong id="stat-cycle">None</strong></article>
+        </div>
+
+        <div class="panel chart-panel">
+          <svg id="chart" viewBox="0 0 900 360" preserveAspectRatio="none" aria-label="Sequence chart"></svg>
+          <div id="chart-empty" class="chart-empty">Generate a sequence to see the pattern.</div>
+        </div>
+
+        <div class="chart-legend">
+          <div class="legend-swatch" aria-hidden="true"></div>
+          <p><strong>Color meaning:</strong> teal is earlier in the run, orange is later in the run. The gradient is just a time marker so you can see how the path evolves from first terms to last terms.</p>
+        </div>
+
+        <div class="panel dependency-panel">
+          <div class="mini-head">
+            <h3>Dependency Footprint</h3>
+          </div>
+          <p id="dependency-summary" class="helper-copy"></p>
+          <div class="dependency-topline">
+            <div class="dependency-legend">
+              <span class="dependency-chip local">Short memory</span>
+              <span class="dependency-chip mid">Structured history</span>
+              <span class="dependency-chip global">History-heavy</span>
+            </div>
+            <p id="dependency-scale" class="dependency-scale"></p>
+          </div>
+          <svg id="dependency-chart" viewBox="0 0 900 210" preserveAspectRatio="none" aria-label="Dependency footprint chart"></svg>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>n</th><th>a_n</th><th>Delta</th><th>Magnitude</th></tr>
+            </thead>
+            <tbody id="sequence-body"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <section class="panel explainer-panel">
+      <div class="section-head">
+        <h2>Why Some Recurrences Stay Clean And Others Explode</h2>
+        <p>This app is not just about plotting values. It is also about how much past information each recurrence has to carry forward.</p>
+      </div>
+
+      <div class="explainer-grid">
+        <article class="explainer-card explainer-good">
+          <span class="explainer-tag">Good + Painleve</span>
+          <h3>The Rigid Track</h3>
+          <p>These recurrences lock the future to the past with a fixed and manageable rule.</p>
+          <p><strong>What that means:</strong> to compute a far-away term like <code>a_100</code>, you usually only need one or two recent terms such as <code>a_99</code> and <code>a_98</code>.</p>
+          <p><strong>What you see in the graph:</strong> even when the values grow very large, they usually grow in a smooth and structured way. The pattern does not suddenly "forget" its shape.</p>
+          <p><strong>Why Painleve still fits here:</strong> even when the recurrence is nonlinear, the interactions stay organized by hidden symmetry. The information does not tangle into chaos, so the system stays integrable.</p>
+        </article>
+
+        <article class="explainer-card explainer-bad">
+          <span class="explainer-tag">Bad / Chaos</span>
+          <h3>The Information Explosion</h3>
+          <p>These recurrences do not depend on just the latest step. They can depend on the entire history of the sequence.</p>
+          <p><strong>What that means:</strong> to compute something like <code>a_100</code>, the rule may need to combine many earlier terms at once: <code>a_0, a_1, ..., a_99</code>.</p>
+          <p><strong>What you see in the graph:</strong> the later terms contain more compressed history than the early ones. The sequence effectively remembers and re-mixes its own past, which is why complexity and chaos appear.</p>
+          <p><strong>Big intuition:</strong> in the rigid track, the future is a short continuation of the recent past. In the bad track, the future is a crowded summary of almost everything that came before.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel library-panel">
+      <div class="section-head">
+        <h2>Preset Library</h2>
+        <p>Every recurrence family you listed is available here. Some of the Painleve and PDE-inspired entries are intentionally marked as stylized when the recurrence was underspecified.</p>
+      </div>
+      <div id="preset-library" class="library-grid"></div>
+    </section>
+  </div>
+
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script src="./script.js"></script>
+</body>
+</html>

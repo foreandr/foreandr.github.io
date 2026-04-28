@@ -1,0 +1,152 @@
+# 🔒 Project config and local data
+instructions.txt
+upload_pypi.bat
+upload_github.bat
+update_package_num.bat
+notes.txt
+config.json
+configuration.json
+credentials.json
+webweb.exe
+main.exe
+base.exe
+site_graph.html
+
+# 🧪 Data, Models, Logs
+*.pickle
+*.pkl
+*.spec
+*.log
+*.jpg
+# *.png
+
+*.logs.txt
+log.txt
+logs/
+geckodriver.log
+webwebdb.sqlite
+files/like_performance.db
+files/digital_ocean.json
+files/credentials.json.txt
+files/credentials.json
+
+# 📁 Virtual environments, build artifacts, and temp files
+venv/
+build/
+dist/
+develop-eggs/
+downloads/
+temp_download/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/executables/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# 🧠 HyperSel specific
+hyperSel/__pycache__/
+hyperSel/logs/
+hyperSel/demo_data1.json
+hyperSel/data/phone.csv
+hyperSel/data/names.txt
+hyperSel/data/addresses.csv
+hyperSel/data/email.txt
+hyperSel/SVC.pkl
+hyperSel/RandomForestClassifier.pkl
+hyperSel/LogisticRegression.pkl
+hyperSel/foo_trial.spec
+
+# 🔬 Other folders
+resources/
+tor/
+parsing_papers/
+
+# ⚙️ IDE/editor files
+.vscode/
+.vs/
+.idea/
+*.swp
+
+# 🧪 Testing / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+*.cover
+*.pid
+*.tgz
+*.gz
+
+# 📦 OS-specific junk
+.DS_Store
+Thumbs.db
+
+# 🎥 Video files
+*.avi
+*.mov
+*.mkv
+*.webm
+# **NEW RULE:** Ignore all MP4 files everywhere
+*.mp4
+
+# 🔊 Audio files
+# *.mp3
+*.wav
+*.flac
+*.aac
+*.ogg
+*.m4a
+*.wma
+*.aiff
+*.opus
+
+# 🚫 Python cache
+__pycache__/
+__pycache__
+__pycache__/db.cpython-312.pyc
+
+# 🚀 FFmpeg binaries (ALLOW EXEs ONLY)
+ffmpeg/*
+!ffmpeg/bin/
+ffmpeg/bin/*
+!ffmpeg/bin/ffmpeg.exe
+!ffmpeg/bin/ffplay.exe
+!ffmpeg/bin/ffprobe.exe
+
+
+# 🔧 Installer artifacts
+launcher/webweb_installer.iss
+launcher/Output/
+client_secrets.json
+
+# ----------------------------------------------------
+# 📌 EXCEPTION: ALLOW PROJECT ASSETS IN 'assets/videos/'
+# ----------------------------------------------------
+# Un-ignore the specific folder containing the MP4 files
+!/assets/videos/
+# Un-ignore the MP4 files inside that specific folder
+!/assets/videos/*.mp4
+google_credentials.JSON
+token.JSON
+token.json
+apps/hadith_tree/sanadset.csv
+apps/natural_resources/Minerals_Data_Export.csv
+apps/natural_resources/energy.csv
+apps/natural_resources/minerals.csv
+apps/natural_resources/Statistical Review of World Energy Narrow format.csv
+
+# 🚫 LFS BUSTERS — large data files that killed the LFS budget
+apps/jobs_analysis/aggregated_jobs.json
+apps/jobs_analysis/jobs_min.json
+apps/openalex_pipeline/openalex_data.js
+apps/openalex_pipeline/openalex_papers.csv
+apps/blockchain_tracker/graph_data.js
+apps/finance_sentiment/raw_sentiment.json
+apps/finance_sentiment/sentiment_data.js
+*.onnx
+*.bin

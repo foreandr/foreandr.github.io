@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Unit Converter</title>
+  <link rel="icon" type="image/x-icon" href="../../images.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=JetBrains+Mono:wght@400;500;700&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0b;--bg2:#111113;--bg3:#18181b;--border:#252528;--text:#e2e2e6;--muted:#6b6b72;--accent:#c8a96e;--green:#5aab7a;--red:#e05555;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Crimson Pro',serif;min-height:100vh;}
+a{color:var(--accent);text-decoration:none;}
+a:hover{text-decoration:underline;}
+.header{padding:1.5rem 2rem;border-bottom:1px solid var(--border);}
+.eyebrow{font-family:'Cinzel',serif;font-size:.7rem;letter-spacing:.15em;color:var(--muted);text-transform:uppercase;margin-bottom:.4rem;}
+h1{font-family:'Cinzel',serif;font-size:2rem;font-weight:700;background:linear-gradient(135deg,var(--accent),#e8c98e,var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.subtitle{font-family:'Crimson Pro',serif;font-style:italic;color:var(--muted);font-size:1rem;margin-top:.3rem;}
+.back-link{font-family:'JetBrains Mono',monospace;font-size:.8rem;color:var(--muted);margin-bottom:.5rem;display:block;}
+.main{max-width:960px;margin:0 auto;padding:1.5rem;}
+.tabs{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:1.5rem;}
+.tab{background:var(--bg2);border:1px solid var(--border);border-radius:20px;color:var(--muted);cursor:pointer;font-family:'Crimson Pro',serif;font-size:.9rem;padding:.3rem .9rem;transition:all .2s;white-space:nowrap;}
+.tab:hover{border-color:var(--accent);color:var(--accent);}
+.tab.active{background:var(--accent);border-color:var(--accent);color:#0a0a0b;font-weight:600;}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:1.5rem;margin-bottom:1.5rem;}
+.card-title{font-family:'Cinzel',serif;font-size:.85rem;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.1em;margin-bottom:1.2rem;}
+.converter-row{display:grid;grid-template-columns:1fr auto 1fr;gap:.8rem;align-items:end;margin-bottom:1rem;}
+@media(max-width:600px){.converter-row{grid-template-columns:1fr;}}
+.form-group{display:flex;flex-direction:column;gap:.3rem;}
+label{font-size:.85rem;color:var(--muted);}
+input,select{background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:.9rem;padding:.5rem .75rem;width:100%;outline:none;transition:border-color .2s;}
+input:focus,select:focus{border-color:var(--accent);}
+select option{background:var(--bg3);}
+.swap-btn{background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--accent);cursor:pointer;font-size:1.1rem;padding:.5rem .8rem;transition:all .2s;align-self:flex-end;}
+.swap-btn:hover{background:var(--accent);color:#0a0a0b;}
+.result-display{background:var(--bg3);border:1px solid var(--accent);border-radius:6px;color:var(--accent);font-family:'JetBrains Mono',monospace;font-size:1.1rem;padding:.55rem .75rem;width:100%;}
+.data-base-row{display:flex;gap:.8rem;margin-bottom:.8rem;align-items:center;font-size:.9rem;}
+.data-base-row label{display:flex;align-items:center;gap:.3rem;cursor:pointer;color:var(--text);}
+.data-base-row input[type=radio]{accent-color:var(--accent);}
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:.88rem;}
+th{color:var(--muted);font-family:'Cinzel',serif;font-size:.75rem;text-align:left;padding:.4rem .6rem;border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:.05em;}
+td{padding:.35rem .6rem;border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:.82rem;}
+tr:last-child td{border-bottom:none;}
+tr.highlight td{color:var(--accent);}
+.toast{position:fixed;bottom:2rem;right:2rem;background:var(--accent);color:#0a0a0b;padding:.6rem 1.2rem;border-radius:6px;font-family:'JetBrains Mono',monospace;font-size:.85rem;font-weight:600;opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none;z-index:999;}
+.toast.show{opacity:1;transform:translateY(0);}
+</style>
+</head>
+<body>
+<div class="header">
+  <a class="back-link" href="../../index.html">← Back</a>
+  <div class="eyebrow">Office</div>
+  <h1>Unit Converter</h1>
+  <div class="subtitle">Convert between 100+ units across 11 categories — with full conversion tables.</div>
+</div>
+<div class="main">
+  <div class="tabs" id="tabs"></div>
+  <div id="converter-content"></div>
+</div>
+<div class="toast" id="toast">Copied!</div>
+
+<script>
+const CATEGORIES = {
+  Length: {
+    units: ['mm','cm','m','km','in','ft','yd','mi','nmi','AU','ly'],
+    labels: ['Millimeter (mm)','Centimeter (cm)','Meter (m)','Kilometer (km)','Inch (in)','Foot (ft)','Yard (yd)','Mile (mi)','Nautical Mile (nmi)','Astronomical Unit (AU)','Light-year (ly)'],
+    toBase: [0.001,0.01,1,1000,0.0254,0.3048,0.9144,1609.344,1852,1.495978707e11,9.4607304725808e15],
+  },
+  'Mass/Weight': {
+    units: ['mg','g','kg','t','oz','lb','st','ton'],
+    labels: ['Milligram (mg)','Gram (g)','Kilogram (kg)','Metric Ton (t)','Ounce (oz)','Pound (lb)','Stone (st)','US Ton (ton)'],
+    toBase: [1e-6,0.001,1,1000,0.0283495,0.453592,6.35029,907.185],
+  },
+  Temperature: { special: true },
+  Area: {
+    units: ['mm²','cm²','m²','km²','in²','ft²','yd²','ac','ha','mi²'],
+    labels: ['Square Millimeter','Square Centimeter','Square Meter','Square Kilometer','Square Inch','Square Foot','Square Yard','Acre','Hectare','Square Mile'],
+    toBase: [1e-6,1e-4,1,1e6,6.4516e-4,0.0929030,0.836127,4046.856,10000,2589988.11],
+  },
+  Volume: {
+    units: ['mL','cL','L','m³','in³','ft³','fl oz','cup','pt','qt','gal'],
+    labels: ['Milliliter','Centiliter','Liter','Cubic Meter','Cubic Inch','Cubic Foot','Fluid Ounce (US)','Cup (US)','Pint (US)','Quart (US)','Gallon (US)'],
+    toBase: [0.001,0.01,1,1000,0.016387064,28.3168,0.0295735,0.236588,0.473176,0.946353,3.78541],
+  },
+  Speed: {
+    units: ['m/s','km/h','mph','knot','mach','c'],
+    labels: ['Meters/second','Kilometers/hour','Miles/hour','Knots','Mach (sea level)','Speed of light (c)'],
+    toBase: [1,1/3.6,0.44704,0.514444,340.29,299792458],
+  },
+  Data: { special: 'data' },
+  Time: {
+    units: ['ns','µs','ms','s','min','h','day','week','month','year'],
+    labels: ['Nanosecond','Microsecond','Millisecond','Second','Minute','Hour','Day','Week','Month (avg)','Year (avg)'],
+    toBase: [1e-9,1e-6,1e-3,1,60,3600,86400,604800,2629746,31556952],
+  },
+  Energy: {
+    units: ['J','kJ','cal','kcal','Wh','kWh','BTU','eV','ft·lb'],
+    labels: ['Joule','Kilojoule','Calorie','Kilocalorie (kcal)','Watt-hour','Kilowatt-hour','BTU','Electronvolt','Foot-pound'],
+    toBase: [1,1000,4.184,4184,3600,3.6e6,1055.06,1.60218e-19,1.35582],
+  },
+  Pressure: {
+    units: ['Pa','kPa','MPa','bar','psi','atm','mmHg','inHg'],
+    labels: ['Pascal','Kilopascal','Megapascal','Bar','PSI','Atmosphere','mmHg (Torr)','inHg'],
+    toBase: [1,1000,1e6,1e5,6894.76,101325,133.322,3386.39],
+  },
+  Angle: {
+    units: ['°','rad','grad','rev','arcmin','arcsec'],
+    labels: ['Degree','Radian','Gradian','Revolution','Arcminute','Arcsecond'],
+    toBase: [1,180/Math.PI,0.9,360,1/60,1/3600],
+  },
+};
+
+const DATA_UNITS = ['bit','B','KB','MB','GB','TB','PB'];
+const DATA_LABELS = ['Bit','Byte','Kilobyte','Megabyte','Gigabyte','Terabyte','Petabyte'];
+function dataToBase(unit, base) {
+  const map = {bit:0,B:1,KB:2,MB:3,GB:4,TB:5,PB:6};
+  const idx = map[unit];
+  if (idx===0) return 1/(base===1024?8:8);
+  return Math.pow(base, idx-1);
+}
+function dataFromBase(unit, base) {
+  const map = {bit:0,B:1,KB:2,MB:3,GB:4,TB:5,PB:6};
+  const idx = map[unit];
+  if (idx===0) return base===1024?8:8;
+  return 1/Math.pow(base, idx-1);
+}
+
+let currentCat = 'Length';
+let dataBase = 1000;
+
+function safeEval(expr) {
+  try {
+    const val = Function('"use strict";return ('+expr+')')();
+    if (typeof val === 'number' && isFinite(val)) return val;
+  } catch(e){}
+  return NaN;
+}
+
+function renderTabs() {
+  const tabs = document.getElementById('tabs');
+  tabs.innerHTML = Object.keys(CATEGORIES).map(cat =>
+    `<button class="tab ${cat===currentCat?'active':''}" onclick="switchCat('${cat}')">${cat}</button>`
+  ).join('');
+}
+
+function switchCat(cat) {
+  currentCat = cat;
+  renderTabs();
+  renderConverter();
+}
+
+function tempConvert(val, from, to) {
+  let c;
+  if (from==='°C') c = val;
+  else if (from==='°F') c = (val-32)*5/9;
+  else if (from==='K') c = val-273.15;
+  else if (from==='°R') c = (val-491.67)*5/9;
+  if (to==='°C') return c;
+  if (to==='°F') return c*9/5+32;
+  if (to==='K') return c+273.15;
+  if (to==='°R') return (c+273.15)*9/5;
+  return NaN;
+}
+
+function convertValue(val, fromUnit, toUnit, cat) {
+  if (cat==='Temperature') return tempConvert(val, fromUnit, toUnit);
+  if (cat==='Data') {
+    const base = dataBase;
+    const baseVal = val * dataToBase(fromUnit, base);
+    return baseVal / dataToBase(toUnit, base);
+  }
+  const C = CATEGORIES[cat];
+  const fi = C.units.indexOf(fromUnit);
+  const ti = C.units.indexOf(toUnit);
+  if (fi<0||ti<0) return NaN;
+  return val * C.toBase[fi] / C.toBase[ti];
+}
+
+function fmtNum(n) {
+  if (!isFinite(n)||isNaN(n)) return 'N/A';
+  const abs = Math.abs(n);
+  if (abs===0) return '0';
+  if (abs>=1e-4 && abs<1e15) {
+    let s = parseFloat(n.toPrecision(10)).toString();
+    return s;
+  }
+  return n.toExponential(6);
+}
+
+function renderConverter() {
+  const content = document.getElementById('converter-content');
+  const cat = currentCat;
+
+  if (cat==='Temperature') {
+    const units = ['°C','°F','K','°R'];
+    content.innerHTML = `
+    <div class="card">
+      <div class="card-title">Temperature</div>
+      <div class="converter-row">
+        <div class="form-group">
+          <label>Value (supports math)</label>
+          <input id="val-from" type="text" value="100" oninput="updateConv()">
+        </div>
+        <div><button class="swap-btn" onclick="swapUnits()">⇄</button></div>
+        <div class="form-group">
+          <label>Result</label>
+          <div class="result-display" id="result-display">—</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-bottom:1rem;">
+        <div class="form-group"><label>From</label><select id="from-unit">${units.map(u=>`<option value="${u}">${u}</option>`).join('')}</select></div>
+        <div class="form-group"><label>To</label><select id="to-unit">${units.map((u,i)=>`<option value="${u}" ${i===1?'selected':''}>${u}</option>`).join('')}</select></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Conversion Table</div>
+      <div class="table-wrap"><table id="conv-table"></table></div>
+    </div>`;
+    document.getElementById('from-unit').addEventListener('change',updateConv);
+    document.getElementById('to-unit').addEventListener('change',updateConv);
+    updateConv();
+    return;
+  }
+
+  if (cat==='Data') {
+    const units = DATA_UNITS;
+    const labels = DATA_LABELS;
+    content.innerHTML = `
+    <div class="card">
+      <div class="card-title">Data</div>
+      <div class="data-base-row">Base:
+        <label><input type="radio" name="data-base" value="1000" ${dataBase===1000?'checked':''} onchange="setDataBase(1000)"> 1000 (SI)</label>
+        <label><input type="radio" name="data-base" value="1024" ${dataBase===1024?'checked':''} onchange="setDataBase(1024)"> 1024 (binary)</label>
+      </div>
+      <div class="converter-row">
+        <div class="form-group">
+          <label>Value</label>
+          <input id="val-from" type="text" value="1" oninput="updateConv()">
+        </div>
+        <div><button class="swap-btn" onclick="swapUnits()">⇄</button></div>
+        <div class="form-group">
+          <label>Result</label>
+          <div class="result-display" id="result-display">—</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-bottom:1rem;">
+        <div class="form-group"><label>From</label><select id="from-unit">${units.map((u,i)=>`<option value="${u}" ${u==='GB'?'selected':''}>${labels[i]}</option>`).join('')}</select></div>
+        <div class="form-group"><label>To</label><select id="to-unit">${units.map((u,i)=>`<option value="${u}" ${u==='MB'?'selected':''}>${labels[i]}</option>`).join('')}</select></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Conversion Table</div>
+      <div class="table-wrap"><table id="conv-table"></table></div>
+    </div>`;
+    document.getElementById('from-unit').addEventListener('change',updateConv);
+    document.getElementById('to-unit').addEventListener('change',updateConv);
+    updateConv();
+    return;
+  }
+
+  const C = CATEGORIES[cat];
+  const units = C.units;
+  const labels = C.labels;
+  content.innerHTML = `
+  <div class="card">
+    <div class="card-title">${cat}</div>
+    <div class="converter-row">
+      <div class="form-group">
+        <label>Value (supports math)</label>
+        <input id="val-from" type="text" value="1" oninput="updateConv()">
+      </div>
+      <div><button class="swap-btn" onclick="swapUnits()">⇄</button></div>
+      <div class="form-group">
+        <label>Result</label>
+        <div class="result-display" id="result-display">—</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-bottom:1rem;">
+      <div class="form-group"><label>From</label><select id="from-unit">${units.map((u,i)=>`<option value="${u}">${labels[i]}</option>`).join('')}</select></div>
+      <div class="form-group"><label>To</label><select id="to-unit">${units.map((u,i)=>`<option value="${u}" ${i===1?'selected':''}>${labels[i]}</option>`).join('')}</select></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Conversion Table</div>
+    <div class="table-wrap"><table id="conv-table"></table></div>
+  </div>`;
+  document.getElementById('from-unit').addEventListener('change',updateConv);
+  document.getElementById('to-unit').addEventListener('change',updateConv);
+  updateConv();
+}
+
+function setDataBase(b) {
+  dataBase = b;
+  updateConv();
+}
+
+function updateConv() {
+  const cat = currentCat;
+  const fromEl = document.getElementById('from-unit');
+  const toEl = document.getElementById('to-unit');
+  const valEl = document.getElementById('val-from');
+  const resEl = document.getElementById('result-display');
+  if (!fromEl||!toEl||!valEl||!resEl) return;
+  const fromUnit = fromEl.value;
+  const toUnit = toEl.value;
+  const val = safeEval(valEl.value);
+  if (isNaN(val)) { resEl.textContent='Invalid'; return; }
+  const result = convertValue(val, fromUnit, toUnit, cat);
+  resEl.textContent = fmtNum(result)+' '+toUnit;
+  updateTable(val, fromUnit, cat);
+}
+
+function updateTable(val, fromUnit, cat) {
+  const tbl = document.getElementById('conv-table');
+  if (!tbl) return;
+  let units, labels;
+  if (cat==='Temperature') {
+    units = ['°C','°F','K','°R'];
+    labels = ['Celsius','Fahrenheit','Kelvin','Rankine'];
+  } else if (cat==='Data') {
+    units = DATA_UNITS; labels = DATA_LABELS;
+  } else {
+    units = CATEGORIES[cat].units;
+    labels = CATEGORIES[cat].labels;
+  }
+  tbl.innerHTML = '<tr><th>Unit</th><th>Name</th><th>Value</th></tr>' +
+    units.map((u,i)=>{
+      const res = convertValue(val, fromUnit, u, cat);
+      const hl = u===fromUnit?'highlight':'';
+      return `<tr class="${hl}"><td>${u}</td><td>${labels[i]}</td><td>${fmtNum(res)}</td></tr>`;
+    }).join('');
+}
+
+function swapUnits() {
+  const f = document.getElementById('from-unit');
+  const t = document.getElementById('to-unit');
+  if (!f||!t) return;
+  const tmp = f.value;
+  f.value = t.value;
+  t.value = tmp;
+  updateConv();
+}
+
+renderTabs();
+renderConverter();
+</script>
+</body>
+</html>

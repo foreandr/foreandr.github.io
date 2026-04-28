@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Time Zone Converter</title>
+  <link rel="icon" type="image/x-icon" href="../../images.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b121a;
+      --panel: #121b29;
+      --panel-2: #182236;
+      --border: #273857;
+      --text: #e7edf7;
+      --muted: #9fb2c7;
+      --accent: #22c55e;
+      --shadow: 0 14px 30px rgba(0,0,0,0.4);
+      --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+      --sans: "Space Grotesk", system-ui, -apple-system, Segoe UI, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--sans);
+      color: var(--text);
+      background:
+        radial-gradient(900px 500px at 10% -20%, rgba(34, 197, 94, 0.2), transparent 60%),
+        radial-gradient(900px 500px at 90% -20%, rgba(59, 130, 246, 0.18), transparent 60%),
+        var(--bg);
+      min-height: 100vh;
+    }
+    header {
+      padding: 26px 36px 18px;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(18, 27, 41, 0.95), rgba(11, 18, 26, 0.9));
+      position: sticky; top: 0; z-index: 10;
+    }
+    header .wrap { max-width: 1100px; margin: 0 auto; }
+    .back {
+      display: inline-flex; align-items: center; gap: 8px;
+      color: var(--muted); text-decoration: none; font-size: 12px;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      border: 1px solid var(--border); padding: 6px 12px; border-radius: 999px;
+      font-family: var(--mono);
+    }
+    h1 { margin-top: 12px; font-size: clamp(1.6rem, 2.6vw, 2.4rem); }
+    .sub { margin-top: 6px; color: var(--muted); }
+    main { max-width: 1100px; margin: 0 auto; padding: 30px 36px 80px; display: grid; gap: 22px; }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 22px;
+      box-shadow: var(--shadow);
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 12px;
+    }
+    label { font-size: 0.78rem; color: var(--muted); font-family: var(--mono); letter-spacing: 0.1em; text-transform: uppercase; }
+    input, select {
+      width: 100%;
+      background: var(--panel-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-family: var(--mono);
+      font-size: 0.85rem;
+    }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 12px; }
+    .btn {
+      background: var(--accent); color: #04140d; border: none; border-radius: 10px;
+      padding: 10px 16px; font-weight: 700; cursor: pointer; font-family: var(--mono);
+      text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.72rem;
+    }
+    .btn.secondary { background: transparent; border: 1px solid var(--border); color: var(--text); }
+    .card {
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      display: grid;
+      gap: 6px;
+      font-family: var(--mono);
+      font-size: 0.82rem;
+    }
+    .card .tz { font-weight: 700; }
+    .card .meta { color: var(--muted); font-size: 0.75rem; }
+    .card .dst { color: #fbbf24; font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; }
+    .list { display: grid; gap: 10px; }
+    @media (max-width: 640px) {
+      header, main { padding-left: 20px; padding-right: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <a class="back" href="../../index.html">Back Home</a>
+      <h1>Time Zone Converter</h1>
+      <p class="sub">Live multi-zone clock with DST flags and add-any IANA timezone.</p>
+    </div>
+  </header>
+
+  <main>
+    <section class="panel">
+      <div class="grid">
+        <div>
+          <label>Base Date + Time</label>
+          <input id="baseTime" type="datetime-local">
+        </div>
+        <div>
+          <label>Live Now</label>
+          <select id="liveMode">
+            <option value="on">On</option>
+            <option value="off">Off</option>
+          </select>
+        </div>
+        <div>
+          <label>Add Time Zone</label>
+          <select id="tzSelect"></select>
+        </div>
+      </div>
+      <div class="row">
+        <button class="btn" id="addTz">Add Zone</button>
+        <button class="btn secondary" id="resetZones">Reset</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Zones</h2>
+      <div class="list" id="zoneList"></div>
+    </section>
+  </main>
+
+  <script>
+    const defaultZones = [
+      'UTC', 'America/New_York', 'America/Chicago', 'America/Denver', 'America/Los_Angeles',
+      'America/Toronto', 'Europe/London', 'Europe/Paris', 'Europe/Berlin', 'Asia/Tokyo',
+      'Asia/Shanghai', 'Asia/Singapore', 'Australia/Sydney', 'Asia/Dubai', 'Asia/Kolkata',
+      'America/Sao_Paulo', 'Africa/Johannesburg'
+    ];
+    const allZones = [
+      'UTC', 'America/New_York', 'America/Chicago', 'America/Denver', 'America/Los_Angeles',
+      'America/Toronto', 'America/Vancouver', 'America/Sao_Paulo', 'America/Mexico_City',
+      'Europe/London', 'Europe/Paris', 'Europe/Berlin', 'Europe/Madrid', 'Europe/Rome',
+      'Asia/Tokyo', 'Asia/Shanghai', 'Asia/Seoul', 'Asia/Singapore', 'Asia/Hong_Kong',
+      'Asia/Dubai', 'Asia/Kolkata', 'Australia/Sydney', 'Australia/Perth', 'Pacific/Auckland',
+      'Africa/Johannesburg', 'Africa/Cairo'
+    ];
+    const tzSelect = document.getElementById('tzSelect');
+    const zoneList = document.getElementById('zoneList');
+    const baseTime = document.getElementById('baseTime');
+    const liveMode = document.getElementById('liveMode');
+    const addTz = document.getElementById('addTz');
+    const resetZones = document.getElementById('resetZones');
+
+    let zones = [...defaultZones];
+    let timer;
+
+    function initSelect() {
+      tzSelect.innerHTML = '';
+      allZones.forEach(z => {
+        const opt = document.createElement('option');
+        opt.value = z;
+        opt.textContent = z;
+        tzSelect.appendChild(opt);
+      });
+    }
+
+    function getOffsetMinutes(timeZone, date) {
+      const dtf = new Intl.DateTimeFormat('en-US', {
+        timeZone,
+        year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', second: '2-digit',
+        hour12: false
+      });
+      const parts = dtf.formatToParts(date);
+      const lookup = {};
+      parts.forEach(p => lookup[p.type] = p.value);
+      const iso = `${lookup.year}-${lookup.month}-${lookup.day}T${lookup.hour}:${lookup.minute}:${lookup.second}Z`;
+      const zoned = new Date(iso);
+      return (zoned - date) / 60000;
+    }
+
+    function isDst(timeZone, date) {
+      const year = date.getUTCFullYear();
+      const jan = new Date(Date.UTC(year, 0, 1));
+      const jul = new Date(Date.UTC(year, 6, 1));
+      const offNow = getOffsetMinutes(timeZone, date);
+      const offJan = getOffsetMinutes(timeZone, jan);
+      const offJul = getOffsetMinutes(timeZone, jul);
+      const max = Math.max(offJan, offJul);
+      const min = Math.min(offJan, offJul);
+      if (max === min) return null;
+      return offNow === min ? 'DST On' : 'DST Off';
+    }
+
+    function formatZone(timeZone, date) {
+      const dtf = new Intl.DateTimeFormat('en-US', {
+        timeZone,
+        weekday: 'short', year: 'numeric', month: 'short', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+      });
+      return dtf.format(date);
+    }
+
+    function render() {
+      const baseDate = liveMode.value === 'on'
+        ? new Date()
+        : new Date(baseTime.value || new Date().toISOString().slice(0,16));
+
+      zoneList.innerHTML = '';
+      zones.forEach(zone => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        const dst = isDst(zone, baseDate);
+        card.innerHTML = `
+          <div class="tz">${zone}</div>
+          <div>${formatZone(zone, baseDate)}</div>
+          <div class="meta">Offset: ${getOffsetMinutes(zone, baseDate)} minutes</div>
+          ${dst ? `<div class="dst">${dst}</div>` : ''}
+          <button class="btn secondary" data-remove="${zone}">Remove</button>
+        `;
+        zoneList.appendChild(card);
+      });
+      zoneList.querySelectorAll('button[data-remove]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          zones = zones.filter(z => z !== btn.dataset.remove);
+          render();
+        });
+      });
+    }
+
+    function tick() {
+      if (liveMode.value === 'on') render();
+    }
+
+    addTz.addEventListener('click', () => {
+      const z = tzSelect.value;
+      if (!zones.includes(z)) zones.push(z);
+      render();
+    });
+    resetZones.addEventListener('click', () => {
+      zones = [...defaultZones];
+      render();
+    });
+    liveMode.addEventListener('change', () => {
+      if (liveMode.value === 'on') {
+        timer = setInterval(tick, 1000);
+      } else {
+        clearInterval(timer);
+      }
+      render();
+    });
+    baseTime.addEventListener('input', render);
+
+    initSelect();
+    baseTime.value = new Date().toISOString().slice(0,16);
+    timer = setInterval(tick, 1000);
+    render();
+  </script>
+</body>
+</html>

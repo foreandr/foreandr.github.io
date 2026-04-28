@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Game of Life² · Chromatic Evolution</title>
+  <link rel="icon" type="image/x-icon" href="../../images.ico">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap');
+
+    :root {
+      --bg: #f5f5f5;
+      --surface: #ffffff;
+      --surface2: #f0f0f5;
+      --border: #dde0ea;
+      --text: #1a1a2e;
+      --text2: #6b6b8a;
+      --accent: #5b54e8;
+      --accent2: #4338ca;
+      --btn-bg: #f0f0f8;
+      --btn-hover: #e4e4f0;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Space Grotesk', sans-serif;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      user-select: none;
+    }
+
+    /* ── TOP BAR ── */
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 14px;
+      height: 50px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+    .back-btn {
+      color: var(--text2);
+      text-decoration: none;
+      font-size: 0.82rem;
+      padding: 5px 10px;
+      border-radius: 7px;
+      transition: color .2s, background .2s;
+      white-space: nowrap;
+    }
+    .back-btn:hover { color: var(--text); background: var(--btn-hover); }
+    .title-wrap h1 { font-size: 1rem; font-weight: 700; white-space: nowrap; letter-spacing: -0.02em; }
+    .title-wrap h1 sup { font-size: 0.7em; color: var(--accent); }
+    .title-sub { font-size: 0.75rem; color: var(--text2); font-weight: 400; margin-left: 6px; }
+    .sep { width: 1px; height: 26px; background: var(--border); flex-shrink: 0; }
+    .ctrl-btn {
+      background: var(--btn-bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 5px 12px;
+      border-radius: 7px;
+      font-family: inherit;
+      font-size: 0.82rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all .15s;
+      white-space: nowrap;
+    }
+    .ctrl-btn:hover { background: var(--btn-hover); border-color: var(--accent); }
+    .ctrl-btn.playing { background: var(--accent); color: #fff; border-color: transparent; }
+    .ctrl-btn.primary { background: var(--accent); color: #fff; border-color: transparent; }
+    .ctrl-btn.primary:hover { background: var(--accent2); }
+    .speed-label {
+      display: flex; align-items: center; gap: 7px;
+      font-size: 0.78rem; color: var(--text2);
+    }
+    .speed-label input[type=range] { width: 72px; accent-color: var(--accent); }
+    #speed-val { font-family: 'IBM Plex Mono', monospace; font-size: 0.73rem; min-width: 44px; }
+    .stats {
+      margin-left: auto;
+      display: flex; gap: 14px;
+      font-size: 0.78rem; color: var(--text2);
+      font-family: 'IBM Plex Mono', monospace;
+    }
+    .stats b { color: var(--text); }
+
+    /* ── MAIN LAYOUT ── */
+    .main-layout { display: flex; flex: 1; overflow: hidden; }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: 210px; min-width: 210px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      overflow-y: auto; overflow-x: hidden;
+      flex-shrink: 0;
+    }
+    .sb-section { padding: 12px 13px; border-bottom: 1px solid var(--border); }
+    .sb-title {
+      font-size: 0.65rem; font-weight: 700;
+      letter-spacing: .1em; text-transform: uppercase;
+      color: var(--text2); margin-bottom: 9px;
+    }
+    .sb-hint { font-size: 0.65rem; color: var(--text2); font-weight: 400; margin-left: 5px; text-transform: none; letter-spacing: 0; }
+
+    /* Color swatches */
+    .swatches { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; }
+    .swatch {
+      width: 22px; height: 22px; border-radius: 5px;
+      cursor: pointer; border: 2px solid transparent;
+      transition: transform .15s, border-color .15s;
+    }
+    .swatch:hover { transform: scale(1.18); }
+    .swatch.sel { border-color: #333; }
+    .color-row { display: flex; align-items: center; gap: 7px; }
+    input[type=color] {
+      width: 32px; height: 26px;
+      border: 1px solid var(--border); border-radius: 5px;
+      cursor: pointer; background: transparent; padding: 2px;
+    }
+    .color-preview { flex: 1; height: 26px; border-radius: 5px; border: 1px solid var(--border); }
+    .icon-btn {
+      background: var(--btn-bg); border: 1px solid var(--border);
+      color: var(--text2); border-radius: 5px; padding: 3px 7px;
+      cursor: pointer; font-size: 0.73rem; transition: all .15s;
+    }
+    .icon-btn:hover { background: var(--btn-hover); color: var(--text); }
+
+    /* Seed buttons */
+    .seed-list { display: flex; flex-direction: column; gap: 3px; }
+    .seed-btn {
+      padding: 5px 8px; border-radius: 6px;
+      border: 1px solid var(--border); background: var(--btn-bg);
+      color: var(--text2); cursor: pointer;
+      font-size: 0.78rem; text-align: left; font-family: inherit;
+      transition: all .15s;
+    }
+    .seed-btn:hover { background: var(--btn-hover); color: var(--text); border-color: var(--accent); }
+
+    /* Pattern list */
+    .pattern-list { display: flex; flex-direction: column; gap: 2px; }
+    .pattern-item {
+      display: flex; align-items: center; gap: 7px;
+      padding: 5px 7px; border-radius: 5px;
+      cursor: pointer; font-size: 0.8rem; color: var(--text2);
+      transition: all .15s; border: 1px solid transparent;
+    }
+    .pattern-item:hover { background: var(--surface2); color: var(--text); }
+    .pattern-item.sel { background: var(--accent); color: #fff; border-color: transparent; }
+    .pattern-icon { font-size: 12px; width: 18px; text-align: center; flex-shrink: 0; }
+
+    /* Rules */
+    .rule-presets { display: flex; flex-wrap: wrap; gap: 3px; margin-bottom: 8px; }
+    .rp-btn {
+      padding: 3px 7px; border-radius: 4px;
+      border: 1px solid var(--border); background: var(--btn-bg);
+      color: var(--text2); cursor: pointer; font-size: 0.68rem; font-family: inherit;
+      transition: all .15s;
+    }
+    .rp-btn:hover { background: var(--btn-hover); color: var(--text); }
+    .rule-label { font-size: 0.75rem; color: var(--text2); margin-bottom: 4px; margin-top: 6px; }
+    .rule-toggles { display: flex; flex-wrap: wrap; gap: 3px; }
+    .rb {
+      width: 24px; height: 24px; border-radius: 4px;
+      border: 1px solid var(--border); background: var(--btn-bg);
+      color: var(--text2); cursor: pointer; font-size: 0.72rem; font-family: inherit;
+      display: flex; align-items: center; justify-content: center;
+      transition: all .15s;
+    }
+    .rb.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .rule-notation { margin-top: 8px; font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--accent); }
+
+    /* Options */
+    .opt-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 7px; }
+    .opt-label { font-size: 0.78rem; color: var(--text2); }
+    .toggle-sw { position: relative; display: inline-block; width: 34px; height: 18px; }
+    .toggle-sw input { opacity: 0; width: 0; height: 0; }
+    .toggle-sl {
+      position: absolute; inset: 0; background: var(--btn-bg);
+      border: 1px solid var(--border); border-radius: 9px; cursor: pointer; transition: .2s;
+    }
+    .toggle-sl::before {
+      content: ''; position: absolute;
+      width: 12px; height: 12px; left: 2px; top: 2px;
+      background: var(--text2); border-radius: 50%; transition: .2s;
+    }
+    .toggle-sw input:checked + .toggle-sl { background: var(--accent); border-color: var(--accent); }
+    .toggle-sw input:checked + .toggle-sl::before { transform: translateX(16px); background: #fff; }
+    .slider-row { display: flex; align-items: center; gap: 6px; margin-bottom: 7px; }
+    .slider-row label { font-size: 0.78rem; color: var(--text2); flex: 1; }
+    .slider-row input[type=range] { width: 72px; accent-color: var(--accent); }
+    .sval { font-size: 0.72rem; font-family: 'IBM Plex Mono', monospace; color: var(--text2); min-width: 28px; text-align: right; }
+
+    /* ── CANVAS AREA ── */
+    .canvas-wrap {
+      flex: 1; overflow: hidden; position: relative;
+      background: #ffffff; cursor: crosshair;
+    }
+    canvas#gol {
+      position: absolute; top: 0; left: 0;
+      image-rendering: pixelated; image-rendering: crisp-edges;
+    }
+    .canvas-hint {
+      position: absolute; bottom: 10px; right: 10px;
+      background: rgba(255,255,255,0.92);
+      border: 1px solid var(--border); border-radius: 7px;
+      padding: 7px 11px; font-size: 0.7rem; color: var(--text2);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      pointer-events: none; line-height: 1.7;
+    }
+    .mode-badge {
+      position: absolute; top: 8px; left: 8px;
+      background: rgba(255,255,255,0.92);
+      border: 1px solid var(--border); border-radius: 6px;
+      padding: 4px 10px; font-size: 0.72rem; color: var(--text2);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      pointer-events: none; display: flex; align-items: center; gap: 6px;
+    }
+    .mode-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text2); }
+    .mode-dot.active { background: #22c55e; }
+    .mode-dot.placing { background: #f59e0b; }
+
+    .sidebar::-webkit-scrollbar { width: 3px; }
+    .sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <a class="back-btn" href="../../index.html">← Back</a>
+  <div class="title-wrap">
+    <h1>Game of Life<sup>2</sup><span class="title-sub">Chromatic Evolution</span></h1>
+  </div>
+  <div class="sep"></div>
+  <button class="ctrl-btn primary" id="btn-play">▶ Play</button>
+  <button class="ctrl-btn" id="btn-step">Step</button>
+  <button class="ctrl-btn" id="btn-clear">Clear</button>
+  <button class="ctrl-btn" id="btn-random">Random</button>
+  <div class="sep"></div>
+  <label class="speed-label">
+    Speed
+    <input type="range" id="speed-range" min="1" max="60" value="12">
+    <span id="speed-val">12 fps</span>
+  </label>
+  <div class="stats">
+    <span>Gen <b id="gen-val">0</b></span>
+    <span>Pop <b id="pop-val">0</b></span>
+  </div>
+</div>
+
+<div class="main-layout">
+
+  <aside class="sidebar" id="sidebar">
+
+    <div class="sb-section">
+      <div class="sb-title">Brush Color</div>
+      <div class="swatches" id="swatches"></div>
+      <div class="color-row">
+        <input type="color" id="color-picker" value="#e02020">
+        <div class="color-preview" id="color-preview"></div>
+        <button class="icon-btn" id="rand-color">🎲</button>
+      </div>
+    </div>
+
+    <div class="sb-section">
+      <div class="sb-title">Quick Seeds</div>
+      <div class="seed-list">
+        <button class="seed-btn" data-seed="blobs">🎨 Color Blobs</button>
+        <button class="seed-btn" data-seed="clash">⚔️  War of Colors</button>
+        <button class="seed-btn" data-seed="gradient">▦  Gradient Field</button>
+        <button class="seed-btn" data-seed="islands">🏝  Color Islands</button>
+        <button class="seed-btn" data-seed="gliders">✦  Glider Storm</button>
+      </div>
+    </div>
+
+    <div class="sb-section">
+      <div class="sb-title">Patterns <span class="sb-hint">click canvas to place</span></div>
+      <div class="pattern-list" id="pattern-list"></div>
+    </div>
+
+    <div class="sb-section">
+      <div class="sb-title">Rules</div>
+      <div class="rule-presets" id="rule-presets"></div>
+      <div class="rule-label">Birth (B)</div>
+      <div class="rule-toggles" id="birth-togs"></div>
+      <div class="rule-label">Survival (S)</div>
+      <div class="rule-toggles" id="surv-togs"></div>
+      <div class="rule-notation" id="rule-note">B3/S23</div>
+    </div>
+
+    <div class="sb-section">
+      <div class="sb-title">Options</div>
+      <div class="opt-row">
+        <span class="opt-label">Ghost trails</span>
+        <label class="toggle-sw"><input type="checkbox" id="trail-tog"><span class="toggle-sl"></span></label>
+      </div>
+      <div class="opt-row">
+        <span class="opt-label">Grid lines</span>
+        <label class="toggle-sw"><input type="checkbox" id="grid-tog" checked><span class="toggle-sl"></span></label>
+      </div>
+      <div class="slider-row">
+        <label>Mutation</label>
+        <input type="range" id="mut-range" min="0" max="100" value="0">
+        <span class="sval" id="mut-val">0%</span>
+      </div>
+      <div class="slider-row">
+        <label>Cell size</label>
+        <input type="range" id="sz-range" min="2" max="24" value="8">
+        <span class="sval" id="sz-val">8px</span>
+      </div>
+    </div>
+
+  </aside>
+
+  <div class="canvas-wrap" id="canvas-wrap">
+    <canvas id="gol"></canvas>
+    <div class="mode-badge">
+      <span class="mode-dot" id="mode-dot"></span>
+      <span id="mode-text">Draw</span>
+    </div>
+    <div class="canvas-hint">
+      Scroll · zoom &nbsp;|&nbsp; Middle-drag · pan &nbsp;|&nbsp; Right-click · erase &nbsp;|&nbsp; Esc · deselect pattern<br>
+      Drag to paint · Born cells inherit blended color of live neighbors
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ===================================================================
+// GAME OF LIFE² — Chromatic Evolution
+// Infinite sparse grid. Born cells inherit average RGB of neighbors.
+// Surviving cells carry their color forward unchanged.
+// ===================================================================
+
+const canvas = document.getElementById('gol');
+const ctx = canvas.getContext('2d');
+const wrap = document.getElementById('canvas-wrap');
+
+// ── INFINITE SPARSE GRID ──────────────────────────────────────────
+// Key format: "x,y"  Value: {r, g, b}
+const cells  = new Map();
+const trails = new Map(); // {r, g, b, a}
+
+// ── SIMULATION CONFIG ─────────────────────────────────────────────
+let birthSet   = new Set([3]);
+let surviveSet = new Set([2, 3]);
+let trailOn    = false;
+let gridOn     = true;
+let mutation   = 0;
+
+// ── RUNTIME ───────────────────────────────────────────────────────
+let gen = 0, pop = 0;
+let running = false;
+let rafId = null, lastT = 0, fps = 12;
+
+// ── VIEW ──────────────────────────────────────────────────────────
+let cellSz = 8;
+let offX = 0, offY = 0;
+
+// ── INTERACTION ───────────────────────────────────────────────────
+let painting = false, erasing = false, panning = false;
+let panSx = 0, panSy = 0, panOx = 0, panOy = 0;
+let brushR = 224, brushG = 32, brushB = 32;
+let selPattern = null;
+let lastMx = null, lastMy = null;
+let lastPaintedCx = null, lastPaintedCy = null;
+
+// ===================================================================
+// KEY HELPERS
+// ===================================================================
+const key = (x, y) => `${x},${y}`;
+function parseKey(k) {
+  const c = k.indexOf(',');
+  return [+k.slice(0, c), +k.slice(c + 1)];
+}
+
+// ===================================================================
+// SIMULATION STEP
+// ===================================================================
+function step() {
+  // Build neighbor counts
+  const nb = new Map(); // key -> {count, sr, sg, sb}
+
+  for (const [k, col] of cells) {
+    const [x, y] = parseKey(k);
+    for (let dy = -1; dy <= 1; dy++) {
+      for (let dx = -1; dx <= 1; dx++) {
+        if (dx === 0 && dy === 0) continue;
+        const nk = key(x + dx, y + dy);
+        let n = nb.get(nk);
+        if (!n) { n = { count: 0, sr: 0, sg: 0, sb: 0 }; nb.set(nk, n); }
+        n.count++; n.sr += col.r; n.sg += col.g; n.sb += col.b;
+      }
+    }
+  }
+
+  const next = new Map();
+  const nextTrails = trailOn ? new Map(trails) : null;
+
+  // Survival
+  for (const [k, col] of cells) {
+    const n = nb.get(k);
+    const cnt = n ? n.count : 0;
+    if (surviveSet.has(cnt)) {
+      next.set(k, col);
+    } else if (trailOn) {
+      nextTrails.set(k, { r: col.r, g: col.g, b: col.b, a: 1.0 });
+    }
+  }
+
+  // Birth
+  for (const [k, n] of nb) {
+    if (!cells.has(k) && birthSet.has(n.count)) {
+      let r = Math.round(n.sr / n.count);
+      let g = Math.round(n.sg / n.count);
+      let b = Math.round(n.sb / n.count);
+      if (mutation > 0) {
+        const m = mutation * 55;
+        r = clamp(r + Math.round((Math.random() * 2 - 1) * m), 0, 255);
+        g = clamp(g + Math.round((Math.random() * 2 - 1) * m), 0, 255);
+        b = clamp(b + Math.round((Math.random() * 2 - 1) * m), 0, 255);
+      }
+      next.set(k, { r, g, b });
+      if (nextTrails) nextTrails.delete(k);
+    }
+  }
+
+  // Fade trails
+  if (trailOn && nextTrails) {
+    for (const [k, t] of nextTrails) {
+      if (!next.has(k)) {
+        t.a -= 0.07;
+        if (t.a <= 0) nextTrails.delete(k);
+      }
+    }
+    trails.clear();
+    for (const [k, v] of nextTrails) trails.set(k, v);
+  }
+
+  cells.clear();
+  for (const [k, v] of next) cells.set(k, v);
+
+  gen++; pop = cells.size;
+  updateStats(); render();
+}
+
+function clamp(v, lo, hi) { return v < lo ? lo : v > hi ? hi : v; }
+
+// ===================================================================
+// RENDER
+// ===================================================================
+function render() {
+  const W = wrap.clientWidth, H = wrap.clientHeight;
+  if (canvas.width !== W || canvas.height !== H) {
+    canvas.width = W; canvas.height = H;
+    centerView();
+  }
+
+  const cs = cellSz;
+
+  // White background
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, W, H);
+
+  // Grid lines — only when zoomed in enough
+  if (gridOn && cs >= 5) {
+    ctx.strokeStyle = 'rgba(0,0,0,0.12)';
+    ctx.lineWidth = 1;
+    // Calculate first visible grid line
+    const gx0 = Math.floor(-offX / cs) * cs + offX;
+    const gy0 = Math.floor(-offY / cs) * cs + offY;
+    ctx.beginPath();
+    for (let px = gx0; px <= W + cs; px += cs) {
+      ctx.moveTo(Math.round(px) + 0.5, 0);
+      ctx.lineTo(Math.round(px) + 0.5, H);
+    }
+    for (let py = gy0; py <= H + cs; py += cs) {
+      ctx.moveTo(0, Math.round(py) + 0.5);
+      ctx.lineTo(W, Math.round(py) + 0.5);
+    }
+    ctx.stroke();
+  }
+
+  // Visible cell range
+  const x0 = Math.floor(-offX / cs) - 1;
+  const y0 = Math.floor(-offY / cs) - 1;
+  const x1 = Math.ceil((W - offX) / cs) + 1;
+  const y1 = Math.ceil((H - offY) / cs) + 1;
+  const draw = cs >= 3 ? cs - 1 : cs; // 1px gap creates natural grid at ≥3px
+
+  // Draw trails
+  if (trailOn) {
+    for (const [k, t] of trails) {
+      const [cx, cy] = parseKey(k);
+      if (cx < x0 || cx > x1 || cy < y0 || cy > y1) continue;
+      const px = offX + cx * cs, py = offY + cy * cs;
+      ctx.globalAlpha = t.a * 0.6;
+      ctx.fillStyle = `rgb(${t.r},${t.g},${t.b})`;
+      ctx.fillRect(px, py, draw, draw);
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  // Draw live cells
+  for (const [k, { r, g, b }] of cells) {
+    const [cx, cy] = parseKey(k);
+    if (cx < x0 || cx > x1 || cy < y0 || cy > y1) continue;
+    const px = offX + cx * cs, py = offY + cy * cs;
+    ctx.fillStyle = `rgb(${r},${g},${b})`;
+    ctx.fillRect(px, py, draw, draw);
+  }
+
+  // Pattern ghost preview
+  if (selPattern && lastMx !== null) {
+    const cell = pxToCell(lastMx, lastMy);
+    if (cell) {
+      ctx.globalAlpha = 0.4;
+      ctx.fillStyle = `rgb(${brushR},${brushG},${brushB})`;
+      for (const [dx, dy] of selPattern.cells) {
+        const ppx = offX + (cell.cx + dx) * cs;
+        const ppy = offY + (cell.cy + dy) * cs;
+        ctx.fillRect(ppx, ppy, draw, draw);
+      }
+      ctx.globalAlpha = 1;
+    }
+  }
+}
+
+// ===================================================================
+// ANIMATION
+// ===================================================================
+function loop(t) {
+  if (!running) return;
+  rafId = requestAnimationFrame(loop);
+  if (t - lastT >= 1000 / fps) { lastT = t; step(); }
+}
+function play() {
+  if (running) return;
+  running = true; lastT = performance.now();
+  rafId = requestAnimationFrame(loop);
+  const btn = document.getElementById('btn-play');
+  btn.textContent = '⏸ Pause'; btn.classList.add('playing');
+  updateModeBadge();
+}
+function pause() {
+  running = false; cancelAnimationFrame(rafId);
+  const btn = document.getElementById('btn-play');
+  btn.textContent = '▶ Play'; btn.classList.remove('playing');
+  updateModeBadge();
+}
+
+// ===================================================================
+// COORDINATE TRANSFORM
+// ===================================================================
+function pxToCell(mx, my) {
+  const r = canvas.getBoundingClientRect();
+  const cx = Math.floor((mx - r.left - offX) / cellSz);
+  const cy = Math.floor((my - r.top  - offY) / cellSz);
+  return { cx, cy };
+}
+
+// ===================================================================
+// PAINTING — with Bresenham line fill for smooth dragging
+// ===================================================================
+function setCellAlive(cx, cy) {
+  cells.set(key(cx, cy), { r: brushR, g: brushG, b: brushB });
+  trails.delete(key(cx, cy));
+}
+function setCellDead(cx, cy) {
+  cells.delete(key(cx, cy));
+  trails.delete(key(cx, cy));
+}
+
+function paintLineTo(cx1, cy1) {
+  // Bresenham from lastPainted to new cell
+  let x0 = lastPaintedCx ?? cx1;
+  let y0 = lastPaintedCy ?? cy1;
+  const x1 = cx1, y1 = cy1;
+  const dx = Math.abs(x1 - x0), dy = Math.abs(y1 - y0);
+  const sx = x0 < x1 ? 1 : -1, sy = y0 < y1 ? 1 : -1;
+  let err = dx - dy;
+  while (true) {
+    if (painting)  setCellAlive(x0, y0);
+    if (erasing)   setCellDead(x0, y0);
+    if (x0 === x1 && y0 === y1) break;
+    const e2 = 2 * err;
+    if (e2 > -dy) { err -= dy; x0 += sx; }
+    if (e2 <  dx) { err += dx; y0 += sy; }
+  }
+  lastPaintedCx = cx1; lastPaintedCy = cy1;
+}
+
+function placePattern(cx, cy) {
+  for (const [dx, dy] of selPattern.cells) setCellAlive(cx + dx, cy + dy);
+  pop = cells.size; updateStats(); render();
+}
+
+// ===================================================================
+// INPUT HANDLING
+// ===================================================================
+wrap.addEventListener('mousedown', e => {
+  if (e.button === 1 || (e.button === 0 && e.altKey)) {
+    panning = true; panSx = e.clientX; panSy = e.clientY;
+    panOx = offX; panOy = offY; e.preventDefault(); return;
+  }
+  const { cx, cy } = pxToCell(e.clientX, e.clientY);
+  if (e.button === 2) {
+    erasing = true; lastPaintedCx = cx; lastPaintedCy = cy;
+    setCellDead(cx, cy); pop = cells.size; updateStats(); render(); return;
+  }
+  if (selPattern) { placePattern(cx, cy); return; }
+  painting = true; lastPaintedCx = cx; lastPaintedCy = cy;
+  setCellAlive(cx, cy); pop = cells.size; updateStats(); render();
+});
+
+wrap.addEventListener('mousemove', e => {
+  lastMx = e.clientX; lastMy = e.clientY;
+  if (panning) {
+    offX = panOx + e.clientX - panSx;
+    offY = panOy + e.clientY - panSy;
+    render(); return;
+  }
+  if (painting || erasing) {
+    const { cx, cy } = pxToCell(e.clientX, e.clientY);
+    paintLineTo(cx, cy);
+    pop = cells.size; updateStats(); render(); return;
+  }
+  if (selPattern) render();
+});
+
+wrap.addEventListener('mouseup', () => {
+  painting = erasing = panning = false;
+  lastPaintedCx = null; lastPaintedCy = null;
+});
+wrap.addEventListener('mouseleave', () => {
+  painting = erasing = panning = false;
+  lastPaintedCx = null; lastPaintedCy = null;
+  lastMx = null; lastMy = null; render();
+});
+wrap.addEventListener('contextmenu', e => e.preventDefault());
+
+wrap.addEventListener('wheel', e => {
+  e.preventDefault();
+  const r = canvas.getBoundingClientRect();
+  const mx = e.clientX - r.left, my = e.clientY - r.top;
+  const cellX = (mx - offX) / cellSz, cellY = (my - offY) / cellSz;
+  const delta = e.deltaY < 0 ? 1 : -1;
+  cellSz = clamp(cellSz + delta, 2, 48);
+  offX = Math.round(mx - cellX * cellSz);
+  offY = Math.round(my - cellY * cellSz);
+  document.getElementById('sz-range').value = Math.min(24, Math.max(2, cellSz));
+  document.getElementById('sz-val').textContent = cellSz + 'px';
+  render();
+}, { passive: false });
+
+// Arrow key panning — held keys accumulate smoothly
+const keysHeld = new Set();
+let arrowRafId = null;
+
+function arrowPanLoop() {
+  if (keysHeld.size === 0) { arrowRafId = null; return; }
+  const speed = Math.max(4, cellSz * 1.5);
+  if (keysHeld.has('ArrowLeft'))  offX += speed;
+  if (keysHeld.has('ArrowRight')) offX -= speed;
+  if (keysHeld.has('ArrowUp'))    offY += speed;
+  if (keysHeld.has('ArrowDown'))  offY -= speed;
+  render();
+  arrowRafId = requestAnimationFrame(arrowPanLoop);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    selPattern = null;
+    document.querySelectorAll('.pattern-item').forEach(el => el.classList.remove('sel'));
+    updateModeBadge(); render();
+  }
+  if (e.key === ' ' && !e.target.matches('input, textarea')) {
+    e.preventDefault(); running ? pause() : play();
+  }
+  if (['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key) && !e.target.matches('input, textarea')) {
+    e.preventDefault();
+    keysHeld.add(e.key);
+    if (!arrowRafId) arrowRafId = requestAnimationFrame(arrowPanLoop);
+  }
+});
+
+document.addEventListener('keyup', e => {
+  keysHeld.delete(e.key);
+});
+
+// ===================================================================
+// VIEW
+// ===================================================================
+function centerView() {
+  const W = wrap.clientWidth, H = wrap.clientHeight;
+  offX = Math.floor(W / 2);
+  offY = Math.floor(H / 2);
+}
+
+function updateStats() {
+  document.getElementById('gen-val').textContent = gen;
+  document.getElementById('pop-val').textContent = pop.toLocaleString();
+}
+
+function updateModeBadge() {
+  const dot  = document.getElementById('mode-dot');
+  const txt  = document.getElementById('mode-text');
+  if (selPattern) {
+    dot.className = 'mode-dot placing';
+    txt.textContent = 'Place: ' + selPattern.name;
+  } else if (running) {
+    dot.className = 'mode-dot active';
+    txt.textContent = 'Running';
+  } else {
+    dot.className = 'mode-dot';
+    txt.textContent = 'Draw';
+  }
+}
+
+// ===================================================================
+// SEEDS — LARGE STRUCTURES
+// ===================================================================
+function hslToRgb(h, s, l) {
+  h /= 360;
+  const q = l < 0.5 ? l * (1 + s) : l + s - l * s, p = 2 * l - q;
+  const hue = (p, q, t) => {
+    if (t < 0) t += 1; if (t > 1) t -= 1;
+    if (t < 1/6) return p + (q - p) * 6 * t;
+    if (t < 1/2) return q;
+    if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+    return p;
+  };
+  return [Math.round(hue(p,q,h+1/3)*255), Math.round(hue(p,q,h)*255), Math.round(hue(p,q,h-1/3)*255)];
+}
+
+function clearAll() {
+  cells.clear(); trails.clear();
+  gen = 0; pop = 0;
+  updateStats(); render();
+}
+
+// Large circular blobs — the core "nice large structures" seed
+function seedBlobs() {
+  clearAll();
+  const vivid = [
+    [220, 40, 40],  [40, 100, 220],  [40, 190, 80],
+    [220, 160, 30], [180, 40, 220],  [30, 200, 200],
+    [220, 100, 40], [200, 40, 140],
+  ];
+  const n = 6 + Math.floor(Math.random() * 4);
+  const spread = 80;
+  for (let i = 0; i < n; i++) {
+    const angle = (i / n) * Math.PI * 2 + Math.random() * 0.8;
+    const dist  = spread * (0.3 + Math.random() * 0.7);
+    const bx    = Math.round(Math.cos(angle) * dist);
+    const by    = Math.round(Math.sin(angle) * dist);
+    const rad   = 18 + Math.floor(Math.random() * 28);
+    const [br, bg, bb] = vivid[i % vivid.length];
+    for (let dy = -rad; dy <= rad; dy++) {
+      for (let dx = -rad; dx <= rad; dx++) {
+        const d = Math.sqrt(dx * dx + dy * dy);
+        if (d > rad) continue;
+        // Density: high in center, tapers near edge
+        const density = 0.65 + 0.30 * (1 - d / rad);
+        if (Math.random() > density) continue;
+        const r = clamp(br + Math.round((Math.random()-.5)*25), 0, 255);
+        const g = clamp(bg + Math.round((Math.random()-.5)*25), 0, 255);
+        const b = clamp(bb + Math.round((Math.random()-.5)*25), 0, 255);
+        cells.set(key(bx + dx, by + dy), { r, g, b });
+      }
+    }
+  }
+  pop = cells.size; updateStats(); render();
+}
+
+// Big territorial color regions
+function seedClash() {
+  clearAll();
+  const palette = [[210,35,35],[35,90,210],[35,175,75],[210,155,30],[165,35,210],[30,185,185],[210,95,35],[185,35,125]];
+  const n = 5 + Math.floor(Math.random() * 4);
+  const regions = palette.slice(0, n).map(([r,g,b], i) => ({
+    cx: Math.round((Math.random() * 2 - 1) * 120),
+    cy: Math.round((Math.random() * 2 - 1) * 80),
+    r, g, b,
+    rad: 30 + Math.floor(Math.random() * 35)
+  }));
+  // Fill each region cell-by-cell
+  const gridR = 180, gridC = 120;
+  for (let y = -gridC; y <= gridC; y++) {
+    for (let x = -gridR; x <= gridR; x++) {
+      if (Math.random() > 0.55) continue;
+      let best = 0, bd = Infinity;
+      for (let ri = 0; ri < regions.length; ri++) {
+        const d = (x - regions[ri].cx)**2 + (y - regions[ri].cy)**2;
+        if (d < bd) { bd = d; best = ri; }
+      }
+      const reg = regions[best];
+      // Density drops away from region center
+      const dist = Math.sqrt(bd);
+      if (dist > reg.rad * 1.4 || Math.random() > 0.7 - 0.2*(dist/reg.rad)) continue;
+      const r = clamp(reg.r + Math.round((Math.random()-.5)*30), 0, 255);
+      const g = clamp(reg.g + Math.round((Math.random()-.5)*30), 0, 255);
+      const b = clamp(reg.b + Math.round((Math.random()-.5)*30), 0, 255);
+      cells.set(key(x, y), { r, g, b });
+    }
+  }
+  pop = cells.size; updateStats(); render();
+}
+
+function seedGradient() {
+  clearAll();
+  const W2 = 110, H2 = 75;
+  for (let y = -H2; y <= H2; y++) {
+    for (let x = -W2; x <= W2; x++) {
+      if (Math.random() > 0.42) continue;
+      const h = ((x + W2) / (2 * W2) * 280 + (y + H2) / (2 * H2) * 80) % 360;
+      const [r, g, b] = hslToRgb(h, 0.9, 0.52);
+      cells.set(key(x, y), { r, g, b });
+    }
+  }
+  pop = cells.size; updateStats(); render();
+}
+
+function seedIslands() {
+  clearAll();
+  const islands = [];
+  for (let k = 0; k < 16; k++) {
+    islands.push({
+      cx: Math.round((Math.random() * 2 - 1) * 130),
+      cy: Math.round((Math.random() * 2 - 1) * 90),
+      r: 80 + Math.floor(Math.random() * 175),
+      g: 80 + Math.floor(Math.random() * 175),
+      b: 80 + Math.floor(Math.random() * 175),
+      rad: 12 + Math.floor(Math.random() * 22)
+    });
+  }
+  for (const isl of islands) {
+    for (let dy = -isl.rad; dy <= isl.rad; dy++) {
+      for (let dx = -isl.rad; dx <= isl.rad; dx++) {
+        const d = Math.sqrt(dx * dx + dy * dy);
+        if (d > isl.rad) continue;
+        const density = 0.6 + 0.35 * (1 - d / isl.rad);
+        if (Math.random() > density) continue;
+        const r = clamp(isl.r + Math.round((Math.random()-.5)*25), 0, 255);
+        const g = clamp(isl.g + Math.round((Math.random()-.5)*25), 0, 255);
+        const b = clamp(isl.b + Math.round((Math.random()-.5)*25), 0, 255);
+        cells.set(key(isl.cx + dx, isl.cy + dy), { r, g, b });
+      }
+    }
+  }
+  pop = cells.size; updateStats(); render();
+}
+
+function seedGliders() {
+  clearAll();
+  const glider = [[1,0],[2,1],[0,2],[1,2],[2,2]];
+  const hues = [0,30,60,90,120,150,180,210,240,270,300,330];
+  for (let k = 0; k < 30; k++) {
+    const cx = Math.round((Math.random() * 2 - 1) * 100);
+    const cy = Math.round((Math.random() * 2 - 1) * 70);
+    const [r, g, b] = hslToRgb(hues[k % hues.length], 0.9, 0.55);
+    for (const [dx, dy] of glider) cells.set(key(cx + dx, cy + dy), { r, g, b });
+  }
+  pop = cells.size; updateStats(); render();
+}
+
+// ===================================================================
+// PATTERNS LIBRARY
+// ===================================================================
+const PATTERNS = [
+  { name:'Block',       icon:'■', cells:[[0,0],[1,0],[0,1],[1,1]] },
+  { name:'Beehive',     icon:'⬡', cells:[[1,0],[2,0],[0,1],[3,1],[1,2],[2,2]] },
+  { name:'Blinker',     icon:'—', cells:[[0,0],[1,0],[2,0]] },
+  { name:'Toad',        icon:'⁚', cells:[[1,0],[2,0],[3,0],[0,1],[1,1],[2,1]] },
+  { name:'Beacon',      icon:'◈', cells:[[0,0],[1,0],[0,1],[1,1],[2,2],[3,2],[2,3],[3,3]] },
+  { name:'Glider',      icon:'✦', cells:[[1,0],[2,1],[0,2],[1,2],[2,2]] },
+  { name:'LWSS',        icon:'►', cells:[[1,0],[4,0],[0,1],[0,2],[4,2],[0,3],[1,3],[2,3],[3,3]] },
+  { name:'R-pentomino', icon:'🔲', cells:[[1,0],[2,0],[0,1],[1,1],[1,2]] },
+  { name:'Acorn',       icon:'🌰', cells:[[1,0],[3,1],[0,2],[1,2],[4,2],[5,2],[6,2]] },
+  { name:'Pulsar',      icon:'✺', cells:[
+    [2,0],[3,0],[4,0],[8,0],[9,0],[10,0],
+    [0,2],[5,2],[7,2],[12,2],[0,3],[5,3],[7,3],[12,3],[0,4],[5,4],[7,4],[12,4],
+    [2,5],[3,5],[4,5],[8,5],[9,5],[10,5],
+    [2,7],[3,7],[4,7],[8,7],[9,7],[10,7],
+    [0,8],[5,8],[7,8],[12,8],[0,9],[5,9],[7,9],[12,9],[0,10],[5,10],[7,10],[12,10],
+    [2,12],[3,12],[4,12],[8,12],[9,12],[10,12]
+  ]},
+  { name:'Gosper Gun',  icon:'🔫', cells:[
+    [24,0],[22,1],[24,1],
+    [12,2],[13,2],[20,2],[21,2],[34,2],[35,2],
+    [11,3],[15,3],[20,3],[21,3],[34,3],[35,3],
+    [0,4],[1,4],[10,4],[16,4],[20,4],[21,4],
+    [0,5],[1,5],[10,5],[14,5],[16,5],[17,5],[22,5],[24,5],
+    [10,6],[16,6],[24,6],[11,7],[15,7],[12,8],[13,8]
+  ]},
+];
+
+function buildPatternList() {
+  const el = document.getElementById('pattern-list');
+  for (const p of PATTERNS) {
+    const div = document.createElement('div');
+    div.className = 'pattern-item';
+    div.innerHTML = `<span class="pattern-icon">${p.icon}</span>${p.name}`;
+    div.addEventListener('click', () => {
+      document.querySelectorAll('.pattern-item').forEach(e => e.classList.remove('sel'));
+      if (selPattern === p) { selPattern = null; }
+      else { selPattern = p; div.classList.add('sel'); }
+      updateModeBadge(); render();
+    });
+    el.appendChild(div);
+  }
+}
+
+// ===================================================================
+// RULES UI
+// ===================================================================
+const RULE_PRESETS = [
+  { name:'Conway',    b:[3],       s:[2,3] },
+  { name:'HighLife',  b:[3,6],     s:[2,3] },
+  { name:'Day&Night', b:[3,6,7,8], s:[3,4,6,7,8] },
+  { name:'Seeds',     b:[2],       s:[] },
+  { name:'Maze',      b:[3],       s:[1,2,3,4,5] },
+  { name:'Morley',    b:[3,6,8],   s:[2,4,5] },
+];
+
+function buildRuleUI() {
+  const presets = document.getElementById('rule-presets');
+  for (const rp of RULE_PRESETS) {
+    const btn = document.createElement('button');
+    btn.className = 'rp-btn'; btn.textContent = rp.name;
+    btn.addEventListener('click', () => {
+      birthSet = new Set(rp.b); surviveSet = new Set(rp.s);
+      updateRuleBtns();
+    });
+    presets.appendChild(btn);
+  }
+  for (const [cid, set] of [['birth-togs', birthSet], ['surv-togs', surviveSet]]) {
+    const el = document.getElementById(cid);
+    for (let n = 0; n <= 8; n++) {
+      const btn = document.createElement('button');
+      btn.className = 'rb' + (set.has(n) ? ' on' : '');
+      btn.textContent = n; btn.dataset.n = n; btn.dataset.cid = cid;
+      btn.addEventListener('click', () => {
+        const s = cid === 'birth-togs' ? birthSet : surviveSet;
+        if (s.has(n)) s.delete(n); else s.add(n);
+        updateRuleBtns();
+      });
+      el.appendChild(btn);
+    }
+  }
+}
+
+function updateRuleBtns() {
+  document.querySelectorAll('#birth-togs .rb').forEach(b => b.classList.toggle('on', birthSet.has(+b.dataset.n)));
+  document.querySelectorAll('#surv-togs .rb').forEach(b => b.classList.toggle('on', surviveSet.has(+b.dataset.n)));
+  const bn = [...birthSet].sort().join(''), sn = [...surviveSet].sort().join('');
+  document.getElementById('rule-note').textContent = `B${bn}/S${sn}`;
+}
+
+// ===================================================================
+// COLOR UI
+// ===================================================================
+const PALETTE = [
+  '#e02020','#e07820','#e0c820','#58c030',
+  '#20b8a0','#2070e0','#8050e0','#e030a0',
+  '#222222','#888888','#dddddd','#c06030',
+];
+
+function buildSwatches() {
+  const el = document.getElementById('swatches');
+  for (const hex of PALETTE) {
+    const sw = document.createElement('div');
+    sw.className = 'swatch'; sw.style.background = hex;
+    sw.addEventListener('click', () => {
+      setColor(hexToRgb(hex));
+      document.querySelectorAll('.swatch').forEach(s => s.classList.remove('sel'));
+      sw.classList.add('sel');
+    });
+    el.appendChild(sw);
+  }
+}
+
+function setColor({ r, g, b }) {
+  brushR = r; brushG = g; brushB = b;
+  document.getElementById('color-picker').value = rgbToHex(r, g, b);
+  document.getElementById('color-preview').style.background = `rgb(${r},${g},${b})`;
+}
+
+function hexToRgb(hex) {
+  const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return m ? { r:parseInt(m[1],16), g:parseInt(m[2],16), b:parseInt(m[3],16) } : { r:224, g:32, b:32 };
+}
+function rgbToHex(r, g, b) {
+  return '#' + [r,g,b].map(v => v.toString(16).padStart(2,'0')).join('');
+}
+
+// ===================================================================
+// EVENT WIRING
+// ===================================================================
+document.getElementById('btn-play').addEventListener('click', () => running ? pause() : play());
+document.getElementById('btn-step').addEventListener('click', () => { pause(); step(); });
+document.getElementById('btn-clear').addEventListener('click', () => { pause(); clearAll(); updateModeBadge(); });
+document.getElementById('btn-random').addEventListener('click', () => { pause(); seedBlobs(); });
+
+document.getElementById('speed-range').addEventListener('input', e => {
+  fps = +e.target.value;
+  document.getElementById('speed-val').textContent = fps + ' fps';
+});
+
+document.getElementById('color-picker').addEventListener('input', e => {
+  setColor(hexToRgb(e.target.value));
+  document.querySelectorAll('.swatch').forEach(s => s.classList.remove('sel'));
+});
+document.getElementById('rand-color').addEventListener('click', () => {
+  const [r,g,b] = hslToRgb(Math.random()*360, 0.88, 0.52);
+  setColor({ r, g, b });
+  document.querySelectorAll('.swatch').forEach(s => s.classList.remove('sel'));
+});
+
+document.getElementById('trail-tog').addEventListener('change', e => {
+  trailOn = e.target.checked;
+  if (!trailOn) trails.clear();
+  render();
+});
+document.getElementById('grid-tog').addEventListener('change', e => { gridOn = e.target.checked; render(); });
+document.getElementById('mut-range').addEventListener('input', e => {
+  mutation = +e.target.value / 100;
+  document.getElementById('mut-val').textContent = e.target.value + '%';
+});
+document.getElementById('sz-range').addEventListener('input', e => {
+  cellSz = +e.target.value;
+  document.getElementById('sz-val').textContent = cellSz + 'px';
+  render();
+});
+
+document.querySelectorAll('.seed-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    pause();
+    const s = btn.dataset.seed;
+    if (s === 'blobs')    seedBlobs();
+    else if (s === 'clash')    seedClash();
+    else if (s === 'gradient') seedGradient();
+    else if (s === 'islands')  seedIslands();
+    else if (s === 'gliders')  seedGliders();
+  });
+});
+
+window.addEventListener('resize', () => render());
+
+// ===================================================================
+// BOOT
+// ===================================================================
+buildSwatches();
+buildPatternList();
+buildRuleUI();
+setColor(hexToRgb('#e02020'));
+document.querySelectorAll('.swatch')[0].classList.add('sel');
+
+canvas.width  = wrap.clientWidth;
+canvas.height = wrap.clientHeight;
+centerView();
+seedClash();
+</script>
+</body>
+</html>

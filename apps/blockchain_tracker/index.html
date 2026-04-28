@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bitcoin Network</title>
+<script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" type="image/x-icon" href="../../images.ico">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #12121a;
+    --bg3: #1a1a28;
+    --accent: #f7931a;
+    --accent2: #ff6b00;
+    --accent-glow: rgba(247,147,26,0.15);
+    --text: #e8e6e3;
+    --text-dim: #7a7880;
+    --text-bright: #ffffff;
+    --border: #2a2a3a;
+    --coinbase: #f7931a;
+    --p2pk: #8b5cf6;
+    --address: #06b6d4;
+    --edge-color: rgba(247,147,26,0.35);
+    --red: #ef4444;
+    --green: #22c55e;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+  }
+  /* ── HEADER DASHBOARD ── */
+  #header {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    background: linear-gradient(180deg, var(--bg) 0%, rgba(10,10,15,0.95) 80%, rgba(10,10,15,0) 100%);
+    padding: 16px 24px 32px;
+  }
+  #title-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 14px;
+  }
+  #title-row h1 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  #title-row .subtitle {
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+  }
+  .btc-icon {
+    width: 28px; height: 28px;
+    background: var(--accent);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 16px; color: var(--bg);
+    flex-shrink: 0;
+  }
+  #stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 8px;
+  }
+  .stat-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 12px;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent);
+    opacity: 0.4;
+  }
+  .stat-label {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-dim);
+    margin-bottom: 4px;
+  }
+  .stat-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-bright);
+  }
+  .stat-value.accent { color: var(--accent); }
+  /* ── PROGRESS BAR ── */
+  #progress-bar {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    z-index: 100;
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+    padding: 10px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  #progress-track {
+    flex: 1;
+    height: 4px;
+    background: var(--bg3);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  #progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    width: 0%;
+    transition: width 0.3s ease;
+    border-radius: 2px;
+  }
+  #progress-text {
+    font-size: 11px;
+    color: var(--text-dim);
+    min-width: 180px;
+    text-align: right;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  #controls {
+    display: flex;
+    gap: 8px;
+  }
+  .ctrl-btn {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .ctrl-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .ctrl-btn.active { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+  /* ── NETWORK CONTAINER ── */
+  #network {
+    width: 100%;
+    height: 100vh;
+  }
+  /* ── SIDE PANEL ── */
+  #panel {
+    position: fixed;
+    top: 0; right: -420px;
+    width: 420px;
+    height: 100vh;
+    background: var(--bg2);
+    border-left: 1px solid var(--border);
+    z-index: 200;
+    transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  #panel.open { right: 0; }
+  #panel-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  #panel-header h2 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  #panel-close {
+    background: none; border: none;
+    color: var(--text-dim);
+    font-size: 20px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+  }
+  #panel-close:hover { color: var(--text-bright); background: var(--bg3); }
+  #panel-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 20px;
+  }
+  #panel-body::-webkit-scrollbar { width: 4px; }
+  #panel-body::-webkit-scrollbar-track { background: transparent; }
+  #panel-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  .panel-section {
+    margin-bottom: 20px;
+  }
+  .panel-section h3 {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--border);
+  }
+  .panel-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 0;
+    font-size: 12px;
+  }
+  .panel-row .label { color: var(--text-dim); }
+  .panel-row .value {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-bright);
+    font-weight: 500;
+    text-align: right;
+    max-width: 240px;
+    word-break: break-all;
+  }
+  .panel-row .value.sent { color: var(--red); }
+  .panel-row .value.received { color: var(--green); }
+  .tx-list { list-style: none; }
+  .tx-item {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 8px 10px;
+    margin-bottom: 6px;
+    font-size: 11px;
+  }
+  .tx-item .tx-hash {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--accent);
+    font-size: 10px;
+    word-break: break-all;
+    margin-top: 4px;
+    opacity: 0.7;
+  }
+  .tx-item .tx-meta {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 2px;
+  }
+  .tx-item .tx-amount { font-weight: 600; }
+  .tx-item .tx-amount.sent { color: var(--red); }
+  .tx-item .tx-amount.received { color: var(--green); }
+  .address-full {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    word-break: break-all;
+    background: var(--bg3);
+    padding: 8px 10px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    margin-bottom: 8px;
+    user-select: all;
+  }
+  /* ── LOADING OVERLAY ── */
+  #loading {
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    z-index: 999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    transition: opacity 0.5s;
+  }
+  #loading.hidden { opacity: 0; pointer-events: none; }
+  #loading h2 {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--accent);
+    font-size: 20px;
+    letter-spacing: 3px;
+  }
+  #loading p { color: var(--text-dim); font-size: 12px; }
+  .pulse {
+    width: 40px; height: 40px;
+    border: 3px solid var(--accent);
+    border-radius: 50%;
+    animation: pulse 1.2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { transform: scale(0.8); opacity: 0.5; }
+    50% { transform: scale(1.2); opacity: 1; }
+  }
+  /* Legend */
+  #legend {
+    position: fixed;
+    bottom: 50px;
+    left: 24px;
+    z-index: 100;
+    display: flex;
+    gap: 16px;
+    font-size: 10px;
+    letter-spacing: 0.5px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-dim);
+  }
+  .legend-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+  }
+  .legend-dot.coinbase { background: var(--coinbase); }
+  .legend-dot.p2pk { background: var(--p2pk); }
+  .legend-dot.address { background: var(--address); }
+  .back-button {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 5px 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 4px;
+    transition: all 0.2s;
+  }
+  .back-button:hover {
+    background: var(--accent);
+    color: var(--bg);
+  }
+</style>
+</head>
+<body>
+<!-- Loading -->
+<div id="loading">
+  <div class="pulse"></div>
+  <h2>₿ GENESIS NETWORK</h2>
+  <p>Initializing Bitcoin transaction graph...</p>
+</div>
+<!-- Header Dashboard -->
+<div id="header">
+    <div id="title-row">
+    <div class="btc-icon">₿</div>
+    <div>
+        <h1>Bitcoin Genesis Network</h1>
+        <div class="subtitle"></div>
+    </div>
+    <a class="back-button" href="../../index.html">← Back to Home</a>
+    </div>
+  <div id="stats-grid">
+    <div class="stat-card">
+      <div class="stat-label">Total Transactions</div>
+      <div class="stat-value" id="s-txs">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">BTC Moved</div>
+      <div class="stat-value accent" id="s-btc">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Unique Addresses</div>
+      <div class="stat-value" id="s-addrs">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Mining Rewards</div>
+      <div class="stat-value" id="s-mining">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">P2P Transfers</div>
+      <div class="stat-value" id="s-p2p">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Block Range</div>
+      <div class="stat-value" id="s-blocks">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Period</div>
+      <div class="stat-value" id="s-period">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Nodes Visible</div>
+      <div class="stat-value accent" id="s-live-nodes">0</div>
+    </div>
+  </div>
+</div>
+<!-- Network Graph -->
+<div id="network"></div>
+<!-- Legend -->
+<div id="legend">
+  <div class="legend-item"><div class="legend-dot coinbase"></div> COINBASE</div>
+  <div class="legend-item"><div class="legend-dot p2pk"></div> Early Miner (P2PK)</div>
+  <div class="legend-item"><div class="legend-dot address"></div> BTC Address</div>
+</div>
+<!-- Progress Bar -->
+<div id="progress-bar">
+  <div id="controls">
+    <button class="ctrl-btn" id="btn-pause">⏸ Pause</button>
+    <button class="ctrl-btn" id="btn-speed">1×</button>
+    <button class="ctrl-btn" id="btn-skip">Skip ▶▶</button>
+  </div>
+  <div id="progress-track"><div id="progress-fill"></div></div>
+  <div id="progress-text">Waiting...</div>
+</div>
+<!-- Side Panel -->
+<div id="panel">
+  <div id="panel-header">
+    <h2 id="panel-title">Details</h2>
+    <button id="panel-close">✕</button>
+  </div>
+  <div id="panel-body"></div>
+</div>
+
+<!-- GRAPH DATA (loaded from external file generated by Python preprocessor) -->
+<script src="graph_data.js"></script>
+
+<script>
+(function() {
+  // ── State ──
+  let network = null;
+  let nodesDataset = null;
+  let edgesDataset = null;
+  let animStep = 0;
+  let animPaused = false;
+  let animSpeed = 1; // 1, 3, 10
+  let animDone = false;
+  let addedNodeIds = new Set();
+  let addedEdgeIds = new Set();
+  // ── Data references ──
+  const data = GRAPH_DATA;
+  const allNodes = data.nodes;
+  const allEdges = data.edges;
+  const stats = data.stats;
+  // Build animation sequence: interleave nodes and edges by block number
+  const events = [];
+  allNodes.forEach(n => {
+    events.push({ type: 'node', block: n.first_block, data: n });
+  });
+  allEdges.forEach((e, i) => {
+    events.push({ type: 'edge', block: e.firstBlock, data: e, idx: i });
+  });
+  events.sort((a, b) => a.block - b.block || (a.type === 'node' ? -1 : 1));
+  // ── Color/style helpers ──
+  function nodeColor(group) {
+    if (group === 'coinbase') return { bg: '#f7931a', border: '#ff9f33', font: '#0a0a0f' };
+    if (group === 'p2pk') return { bg: '#8b5cf6', border: '#a78bfa', font: '#ffffff' };
+    return { bg: '#06b6d4', border: '#22d3ee', font: '#ffffff' };
+  }
+  function nodeSize(n) {
+    const vol = n.totalSent + n.totalReceived;
+    if (vol > 1000000) return 45;
+    if (vol > 100000) return 35;
+    if (vol > 10000) return 28;
+    if (vol > 1000) return 22;
+    return 16;
+  }
+  function edgeWidth(e) {
+    if (e.txCount > 10000) return 8;
+    if (e.txCount > 1000) return 5;
+    if (e.txCount > 100) return 3;
+    if (e.txCount > 10) return 2;
+    return 1;
+  }
+  function buildVisNode(n) {
+    const c = nodeColor(n.group);
+    return {
+      id: n.id,
+      label: n.label,
+      size: nodeSize(n),
+      color: {
+        background: c.bg,
+        border: c.border,
+        highlight: { background: c.bg, border: '#ffffff' },
+      },
+      font: { color: c.font, size: 11, face: 'JetBrains Mono, monospace', strokeWidth: 2, strokeColor: '#0a0a0f' },
+      borderWidth: 2,
+      shadow: { enabled: true, color: c.bg + '40', size: 20 },
+    };
+  }
+  function buildVisEdge(e, idx) {
+    return {
+      id: 'e' + idx,
+      from: e.from,
+      to: e.to,
+      width: edgeWidth(e),
+      color: { color: 'rgba(247,147,26,0.25)', highlight: '#f7931a', hover: '#f7931a' },
+      arrows: { to: { enabled: true, scaleFactor: 0.5 } },
+      smooth: { type: 'curvedCW', roundness: 0.15 },
+      hoverWidth: 0,
+      selectionWidth: 2,
+    };
+  }
+  // ── Dashboard ──
+  function formatNum(n) {
+    if (n >= 1e6) return (n / 1e6).toFixed(2) + 'M';
+    if (n >= 1e3) return (n / 1e3).toFixed(1) + 'K';
+    return n.toLocaleString();
+  }
+  function fillDashboard() {
+    document.getElementById('s-txs').textContent = formatNum(stats.totalTransactions);
+    document.getElementById('s-btc').textContent = '₿ ' + formatNum(stats.totalBTC);
+    document.getElementById('s-addrs').textContent = stats.uniqueAddresses;
+    document.getElementById('s-mining').textContent = formatNum(stats.miningRewards);
+    document.getElementById('s-p2p').textContent = stats.p2pTransfers;
+    document.getElementById('s-blocks').textContent = stats.blockRange[0] + ' → ' + formatNum(stats.blockRange[1]);
+    const t0 = stats.timeRange[0].slice(0, 10);
+    const t1 = stats.timeRange[1].slice(0, 10);
+    document.getElementById('s-period').textContent = t0 + ' → ' + t1;
+  }
+  // ── Panel ──
+  function openPanel() { document.getElementById('panel').classList.add('open'); }
+  function closePanel() { document.getElementById('panel').classList.remove('open'); }
+  function showNodePanel(nodeId) {
+    const n = allNodes.find(x => x.id === nodeId);
+    if (!n) return;
+    document.getElementById('panel-title').textContent = 'Address Details';
+    const body = document.getElementById('panel-body');
+    let html = `<div class="address-full">${n.fullAddress}</div>`;
+    html += `<div class="panel-section"><h3>Overview</h3>`;
+    html += panelRow('Type', n.group === 'coinbase' ? 'Mining Source' : (n.group === 'p2pk' ? 'Early P2PK Miner' : 'BTC Address'));
+    html += panelRow('First Seen', `Block ${n.firstSeenBlock}<br>${n.firstSeenTime}`);
+    html += panelRow('Last Seen', `Block ${n.lastSeenBlock}<br>${n.lastSeenTime}`);
+    html += panelRow('Total Transactions', n.txCount.toLocaleString());
+    html += `</div>`;
+    html += `<div class="panel-section"><h3>Volume</h3>`;
+    html += `<div class="panel-row"><span class="label">Total Sent</span><span class="value sent">-₿ ${n.totalSent.toLocaleString(undefined, {maximumFractionDigits: 8})}</span></div>`;
+    html += `<div class="panel-row"><span class="label">Total Received</span><span class="value received">+₿ ${n.totalReceived.toLocaleString(undefined, {maximumFractionDigits: 8})}</span></div>`;
+    html += `<div class="panel-row"><span class="label">Net Balance</span><span class="value">₿ ${(n.totalReceived - n.totalSent).toLocaleString(undefined, {maximumFractionDigits: 8})}</span></div>`;
+    html += `</div>`;
+    if (n.transactions && n.transactions.length > 0) {
+      html += `<div class="panel-section"><h3>Recent Transactions (${Math.min(n.transactions.length, 50)})</h3>`;
+      html += `<ul class="tx-list">`;
+      n.transactions.slice(0, 50).forEach(tx => {
+        const dir = tx.direction;
+        const sign = dir === 'sent' ? '-' : '+';
+        html += `<li class="tx-item">
+          <div class="tx-meta">
+            <span>Block ${tx.block}</span>
+            <span class="tx-amount ${dir}">${sign}₿ ${tx.amount}</span>
+          </div>
+          <div class="tx-meta">
+            <span style="color:var(--text-dim)">${tx.time}</span>
+            <span style="color:var(--text-dim)">${dir === 'sent' ? '→' : '←'} ${tx.counterparty}</span>
+          </div>
+          <div class="tx-hash">${tx.tx_hash}</div>
+        </li>`;
+      });
+      html += `</ul></div>`;
+    }
+    body.innerHTML = html;
+    openPanel();
+  }
+  function showEdgePanel(edgeId) {
+    const idx = parseInt(edgeId.replace('e', ''));
+    const e = allEdges[idx];
+    if (!e) return;
+    document.getElementById('panel-title').textContent = 'Connection Details';
+    const body = document.getElementById('panel-body');
+    let html = `<div class="panel-section"><h3>Route</h3>`;
+    html += `<div class="address-full" style="margin-bottom:4px">${e.senderFull}</div>`;
+    html += `<div style="text-align:center;color:var(--accent);font-size:18px;margin:4px 0">↓</div>`;
+    html += `<div class="address-full">${e.receiverFull}</div>`;
+    html += `</div>`;
+    html += `<div class="panel-section"><h3>Aggregated Stats</h3>`;
+    html += panelRow('Total Transactions', e.txCount.toLocaleString());
+    html += panelRow('Total BTC Transferred', '₿ ' + e.totalAmount.toLocaleString(undefined, {maximumFractionDigits: 8}));
+    html += panelRow('Type(s)', e.types.join(', '));
+    html += panelRow('First Transaction', `Block ${e.firstBlock}<br>${e.firstTime}`);
+    html += panelRow('Last Transaction', `Block ${e.lastBlock}<br>${e.lastTime}`);
+    html += panelRow('Block Span', (e.lastBlock - e.firstBlock).toLocaleString() + ' blocks');
+    html += `</div>`;
+    if (e.sampleTxs && e.sampleTxs.length > 0) {
+      html += `<div class="panel-section"><h3>Sample Transactions</h3>`;
+      html += `<ul class="tx-list">`;
+      e.sampleTxs.forEach(tx => {
+        html += `<li class="tx-item">
+          <div class="tx-meta">
+            <span>Block ${tx.b}</span>
+            <span class="tx-amount" style="color:var(--accent)">₿ ${tx.a}</span>
+          </div>
+          <div style="color:var(--text-dim);font-size:10px">${tx.t}</div>
+          <div class="tx-hash">${tx.h}</div>
+        </li>`;
+      });
+      html += `</ul></div>`;
+    }
+    body.innerHTML = html;
+    openPanel();
+  }
+  function panelRow(label, value) {
+    return `<div class="panel-row"><span class="label">${label}</span><span class="value">${value}</span></div>`;
+  }
+  // ── Network Init ──
+  function initNetwork() {
+    nodesDataset = new vis.DataSet();
+    edgesDataset = new vis.DataSet();
+    const container = document.getElementById('network');
+    const options = {
+      physics: {
+        enabled: true,
+        solver: 'forceAtlas2Based',
+        forceAtlas2Based: {
+          gravitationalConstant: -80,
+          centralGravity: 0.008,
+          springLength: 150,
+          springConstant: 0.04,
+          damping: 0.5,
+          avoidOverlap: 0.3,
+        },
+        stabilization: { enabled: false },
+        maxVelocity: 30,
+        minVelocity: 0.5,
+      },
+      interaction: {
+        hover: true,
+        tooltipDelay: 200,
+        zoomView: true,
+        dragView: true,
+        selectConnectedEdges: false,
+      },
+      edges: {
+        smooth: { type: 'curvedCW', roundness: 0.15 },
+      },
+      nodes: {
+        shape: 'dot',
+        font: { multi: false },
+      },
+    };
+    network = new vis.Network(container, { nodes: nodesDataset, edges: edgesDataset }, options);
+    network.on('click', function(params) {
+      if (params.nodes.length > 0) {
+        showNodePanel(params.nodes[0]);
+      } else if (params.edges.length > 0) {
+        showEdgePanel(params.edges[0]);
+      } else {
+        closePanel();
+      }
+    });
+  }
+  // ── Animation ──
+  function animateTick() {
+    if (animPaused || animDone) return;
+    const batchSize = animSpeed === 1 ? 1 : (animSpeed === 3 ? 3 : 10);
+    for (let i = 0; i < batchSize && animStep < events.length; i++) {
+      const ev = events[animStep];
+      if (ev.type === 'node') {
+        if (!addedNodeIds.has(ev.data.id)) {
+          nodesDataset.add(buildVisNode(ev.data));
+          addedNodeIds.add(ev.data.id);
+        }
+      } else if (ev.type === 'edge') {
+        const eid = 'e' + ev.idx;
+        if (!addedEdgeIds.has(eid)) {
+          if (!addedNodeIds.has(ev.data.from)) {
+            const fromNode = allNodes.find(n => n.id === ev.data.from);
+            if (fromNode) {
+              nodesDataset.add(buildVisNode(fromNode));
+              addedNodeIds.add(fromNode.id);
+            }
+          }
+          if (!addedNodeIds.has(ev.data.to)) {
+            const toNode = allNodes.find(n => n.id === ev.data.to);
+            if (toNode) {
+              nodesDataset.add(buildVisNode(toNode));
+              addedNodeIds.add(toNode.id);
+            }
+          }
+          edgesDataset.add(buildVisEdge(ev.data, ev.idx));
+          addedEdgeIds.add(eid);
+        }
+      }
+      animStep++;
+    }
+    const pct = Math.min(100, (animStep / events.length) * 100);
+    document.getElementById('progress-fill').style.width = pct + '%';
+    document.getElementById('s-live-nodes').textContent = addedNodeIds.size;
+    if (animStep < events.length) {
+      const ev = events[Math.min(animStep, events.length - 1)];
+      document.getElementById('progress-text').textContent =
+        `Block ${ev.block.toLocaleString()} · ${addedNodeIds.size} nodes · ${addedEdgeIds.size} edges`;
+    }
+    if (animStep >= events.length) {
+      animDone = true;
+      document.getElementById('progress-text').textContent =
+        `Complete · ${addedNodeIds.size} nodes · ${addedEdgeIds.size} edges`;
+      document.getElementById('btn-pause').textContent = '✓ Done';
+      return;
+    }
+    const nextEv = events[Math.min(animStep, events.length - 1)];
+    let delay = nextEv.type === 'node' ? 400 : 200;
+    if (animSpeed === 3) delay = Math.floor(delay / 3);
+    if (animSpeed === 10) delay = 20;
+    setTimeout(animateTick, delay);
+  }
+  // ── Controls ──
+  function setupControls() {
+    document.getElementById('btn-pause').addEventListener('click', function() {
+      if (animDone) return;
+      animPaused = !animPaused;
+      this.textContent = animPaused ? '▶ Play' : '⏸ Pause';
+      this.classList.toggle('active', animPaused);
+      if (!animPaused) animateTick();
+    });
+    document.getElementById('btn-speed').addEventListener('click', function() {
+      if (animSpeed === 1) { animSpeed = 3; this.textContent = '3×'; }
+      else if (animSpeed === 3) { animSpeed = 10; this.textContent = '10×'; }
+      else { animSpeed = 1; this.textContent = '1×'; }
+    });
+    document.getElementById('btn-skip').addEventListener('click', function() {
+      animPaused = true;
+      allNodes.forEach(n => {
+        if (!addedNodeIds.has(n.id)) {
+          nodesDataset.add(buildVisNode(n));
+          addedNodeIds.add(n.id);
+        }
+      });
+      allEdges.forEach((e, i) => {
+        const eid = 'e' + i;
+        if (!addedEdgeIds.has(eid)) {
+          edgesDataset.add(buildVisEdge(e, i));
+          addedEdgeIds.add(eid);
+        }
+      });
+      animStep = events.length;
+      animDone = true;
+      document.getElementById('progress-fill').style.width = '100%';
+      document.getElementById('s-live-nodes').textContent = addedNodeIds.size;
+      document.getElementById('progress-text').textContent =
+        `Complete · ${addedNodeIds.size} nodes · ${addedEdgeIds.size} edges`;
+      document.getElementById('btn-pause').textContent = '✓ Done';
+    });
+    document.getElementById('panel-close').addEventListener('click', closePanel);
+  }
+  // ── Boot ──
+  function boot() {
+    fillDashboard();
+    initNetwork();
+    setupControls();
+    setTimeout(() => {
+      document.getElementById('loading').classList.add('hidden');
+      setTimeout(animateTick, 800);
+    }, 1200);
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
+})();
+</script>
+</body>
+</html>

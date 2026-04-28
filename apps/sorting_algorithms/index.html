@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sorting Algorithms Lab</title>
+  <link rel="icon" type="image/x-icon" href="../../images.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .back-btn {
+      position: fixed; top: 16px; left: 20px; z-index: 100;
+      display: inline-flex; align-items: center; gap: 6px;
+      color: #888; font-size: 0.65rem; letter-spacing: 2px;
+      text-transform: uppercase; text-decoration: none;
+      background: rgba(0,0,0,0.3); padding: 6px 12px; border-radius: 6px;
+      transition: color 0.2s;
+    }
+    .back-btn:hover { color: #fff; }
+  </style>
+</head>
+<body>
+  <a class="back-btn" href="../../index.html">← Back Home</a>
+  <header>
+    <div class="title">
+      <div>
+        <span class="badge">Sorting Orchestra</span>
+        <h1>Sorting Algorithms Lab</h1>
+      </div>
+      <p>
+        Build bar-chart symphonies for dozens of sorting algorithms. Run them side-by-side, hear the swaps,
+        and watch each strategy carve its way to order.
+      </p>
+    </div>
+  </header>
+
+  <main>
+    <section class="panel controls">
+      <h2>Control Room</h2>
+
+      <div class="control-group">
+        <label for="sizeRange">Array Size</label>
+        <div class="range-wrap">
+          <input id="sizeRange" type="range" min="5" max="200" value="48" />
+          <span id="sizeValue" class="value-pill">48</span>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label for="speedRange">Speed</label>
+        <div class="range-wrap">
+          <input id="speedRange" type="range" min="1" max="120" value="36" />
+          <span id="speedValue" class="value-pill">36</span>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label>Sound</label>
+        <div class="toggle-row">
+          <input id="soundToggle" type="checkbox" checked />
+          <span>Audio on swaps</span>
+        </div>
+        <div class="range-wrap">
+          <input id="volumeRange" type="range" min="0" max="100" value="40" />
+          <span id="volumeValue" class="value-pill">40</span>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label>Algorithms</label>
+        <div class="toggle-row">
+          <button id="selectAllBtn" class="secondary">Select All</button>
+          <button id="clearAllBtn" class="secondary">Clear</button>
+        </div>
+        <div id="algoList" class="algorithms-list"></div>
+      </div>
+
+      <div class="button-row">
+        <button id="shuffleBtn">Shuffle</button>
+        <button id="runBtn">Run Selected</button>
+        <button id="pauseBtn" class="secondary">Pause</button>
+        <button id="resetBtn" class="danger">Reset</button>
+      </div>
+    </section>
+
+    <section class="stage">
+      <div class="stage-header">
+        <h2>Sorting Stage</h2>
+        <div class="stats">
+          <span id="seedLabel" class="stat-pill">Seed: 42</span>
+          <span id="statusLabel" class="stat-pill">Idle</span>
+          <span id="runningLabel" class="stat-pill">0 running</span>
+        </div>
+      </div>
+
+      <div id="grid" class="grid"></div>
+    </section>
+  </main>
+
+  <div class="footer">Tip: Bogo and Thanos are best with tiny arrays. Try size 8 for chaos.</div>
+
+  <script src="app.js"></script>
+</body>
+</html>

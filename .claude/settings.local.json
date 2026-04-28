@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl:*)",
+      "Bash(wc:*)",
+      "Bash(dir:*)",
+      "Bash(powershell -Command \"Get-Item ''C:\\\\Users\\\\forea\\\\Documents\\\\foreandr.github.io\\\\apps\\\\natural_resources\\\\data\\\\world.geojson'' | Select-Object Name, Length\")",
+      "Bash(powershell -Command:*)",
+      "Bash(python -c:*)",
+      "Bash(pip install:*)",
+      "Bash(python3:*)",
+      "Bash(py -c:*)",
+      "Bash(python main.py:*)",
+      "Bash(python -X utf8:*)",
+      "Bash(New-Item -ItemType Directory -Force -Path \"C:\\\\Users\\\\forea\\\\Documents\\\\foreandr.github.io\\\\apps\\\\omnibus_of_time\")",
+      "Bash(Out-Null)",
+      "Bash(cmd /c \"mkdir C:\\\\Users\\\\forea\\\\Documents\\\\foreandr.github.io\\\\apps\\\\omnibus_of_time 2>nul & echo done\")",
+      "Bash(del \"C:\\\\Users\\\\forea\\\\Documents\\\\foreandr.github.io\\\\apps\\\\math_derivations\\\\js\\\\scenes.js\")",
+      "mcp__Claude_Preview__preview_start"
+    ]
+  }
+}

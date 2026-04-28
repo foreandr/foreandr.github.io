@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Game of Life · 1D</title>
+<link rel="icon" href="../../images.ico" type="image/x-icon">
+<style>
+:root {
+  --bg: #080a10; --bg2: #0e1018; --bg3: #131620;
+  --border: rgba(255,255,255,.07); --text: #e2e4ec; --text2: #8b90a4;
+  --accent: #6366f1; --accent2: #818cf8;
+  --green: #10b981; --red: #ef4444;
+  --topbar-h: 52px; --sidebar-w: 260px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: 'Inter', system-ui, sans-serif; font-size: 13px; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+
+/* TOPBAR */
+.topbar {
+  height: var(--topbar-h); min-height: var(--topbar-h);
+  background: var(--bg2); border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 8px; padding: 0 14px; overflow: hidden; flex-wrap: nowrap;
+}
+.back-btn { color: var(--text2); text-decoration: none; font-size: 12px; white-space: nowrap; padding: 4px 8px; border-radius: 6px; transition: background .15s, color .15s; }
+.back-btn:hover { background: var(--bg3); color: var(--text); }
+.title { font-size: 15px; font-weight: 600; white-space: nowrap; }
+.sep { width: 1px; height: 24px; background: var(--border); flex-shrink: 0; }
+.ctrl-btn { background: var(--bg3); border: 1px solid var(--border); color: var(--text); padding: 5px 11px; border-radius: 6px; cursor: pointer; font-size: 12px; white-space: nowrap; transition: background .15s, border-color .15s; }
+.ctrl-btn:hover { background: #1a1d2e; border-color: rgba(255,255,255,.14); }
+.ctrl-btn.active { background: rgba(16,185,129,.15); border-color: rgba(16,185,129,.35); color: var(--green); }
+.rule-btns { display: flex; gap: 4px; flex-wrap: nowrap; }
+.rule-btn { background: var(--bg3); border: 1px solid var(--border); color: var(--text2); padding: 4px 8px; border-radius: 5px; cursor: pointer; font-size: 11px; font-family: monospace; white-space: nowrap; transition: all .12s; }
+.rule-btn:hover { background: #1a1d2e; color: var(--text); }
+.rule-btn.active { background: rgba(99,102,241,.2); border-color: rgba(99,102,241,.4); color: var(--accent2); }
+.rule-input-wrap { display: flex; align-items: center; gap: 5px; }
+.rule-input-wrap span { font-size: 11px; color: var(--text2); }
+.rule-num-btn { width: 22px; height: 22px; background: var(--bg3); border: 1px solid var(--border); color: var(--text2); border-radius: 4px; cursor: pointer; font-size: 13px; display: flex; align-items: center; justify-content: center; transition: all .12s; }
+.rule-num-btn:hover { background: #1a1d2e; color: var(--text); }
+input[type="number"] { width: 54px; padding: 4px 6px; background: var(--bg3); border: 1px solid var(--border); color: var(--text); border-radius: 5px; font-size: 12px; font-family: monospace; text-align: center; }
+input[type="number"]:focus { outline: none; border-color: var(--accent); }
+.stats { display: flex; gap: 12px; margin-left: auto; flex-shrink: 0; }
+.stat { color: var(--text2); font-size: 12px; }
+.stat b { color: var(--text); font-weight: 600; }
+
+/* LAYOUT */
+.main-layout { display: flex; flex: 1; min-height: 0; overflow: hidden; }
+
+/* SIDEBAR */
+.sidebar {
+  width: var(--sidebar-w); min-width: var(--sidebar-w);
+  background: var(--bg2); border-right: 1px solid var(--border);
+  display: flex; flex-direction: row; overflow: hidden; position: relative;
+  transition: width .2s, min-width .2s;
+}
+.sidebar.collapsed { width: 28px; min-width: 28px; }
+.sidebar-toggle {
+  position: absolute; top: 50%; right: 0; transform: translateY(-50%);
+  width: 18px; height: 40px; background: var(--bg3); border: 1px solid var(--border);
+  border-right: none; border-radius: 6px 0 0 6px; color: var(--text2); cursor: pointer;
+  font-size: 14px; display: flex; align-items: center; justify-content: center;
+  z-index: 2; transition: background .15s; padding: 0;
+}
+.sidebar-toggle:hover { background: #1a1d2e; color: var(--text); }
+.sidebar.collapsed .sidebar-toggle { transform: translateY(-50%) scaleX(-1); }
+.sidebar-inner {
+  flex: 1; min-width: 0; overflow-y: auto; overflow-x: hidden;
+  padding: 12px 24px 12px 12px;
+  display: flex; flex-direction: column; gap: 14px;
+}
+.sidebar.collapsed .sidebar-inner { display: none; }
+.sidebar-inner::-webkit-scrollbar { width: 4px; }
+.sidebar-inner::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); border-radius: 2px; }
+.sb-title { font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--text2); margin-bottom: 6px; }
+
+/* RULE TABLE */
+.rule-table { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.rule-tile {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 7px 5px; background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 6px; cursor: pointer; transition: all .12s;
+}
+.rule-tile:hover { background: #1a1d2e; border-color: rgba(255,255,255,.12); }
+.rule-tile.on { background: rgba(99,102,241,.15); border-color: rgba(99,102,241,.4); }
+.rule-pattern { display: flex; gap: 2px; }
+.rp-cell { width: 14px; height: 14px; border-radius: 2px; border: 1px solid var(--border); background: #ffffff; }
+.rp-cell.alive { background: #111111; border-color: #111111; }
+.rule-arrow { font-size: 9px; color: var(--text2); }
+.rp-result { width: 14px; height: 14px; border-radius: 2px; border: 1px solid var(--border); }
+.rp-result.alive { background: #111111; border-color: #111111; }
+.rp-result.dead { background: #ffffff; }
+
+/* INIT */
+.init-btns { display: flex; flex-direction: column; gap: 5px; }
+.init-btn { background: var(--bg3); border: 1px solid var(--border); color: var(--text2); padding: 6px 10px; border-radius: 6px; cursor: pointer; font-size: 11px; text-align: center; transition: all .12s; }
+.init-btn:hover { background: #1a1d2e; color: var(--text); }
+.init-btn.active { background: rgba(99,102,241,.2); border-color: rgba(99,102,241,.4); color: var(--accent2); }
+
+/* COLOR */
+.color-opts { display: flex; flex-direction: column; gap: 5px; }
+.color-opt { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--text2); cursor: pointer; padding: 4px 6px; border-radius: 5px; transition: background .12s; }
+.color-opt:hover { background: var(--bg3); color: var(--text); }
+.color-opt input[type="radio"] { accent-color: var(--accent); cursor: pointer; }
+
+/* CANVAS */
+.canvas-wrap { flex: 1; min-width: 0; position: relative; overflow: hidden; background: #ffffff; }
+#canvas { cursor: crosshair; width: 100%; height: 100%; display: block; background: #ffffff; }
+.canvas-hint { position: absolute; bottom: 10px; left: 12px; font-size: 10px; color: rgba(0,0,0,.35); pointer-events: none; user-select: none; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a class="back-btn" href="../../index.html">← Back</a>
+  <div class="title">Game of Life &nbsp;<span style="color:var(--text2);font-weight:400">1D</span></div>
+  <div class="sep"></div>
+
+  <!-- Rule picker -->
+  <div class="rule-input-wrap">
+    <span>Rule</span>
+    <button class="rule-num-btn" id="rulePrev">−</button>
+    <input type="number" id="ruleInput" min="0" max="255" value="30">
+    <button class="rule-num-btn" id="ruleNext">+</button>
+  </div>
+  <div class="sep"></div>
+
+  <!-- Famous rules -->
+  <div class="rule-btns">
+    <button class="rule-btn" data-rule="30">R30</button>
+    <button class="rule-btn" data-rule="90">R90</button>
+    <button class="rule-btn" data-rule="110">R110</button>
+    <button class="rule-btn" data-rule="184">R184</button>
+    <button class="rule-btn" data-rule="22">R22</button>
+    <button class="rule-btn" data-rule="126">R126</button>
+    <button class="rule-btn" data-rule="54">R54</button>
+    <button class="rule-btn" data-rule="150">R150</button>
+  </div>
+  <div class="sep"></div>
+
+  <!-- Playback -->
+  <button class="ctrl-btn" id="btn-step">Step</button>
+  <button class="ctrl-btn" id="btn-play">▶ Play</button>
+  <button class="ctrl-btn" id="btn-reset">Reset</button>
+  <input type="range" min="1" max="60" value="20" id="speedSlider" style="width:70px;accent-color:var(--accent);cursor:pointer">
+  <span id="speedVal" style="font-size:11px;color:var(--text2);min-width:34px">20/s</span>
+
+  <div class="stats">
+    <span class="stat">Gen <b id="st-gen">0</b></span>
+  </div>
+</div>
+
+<div class="main-layout">
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-inner">
+
+      <div>
+        <div class="sb-title">Rule Table</div>
+        <div class="rule-table" id="ruleTable"></div>
+      </div>
+
+      <div>
+        <div class="sb-title">Initial Conditions</div>
+        <div class="init-btns">
+          <button class="init-btn active" id="initCenter">Single Cell (Center)</button>
+          <button class="init-btn" id="initRandom">Random</button>
+          <button class="init-btn" id="initDraw">Draw Mode</button>
+        </div>
+      </div>
+
+      <div>
+        <div class="sb-title">Coloring</div>
+        <div class="color-opts">
+          <label class="color-opt"><input type="radio" name="colorMode" value="bw" checked> Black &amp; White</label>
+          <label class="color-opt"><input type="radio" name="colorMode" value="rule"> By Rule Pattern</label>
+          <label class="color-opt"><input type="radio" name="colorMode" value="age"> By Row Depth</label>
+        </div>
+      </div>
+
+      <div style="font-size:10px;color:var(--text2);line-height:1.6">
+        <strong style="color:var(--text)">Controls</strong><br>
+        Scroll → zoom · Drag → pan<br>
+        Draw mode → click row 0<br>
+        Space → play/pause
+      </div>
+
+    </div>
+    <button class="sidebar-toggle" id="sidebarToggle" onclick="document.getElementById('sidebar').classList.toggle('collapsed')">‹</button>
+  </div>
+
+  <div class="canvas-wrap">
+    <canvas id="canvas"></canvas>
+    <div class="canvas-hint" id="canvasHint">Gen <span id="genHint">0</span> · Zoom <span id="zoomHint">1.0×</span></div>
+  </div>
+</div>
+
+<script>
+// ── STATE ──────────────────────────────────────────────────────────────────────
+const st = {
+  rule: 30,
+  ruleTable: new Uint8Array(8),
+  grid: [],          // array of Uint8Array rows
+  generation: 0,
+  playing: false,
+  drawMode: false,
+  colorMode: 'bw',
+  zoom: 1,
+  panX: 0,
+  panY: 0,
+  cellSize: 3,
+  width: 400,        // cells per row (recalc on resize)
+};
+
+const canvas = document.getElementById('canvas');
+const ctx    = canvas.getContext('2d');
+
+// ── RULE ───────────────────────────────────────────────────────────────────────
+function setRule(n) {
+  n = Math.max(0, Math.min(255, n));
+  st.rule = n;
+  document.getElementById('ruleInput').value = n;
+  for (let i = 0; i < 8; i++) st.ruleTable[i] = (n >> i) & 1;
+  buildRuleTable();
+  highlightRuleBtns();
+  render();
+}
+
+function applyRule(l, c, r) {
+  return st.ruleTable[(l << 2) | (c << 1) | r];
+}
+
+// ── INIT ───────────────────────────────────────────────────────────────────────
+function initCenter() {
+  st.grid = [];
+  st.generation = 0;
+  st.drawMode = false;
+  const row = new Uint8Array(st.width);
+  row[Math.floor(st.width / 2)] = 1;
+  st.grid.push(row);
+  updateGen();
+  render();
+  setInitActive('initCenter');
+}
+
+function initRandom() {
+  st.grid = [];
+  st.generation = 0;
+  st.drawMode = false;
+  const row = new Uint8Array(st.width);
+  for (let i = 0; i < st.width; i++) row[i] = Math.random() < 0.5 ? 1 : 0;
+  st.grid.push(row);
+  updateGen();
+  render();
+  setInitActive('initRandom');
+}
+
+function initDraw() {
+  st.grid = [];
+  st.generation = 0;
+  st.drawMode = true;
+  st.playing = false;
+  updatePlayBtn();
+  const row = new Uint8Array(st.width);
+  st.grid.push(row);
+  updateGen();
+  render();
+  setInitActive('initDraw');
+}
+
+function setInitActive(id) {
+  document.querySelectorAll('.init-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ── STEP ───────────────────────────────────────────────────────────────────────
+function step() {
+  if (!st.grid.length) return;
+  const cur = st.grid[st.grid.length - 1];
+  const next = new Uint8Array(st.width);
+  for (let i = 0; i < st.width; i++) {
+    const l = cur[i === 0 ? st.width - 1 : i - 1];
+    const c = cur[i];
+    const r = cur[i === st.width - 1 ? 0 : i + 1];
+    next[i] = applyRule(l, c, r);
+  }
+  st.grid.push(next);
+  st.generation++;
+  // Trim to prevent memory blowup
+  if (st.grid.length > 4000) st.grid.splice(0, 500);
+  updateGen();
+}
+
+// ── RENDER ─────────────────────────────────────────────────────────────────────
+function render() {
+  const w = canvas.width, h = canvas.height;
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, w, h);
+  if (!st.grid.length) return;
+
+  const cp = st.cellSize * st.zoom;
+  const startRow = Math.max(0, Math.floor(-st.panY / cp));
+  const endRow   = Math.min(st.grid.length, startRow + Math.ceil(h / cp) + 2);
+  const startCol = Math.max(0, Math.floor(-st.panX / cp));
+  const endCol   = Math.min(st.width, startCol + Math.ceil(w / cp) + 2);
+
+  for (let row = startRow; row < endRow; row++) {
+    const gridRow = st.grid[row];
+    for (let col = startCol; col < endCol; col++) {
+      if (!gridRow[col]) continue;
+      const px = col * cp + st.panX;
+      const py = row * cp + st.panY;
+
+      if (st.colorMode === 'bw') {
+        ctx.fillStyle = '#111111';
+      } else if (st.colorMode === 'rule') {
+        const l = gridRow[col === 0 ? st.width - 1 : col - 1];
+        const c = gridRow[col];
+        const r = gridRow[col === st.width - 1 ? 0 : col + 1];
+        const pat = (l << 2) | (c << 1) | r;
+        const hue = pat / 8 * 300;
+        ctx.fillStyle = `hsl(${hue},80%,35%)`;
+      } else { // age
+        const t = row / Math.max(1, st.grid.length - 1);
+        const hue = 240 - t * 200;
+        ctx.fillStyle = `hsl(${hue},70%,30%)`;
+      }
+      ctx.fillRect(px, py, cp, cp);
+    }
+  }
+
+  // Grid lines at high zoom
+  if (st.zoom > 3) {
+    ctx.strokeStyle = 'rgba(0,0,0,0.08)';
+    ctx.lineWidth = 0.5;
+    for (let row = startRow; row <= endRow; row++) {
+      const y = row * cp + st.panY;
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+    }
+    for (let col = startCol; col <= endCol; col++) {
+      const x = col * cp + st.panX;
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+    }
+  }
+
+  document.getElementById('genHint').textContent = st.generation;
+  document.getElementById('zoomHint').textContent = st.zoom.toFixed(1) + '×';
+}
+
+// ── RULE TABLE UI ──────────────────────────────────────────────────────────────
+function buildRuleTable() {
+  const cont = document.getElementById('ruleTable');
+  cont.innerHTML = '';
+  for (let pat = 7; pat >= 0; pat--) {
+    const l = (pat >> 2) & 1, c = (pat >> 1) & 1, r = pat & 1;
+    const out = st.ruleTable[pat];
+    const tile = document.createElement('div');
+    tile.className = 'rule-tile' + (out ? ' on' : '');
+    tile.innerHTML = `
+      <div class="rule-pattern">
+        <div class="rp-cell ${l ? 'alive' : ''}"></div>
+        <div class="rp-cell ${c ? 'alive' : ''}"></div>
+        <div class="rp-cell ${r ? 'alive' : ''}"></div>
+      </div>
+      <div class="rule-arrow">↓</div>
+      <div class="rp-result ${out ? 'alive' : 'dead'}"></div>
+    `;
+    tile.addEventListener('click', () => {
+      st.ruleTable[pat] ^= 1;
+      let n = 0;
+      for (let i = 0; i < 8; i++) n |= (st.ruleTable[i] << i);
+      st.rule = n;
+      document.getElementById('ruleInput').value = n;
+      buildRuleTable();
+      highlightRuleBtns();
+      render();
+    });
+    cont.appendChild(tile);
+  }
+}
+
+function highlightRuleBtns() {
+  document.querySelectorAll('.rule-btn').forEach(b => {
+    b.classList.toggle('active', +b.dataset.rule === st.rule);
+  });
+}
+
+// ── PLAY ───────────────────────────────────────────────────────────────────────
+let playHandle = null;
+function togglePlay() {
+  st.playing = !st.playing;
+  updatePlayBtn();
+  if (st.playing) schedulePlay(); else { clearInterval(playHandle); playHandle = null; }
+}
+function schedulePlay() {
+  if (playHandle) clearInterval(playHandle);
+  const fps = +document.getElementById('speedSlider').value;
+  playHandle = setInterval(() => { if (st.playing) { step(); render(); } }, 1000 / fps);
+}
+function updatePlayBtn() {
+  const btn = document.getElementById('btn-play');
+  btn.textContent = st.playing ? '⏸ Pause' : '▶ Play';
+  btn.classList.toggle('active', st.playing);
+}
+function updateGen() {
+  document.getElementById('st-gen').textContent = st.generation;
+}
+
+// ── RESIZE ─────────────────────────────────────────────────────────────────────
+function resize() {
+  const wrap = canvas.parentElement;
+  canvas.width  = wrap.clientWidth;
+  canvas.height = wrap.clientHeight;
+  st.width = Math.max(200, Math.floor(canvas.width / st.cellSize));
+  // Rebuild first row if needed
+  if (!st.grid.length || st.grid[0].length !== st.width) {
+    initCenter();
+  } else {
+    render();
+  }
+}
+const resizeObs = new ResizeObserver(resize);
+resizeObs.observe(canvas.parentElement);
+
+// ── EVENTS ─────────────────────────────────────────────────────────────────────
+document.getElementById('ruleInput').addEventListener('change', e => setRule(+e.target.value || 0));
+document.getElementById('rulePrev').addEventListener('click', () => setRule(st.rule - 1));
+document.getElementById('ruleNext').addEventListener('click', () => setRule(st.rule + 1));
+
+document.querySelectorAll('.rule-btn').forEach(b => {
+  b.addEventListener('click', () => setRule(+b.dataset.rule));
+});
+
+document.getElementById('btn-play').addEventListener('click', togglePlay);
+document.getElementById('btn-step').addEventListener('click', () => { if (!st.grid.length) initCenter(); step(); render(); });
+document.getElementById('btn-reset').addEventListener('click', initCenter);
+
+document.getElementById('speedSlider').addEventListener('input', e => {
+  document.getElementById('speedVal').textContent = e.target.value + '/s';
+  if (st.playing) schedulePlay();
+});
+
+document.getElementById('initCenter').addEventListener('click', initCenter);
+document.getElementById('initRandom').addEventListener('click', initRandom);
+document.getElementById('initDraw').addEventListener('click', initDraw);
+
+document.querySelectorAll('input[name="colorMode"]').forEach(r => {
+  r.addEventListener('change', e => { st.colorMode = e.target.value; render(); });
+});
+
+// Pan & zoom
+let dragStart = null, isDrawing = false;
+canvas.addEventListener('wheel', e => {
+  e.preventDefault();
+  const factor = e.deltaY < 0 ? 1.15 : 0.87;
+  st.zoom = Math.max(0.3, Math.min(20, st.zoom * factor));
+  render();
+}, { passive: false });
+
+canvas.addEventListener('mousedown', e => {
+  if (st.drawMode && e.button === 0) {
+    isDrawing = true;
+    toggleCell(e);
+  } else {
+    dragStart = { x: e.clientX, y: e.clientY };
+  }
+});
+canvas.addEventListener('mousemove', e => {
+  if (isDrawing) { toggleCell(e); return; }
+  if (dragStart) {
+    st.panX += e.clientX - dragStart.x;
+    st.panY += e.clientY - dragStart.y;
+    dragStart = { x: e.clientX, y: e.clientY };
+    render();
+  }
+});
+canvas.addEventListener('mouseup',    () => { dragStart = null; isDrawing = false; });
+canvas.addEventListener('mouseleave', () => { dragStart = null; isDrawing = false; });
+
+function toggleCell(e) {
+  const rect = canvas.getBoundingClientRect();
+  const cp  = st.cellSize * st.zoom;
+  const col = Math.floor((e.clientX - rect.left - st.panX) / cp);
+  const row = Math.floor((e.clientY - rect.top  - st.panY) / cp);
+  if (row === 0 && col >= 0 && col < st.width) {
+    st.grid[0][col] ^= 1;
+    render();
+  }
+}
+
+document.addEventListener('keydown', e => {
+  if (e.code === 'Space' && e.target.tagName !== 'INPUT') {
+    e.preventDefault();
+    if (!st.grid.length) initCenter();
+    togglePlay();
+  }
+});
+
+// ── INIT ───────────────────────────────────────────────────────────────────────
+setRule(30);
+resize();
+</script>
+</body>
+</html>

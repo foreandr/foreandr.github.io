@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RF channel lab — multi-antenna mesh</title>
+  <link rel="icon" type="image/x-icon" href="../../images.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+<div class="page">
+  <header class="top">
+    <a class="back" href="../../index.html">← Back</a>
+    <div class="headlines">
+      <h1>RF channel lab</h1>
+      <p class="sub">Many antennas, one 2-D medium. Pan/zoom the field, add nodes, give each its own carrier and message. Click an antenna to see the total waveform there and how coherent detection teases apart each transmitter—even when several share a frequency and collide.</p>
+    </div>
+    <div class="controls-top">
+      <button type="button" class="btn primary" id="btn-play" aria-pressed="true">Pause</button>
+      <button type="button" class="btn" id="btn-reset">Reset time</button>
+      <button type="button" class="btn" id="btn-add-ant">+ Antenna</button>
+      <button type="button" class="btn" id="btn-zoom-reset">Fit view</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <div class="main-col">
+      <div class="field-wrap">
+        <div class="field-head">
+          <div class="legend legend-compact">
+            <span id="legend-summary">—</span>
+          </div>
+          <span id="sim-clock">t = 0.00 s</span>
+        </div>
+        <div class="canvas-outer" id="canvas-outer">
+          <canvas id="field-canvas" width="900" height="440"></canvas>
+          <div class="canvas-hint" id="canvas-hint">Wheel zoom · drag empty space to pan · drag antenna to move · click to select</div>
+        </div>
+      </div>
+      <div class="scope-wrap">
+        <h3>Total signal at selected antenna (sum of all transmitters)</h3>
+        <canvas id="scope-canvas" width="900" height="110"></canvas>
+      </div>
+      <div class="scope-wrap decomp-wrap">
+        <h3>Per-transmitter demod (this symbol) — click an antenna above to choose listener</h3>
+        <canvas id="decomp-canvas" width="900" height="120"></canvas>
+      </div>
+    </div>
+
+    <aside class="sidebar">
+      <div class="panel">
+        <h2>Medium & time</h2>
+        <div class="slider-row">
+          <label>Bit duration (s) <output id="out-bit"></output></label>
+          <input type="range" id="bit-dur" min="0.12" max="1.2" step="0.02" value="0.4">
+        </div>
+        <div class="slider-row">
+          <label>Wave speed (world units / s) <output id="out-c"></output></label>
+          <input type="range" id="wave-c" min="0.35" max="1.6" step="0.05" value="0.75">
+        </div>
+        <div class="slider-row">
+          <label>Time scale <output id="out-speed"></output></label>
+          <input type="range" id="speed" min="0.2" max="2.8" step="0.05" value="1">
+        </div>
+        <p class="hint" id="separation-hint">Select an antenna to inspect decoding. Identical carriers from different sites add on-air; each row still uses phase referenced to that transmitter, so same-frequency collisions show up as garbled rows.</p>
+      </div>
+
+      <div class="panel">
+        <h2>Antennas <span class="panel-count" id="ant-count">0</span></h2>
+        <div class="antenna-list" id="antenna-list"></div>
+      </div>
+
+      <div class="panel" id="inspector">
+        <h2>Selected antenna</h2>
+        <p class="inspector-none" id="inspector-none">Click an antenna on the field or in the list.</p>
+        <div class="inspector-body" id="inspector-body" hidden>
+          <div class="freq-collision" id="freq-collision" hidden></div>
+          <div class="slider-row">
+            <label>Carrier (Hz) <output id="insp-f-out"></output></label>
+            <input type="range" id="insp-freq" min="1.2" max="12" step="0.05" value="3">
+          </div>
+          <div class="row-check">
+            <label><input type="checkbox" id="insp-tx-on" checked> Transmitting</label>
+          </div>
+          <label class="insp-label">Message (BPSK, UTF-8)</label>
+          <textarea id="insp-msg" rows="4" maxlength="500" placeholder="Short message…"></textarea>
+          <div class="insp-actions">
+            <button type="button" class="btn danger" id="btn-del-ant">Remove antenna</button>
+          </div>
+          <h3 class="decode-head">Decoded streams at this listener</h3>
+          <p class="decode-help">One block per transmitter in the fleet. Tuned to that transmitter’s carrier and path phase. Same frequency as another TX ⇒ collision on that row.</p>
+          <div class="decode-matrix" id="decode-matrix"></div>
+        </div>
+      </div>
+
+      <div class="panel explain">
+        <h2>What you’re seeing</h2>
+        <p><strong>Field</strong> is the sum of retarded 2-D waves (1/√r) from every transmitting antenna. <strong>Scope</strong> samples that sum at the <em>selected</em> point.</p>
+        <p><strong>Decomposition</strong> is not a literal FFT button—it’s the same math: multiply the total by each local oscillator <code>sin(2πfᵢ(t − rᵢ/c))</code> and integrate per bit. Bars show how each integrator is building the current symbol; the text is the running bit decision vs each source.</p>
+      </div>
+    </aside>
+  </div>
+</div>
+<script src="./sim.js"></script>
+</body>
+</html>

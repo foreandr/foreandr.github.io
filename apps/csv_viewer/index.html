@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CSV Viewer — Office Tools</title>
+  <link rel="icon" type="image/x-icon" href="../../images.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=JetBrains+Mono:wght@400;500;700&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0a0a0b; --bg2:#111113; --bg3:#18181b; --border:#252528;
+    --text:#e2e2e6; --muted:#6b6b72; --accent:#c8a96e; --green:#5aab7a; --red:#e05555;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Crimson Pro', serif; min-height: 100vh; display: flex; flex-direction: column; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  header { padding: 1.5rem 2rem; border-bottom: 1px solid var(--border); }
+  .back-link { font-size: 0.9rem; color: var(--muted); display: inline-flex; align-items: center; gap: 0.4rem; margin-bottom: 1rem; }
+  .back-link:hover { color: var(--accent); text-decoration: none; }
+  .eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--accent); margin-bottom: 0.5rem; }
+  h1 { font-family: 'Cinzel', serif; font-size: 2rem; font-weight: 700; background: linear-gradient(135deg, var(--accent), #e8c98e, var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .subtitle { color: var(--muted); font-style: italic; margin-top: 0.3rem; font-size: 1.05rem; }
+
+  main { flex: 1; padding: 1.5rem 2rem; display: flex; flex-direction: column; gap: 1rem; }
+
+  .drop-zone {
+    border: 2px dashed var(--border); border-radius: 8px; padding: 2rem;
+    text-align: center; cursor: pointer; transition: border-color 0.2s, background 0.2s;
+    background: var(--bg2);
+  }
+  .drop-zone.drag-over { border-color: var(--accent); background: rgba(200,169,110,0.05); }
+  .drop-zone p { color: var(--muted); font-size: 1rem; }
+  .drop-zone strong { color: var(--accent); }
+  .paste-area {
+    width: 100%; min-height: 120px; background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 6px; color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;
+    padding: 0.75rem; resize: vertical; outline: none; margin-top: 0.75rem;
+  }
+  .paste-area:focus { border-color: var(--accent); }
+  .drop-actions { display: flex; gap: 0.5rem; justify-content: center; margin-top: 0.75rem; flex-wrap: wrap; }
+
+  .controls-bar {
+    display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;
+    padding: 0.75rem 1rem; background: var(--bg2); border-radius: 8px; border: 1px solid var(--border);
+  }
+  .controls-bar label { font-size: 0.85rem; color: var(--muted); white-space: nowrap; }
+  select, input[type="text"] {
+    background: var(--bg3); border: 1px solid var(--border); color: var(--text);
+    padding: 0.35rem 0.6rem; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; outline: none;
+  }
+  select:focus, input[type="text"]:focus { border-color: var(--accent); }
+  .search-input { flex: 1; min-width: 140px; }
+
+  button {
+    background: var(--bg3); border: 1px solid var(--border); color: var(--text);
+    padding: 0.35rem 0.8rem; border-radius: 4px; cursor: pointer; font-family: 'Crimson Pro', serif;
+    font-size: 0.9rem; transition: border-color 0.15s, background 0.15s; white-space: nowrap;
+  }
+  button:hover { border-color: var(--accent); background: rgba(200,169,110,0.08); }
+  button.primary { border-color: var(--accent); color: var(--accent); }
+  button.danger { border-color: var(--red); color: var(--red); }
+  button.danger:hover { background: rgba(224,85,85,0.08); }
+
+  .stats-bar {
+    display: flex; gap: 1.5rem; align-items: center; padding: 0.5rem 0;
+    font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--muted);
+    flex-wrap: wrap;
+  }
+  .stats-bar span { display: flex; gap: 0.3rem; align-items: center; }
+  .stats-bar strong { color: var(--accent); }
+
+  .export-bar { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
+  .export-bar .label { font-size: 0.85rem; color: var(--muted); margin-right: 0.25rem; }
+
+  .table-wrapper {
+    flex: 1; overflow: auto; border: 1px solid var(--border); border-radius: 8px;
+    background: var(--bg2); position: relative; min-height: 200px;
+  }
+  table { border-collapse: collapse; width: max-content; min-width: 100%; }
+  thead { position: sticky; top: 0; z-index: 10; background: var(--bg3); }
+  th {
+    padding: 0.5rem 0.75rem; text-align: left; font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem; color: var(--muted); border-bottom: 1px solid var(--border);
+    border-right: 1px solid var(--border); white-space: nowrap; position: relative;
+    user-select: none; min-width: 80px;
+  }
+  th.sortable { cursor: pointer; }
+  th.sortable:hover { color: var(--accent); }
+  th.sort-asc::after { content: ' ↑'; color: var(--accent); }
+  th.sort-desc::after { content: ' ↓'; color: var(--accent); }
+  th.row-num-header { min-width: 40px; width: 40px; text-align: center; position: sticky; left: 0; background: var(--bg3); z-index: 11; }
+  th.cb-header { min-width: 32px; width: 32px; position: sticky; left: 40px; background: var(--bg3); z-index: 11; }
+
+  td {
+    padding: 0.35rem 0.75rem; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border);
+    font-size: 0.9rem; max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    vertical-align: middle;
+  }
+  td.row-num { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--muted); text-align: center; position: sticky; left: 0; background: var(--bg2); z-index: 5; min-width: 40px; }
+  td.cb-cell { text-align: center; position: sticky; left: 40px; background: var(--bg2); z-index: 5; min-width: 32px; }
+  tr:hover td { background: rgba(200,169,110,0.04); }
+  tr:hover td.row-num, tr:hover td.cb-cell { background: var(--bg3); }
+  tr.selected td { background: rgba(200,169,110,0.07); }
+  tr.selected td.row-num, tr.selected td.cb-cell { background: rgba(200,169,110,0.1); }
+
+  td.editable:focus {
+    outline: 1px solid var(--accent); background: var(--bg3);
+    white-space: normal; overflow: visible;
+  }
+
+  .resize-handle {
+    position: absolute; right: 0; top: 0; bottom: 0; width: 4px;
+    cursor: col-resize; background: transparent;
+  }
+  .resize-handle:hover, .resize-handle.resizing { background: var(--accent); }
+
+  input[type="checkbox"] { accent-color: var(--accent); cursor: pointer; }
+
+  .empty-state { padding: 3rem; text-align: center; color: var(--muted); font-style: italic; }
+
+  .status-msg { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; padding: 0.4rem 0.8rem; border-radius: 4px; }
+  .status-msg.success { background: rgba(90,171,122,0.15); color: var(--green); border: 1px solid var(--green); }
+  .status-msg.error { background: rgba(224,85,85,0.15); color: var(--red); border: 1px solid var(--red); }
+</style>
+</head>
+<body>
+<header>
+  <a href="../../index.html" class="back-link">← Back Home</a>
+  <div class="eyebrow">Office</div>
+  <h1>CSV Viewer</h1>
+  <p class="subtitle">View, sort, filter, and edit CSV/TSV data — export as CSV, TSV, or JSON.</p>
+</header>
+<main>
+  <div class="drop-zone" id="dropZone">
+    <p>Drop a <strong>CSV or TSV</strong> file here, or paste data below</p>
+    <textarea class="paste-area" id="pasteArea" placeholder="Paste CSV, TSV, or delimited data here…"></textarea>
+    <div class="drop-actions">
+      <button class="primary" onclick="loadFromPaste()">Load Data</button>
+      <button onclick="loadSample()">Load Sample</button>
+      <button onclick="clearAll()">Clear</button>
+    </div>
+  </div>
+
+  <div class="controls-bar" id="controlsBar" style="display:none">
+    <label>Delimiter:
+      <select id="delimSelect" onchange="reparse()">
+        <option value="auto">Auto-detect</option>
+        <option value=",">Comma (,)</option>
+        <option value=";">Semicolon (;)</option>
+        <option value="	">Tab</option>
+        <option value="|">Pipe (|)</option>
+      </select>
+    </label>
+    <input type="text" class="search-input" id="searchInput" placeholder="Filter rows…" oninput="applyFilter()">
+    <button onclick="addRow()">+ Add Row</button>
+    <button onclick="addColumn()">+ Add Column</button>
+    <button class="danger" onclick="deleteSelected()">Delete Selected</button>
+    <span id="statusMsg"></span>
+  </div>
+
+  <div class="stats-bar" id="statsBar" style="display:none">
+    <span>Rows: <strong id="statRows">0</strong></span>
+    <span>Columns: <strong id="statCols">0</strong></span>
+    <span>Showing: <strong id="statFiltered">0</strong></span>
+  </div>
+
+  <div class="export-bar" id="exportBar" style="display:none">
+    <span class="label">Export:</span>
+    <button onclick="downloadCSV()">Download CSV</button>
+    <button onclick="downloadTSV()">Download TSV</button>
+    <button onclick="downloadJSON()">Download JSON</button>
+    <button onclick="copyToClipboard()">Copy to Clipboard</button>
+  </div>
+
+  <div class="table-wrapper" id="tableWrapper">
+    <div class="empty-state">Load CSV/TSV data to begin</div>
+  </div>
+</main>
+
+<script>
+let rawData = '';
+let headers = [];
+let rows = [];
+let filteredRows = [];
+let sortCol = -1;
+let sortDir = 1;
+let currentDelim = ',';
+
+const dropZone = document.getElementById('dropZone');
+const pasteArea = document.getElementById('pasteArea');
+const tableWrapper = document.getElementById('tableWrapper');
+const controlsBar = document.getElementById('controlsBar');
+const statsBar = document.getElementById('statsBar');
+const exportBar = document.getElementById('exportBar');
+
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault(); dropZone.classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => { pasteArea.value = ev.target.result; loadFromPaste(); };
+  reader.readAsText(file);
+});
+
+function detectDelimiter(text) {
+  const firstLine = text.split('\n')[0];
+  const counts = { ',': 0, ';': 0, '\t': 0, '|': 0 };
+  for (const ch of firstLine) if (ch in counts) counts[ch]++;
+  return Object.entries(counts).sort((a,b) => b[1]-a[1])[0][0];
+}
+
+function parseCSV(text, delim) {
+  const lines = [];
+  let inQ = false, cur = '', row = [];
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (c === '"') {
+      if (inQ && text[i+1] === '"') { cur += '"'; i++; }
+      else inQ = !inQ;
+    } else if (!inQ && (delim.length > 1 ? text.slice(i, i+delim.length) === delim : c === delim)) {
+      row.push(cur); cur = '';
+      if (delim.length > 1) i += delim.length - 1;
+    } else if (!inQ && (c === '\n' || (c === '\r' && text[i+1] === '\n'))) {
+      if (c === '\r') i++;
+      row.push(cur); cur = '';
+      lines.push(row); row = [];
+    } else cur += c;
+  }
+  if (cur || row.length) { row.push(cur); lines.push(row); }
+  return lines.filter(r => r.some(c => c.trim()));
+}
+
+function loadFromPaste() {
+  const text = pasteArea.value.trim();
+  if (!text) return;
+  rawData = text;
+  const delimSel = document.getElementById('delimSelect').value;
+  currentDelim = delimSel === 'auto' ? detectDelimiter(text) : delimSel;
+  const parsed = parseCSV(text, currentDelim);
+  if (!parsed.length) return;
+  headers = parsed[0].map((h,i) => h || `Column ${i+1}`);
+  rows = parsed.slice(1).map(r => {
+    while (r.length < headers.length) r.push('');
+    return r.slice(0, headers.length);
+  });
+  sortCol = -1; sortDir = 1;
+  applyFilter();
+  showControls();
+}
+
+function reparse() {
+  if (!rawData) return;
+  const delimSel = document.getElementById('delimSelect').value;
+  currentDelim = delimSel === 'auto' ? detectDelimiter(rawData) : delimSel;
+  const parsed = parseCSV(rawData, currentDelim);
+  if (!parsed.length) return;
+  headers = parsed[0].map((h,i) => h || `Column ${i+1}`);
+  rows = parsed.slice(1).map(r => {
+    while (r.length < headers.length) r.push('');
+    return r.slice(0, headers.length);
+  });
+  sortCol = -1; sortDir = 1;
+  applyFilter();
+}
+
+function showControls() {
+  controlsBar.style.display = 'flex';
+  statsBar.style.display = 'flex';
+  exportBar.style.display = 'flex';
+}
+
+function applyFilter() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  filteredRows = q ? rows.filter(r => r.some(c => c.toLowerCase().includes(q))) : rows.slice();
+  if (sortCol >= 0) sortRows();
+  renderTable();
+  updateStats();
+}
+
+function sortRows() {
+  filteredRows.sort((a, b) => {
+    const av = a[sortCol] || '', bv = b[sortCol] || '';
+    const an = parseFloat(av), bn = parseFloat(bv);
+    if (!isNaN(an) && !isNaN(bn)) return (an - bn) * sortDir;
+    return av.localeCompare(bv) * sortDir;
+  });
+}
+
+function updateStats() {
+  document.getElementById('statRows').textContent = rows.length;
+  document.getElementById('statCols').textContent = headers.length;
+  document.getElementById('statFiltered').textContent = filteredRows.length;
+}
+
+function renderTable() {
+  if (!headers.length) { tableWrapper.innerHTML = '<div class="empty-state">No data loaded</div>'; return; }
+  let html = '<table id="dataTable"><thead><tr>';
+  html += `<th class="row-num-header">#</th>`;
+  html += `<th class="cb-header"><input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)"></th>`;
+  headers.forEach((h, i) => {
+    const cls = i === sortCol ? (sortDir === 1 ? 'sortable sort-asc' : 'sortable sort-desc') : 'sortable';
+    html += `<th class="${cls}" data-col="${i}" style="min-width:80px">
+      <span onclick="clickSort(${i})">${escHtml(h)}</span>
+      <div class="resize-handle" data-col="${i}"></div>
+    </th>`;
+  });
+  html += '</tr></thead><tbody>';
+  filteredRows.forEach((row, ri) => {
+    const origIdx = rows.indexOf(row);
+    html += `<tr data-idx="${origIdx}">`;
+    html += `<td class="row-num">${origIdx + 1}</td>`;
+    html += `<td class="cb-cell"><input type="checkbox" class="row-cb" data-idx="${origIdx}" onchange="rowCbChange(this)"></td>`;
+    row.forEach((cell, ci) => {
+      html += `<td class="editable" contenteditable="true" data-row="${origIdx}" data-col="${ci}" onblur="cellEdit(this)">${escHtml(cell)}</td>`;
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  tableWrapper.innerHTML = html;
+  initResizeHandles();
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function clickSort(col) {
+  if (sortCol === col) sortDir *= -1;
+  else { sortCol = col; sortDir = 1; }
+  applyFilter();
+}
+
+function cellEdit(el) {
+  const r = parseInt(el.dataset.row), c = parseInt(el.dataset.col);
+  rows[r][c] = el.textContent;
+  updateStats();
+}
+
+function toggleSelectAll(cb) {
+  document.querySelectorAll('.row-cb').forEach(c => {
+    c.checked = cb.checked;
+    const tr = c.closest('tr');
+    if (cb.checked) tr.classList.add('selected'); else tr.classList.remove('selected');
+  });
+}
+
+function rowCbChange(cb) {
+  const tr = cb.closest('tr');
+  if (cb.checked) tr.classList.add('selected'); else tr.classList.remove('selected');
+}
+
+function addRow() {
+  rows.push(new Array(headers.length).fill(''));
+  applyFilter();
+}
+
+function addColumn() {
+  const name = prompt('Column name:', `Column ${headers.length + 1}`);
+  if (name === null) return;
+  headers.push(name || `Column ${headers.length + 1}`);
+  rows.forEach(r => r.push(''));
+  applyFilter();
+}
+
+function deleteSelected() {
+  const selected = new Set();
+  document.querySelectorAll('.row-cb:checked').forEach(cb => selected.add(parseInt(cb.dataset.idx)));
+  if (!selected.size) { showStatus('No rows selected', 'error'); return; }
+  rows = rows.filter((_, i) => !selected.has(i));
+  applyFilter();
+  showStatus(`Deleted ${selected.size} row(s)`, 'success');
+}
+
+function initResizeHandles() {
+  document.querySelectorAll('.resize-handle').forEach(handle => {
+    let startX, startW, th;
+    handle.addEventListener('mousedown', e => {
+      e.preventDefault();
+      th = handle.closest('th');
+      startX = e.clientX;
+      startW = th.offsetWidth;
+      handle.classList.add('resizing');
+      const onMove = ev => {
+        const w = Math.max(50, startW + ev.clientX - startX);
+        th.style.minWidth = w + 'px';
+        th.style.width = w + 'px';
+      };
+      const onUp = () => {
+        handle.classList.remove('resizing');
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+      };
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    });
+  });
+}
+
+function toCSVString(delim) {
+  const escape = v => {
+    const s = String(v);
+    if (s.includes(delim) || s.includes('"') || s.includes('\n')) return `"${s.replace(/"/g,'""')}"`;
+    return s;
+  };
+  const lines = [headers.map(escape).join(delim)];
+  rows.forEach(r => lines.push(r.map(escape).join(delim)));
+  return lines.join('\n');
+}
+
+function downloadFile(content, filename, mime) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([content], { type: mime }));
+  a.download = filename; a.click();
+}
+
+function downloadCSV() { downloadFile(toCSVString(','), 'data.csv', 'text/csv'); }
+function downloadTSV() { downloadFile(toCSVString('\t'), 'data.tsv', 'text/tab-separated-values'); }
+function downloadJSON() {
+  const arr = rows.map(r => {
+    const obj = {};
+    headers.forEach((h, i) => obj[h] = r[i]);
+    return obj;
+  });
+  downloadFile(JSON.stringify(arr, null, 2), 'data.json', 'application/json');
+}
+function copyToClipboard() {
+  navigator.clipboard.writeText(toCSVString(',')).then(() => showStatus('Copied!', 'success'));
+}
+
+function showStatus(msg, type) {
+  const el = document.getElementById('statusMsg');
+  el.textContent = msg;
+  el.className = 'status-msg ' + type;
+  setTimeout(() => { el.textContent = ''; el.className = ''; }, 2500);
+}
+
+function clearAll() {
+  rawData = ''; headers = []; rows = []; filteredRows = [];
+  pasteArea.value = '';
+  tableWrapper.innerHTML = '<div class="empty-state">Load CSV/TSV data to begin</div>';
+  controlsBar.style.display = 'none';
+  statsBar.style.display = 'none';
+  exportBar.style.display = 'none';
+}
+
+function loadSample() {
+  pasteArea.value = `Name,Age,Department,Salary,Start Date
+Alice Johnson,31,Engineering,95000,2020-03-15
+Bob Martinez,45,Marketing,72000,2015-07-22
+Carol White,28,Design,68000,2022-01-10
+David Lee,37,Engineering,105000,2018-09-01
+Eve Chen,52,Management,135000,2010-04-30
+Frank Brown,29,Sales,61000,2023-06-14
+Grace Kim,41,Engineering,98000,2017-11-05
+Henry Park,33,Design,71000,2021-08-20`;
+  loadFromPaste();
+}
+</script>
+</body>
+</html>

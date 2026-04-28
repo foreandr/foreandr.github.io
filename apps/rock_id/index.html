@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Rock & Mineral ID</title>
+<link rel="icon" type="image/x-icon" href="../../images.ico">
+<style>
+:root {
+  --bg: #0d0a08; --panel: #1a1410; --panel2: #231c16;
+  --border: #3a2e24; --text: #f0e8e0; --muted: #7a6a5a;
+  --accent: #a16207; --accent2: #ca8a04; --accent3: #fbbf24;
+  --mono: "JetBrains Mono", ui-monospace, monospace;
+  --sans: "Segoe UI", system-ui, sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--text); font-family: var(--sans); display: flex; flex-direction: column; min-height: 100vh; }
+.topbar { display: flex; align-items: center; gap: 12px; padding: 0 16px; height: 48px; background: var(--panel); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.back { color: var(--muted); text-decoration: none; font-size: 13px; } .back:hover { color: var(--accent3); }
+.app-title { font-size: 14px; font-weight: 700; color: var(--accent3); } .spacer { flex: 1; }
+.main { flex: 1; display: flex; flex-direction: column; overflow-y: auto; padding: 20px 18px 40px; gap: 20px; }
+.intro { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 18px; display: flex; gap: 14px; align-items: flex-start; }
+.intro-icon { font-size: 36px; flex-shrink: 0; }
+.intro-text h2 { font-size: 16px; font-weight: 700; color: var(--accent3); margin-bottom: 6px; }
+.intro-text p { font-size: 13px; color: var(--muted); line-height: 1.7; }
+.form-card { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 16px; }
+.form-card h3 { font-size: 13px; font-weight: 700; color: var(--accent3); letter-spacing: .5px; text-transform: uppercase; }
+.q-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.q-item { display: flex; flex-direction: column; gap: 6px; }
+.q-label { font-size: 12px; color: var(--muted); letter-spacing: .3px; }
+select { background: var(--panel2); border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 9px 10px; font-size: 13px; width: 100%; appearance: none; cursor: pointer; }
+select:focus { outline: 1px solid var(--accent2); }
+.btn-identify { background: var(--accent2); color: #000; border: none; border-radius: 12px; padding: 15px; font-size: 14px; font-weight: 700; cursor: pointer; width: 100%; letter-spacing: .3px; }
+.btn-identify:hover { background: var(--accent3); }
+.btn-reset { background: var(--panel2); border: 1px solid var(--border); color: var(--muted); border-radius: 12px; padding: 12px; font-size: 13px; cursor: pointer; width: 100%; }
+.btn-reset:hover { border-color: var(--accent3); color: var(--accent3); }
+.results { display: flex; flex-direction: column; gap: 14px; }
+.results.hidden { display: none; }
+.top-match { background: var(--panel2); border: 1px solid rgba(251,191,36,.25); border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.tm-head { display: flex; gap: 14px; align-items: center; }
+.tm-icon { font-size: 42px; flex-shrink: 0; }
+.tm-info h2 { font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+.badge { display: inline-flex; align-items: center; border-radius: 20px; padding: 3px 11px; font-size: 12px; font-weight: 700; font-family: var(--mono); }
+.tm-desc { font-size: 13px; line-height: 1.75; color: var(--text); opacity: .88; border-top: 1px solid var(--border); padding-top: 12px; }
+.tm-props { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; border-top: 1px solid var(--border); padding-top: 12px; }
+.prop-item { background: var(--panel); border-radius: 8px; padding: 8px 10px; }
+.prop-key { font-size: 10px; text-transform: uppercase; letter-spacing: 1.2px; color: var(--muted); margin-bottom: 3px; }
+.prop-val { font-size: 13px; font-weight: 600; }
+.sec-lbl { font-size: 10px; letter-spacing: 1.8px; text-transform: uppercase; color: var(--muted); }
+.cand { background: var(--panel2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; display: flex; align-items: center; gap: 12px; }
+.ci { flex: 1; min-width: 0; } .ci-name { font-size: 13px; font-weight: 600; }
+.ci-score { font-size: 12px; font-family: var(--mono); color: var(--muted); margin-top: 3px; }
+.ci-match { font-size: 12px; font-family: var(--mono); color: var(--muted); min-width: 36px; text-align: right; }
+.no-match { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 20px; text-align: center; }
+.no-match p { font-size: 14px; color: var(--muted); line-height: 1.7; }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <a class="back" href="../../index.html">← Back</a>
+  <span class="app-title">🪨 Rock & Mineral ID</span>
+  <div class="spacer"></div>
+</div>
+<div class="main">
+  <div class="intro">
+    <div class="intro-icon">🔍</div>
+    <div class="intro-text">
+      <h2>Identify rocks & minerals</h2>
+      <p>Answer the questions about your specimen's physical properties to narrow down what it might be.</p>
+    </div>
+  </div>
+  <div class="form-card">
+    <h3>Physical Properties</h3>
+    <div class="q-grid">
+      <div class="q-item">
+        <div class="q-label">Primary Color</div>
+        <select id="qColor">
+          <option value="">— Select —</option>
+          <option value="white">White / Clear</option>
+          <option value="gray">Gray / Silver</option>
+          <option value="black">Black</option>
+          <option value="red">Red / Pink</option>
+          <option value="orange">Orange / Brown</option>
+          <option value="yellow">Yellow / Gold</option>
+          <option value="green">Green</option>
+          <option value="blue">Blue / Indigo</option>
+          <option value="purple">Purple / Violet</option>
+          <option value="mixed">Multi-colored</option>
+        </select>
+      </div>
+      <div class="q-item">
+        <div class="q-label">Luster (Surface Shine)</div>
+        <select id="qLuster">
+          <option value="">— Select —</option>
+          <option value="metallic">Metallic (like metal)</option>
+          <option value="glassy">Glassy / Vitreous</option>
+          <option value="pearly">Pearly / Silky</option>
+          <option value="resinous">Resinous / Greasy</option>
+          <option value="dull">Dull / Earthy</option>
+          <option value="adamantine">Adamantine (diamond-like)</option>
+        </select>
+      </div>
+      <div class="q-item">
+        <div class="q-label">Hardness (Scratch Test)</div>
+        <select id="qHardness">
+          <option value="">— Select —</option>
+          <option value="very_soft">Very soft — scratched by fingernail</option>
+          <option value="soft">Soft — scratched by copper coin</option>
+          <option value="medium">Medium — scratched by steel nail</option>
+          <option value="hard">Hard — scratches glass</option>
+          <option value="very_hard">Very hard — scratches steel</option>
+        </select>
+      </div>
+      <div class="q-item">
+        <div class="q-label">Crystal / Texture</div>
+        <select id="qCrystal">
+          <option value="">— Select —</option>
+          <option value="cubic">Cubic / Square crystals</option>
+          <option value="hexagonal">Hexagonal / Prismatic</option>
+          <option value="needle">Needle-like / Fibrous</option>
+          <option value="massive">Massive / No crystals</option>
+          <option value="layered">Layered / Foliated</option>
+          <option value="granular">Granular / Sandy</option>
+          <option value="glassy_fract">Glassy / Conchoidal fracture</option>
+        </select>
+      </div>
+      <div class="q-item">
+        <div class="q-label">Streak Color</div>
+        <select id="qStreak">
+          <option value="">— Select —</option>
+          <option value="white">White / Colorless</option>
+          <option value="gray">Gray</option>
+          <option value="black">Black</option>
+          <option value="red">Red / Reddish-brown</option>
+          <option value="yellow">Yellow</option>
+          <option value="green">Green</option>
+          <option value="blue">Blue</option>
+          <option value="unknown">Not sure</option>
+        </select>
+      </div>
+      <div class="q-item">
+        <div class="q-label">Heft (Weight Feel)</div>
+        <select id="qHeft">
+          <option value="">— Select —</option>
+          <option value="very_heavy">Very heavy for size</option>
+          <option value="heavy">Heavier than expected</option>
+          <option value="average">Average weight</option>
+          <option value="light">Light for size</option>
+        </select>
+      </div>
+    </div>
+    <div class="q-item">
+      <div class="q-label">Special Properties</div>
+      <select id="qSpecial">
+        <option value="none">None observed</option>
+        <option value="magnetic">Magnetic (attracts magnets)</option>
+        <option value="fluorescent">Fluorescent under UV light</option>
+        <option value="fizzes">Fizzes with acid (vinegar)</option>
+        <option value="cleavage">Perfect cleavage (flat split planes)</option>
+        <option value="translucent">Translucent / See-through</option>
+        <option value="odor">Distinctive smell</option>
+        <option value="flexible">Flexible / Elastic sheets</option>
+      </select>
+    </div>
+    <button class="btn-identify" id="btnIdentify">🔍 Identify Mineral</button>
+  </div>
+  <div class="results hidden" id="results">
+    <div id="topMatchEl"></div>
+    <div class="sec-lbl" id="otherLbl" style="display:none">Other possibilities</div>
+    <div id="candidatesEl"></div>
+    <button class="btn-reset" id="btnReset">↺ Try again</button>
+  </div>
+</div>
+<script>
+const MINERALS = [
+  { name:'Quartz', icon:'💎', color:['white','gray','mixed','purple','yellow'], luster:['glassy','adamantine'], hardness:['hard','very_hard'], crystal:['hexagonal','glassy_fract'], streak:['white'], heft:['average'], special:['none','fluorescent','translucent'], desc:'One of the most common minerals on Earth. Pure quartz is clear (rock crystal); impurities create amethyst (purple), citrine (yellow), rose quartz (pink), and smoky quartz. Found in igneous, metamorphic, and sedimentary rocks. Hardness 7.' },
+  { name:'Feldspar', icon:'🪨', color:['white','gray','orange','red','mixed'], luster:['glassy','pearly'], hardness:['hard'], crystal:['cubic','massive'], streak:['white'], heft:['average'], special:['none','cleavage'], desc:'The most abundant mineral group on Earth\'s crust. Includes orthoclase (pink/white) and plagioclase (gray/white). Shows two distinct cleavage directions at nearly right angles. Hardness 6–6.5.' },
+  { name:'Mica (Muscovite)', icon:'✨', color:['white','gray','mixed'], luster:['pearly'], hardness:['very_soft','soft'], crystal:['layered'], streak:['white'], heft:['light'], special:['none','flexible'], desc:'Famous for perfect basal cleavage into thin, flexible, elastic sheets. Silvery white to colorless. Very common in granite and metamorphic rocks. Used industrially as an electrical insulator. Hardness 2–2.5.' },
+  { name:'Calcite', icon:'🧊', color:['white','gray','yellow','mixed'], luster:['glassy','pearly'], hardness:['soft'], crystal:['hexagonal','massive','layered'], streak:['white'], heft:['average'], special:['fizzes','cleavage','translucent'], desc:'Extremely common carbonate mineral. The main component of limestone and marble. Fizzes vigorously with any acid (even vinegar). Shows perfect rhombohedral cleavage in three directions. Can be transparent, white, or brightly colored. Hardness 3.' },
+  { name:'Pyrite', icon:'⭐', color:['yellow'], luster:['metallic'], hardness:['hard'], crystal:['cubic'], streak:['black'], heft:['heavy'], special:['none'], desc:'Known as "Fool\'s Gold" for its brassy yellow color and metallic luster. Cubic crystals often with striated faces. Much harder than gold (Mohs 6–6.5) and has a greenish-black streak rather than yellow. Found in many rock types.' },
+  { name:'Magnetite', icon:'🧲', color:['black'], luster:['metallic'], hardness:['hard'], crystal:['cubic','massive'], streak:['black'], heft:['very_heavy'], special:['magnetic'], desc:'A strongly magnetic iron oxide — one of the few naturally magnetic minerals. Black with a metallic luster and black streak. Octahedral crystals common. Major iron ore and responsible for Earth\'s magnetic signature in volcanic rocks. Hardness 5.5–6.' },
+  { name:'Hematite', icon:'🔴', color:['black','red','gray'], luster:['metallic','dull'], hardness:['hard'], crystal:['massive','layered'], streak:['red'], heft:['very_heavy'], special:['none'], desc:'Iron oxide with a characteristic red-brown streak regardless of surface color. Can appear silvery (specularite), red, or earthy. One of the most important iron ores. Often found in banded iron formations and metamorphic rocks. Hardness 5–6.' },
+  { name:'Galena', icon:'🩶', color:['gray'], luster:['metallic'], hardness:['soft'], crystal:['cubic'], streak:['gray'], heft:['very_heavy'], special:['cleavage'], desc:'Lead sulfide — the primary ore of lead. Extremely heavy with a brilliant silver-gray metallic luster. Perfect cubic cleavage in three directions. Bright freshly broken surfaces tarnish to a dull lead-gray. Hardness 2.5.' },
+  { name:'Gypsum', icon:'🤍', color:['white','gray'], luster:['pearly','glassy'], hardness:['very_soft'], crystal:['layered','needle'], streak:['white'], heft:['light'], special:['none','flexible','cleavage'], desc:'The softest common mineral — easily scratched by a fingernail. Occurs as massive alabaster, silky fibrous selenite, and the beautiful "desert rose" formations. Major component of drywall. Fizzes slightly with acid. Hardness 2.' },
+  { name:'Halite (Rock Salt)', icon:'🧂', color:['white','gray','mixed'], luster:['glassy'], hardness:['very_soft'], crystal:['cubic'], streak:['white'], heft:['light'], special:['odor','cleavage'], desc:'Common table salt as a mineral! Perfect cubic cleavage in three directions. Dissolves in water and tastes salty (only taste minerals when you\'re 100% sure it\'s safe!). Colorless to white, though impurities can make it pink, blue, or orange. Hardness 2–2.5.' },
+  { name:'Olivine', icon:'💚', color:['green'], luster:['glassy'], hardness:['hard'], crystal:['massive','granular'], streak:['white'], heft:['heavy'], special:['none'], desc:'Characteristic olive-green mineral common in basalt and peridotite. Gemstone variety is called peridot. Conchoidal fracture, glassy luster. One of the first minerals to crystallize from magma. Hardness 6.5–7.' },
+  { name:'Turquoise', icon:'💙', color:['blue','green'], luster:['dull','glassy'], hardness:['medium'], crystal:['massive'], streak:['white'], heft:['average'], special:['none'], desc:'A hydrated copper aluminum phosphate prized as a gemstone for millennia. Sky-blue to blue-green, typically massive without visible crystals. Found in arid regions where copper deposits weather. Hardness 5–6.' },
+  { name:'Malachite', icon:'🟢', color:['green'], luster:['glassy','pearly','dull'], hardness:['soft'], crystal:['layered','needle','massive'], streak:['green'], heft:['heavy'], special:['fizzes'], desc:'Brilliant green copper carbonate. Forms as a weathering product of copper deposits. Often banded with concentric rings of different shades of green. Fizzes with acid. Sometimes paired with blue azurite. Hardness 3.5–4.' },
+  { name:'Amethyst', icon:'💜', color:['purple'], luster:['glassy'], hardness:['hard','very_hard'], crystal:['hexagonal'], streak:['white'], heft:['average'], special:['none','translucent'], desc:'The purple variety of quartz, colored by iron impurities and natural irradiation. Forms six-sided prismatic crystals, often in geodes. Color ranges from pale lilac to deep violet. One of the most popular gemstones. Hardness 7.' },
+  { name:'Diamond', icon:'💍', color:['white','mixed'], luster:['adamantine'], hardness:['very_hard'], crystal:['cubic'], streak:['white'], heft:['heavy'], special:['none','translucent'], desc:'The hardest natural substance (Mohs 10). Perfect octahedral crystals. Brilliant adamantine luster. Usually colorless/pale yellow but can be any color. Formed deep in Earth\'s mantle under extreme pressure and brought up by kimberlite pipes.' },
+  { name:'Obsidian', icon:'⚫', color:['black','mixed'], luster:['glassy'], hardness:['hard'], crystal:['glassy_fract'], streak:['white'], heft:['average'], special:['none'], desc:'Volcanic glass formed from rapidly cooling lava. Jet black with a glassy luster and conchoidal (shell-like) fracture producing very sharp edges — used as cutting tools by ancient peoples. No crystal structure. Hardness ~5.' },
+  { name:'Talc', icon:'⬜', color:['white','green'], luster:['pearly'], hardness:['very_soft'], crystal:['layered','massive'], streak:['white'], heft:['light'], special:['none'], desc:'The softest mineral (Mohs 1) — easily scratched by your fingernail and has a distinctive soapy feel. Pearly to greasy luster. White to pale green. Formed by metamorphism of magnesium-rich rocks. The mineral in talcum powder.' },
+  { name:'Fluorite', icon:'🌈', color:['mixed','purple','green','blue','yellow'], luster:['glassy'], hardness:['medium'], crystal:['cubic'], streak:['white'], heft:['heavy'], special:['fluorescent','cleavage'], desc:'Famous for its wide range of colors (often purple, green, yellow, or multicolored in the same crystal) and its perfect octahedral cleavage. Many specimens glow under UV light — fluorescence was named after this mineral. Hardness 4.' },
+  { name:'Copper', icon:'🟤', color:['orange','red'], luster:['metallic'], hardness:['soft'], crystal:['massive'], streak:['red'], heft:['very_heavy'], special:['none'], desc:'Native copper — one of the few metals found in pure metallic form in nature. Rose-red when fresh, tarnishes to orange-brown and eventually green (malachite). Malleable, very heavy, and highly conductive. Found with other copper minerals. Hardness 2.5–3.' },
+  { name:'Azurite', icon:'💙', color:['blue'], luster:['glassy','dull'], hardness:['soft'], crystal:['massive','needle'], streak:['blue'], heft:['heavy'], special:['fizzes'], desc:'A deep azure-blue copper carbonate hydroxide. Often found alongside malachite in weathered copper deposits. Fizzes with acid. Has been used as a blue pigment for thousands of years. Hardness 3.5–4.' },
+  { name:'Gold (Native)', icon:'🥇', color:['yellow'], luster:['metallic'], hardness:['very_soft'], crystal:['massive'], streak:['yellow'], heft:['very_heavy'], special:['none'], desc:'Native gold is malleable, very heavy (one of the densest minerals), and has a golden-yellow color and streak — unlike pyrite which has a black streak. Found in quartz veins and placer deposits in stream sediments. Hardness 2.5–3.' },
+];
+
+function score(m, props) {
+  let s = 0, total = 0;
+  if (props.color) { total += 3; if (m.color.includes(props.color)) s += 3; }
+  if (props.luster) { total += 3; if (m.luster.includes(props.luster)) s += 3; }
+  if (props.hardness) { total += 3; if (m.hardness.includes(props.hardness)) s += 3; }
+  if (props.crystal) { total += 2; if (m.crystal.includes(props.crystal)) s += 2; }
+  if (props.streak) { total += 2; if (m.streak.includes(props.streak)) s += 2; }
+  if (props.heft) { total += 1; if (m.heft.includes(props.heft)) s += 1; }
+  if (props.special && props.special !== 'none') { total += 3; if (m.special.includes(props.special)) s += 3; }
+  return total > 0 ? s / total : 0;
+}
+
+document.getElementById('btnIdentify').addEventListener('click', async () => {
+  const props = {
+    color: document.getElementById('qColor').value,
+    luster: document.getElementById('qLuster').value,
+    hardness: document.getElementById('qHardness').value,
+    crystal: document.getElementById('qCrystal').value,
+    streak: document.getElementById('qStreak').value,
+    heft: document.getElementById('qHeft').value,
+    special: document.getElementById('qSpecial').value,
+  };
+  const answered = Object.values(props).filter(v => v && v !== '').length;
+  if (answered < 2) { alert('Please answer at least 2 questions to identify your specimen.'); return; }
+
+  const scored = MINERALS.map(m => ({ ...m, match: score(m, props) }))
+    .sort((a, b) => b.match - a.match);
+
+  const best = scored[0];
+  const others = scored.slice(1, 5).filter(m => m.match > 0);
+  const matchPct = Math.round(best.match * 100);
+  const cc = matchPct >= 60 ? '#22c55e' : matchPct >= 35 ? '#fbbf24' : '#f87171';
+  const cl = matchPct >= 60 ? 'Strong match' : matchPct >= 35 ? 'Possible match' : 'Low confidence';
+
+  const topMatchEl = document.getElementById('topMatchEl');
+  topMatchEl.innerHTML = `<div class="top-match">
+    <div class="tm-head">
+      <div class="tm-icon">${best.icon}</div>
+      <div class="tm-info">
+        <h2>${best.name}</h2>
+        <span class="badge" style="background:${cc}18;border:1px solid ${cc}44;color:${cc}">✓ ${matchPct}% — ${cl}</span>
+      </div>
+    </div>
+    <div class="tm-desc">${best.desc}</div>
+    <div class="tm-props">
+      ${props.color ? `<div class="prop-item"><div class="prop-key">Color</div><div class="prop-val">${document.getElementById('qColor').options[document.getElementById('qColor').selectedIndex].text}</div></div>` : ''}
+      ${props.hardness ? `<div class="prop-item"><div class="prop-key">Hardness</div><div class="prop-val">${document.getElementById('qHardness').options[document.getElementById('qHardness').selectedIndex].text.split(' —')[0]}</div></div>` : ''}
+      ${props.luster ? `<div class="prop-item"><div class="prop-key">Luster</div><div class="prop-val">${document.getElementById('qLuster').options[document.getElementById('qLuster').selectedIndex].text.split(' /')[0]}</div></div>` : ''}
+      ${props.special && props.special !== 'none' ? `<div class="prop-item"><div class="prop-key">Special</div><div class="prop-val">${document.getElementById('qSpecial').options[document.getElementById('qSpecial').selectedIndex].text.split(' (')[0]}</div></div>` : ''}
+    </div>
+  </div>`;
+
+  const otherLbl = document.getElementById('otherLbl');
+  const candidatesEl = document.getElementById('candidatesEl');
+  if (others.length) {
+    otherLbl.style.display = 'block';
+    candidatesEl.innerHTML = others.map(m => {
+      const pct = Math.round(m.match * 100);
+      return `<div class="cand"><div class="ci"><div class="ci-name">${m.icon} ${m.name}</div><div class="ci-score">${m.desc.slice(0,80)}…</div></div><div class="ci-match">${pct}%</div></div>`;
+    }).join('');
+  } else {
+    otherLbl.style.display = 'none';
+    candidatesEl.innerHTML = '';
+  }
+
+  document.getElementById('results').classList.remove('hidden');
+  document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+});
+
+document.getElementById('btnReset').addEventListener('click', () => {
+  ['qColor','qLuster','qHardness','qCrystal','qStreak','qHeft','qSpecial'].forEach(id => {
+    const el = document.getElementById(id);
+    el.value = id === 'qSpecial' ? 'none' : '';
+  });
+  document.getElementById('results').classList.add('hidden');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+</script>
+</body>
+</html>

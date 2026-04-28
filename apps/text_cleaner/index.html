@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Text Cleaner</title>
+  <link rel="icon" type="image/x-icon" href="../../images.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b1119;
+      --panel: #121a27;
+      --panel-2: #182236;
+      --border: #273857;
+      --text: #e7edf7;
+      --muted: #9fb2c7;
+      --accent: #3b82f6;
+      --shadow: 0 14px 30px rgba(0,0,0,0.4);
+      --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+      --sans: "Space Grotesk", system-ui, -apple-system, Segoe UI, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--sans);
+      color: var(--text);
+      background:
+        radial-gradient(900px 500px at 10% -20%, rgba(59, 130, 246, 0.2), transparent 60%),
+        radial-gradient(900px 500px at 90% -20%, rgba(34, 197, 94, 0.18), transparent 60%),
+        var(--bg);
+      min-height: 100vh;
+    }
+    header {
+      padding: 26px 36px 18px;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(18, 26, 39, 0.95), rgba(11, 17, 25, 0.9));
+      position: sticky; top: 0; z-index: 10;
+    }
+    header .wrap { max-width: 1100px; margin: 0 auto; }
+    .back {
+      display: inline-flex; align-items: center; gap: 8px;
+      color: var(--muted); text-decoration: none; font-size: 12px;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      border: 1px solid var(--border); padding: 6px 12px; border-radius: 999px;
+      font-family: var(--mono);
+    }
+    h1 { margin-top: 12px; font-size: clamp(1.7rem, 2.8vw, 2.5rem); }
+    .sub { margin-top: 6px; color: var(--muted); }
+    main { max-width: 1100px; margin: 0 auto; padding: 30px 36px 80px; display: grid; gap: 22px; }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 22px;
+      box-shadow: var(--shadow);
+    }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+    textarea {
+      width: 100%;
+      background: var(--panel-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      min-height: 220px;
+      resize: vertical;
+    }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 12px; }
+    .btn {
+      background: var(--accent);
+      color: #081422;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 16px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: var(--mono);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 0.72rem;
+    }
+    .btn.secondary { background: transparent; border: 1px solid var(--border); color: var(--text); }
+    .toggles { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px; margin-top: 12px; }
+    .toggle {
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      color: var(--muted);
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    @media (max-width: 640px) {
+      header, main { padding-left: 20px; padding-right: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <a class="back" href="../../index.html">Back Home</a>
+      <h1>Text Cleaner</h1>
+      <p class="sub">Normalize formatting, strip junk, and make text clean in one pass.</p>
+    </div>
+  </header>
+
+  <main>
+    <section class="panel">
+      <div class="grid">
+        <textarea id="inputText" placeholder="Paste messy text here..."></textarea>
+        <textarea id="outputText" placeholder="Clean output..." readonly></textarea>
+      </div>
+      <div class="toggles">
+        <label class="toggle"><input type="checkbox" id="trimLines" checked> Trim line edges</label>
+        <label class="toggle"><input type="checkbox" id="collapseSpaces" checked> Collapse multiple spaces</label>
+        <label class="toggle"><input type="checkbox" id="removeEmpty" checked> Remove empty lines</label>
+        <label class="toggle"><input type="checkbox" id="normalizeQuotes"> Normalize smart quotes</label>
+        <label class="toggle"><input type="checkbox" id="bulletize"> Normalize bullet points</label>
+      </div>
+      <div class="row">
+        <button class="btn" id="copyBtn">Copy Output</button>
+        <button class="btn secondary" id="downloadBtn">Download .txt</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const inputText = document.getElementById('inputText');
+    const outputText = document.getElementById('outputText');
+    const trimLines = document.getElementById('trimLines');
+    const collapseSpaces = document.getElementById('collapseSpaces');
+    const removeEmpty = document.getElementById('removeEmpty');
+    const normalizeQuotes = document.getElementById('normalizeQuotes');
+    const bulletize = document.getElementById('bulletize');
+
+    function clean() {
+      let t = inputText.value || '';
+      let lines = t.split(/\r?\n/);
+      if (trimLines.checked) lines = lines.map(l => l.trim());
+      if (collapseSpaces.checked) lines = lines.map(l => l.replace(/\s+/g, ' '));
+      if (removeEmpty.checked) lines = lines.filter(l => l.trim() !== '');
+      t = lines.join('\n');
+      if (normalizeQuotes.checked) {
+        t = t.replace(/[“”]/g, '"').replace(/[‘’]/g, "'");
+      }
+      if (bulletize.checked) {
+        t = t.replace(/^[\-\*\•]\s*/gm, '• ');
+      }
+      outputText.value = t;
+    }
+
+    [inputText, trimLines, collapseSpaces, removeEmpty, normalizeQuotes, bulletize].forEach(el => {
+      el.addEventListener('input', clean);
+      el.addEventListener('change', clean);
+    });
+    clean();
+
+    document.getElementById('copyBtn').addEventListener('click', () => {
+      if (!outputText.value) return;
+      navigator.clipboard.writeText(outputText.value);
+    });
+    document.getElementById('downloadBtn').addEventListener('click', () => {
+      if (!outputText.value) return;
+      const a = document.createElement('a');
+      a.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(outputText.value);
+      a.download = 'cleaned_text.txt';
+      a.click();
+    });
+  </script>
+</body>
+</html>

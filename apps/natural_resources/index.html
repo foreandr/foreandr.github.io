@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Natural Resources Explorer</title>
+  <link rel="icon" type="image/x-icon" href="../../images.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Source+Code+Pro:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <nav class="topbar">
+    <a class="back-btn" href="../../index.html">← Back Home</a>
+    <div class="topbar-title">
+      <span class="topbar-icon">⛏️</span>
+      <h1>Natural Resources Explorer</h1>
+    </div>
+    <div class="topbar-right">
+      <span id="top-source" class="top-source"></span>
+    </div>
+  </nav>
+
+  <div class="layout">
+    <!-- LEFT SIDEBAR: resource selector -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-head">
+        <div class="sidebar-label">Resources</div>
+      </div>
+      <div id="resource-list" class="resource-list"></div>
+    </aside>
+
+    <!-- CENTER: map + timeline -->
+    <main class="map-wrap" id="map-wrap">
+      <!-- Top leaders bar -->
+      <div class="leaders-bar" id="leaders-bar"></div>
+
+      <!-- SVG map container -->
+      <div class="map-container" id="map-container">
+        <div id="map-loading" class="map-loading">Loading map…</div>
+        <!-- SVG injected here by script -->
+      </div>
+
+      <!-- Tooltip -->
+      <div id="tooltip" class="tooltip hidden"></div>
+
+      <!-- Legend -->
+      <div class="legend" id="legend">
+        <div class="legend-label" id="legend-label-low">no data</div>
+        <div class="legend-gradient" id="legend-gradient"></div>
+        <div class="legend-label" id="legend-label-high">max</div>
+        <div class="legend-unit" id="legend-unit"></div>
+      </div>
+
+      <!-- Timeline -->
+      <div class="timeline" id="timeline">
+        <button id="play-btn" class="tl-btn" title="Play/Pause">&#9654;</button>
+        <div class="tl-track-wrap">
+          <input id="year-slider" class="tl-slider" type="range" min="0" max="5" step="1" value="5">
+          <div class="tl-years" id="tl-years"></div>
+        </div>
+        <span id="year-display" class="tl-year">2023</span>
+      </div>
+
+      <!-- Sources footer -->
+      <div class="sources-bar">
+        <span class="sources-label">Sources:</span>
+        <a class="sources-link" href="https://www.energyinst.org/statistical-review" target="_blank" rel="noopener">Energy Institute Statistical Review of World Energy</a>
+        <span class="sources-sep">·</span>
+        <a class="sources-link" href="https://www.bgs.ac.uk/mineralsuk/statistics/worldStatistics.html" target="_blank" rel="noopener">BGS World Mineral Statistics</a>
+        <span class="sources-sep">·</span>
+        <a class="sources-link" href="https://www.naturalearthdata.com/" target="_blank" rel="noopener">Natural Earth (map)</a>
+      </div>
+    </main>
+
+    <!-- RIGHT PANEL: country details -->
+    <aside class="details-panel" id="details-panel">
+      <div id="details-placeholder" class="details-placeholder">
+        <div class="details-placeholder-icon">🌍</div>
+        <p>Click any country<br>to see its data</p>
+      </div>
+      <div id="details-content" class="details-content hidden">
+        <div class="details-head">
+          <div id="details-flag" class="details-flag"></div>
+          <div>
+            <div id="details-name" class="details-name"></div>
+            <div id="details-iso" class="details-iso"></div>
+          </div>
+        </div>
+        <div id="details-hero" class="details-hero"></div>
+        <div class="details-section-label">All Resources — <span id="details-year"></span></div>
+        <div id="details-table" class="details-table"></div>
+      </div>
+    </aside>
+  </div>
+
+  <script src="./data/resources.js"></script>
+  <script src="./script.js"></script>
+</body>
+</html>

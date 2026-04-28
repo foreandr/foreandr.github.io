@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Mastermind · Solved</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root{--bg:#0a0a0f;--card:#16161f;--border:#2a2a3a;--text:#e8e8f0;--muted:#6b6b8a;--accent:#8b5cf6;--green:#10b981;--red:#ef4444;}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;min-height:100vh;}
+    nav{background:rgba(10,10,15,.95);border-bottom:1px solid var(--border);padding:0 32px;height:56px;display:flex;align-items:center;justify-content:space-between;}
+    nav a{color:var(--muted);text-decoration:none;font-size:.875rem;}nav a:hover{color:var(--text);}
+    nav .title{color:var(--text);font-weight:700;font-size:1rem;}
+    .layout{max-width:1000px;margin:0 auto;padding:36px 24px;display:grid;grid-template-columns:1fr 300px;gap:28px;}
+    h1{font-size:2rem;font-weight:800;letter-spacing:-.03em;margin-bottom:6px;}
+    .sub{color:var(--muted);font-size:.9rem;margin-bottom:24px;}
+    .game-col{display:flex;flex-direction:column;gap:16px;}
+    .board{display:flex;flex-direction:column;gap:6px;}
+    .guess-row{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:10px;background:var(--card);border:1px solid var(--border);}
+    .guess-row.active{border-color:var(--accent);}
+    .guess-num{width:24px;font-size:.8rem;color:var(--muted);font-weight:700;}
+    .pegs{display:flex;gap:6px;}
+    .peg{width:36px;height:36px;border-radius:50%;border:2px solid rgba(255,255,255,.1);cursor:pointer;transition:all .15s;position:relative;}
+    .peg.empty{background:#2a2a3a;}
+    .peg:not(.empty):hover{transform:scale(1.1);}
+    .peg.c0{background:#ef4444;}
+    .peg.c1{background:#f59e0b;}
+    .peg.c2{background:#10b981;}
+    .peg.c3{background:#3b82f6;}
+    .peg.c4{background:#8b5cf6;}
+    .peg.c5{background:#ec4899;}
+    .feedback{display:flex;flex-wrap:wrap;gap:3px;width:60px;}
+    .fb{width:12px;height:12px;border-radius:50%;}
+    .fb.black{background:#111;border:1px solid #555;}
+    .fb.white{background:#f0f0f0;border:1px solid #888;}
+    .fb.empty{background:#2a2a3a;}
+    .color-picker{display:flex;gap:8px;flex-wrap:wrap;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;}
+    .cp-peg{width:44px;height:44px;border-radius:50%;cursor:pointer;transition:all .15s;border:3px solid transparent;}
+    .cp-peg:hover{transform:scale(1.15);}
+    .cp-peg.selected{border-color:#fff;box-shadow:0 0 10px rgba(255,255,255,.4);}
+    .cp-peg.c0{background:#ef4444;}
+    .cp-peg.c1{background:#f59e0b;}
+    .cp-peg.c2{background:#10b981;}
+    .cp-peg.c3{background:#3b82f6;}
+    .cp-peg.c4{background:#8b5cf6;}
+    .cp-peg.c5{background:#ec4899;}
+    .controls{display:flex;gap:10px;flex-wrap:wrap;}
+    button{padding:9px 18px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:.875rem;font-weight:600;cursor:pointer;transition:all .15s;}
+    button:hover{border-color:var(--accent);color:var(--accent);}
+    button.primary{background:var(--accent);border-color:var(--accent);color:#fff;}
+    button.primary:hover{background:#7c3aed;}
+    .status{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 20px;text-align:center;}
+    .status .turn{font-size:1rem;font-weight:700;}
+    .status .hint{font-size:.8rem;color:var(--muted);margin-top:4px;}
+    .sidebar{display:flex;flex-direction:column;gap:14px;}
+    .panel{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;}
+    .panel h3{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:12px;}
+    .stat-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);font-size:.875rem;}
+    .stat-row:last-child{border-bottom:none;}
+    .sv{font-weight:700;}.sv.green{color:var(--green);}.sv.red{color:var(--red);}
+    .algo-info{font-size:.8rem;color:var(--muted);line-height:1.8;}.algo-info b{color:var(--text);}
+    .secret-row{display:flex;gap:8px;justify-content:center;margin-top:8px;}
+    @media(max-width:700px){.layout{grid-template-columns:1fr;}}
+  </style>
+</head>
+<body>
+<nav>
+  <a href="index.html">← Solved Games</a>
+  <span class="title">Mastermind</span>
+  <a href="../../index.html">Home</a>
+</nav>
+<div class="layout">
+  <div class="game-col">
+    <div>
+      <h1>Mastermind</h1>
+      <p class="sub">Knuth's 5-guess algorithm guarantees solving any 4-peg code in ≤5 guesses. · <span style="color:var(--accent);font-weight:600">Guaranteed ≤5 Guesses</span></p>
+    </div>
+    <div class="status"><div class="turn" id="status-turn">Guess the 4-color code!</div><div class="hint" id="status-hint">Pick colors with the palette, then click a peg to place. Or let the AI solve it.</div></div>
+    <div style="font-size:.75rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.08em">Color Palette</div>
+    <div class="color-picker">
+      <div class="cp-peg c0 selected" data-c="0" onclick="selectColor(0)"></div>
+      <div class="cp-peg c1" data-c="1" onclick="selectColor(1)"></div>
+      <div class="cp-peg c2" data-c="2" onclick="selectColor(2)"></div>
+      <div class="cp-peg c3" data-c="3" onclick="selectColor(3)"></div>
+      <div class="cp-peg c4" data-c="4" onclick="selectColor(4)"></div>
+      <div class="cp-peg c5" data-c="5" onclick="selectColor(5)"></div>
+    </div>
+    <div class="board" id="board"></div>
+    <div class="controls">
+      <button onclick="submitGuess()" id="btn-submit">Submit Guess</button>
+      <button class="primary" onclick="resetGame()">New Game</button>
+      <button onclick="knuthStep()">Knuth: Next Guess</button>
+      <button onclick="knuthSolve()">Knuth: Solve All</button>
+    </div>
+    <div id="secret-reveal" style="display:none;text-align:center;padding:12px;background:var(--card);border:1px solid var(--border);border-radius:12px;">
+      <div style="font-size:.75rem;color:var(--muted);margin-bottom:8px;font-weight:700;text-transform:uppercase">Secret Code</div>
+      <div class="secret-row" id="secret-row"></div>
+    </div>
+  </div>
+  <div class="sidebar">
+    <div class="panel">
+      <h3>Game Stats</h3>
+      <div class="stat-row"><span>Current Guess</span><span class="sv" id="cur-guess">1 / 10</span></div>
+      <div class="stat-row"><span>Possibilities Left</span><span class="sv" id="poss-left">1296</span></div>
+      <div class="stat-row"><span>Knuth Guess</span><span class="sv" id="knuth-next">—</span></div>
+    </div>
+    <div class="panel">
+      <h3>Session Stats</h3>
+      <div class="stat-row"><span>Games Played</span><span class="sv" id="st-g">0</span></div>
+      <div class="stat-row"><span>Solved (You)</span><span class="sv green" id="st-w">0</span></div>
+      <div class="stat-row"><span>Failed</span><span class="sv red" id="st-l">0</span></div>
+      <div class="stat-row"><span>Avg Guesses</span><span class="sv" id="st-avg">—</span></div>
+      <div class="stat-row"><span>Min Guesses</span><span class="sv green" id="st-min">—</span></div>
+    </div>
+    <div class="panel">
+      <h3>Algorithm</h3>
+      <div class="algo-info">
+        <b>Algorithm:</b> Knuth (1977)<br>
+        <b>Guarantee:</b> Solves in ≤5 guesses<br>
+        <b>Colors:</b> 6, Pegs: 4<br>
+        <b>Black pin:</b> Right color, right place<br>
+        <b>White pin:</b> Right color, wrong place<br>
+        <b>Search:</b> Minimax over remaining set<br>
+        <b>First guess:</b> Always 1122
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+const COLORS=6,PEGS=4,MAX_GUESSES=10;
+let secret,guesses,currentGuess,gameOver,selectedColor,possibilities,guessHistory;
+let stats={g:0,w:0,l:0,totalGuesses:0,min:Infinity};
+
+function allCodes(){
+  const codes=[];
+  for(let i=0;i<Math.pow(COLORS,PEGS);i++){
+    const code=[];let n=i;
+    for(let p=0;p<PEGS;p++){code.push(n%COLORS);n=Math.floor(n/COLORS);}
+    codes.push(code);
+  }
+  return codes;
+}
+const ALL_CODES=allCodes();
+
+function score(guess,answer){
+  let black=0,white=0;
+  const g=[...guess],a=[...answer];
+  for(let i=0;i<PEGS;i++)if(g[i]===a[i]){black++;g[i]=-1;a[i]=-2;}
+  for(let i=0;i<PEGS;i++){if(g[i]===-1)continue;const j=a.indexOf(g[i]);if(j>=0){white++;a[j]=-2;}}
+  return{black,white};
+}
+
+function filterPossibilities(poss,guess,sc){
+  return poss.filter(code=>{const s=score(guess,code);return s.black===sc.black&&s.white===sc.white;});
+}
+
+function knuthNextGuess(poss,guessNum){
+  if(guessNum===0)return[1,1,2,2];
+  if(poss.length===1)return poss[0];
+  // Minimax: choose guess that minimizes worst-case remaining possibilities
+  let bestGuess=null,bestWorst=Infinity;
+  // Limit search for performance
+  const candidates=poss.length<=6?poss:ALL_CODES.slice(0,200).concat(poss.slice(0,20));
+  for(const g of candidates){
+    const counts={};
+    for(const p of poss){const s=score(g,p);const k=s.black*10+s.white;counts[k]=(counts[k]||0)+1;}
+    const worst=Math.max(...Object.values(counts));
+    if(worst<bestWorst||(worst===bestWorst&&poss.includes(g)&&(bestGuess===null||!poss.includes(bestGuess)))){
+      bestWorst=worst;bestGuess=g;
+    }
+  }
+  return bestGuess||poss[0];
+}
+
+function resetGame(){
+  secret=ALL_CODES[Math.floor(Math.random()*ALL_CODES.length)];
+  guesses=[];
+  currentGuess=Array(PEGS).fill(-1);
+  gameOver=false;
+  selectedColor=0;
+  possibilities=[...ALL_CODES];
+  guessHistory=[];
+  document.getElementById('secret-reveal').style.display='none';
+  document.getElementById('status-turn').textContent='Guess the 4-color code!';
+  document.getElementById('status-hint').textContent='Pick colors, click pegs to place, then Submit.';
+  updatePossLeft();
+  updateKnuthNext();
+  renderBoard();
+}
+
+function selectColor(c){
+  selectedColor=c;
+  document.querySelectorAll('.cp-peg').forEach(p=>p.classList.toggle('selected',parseInt(p.dataset.c)===c));
+}
+
+function placePeg(pos){
+  if(gameOver)return;
+  currentGuess[pos]=selectedColor;
+  renderBoard();
+}
+
+function renderBoard(){
+  const el=document.getElementById('board');
+  el.innerHTML='';
+  const maxRows=Math.max(MAX_GUESSES,guesses.length+1);
+  for(let row=0;row<MAX_GUESSES;row++){
+    const isActive=row===guesses.length&&!gameOver;
+    const isPast=row<guesses.length;
+    const div=document.createElement('div');
+    div.className='guess-row'+(isActive?' active':'');
+    const num=document.createElement('div');num.className='guess-num';num.textContent=row+1;div.appendChild(num);
+    const pegs=document.createElement('div');pegs.className='pegs';
+    for(let p=0;p<PEGS;p++){
+      const peg=document.createElement('div');
+      let c=-1;
+      if(isPast)c=guesses[row].code[p];
+      else if(isActive)c=currentGuess[p];
+      peg.className='peg'+(c>=0?` c${c}`:'');
+      if(c<0)peg.classList.add('empty');
+      if(isActive){const pos=p;peg.onclick=()=>placePeg(pos);}
+      pegs.appendChild(peg);
+    }
+    div.appendChild(pegs);
+    const fb=document.createElement('div');fb.className='feedback';
+    if(isPast){
+      const sc=guesses[row].score;
+      let i=0;
+      for(;i<sc.black;i++){const f=document.createElement('div');f.className='fb black';fb.appendChild(f);}
+      for(;i<sc.black+sc.white;i++){const f=document.createElement('div');f.className='fb white';fb.appendChild(f);}
+      for(;i<PEGS;i++){const f=document.createElement('div');f.className='fb empty';fb.appendChild(f);}
+    }
+    div.appendChild(fb);
+    el.appendChild(div);
+  }
+  document.getElementById('cur-guess').textContent=`${guesses.length+1} / ${MAX_GUESSES}`;
+}
+
+function submitGuess(){
+  if(gameOver)return;
+  if(currentGuess.includes(-1)){document.getElementById('status-hint').textContent='Fill all 4 pegs first!';return;}
+  const sc=score(currentGuess,secret);
+  guesses.push({code:[...currentGuess],score:sc});
+  possibilities=filterPossibilities(possibilities,currentGuess,sc);
+  updatePossLeft();
+  currentGuess=Array(PEGS).fill(-1);
+  renderBoard();
+  if(sc.black===PEGS){
+    gameOver=true;stats.g++;stats.w++;stats.totalGuesses+=guesses.length;stats.min=Math.min(stats.min,guesses.length);
+    document.getElementById('status-turn').textContent=`🎉 Solved in ${guesses.length} guesses!`;
+    document.getElementById('status-hint').textContent='';revealSecret();updateStats();return;
+  }
+  if(guesses.length>=MAX_GUESSES){
+    gameOver=true;stats.g++;stats.l++;
+    document.getElementById('status-turn').textContent='Out of guesses! Secret revealed.';
+    revealSecret();updateStats();return;
+  }
+  document.getElementById('status-turn').textContent=`Guess ${guesses.length+1} — ${possibilities.length} possibilities left`;
+  updateKnuthNext();
+}
+
+function revealSecret(){
+  const el=document.getElementById('secret-row');el.innerHTML='';
+  secret.forEach(c=>{const p=document.createElement('div');p.className=`peg c${c}`;p.style.cssText='width:36px;height:36px';el.appendChild(p);});
+  document.getElementById('secret-reveal').style.display='block';
+}
+
+function updatePossLeft(){document.getElementById('poss-left').textContent=possibilities.length;}
+function updateKnuthNext(){
+  const g=knuthNextGuess(possibilities,guesses.length);
+  const colors=['R','Y','G','B','P','M'];
+  document.getElementById('knuth-next').textContent=g?g.map(c=>colors[c]).join('-'):'—';
+}
+function updateStats(){
+  document.getElementById('st-g').textContent=stats.g;
+  document.getElementById('st-w').textContent=stats.w;
+  document.getElementById('st-l').textContent=stats.l;
+  document.getElementById('st-avg').textContent=stats.w>0?(stats.totalGuesses/stats.w).toFixed(1):'—';
+  document.getElementById('st-min').textContent=stats.min<Infinity?stats.min:'—';
+}
+
+function knuthStep(){
+  if(gameOver)return;
+  const g=knuthNextGuess(possibilities,guesses.length);
+  if(!g)return;
+  currentGuess=[...g];
+  renderBoard();
+  document.getElementById('status-hint').textContent='Knuth\'s optimal guess loaded — click Submit.';
+}
+
+async function knuthSolve(){
+  if(gameOver)resetGame();
+  while(!gameOver){
+    const g=knuthNextGuess(possibilities,guesses.length);
+    if(!g)break;
+    currentGuess=[...g];
+    submitGuess();
+    renderBoard();
+    await new Promise(r=>setTimeout(r,300));
+  }
+}
+
+resetGame();
+</script>
+</body>
+</html>

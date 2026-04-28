@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Function Builder — Wave Composer</title>
+  <link rel="icon" type="image/x-icon" href="../../images.ico">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+  <style>
+    :root {
+      --teal: #00d4b0;
+      --teal-dim: rgba(0,212,176,0.18);
+      --panel-w: 290px;
+      --pu: #bc8cff;
+      --bg3: #1a1f26;
+      --bdr: #2a3040;
+      --mu: #6b7590;
+      --txt: #e6edf3;
+      --ye: #e3b341;
+      --or: #f78166;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; background: #000; color: var(--txt); font-family: "IBM Plex Mono", "Fira Code", monospace; }
+
+    /* TOPBAR */
+    #topbar {
+      position: fixed; top: 0; left: 0; right: 0; height: 40px; z-index: 50;
+      background: rgba(0,0,0,0.85); border-bottom: 1px solid rgba(255,255,255,0.06);
+      display: flex; align-items: center; gap: 8px; padding: 0 10px;
+      backdrop-filter: blur(8px);
+    }
+    .tname { font-size: .78rem; font-weight: 700; letter-spacing: .06em; color: var(--teal); }
+    .vsep { width: 1px; height: 18px; background: rgba(255,255,255,0.12); }
+    button.tb { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: var(--txt); border-radius: 5px; padding: 3px 10px; font-size: .7rem; font-family: inherit; cursor: pointer; white-space: nowrap; transition: all .15s; }
+    button.tb:hover { background: rgba(255,255,255,0.12); }
+    button.tb.on { background: var(--teal); color: #000; border-color: var(--teal); font-weight: 700; }
+    button.tb.audio-on { background: #22c55e; color: #000; border-color: #22c55e; font-weight: 700; }
+    select.tb { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: var(--txt); border-radius: 5px; padding: 3px 6px; font-size: .7rem; font-family: inherit; cursor: pointer; }
+    .vol-wrap { display: flex; align-items: center; gap: 4px; font-size: .65rem; color: var(--mu); }
+    .vol-wrap input { width: 60px; accent-color: #22c55e; }
+    .base-wrap { display: flex; align-items: center; gap: 4px; font-size: .65rem; color: var(--mu); }
+    .base-wrap input { width: 55px; accent-color: var(--teal); }
+
+    /* LAYOUT */
+    #layout { display: flex; height: 100vh; padding-top: 40px; }
+
+    /* SIDE PANEL */
+    #panel {
+      width: var(--panel-w); flex-shrink: 0; background: #080c10;
+      border-right: 1px solid rgba(255,255,255,0.07);
+      display: flex; flex-direction: column; overflow: hidden;
+      transition: width .22s ease, opacity .2s;
+    }
+    #panel.closed { width: 0; border-right: none; opacity: 0; }
+    #panel-inner { width: var(--panel-w); flex: 1; overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; }
+    .sec { padding: 8px 10px; border-bottom: 1px solid rgba(255,255,255,0.06); flex-shrink: 0; }
+    .sec-title { font-size: .58rem; color: var(--teal); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 6px; font-weight: 700; }
+
+    /* Term cards */
+    #terms-list { flex: 1; overflow-y: auto; padding: 6px; display: flex; flex-direction: column; gap: 5px; }
+    .term-card { background: #0d1117; border: 1px solid var(--bdr); border-radius: 8px; padding: 7px 9px; }
+    .term-card.muted { opacity: .35; }
+    .th { display: flex; align-items: center; gap: 6px; margin-bottom: 5px; }
+    .tc { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+    .tl { font-size: .7rem; font-weight: 700; flex: 1; }
+    .tm { background: none; border: 1px solid var(--bdr); color: var(--mu); border-radius: 4px; padding: 1px 5px; font-size: .58rem; cursor: pointer; font-family: inherit; }
+    .tm:hover { color: var(--txt); border-color: var(--txt); }
+    .td { background: none; border: none; color: var(--or); font-size: .85rem; cursor: pointer; padding: 0 2px; line-height: 1; }
+    .tr { display: flex; align-items: center; gap: 4px; margin-bottom: 3px; }
+    .tr label { font-size: .58rem; color: var(--mu); width: 14px; flex-shrink: 0; text-align: right; }
+    .tr input[type=range] { flex: 1; accent-color: var(--teal); height: 2px; cursor: pointer; }
+    .tr input[type=number] { width: 50px; background: #161b22; border: 1px solid var(--bdr); color: var(--txt); border-radius: 4px; padding: 2px 4px; font-size: .6rem; font-family: inherit; }
+    .texpr { font-size: .6rem; color: var(--ye); margin-top: 4px; padding-top: 4px; border-top: 1px solid var(--bdr); }
+
+    /* Add / Presets */
+    .add-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; margin-top: 4px; }
+    .ab { background: #0d1117; border: 1px solid var(--bdr); color: var(--txt); border-radius: 5px; padding: 5px 3px; font-size: .6rem; font-family: inherit; cursor: pointer; text-align: center; transition: background .1s; }
+    .ab:hover { background: var(--bg3); border-color: var(--teal); color: var(--teal); }
+    .preset-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; }
+    .pb { background: #0d1117; border: 1px solid var(--bdr); color: var(--txt); border-radius: 5px; padding: 5px 3px; font-size: .6rem; font-family: inherit; cursor: pointer; text-align: center; transition: background .1s; }
+    .pb:hover { background: var(--bg3); border-color: var(--teal); color: var(--teal); }
+    .pb small { display: block; font-size: .52rem; color: var(--mu); margin-top: 1px; }
+
+    /* CANVAS AREA */
+    #canvas-wrap { flex: 1; position: relative; overflow: hidden; }
+    #cv { display: block; width: 100%; height: 100%; }
+
+    /* LATEX BAR */
+    #latex-bar {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      height: 54px; background: rgba(0,0,0,0.7);
+      border-top: 1px solid rgba(255,255,255,0.07);
+      display: flex; align-items: center; justify-content: center; gap: 14px;
+      padding: 0 20px;
+      backdrop-filter: blur(6px);
+    }
+    #latex-label { font-size: .75rem; color: var(--mu); white-space: nowrap; flex-shrink: 0; }
+    #latex-out { overflow-x: auto; white-space: nowrap; max-width: calc(100% - 80px); text-align: center; }
+    #latex-out .katex { font-size: 1.15rem; color: #fff; }
+
+    /* No-terms hint */
+    #empty-hint {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+      font-size: .8rem; color: rgba(255,255,255,0.15); pointer-events: none; text-align: center; line-height: 2;
+    }
+  </style>
+</head>
+<body>
+
+<div id="topbar">
+  <a href="../../index.html" class="tb" style="text-decoration:none;color:var(--mu)">← Back</a>
+  <div class="vsep"></div>
+  <button id="btn-panel" class="tb on">▣</button>
+  <div class="vsep"></div>
+  <span class="tname">∿ FUNCTION BUILDER</span>
+  <div class="vsep"></div>
+  <button id="btn-play" class="tb on">▶ Play</button>
+  <button id="btn-audio" class="tb">🔇 Audio OFF</button>
+  <div class="vol-wrap">
+    <span>vol</span><input type="range" id="sl-vol" min="0" max="1" step="0.01" value="0.4">
+  </div>
+  <div class="base-wrap">
+    <span>root</span>
+    <input type="range" id="sl-base" min="55" max="880" step="1" value="220">
+    <span id="base-val" style="color:var(--teal)">220 Hz</span>
+  </div>
+  <div class="vsep"></div>
+  <button id="btn-sum" class="tb on">∑ Sum</button>
+  <button id="btn-parts" class="tb on">Parts</button>
+  <select id="sel-xrange" class="tb">
+    <option value="6.28">x: ±π</option>
+    <option value="12.56" selected>x: ±2π</option>
+    <option value="20">x: ±10</option>
+    <option value="31.4">x: ±5π</option>
+  </select>
+  <button id="btn-clear" class="tb">✕ Clear</button>
+</div>
+
+<div id="layout">
+  <div id="panel">
+    <div id="panel-inner">
+      <div id="terms-list"></div>
+      <div class="sec">
+        <div class="sec-title">Add Term</div>
+        <div class="add-grid">
+          <button class="ab" data-fn="sin">sin</button>
+          <button class="ab" data-fn="cos">cos</button>
+          <button class="ab" data-fn="tan">tan</button>
+          <button class="ab" data-fn="sawtooth">sawtooth</button>
+          <button class="ab" data-fn="square">square</button>
+          <button class="ab" data-fn="triangle">triangle</button>
+          <button class="ab" data-fn="sinc">sinc</button>
+          <button class="ab" data-fn="gaussian">gaussian</button>
+          <button class="ab" data-fn="exp">exp decay</button>
+          <button class="ab" data-fn="abs-sin">|sin|</button>
+          <button class="ab" data-fn="pulse">pulse</button>
+          <button class="ab" data-fn="noise">noise</button>
+        </div>
+      </div>
+      <div class="sec">
+        <div class="sec-title">Load Preset</div>
+        <div class="preset-grid">
+          <button class="pb" data-preset="cos5">5cos(x)−cos(5x)<small>like the reel</small></button>
+          <button class="pb" data-preset="sq4">Square wave<small>4 harmonics</small></button>
+          <button class="pb" data-preset="saw5">Sawtooth<small>5 harmonics</small></button>
+          <button class="pb" data-preset="tri4">Triangle<small>4 harmonics</small></button>
+          <button class="pb" data-preset="beats">Beats<small>close freqs</small></button>
+          <button class="pb" data-preset="am">AM Signal<small>carrier+env</small></button>
+          <button class="pb" data-preset="harm">Harmonics<small>1+2+3+4f</small></button>
+          <button class="pb" data-preset="chord">Major Chord<small>4:5:6</small></button>
+          <button class="pb" data-preset="dissonance">Dissonance<small>clashing</small></button>
+          <button class="pb" data-preset="ep">EP Envelope<small>decay+harm</small></button>
+          <button class="pb" data-preset="organ">Pipe Organ<small>6 harmonics</small></button>
+          <button class="pb" data-preset="ripple">Water Ripple<small>sinc + hi-freq</small></button>
+          <button class="pb" data-preset="hbeat">Heartbeat<small>pulse + phase</small></button>
+          <button class="pb" data-preset="tremolo">Tremolo<small>AM beating</small></button>
+          <button class="pb" data-preset="golden">Golden φ<small>1 : 1.618</small></button>
+          <button class="pb" data-preset="alien">Alien<small>incommensurate</small></button>
+          <button class="pb" data-preset="shark">Shark Fin<small>saw + harmonics</small></button>
+          <button class="pb" data-preset="spiral">Spiral<small>sin+cos mix</small></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="canvas-wrap">
+    <canvas id="cv"></canvas>
+    <div id="empty-hint" style="display:none">Add a term from the panel<br>or load a preset</div>
+    <div id="latex-bar">
+      <span id="latex-label">f(x) =</span>
+      <div id="latex-out"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════ PALETTE
+const PAL = ['#00d4b0','#58a6ff','#bc8cff','#e3b341','#f78166','#ff6b6b','#3fb950','#39d0c8','#ffa657','#7ee787'];
+let palIdx = 0;
+const nextCol = () => PAL[palIdx++ % PAL.length];
+
+// ═══════════════════════════════════════════════════════════ TERMS
+let terms = [], termId = 0;
+function mkTerm(fn, o = {}) {
+  return { id: termId++, fn, A: o.A ?? 1, freq: o.freq ?? 1, phase: o.phase ?? 0, offset: o.offset ?? 0, muted: false, color: o.color ?? nextCol() };
+}
+
+function evalT(t, arg) {
+  const a = arg + t.phase;
+  let v;
+  switch (t.fn) {
+    case 'sin':      v = Math.sin(a); break;
+    case 'cos':      v = Math.cos(a); break;
+    case 'tan':      v = Math.max(-4, Math.min(4, Math.tan(a))); break;
+    case 'sawtooth': { const p = (a/(2*Math.PI)%1+1)%1; v = 2*p-1; break; }
+    case 'square':   v = Math.sign(Math.sin(a)); break;
+    case 'triangle': { const p=((a/(2*Math.PI))%1+1)%1; v=p<.5?4*p-1:3-4*p; break; }
+    case 'sinc':     { const s=a||1e-10; v=Math.sin(s)/s; break; }
+    case 'gaussian': v = Math.exp(-(a*a)*0.15); break;
+    case 'exp':      v = Math.exp(-Math.abs(a)*0.2); break;
+    case 'abs-sin':  v = Math.abs(Math.sin(a)); break;
+    case 'pulse':    { const p2=((a/(2*Math.PI))%1+1)%1; v=p2<.12?1:-0.05; break; }
+    case 'noise':    v = Math.sin(a*7.3)*Math.cos(a*3.7)*Math.sin(a*1.9); break;
+    default:         v = Math.sin(a);
+  }
+  return t.A * v + t.offset;
+}
+
+function evalSum(x) {
+  let s = 0;
+  for (const t of terms) if (!t.muted) s += evalT(t, t.freq * x);
+  return s;
+}
+
+// ═══════════════════════════════════════════════════════════ CANVAS
+const cv = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+
+function resize() {
+  const w = document.getElementById('canvas-wrap');
+  cv.width = w.clientWidth;
+  cv.height = w.clientHeight;
+}
+window.addEventListener('resize', () => { resize(); });
+resize();
+
+// ═══════════════════════════════════════════════════════════ STATE
+const S = {
+  playing: true,
+  dotX: 0,        // visual x position in world coords, sweeps xMin→xMax
+  xRange: 12.56,  // total x span (±xRange/2)
+  showSum: true,
+  showParts: true,
+  speed: 1,       // multiplier on dot speed
+};
+
+let xMin, xMax;
+function updateXRange() {
+  xMin = -S.xRange / 2;
+  xMax =  S.xRange / 2;
+  S.dotX = xMin;
+}
+updateXRange();
+
+// world→canvas
+function wx(x) { return (x - xMin) / (xMax - xMin) * cv.width; }
+function wy(y, yMid, scale) { return yMid - y * scale; }
+
+// ═══════════════════════════════════════════════════════════ DRAW
+function draw() {
+  const W = cv.width, H = cv.height;
+  ctx.clearRect(0, 0, W, H);
+
+  // Background
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, W, H);
+
+  if (terms.filter(t => !t.muted).length === 0) {
+    document.getElementById('empty-hint').style.display = 'block';
+    return;
+  }
+  document.getElementById('empty-hint').style.display = 'none';
+
+  // Y scale: fit the function
+  const N = 400;
+  const ys = [];
+  for (let i = 0; i <= N; i++) {
+    const x = xMin + (i / N) * (xMax - xMin);
+    ys.push(evalSum(x));
+  }
+  const yPeak = Math.max(1, Math.max(...ys.map(Math.abs)));
+  const margin = 0.22; // fraction of half-height reserved for axes/labels
+  const plotH = H - 54; // leave room for latex bar
+  const yMid = plotH / 2;
+  const scale = (plotH / 2) * (1 - margin) / yPeak;
+
+  // GRID (faint)
+  ctx.save();
+  ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+  ctx.lineWidth = 1;
+  // horizontal lines
+  const yStep = niceStep(yPeak);
+  for (let v = -Math.ceil(yPeak/yStep)*yStep; v <= yPeak+yStep; v += yStep) {
+    const py = wy(v, yMid, scale);
+    if (py < 0 || py > plotH) continue;
+    if (Math.abs(v) < yStep * 0.01) continue;
+    ctx.beginPath(); ctx.moveTo(0, py); ctx.lineTo(W, py); ctx.stroke();
+  }
+  // vertical lines
+  const xStep = niceStep(xMax - xMin);
+  for (let v = Math.ceil(xMin/xStep)*xStep; v <= xMax; v += xStep) {
+    if (Math.abs(v) < xStep * 0.01) continue;
+    const px = wx(v);
+    ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, plotH); ctx.stroke();
+  }
+  ctx.restore();
+
+  // AXES
+  ctx.save();
+  ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+  ctx.lineWidth = 1.5;
+  const ax0 = wx(0); // x-axis pixel for x=0
+  const ay0 = wy(0, yMid, scale); // y-axis pixel for y=0
+
+  // X axis
+  ctx.beginPath(); ctx.moveTo(0, ay0); ctx.lineTo(W, ay0); ctx.stroke();
+  // X arrow
+  ctx.beginPath(); ctx.moveTo(W, ay0); ctx.lineTo(W-10, ay0-5); ctx.moveTo(W, ay0); ctx.lineTo(W-10, ay0+5); ctx.stroke();
+
+  // Y axis
+  ctx.beginPath(); ctx.moveTo(ax0, plotH); ctx.lineTo(ax0, 0); ctx.stroke();
+  // Y arrow
+  ctx.beginPath(); ctx.moveTo(ax0, 0); ctx.lineTo(ax0-5, 10); ctx.moveTo(ax0, 0); ctx.lineTo(ax0+5, 10); ctx.stroke();
+
+  // Tick marks + labels
+  ctx.fillStyle = 'rgba(255,255,255,0.4)';
+  ctx.font = '11px IBM Plex Mono, monospace';
+  ctx.textAlign = 'center';
+  for (let v = Math.ceil(xMin/xStep)*xStep; v <= xMax; v += xStep) {
+    if (Math.abs(v) < xStep * 0.01) continue;
+    const px = wx(v);
+    ctx.beginPath(); ctx.moveTo(px, ay0-4); ctx.lineTo(px, ay0+4); ctx.stroke();
+    ctx.fillText(v % 1 === 0 ? v : v.toFixed(1), px, ay0 + 14);
+  }
+  ctx.textAlign = 'right';
+  for (let v = -Math.ceil(yPeak/yStep)*yStep; v <= yPeak+yStep; v += yStep) {
+    if (Math.abs(v) < yStep * 0.01) continue;
+    const py = wy(v, yMid, scale);
+    if (py < 0 || py > plotH) continue;
+    ctx.beginPath(); ctx.moveTo(ax0-4, py); ctx.lineTo(ax0+4, py); ctx.stroke();
+    ctx.fillText(v % 1 === 0 ? v : v.toFixed(1), ax0 - 7, py + 4);
+  }
+  ctx.restore();
+
+  // INDIVIDUAL TERM CURVES (dashed, dimmer)
+  if (S.showParts) {
+    for (const t of terms) {
+      if (t.muted) continue;
+      ctx.save();
+      ctx.strokeStyle = t.color + '70';
+      ctx.lineWidth = 1.2;
+      ctx.setLineDash([3, 5]);
+      ctx.beginPath();
+      for (let i = 0; i <= N; i++) {
+        const x = xMin + (i / N) * (xMax - xMin);
+        const y = evalT(t, t.freq * x);
+        const px = wx(x), py = wy(y, yMid, scale);
+        i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+      }
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
+    }
+  }
+
+  // SUM CURVE
+  if (S.showSum) {
+    ctx.save();
+    ctx.strokeStyle = '#00d4b0';
+    ctx.lineWidth = 2.2;
+    ctx.shadowColor = '#00d4b0';
+    ctx.shadowBlur = 10;
+    ctx.beginPath();
+    for (let i = 0; i <= N; i++) {
+      const x = xMin + (i / N) * (xMax - xMin);
+      const y = evalSum(x);
+      const px = wx(x), py = wy(y, yMid, scale);
+      i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // DOT at current x
+  const dotY = evalSum(S.dotX);
+  const dPx = wx(S.dotX);
+  const dPy = wy(dotY, yMid, scale);
+
+  // vertical tracer line from axis to dot
+  ctx.save();
+  ctx.strokeStyle = 'rgba(0,212,176,0.2)';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([3, 4]);
+  ctx.beginPath(); ctx.moveTo(dPx, ay0); ctx.lineTo(dPx, dPy); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.restore();
+
+  // dot glow
+  ctx.save();
+  const grad = ctx.createRadialGradient(dPx, dPy, 0, dPx, dPy, 18);
+  grad.addColorStop(0, 'rgba(0,212,176,0.35)');
+  grad.addColorStop(1, 'rgba(0,212,176,0)');
+  ctx.fillStyle = grad;
+  ctx.beginPath(); ctx.arc(dPx, dPy, 18, 0, Math.PI*2); ctx.fill();
+  ctx.restore();
+
+  ctx.save();
+  ctx.fillStyle = '#00d4b0';
+  ctx.shadowColor = '#00d4b0';
+  ctx.shadowBlur = 14;
+  ctx.beginPath(); ctx.arc(dPx, dPy, 6, 0, Math.PI*2); ctx.fill();
+  // dot border
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+  ctx.restore();
+}
+
+function niceStep(range) {
+  const rough = range / 4;
+  const pow = Math.pow(10, Math.floor(Math.log10(rough || 1)));
+  for (const m of [1,2,2.5,5,10]) if (m*pow >= rough) return m*pow;
+  return pow;
+}
+
+// ═══════════════════════════════════════════════════════════ ANIMATION
+const DOT_PERIOD = 3.5; // seconds to sweep full x range
+let lastT = null;
+
+function frame(ts) {
+  if (!lastT) lastT = ts;
+  const dt = Math.min((ts - lastT) / 1000, 0.05);
+  lastT = ts;
+
+  if (S.playing && terms.some(t => !t.muted)) {
+    S.dotX += (xMax - xMin) / DOT_PERIOD * dt;
+    if (S.dotX > xMax) S.dotX = xMin;
+  }
+
+  draw();
+  updateAudioPitch();   // pitch follows the ball's Y value
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+// ═══════════════════════════════════════════════════════════ AUDIO
+// Approach: one oscillator whose PITCH tracks the ball's Y value in real-time.
+// yMin → loHz,  yMax → hiHz  (logarithmic / musical mapping).
+// Every animation frame we call updateAudioPitch() which reads the dot's
+// current Y and smoothly slides the oscillator frequency to match.
+
+let audioCtx = null, osc = null, gainNode = null;
+let audioOn = false;
+let baseHz = 220, vol = 0.4;
+
+// Precomputed range of the current function — updated whenever terms change
+let audioYMin = -1, audioYMax = 1;
+
+function computeAudioRange() {
+  const N = 200;
+  let mn = Infinity, mx = -Infinity;
+  for (let i = 0; i <= N; i++) {
+    const x = xMin + (i / N) * (xMax - xMin);
+    const y = evalSum(x);
+    if (y < mn) mn = y;
+    if (y > mx) mx = y;
+  }
+  // Guarantee at least a small range so we don't divide by zero
+  if (mx - mn < 0.01) { mn -= 0.5; mx += 0.5; }
+  audioYMin = mn;
+  audioYMax = mx;
+}
+
+// Called every terms change — keeps range fresh
+function pushTermsToWorklet() { computeAudioRange(); }
+
+function startAudio() {
+  if (audioCtx) return;
+  try {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  } catch(e) { alert('Web Audio not supported.'); return; }
+
+  gainNode = audioCtx.createGain();
+  gainNode.gain.value = vol;
+  gainNode.connect(audioCtx.destination);
+
+  osc = audioCtx.createOscillator();
+  osc.type = 'sine';
+  osc.frequency.value = baseHz;
+  osc.connect(gainNode);
+  osc.start();
+
+  computeAudioRange();
+  audioOn = true;
+  const btn = document.getElementById('btn-audio');
+  btn.textContent = '🔊 Audio ON';
+  btn.classList.add('audio-on');
+}
+
+function stopAudio() {
+  if (osc)      { osc.stop(); osc.disconnect();    osc = null; }
+  if (gainNode) { gainNode.disconnect();            gainNode = null; }
+  if (audioCtx) { audioCtx.close();                audioCtx = null; }
+  audioOn = false;
+  const btn = document.getElementById('btn-audio');
+  btn.textContent = '🔇 Audio OFF';
+  btn.classList.remove('audio-on');
+}
+
+// Called each animation frame — slides pitch to match the ball's current Y
+function updateAudioPitch() {
+  if (!audioOn || !osc || !audioCtx) return;
+  const y = evalSum(S.dotX);
+  // Normalise Y to 0..1 across the function's full range
+  const t = (y - audioYMin) / (audioYMax - audioYMin);
+  const tClamped = Math.max(0, Math.min(1, t));
+  // Logarithmic pitch mapping: baseHz (bottom) → baseHz*4 (top) = 2 octaves
+  const targetHz = baseHz * Math.pow(4, tClamped);
+  // setTargetAtTime with short time-constant = smooth glide, no zipper noise
+  osc.frequency.setTargetAtTime(targetHz, audioCtx.currentTime, 0.02);
+}
+
+// ═══════════════════════════════════════════════════════════ LATEX
+let latexTimer = null;
+function scheduleLatex() {
+  clearTimeout(latexTimer);
+  latexTimer = setTimeout(renderLatex, 120);
+}
+
+function renderLatex() {
+  const active = terms.filter(t => !t.muted);
+  const el = document.getElementById('latex-out');
+  if (active.length === 0) { el.textContent = '0'; return; }
+
+  const parts = [];
+  for (const t of active) {
+    const A = t.A;
+    const absA = Math.abs(A);
+    const sign = A < 0 ? '-' : '+';
+
+    // Try fraction representation
+    let aStr = '';
+    const fracs = [[1,1],[1,2],[1,3],[1,4],[1,5],[1,6],[1,7],[1,8],[1,9],[2,3],[3,4],[4,5],[2,5],[3,5]];
+    let found = false;
+    for (const [n,d] of fracs) {
+      if (Math.abs(absA - n/d) < 0.004) {
+        aStr = (d === 1) ? (absA === 1 ? '' : `${n}`) : `\\dfrac{${n}}{${d}}`;
+        found = true; break;
+      }
+    }
+    if (!found) aStr = absA === 1 ? '' : absA.toFixed(2);
+
+    // Frequency string
+    const f = t.freq;
+    const fStr = (Math.abs(f - 1) < 0.001) ? '' : (Number.isInteger(f) ? `${f}` : f.toFixed(1));
+
+    // Phase string
+    let phStr = '';
+    const ph = t.phase;
+    if (Math.abs(ph) > 0.001) {
+      const phAbs = Math.abs(ph);
+      const phSign = ph > 0 ? '+' : '-';
+      const phPi = [[1,1,'\\pi'],[1,2,'\\tfrac{\\pi}{2}'],[1,3,'\\tfrac{\\pi}{3}'],[1,4,'\\tfrac{\\pi}{4}'],[3,4,'\\tfrac{3\\pi}{4}'],[2,3,'\\tfrac{2\\pi}{3}']];
+      let phFound = false;
+      for (const [n,d,sym] of phPi) {
+        if (Math.abs(phAbs - n*Math.PI/d) < 0.01) { phStr = ` ${phSign} ${sym}`; phFound = true; break; }
+      }
+      if (!phFound) phStr = ` ${phSign} ${phAbs.toFixed(2)}`;
+    }
+
+    const argStr = `${fStr}x${phStr}`;
+
+    const fnMap = {
+      sin:`\\sin(${argStr})`, cos:`\\cos(${argStr})`, tan:`\\tan(${argStr})`,
+      sawtooth:`\\text{saw}(${argStr})`, square:`\\text{sq}(${argStr})`, triangle:`\\text{tri}(${argStr})`,
+      sinc:`\\text{sinc}(${argStr})`, gaussian:`e^{-(${argStr})^2}`,
+      exp:`e^{-|${argStr}|}`, 'abs-sin':`|\\sin(${argStr})|`,
+      pulse:`\\text{pulse}(${argStr})`, noise:`\\text{noise}(${argStr})`
+    };
+    const fnLatex = fnMap[t.fn] || `f(${argStr})`;
+    const termLatex = aStr + fnLatex + (t.offset !== 0 ? (t.offset > 0 ? ` + ${t.offset.toFixed(2)}` : ` - ${Math.abs(t.offset).toFixed(2)}`) : '');
+
+    if (parts.length === 0) parts.push((A < 0 ? '-' : '') + termLatex);
+    else parts.push(sign + '\\,' + termLatex);
+  }
+
+  try {
+    katex.render(parts.join('\\,'), el, { throwOnError: false, displayMode: false });
+  } catch(e) { el.textContent = parts.join(' '); }
+}
+
+// ═══════════════════════════════════════════════════════════ TERM CARDS
+function renderCards() {
+  const list = document.getElementById('terms-list');
+  list.innerHTML = '';
+
+  if (terms.length === 0) {
+    list.innerHTML = '<div style="padding:14px;font-size:.65rem;color:rgba(255,255,255,.2);text-align:center;line-height:2">Add a term below<br>or load a preset</div>';
+    scheduleLatex();
+    return;
+  }
+
+  for (const t of terms) {
+    const c = document.createElement('div');
+    c.className = 'term-card' + (t.muted ? ' muted' : '');
+    c.innerHTML = `
+      <div class="th">
+        <div class="tc" style="background:${t.color}"></div>
+        <span class="tl">${tLabel(t)}</span>
+        <button class="tm">${t.muted ? 'Show' : 'Mute'}</button>
+        <button class="td">✕</button>
+      </div>
+      <div class="tr"><label>A</label><input type="range" min="-5" max="5" step="0.05" value="${t.A}"><input type="number" min="-5" max="5" step="0.05" value="${t.A.toFixed(2)}"></div>
+      <div class="tr"><label>f</label><input type="range" min="0.1" max="20" step="0.1" value="${t.freq}"><input type="number" min="0.1" max="20" step="0.1" value="${t.freq.toFixed(1)}"></div>
+      <div class="tr"><label>φ</label><input type="range" min="-3.14159" max="3.14159" step="0.05" value="${t.phase}"><input type="number" min="-3.14" max="3.14" step="0.05" value="${t.phase.toFixed(2)}"></div>
+      <div class="tr"><label>c</label><input type="range" min="-3" max="3" step="0.05" value="${t.offset}"><input type="number" min="-3" max="3" step="0.05" value="${t.offset.toFixed(2)}"></div>
+      <div class="texpr">${tExpr(t)}</div>`;
+
+    c.querySelector('.tm').addEventListener('click', () => { t.muted = !t.muted; renderCards(); pushTermsToWorklet(); });
+    c.querySelector('.td').addEventListener('click', () => { terms = terms.filter(x => x.id !== t.id); renderCards(); pushTermsToWorklet(); });
+
+    const keys = ['A','freq','phase','offset'];
+    c.querySelectorAll('.tr').forEach((row, i) => {
+      const sl = row.querySelector('input[type=range]');
+      const nu = row.querySelector('input[type=number]');
+      sl.addEventListener('input', () => {
+        t[keys[i]] = parseFloat(sl.value);
+        nu.value = t[keys[i]].toFixed(2);
+        c.querySelector('.tl').textContent = tLabel(t);
+        c.querySelector('.texpr').textContent = tExpr(t);
+        scheduleLatex();
+        pushTermsToWorklet();
+      });
+      nu.addEventListener('change', () => { t[keys[i]] = parseFloat(nu.value); sl.value = t[keys[i]]; scheduleLatex(); pushTermsToWorklet(); });
+    });
+
+    list.appendChild(c);
+  }
+  scheduleLatex();
+}
+
+function tLabel(t) {
+  const n = {sin:'sin',cos:'cos',tan:'tan',sawtooth:'saw',square:'sq',triangle:'tri',sinc:'sinc',gaussian:'gauss',exp:'exp','abs-sin':'|sin|',pulse:'pulse',noise:'noise'};
+  return `${(n[t.fn]||t.fn)}(${t.freq.toFixed(1)}f)`;
+}
+function tExpr(t) {
+  const ph = t.phase >= 0 ? `+${t.phase.toFixed(2)}` : t.phase.toFixed(2);
+  return `${t.A.toFixed(2)}·${t.fn}(${t.freq.toFixed(1)}x${ph})` + (t.offset ? ` + ${t.offset.toFixed(2)}` : '');
+}
+
+// ═══════════════════════════════════════════════════════════ PRESETS
+const PRESETS = {
+  sq4:  [{fn:'sin',A:1,freq:1},{fn:'sin',A:1/3,freq:3},{fn:'sin',A:1/5,freq:5},{fn:'sin',A:1/7,freq:7}],
+  saw5: [{fn:'sin',A:1,freq:1},{fn:'sin',A:-1/2,freq:2},{fn:'sin',A:1/3,freq:3},{fn:'sin',A:-1/4,freq:4},{fn:'sin',A:1/5,freq:5}],
+  tri4: [{fn:'sin',A:1,freq:1},{fn:'sin',A:-1/9,freq:3},{fn:'sin',A:1/25,freq:5},{fn:'sin',A:-1/49,freq:7}],
+  beats:[{fn:'sin',A:1,freq:4},{fn:'sin',A:1,freq:4.3}],
+  am:   [{fn:'sin',A:1,freq:8},{fn:'cos',A:0.5,freq:1,offset:1}],
+  harm: [{fn:'sin',A:1,freq:1},{fn:'sin',A:.5,freq:2},{fn:'sin',A:.33,freq:3},{fn:'sin',A:.25,freq:4}],
+  cos5: [{fn:'cos',A:5,freq:1},{fn:'cos',A:-1,freq:5}],
+  chord:[{fn:'sin',A:.7,freq:4},{fn:'sin',A:.7,freq:5},{fn:'sin',A:.7,freq:6}],
+  dissonance:[{fn:'sin',A:1,freq:3},{fn:'sin',A:1,freq:3.7},{fn:'sin',A:.6,freq:5.1}],
+  ep:   [{fn:'sin',A:1,freq:1},{fn:'sin',A:.5,freq:2},{fn:'exp',A:1,freq:0.3}],
+  organ:[{fn:'sin',A:1,freq:1},{fn:'sin',A:.8,freq:2},{fn:'sin',A:.5,freq:3},{fn:'sin',A:.3,freq:4},{fn:'sin',A:.15,freq:6},{fn:'sin',A:.08,freq:8}],
+  ripple:[{fn:'sinc',A:5,freq:1},{fn:'sin',A:.45,freq:8},{fn:'sin',A:.15,freq:14}],
+  hbeat:[{fn:'pulse',A:3,freq:1},{fn:'sin',A:.9,freq:1,phase:1.57},{fn:'sin',A:-.4,freq:4}],
+  tremolo:[{fn:'sin',A:1,freq:1},{fn:'sin',A:.55,freq:9},{fn:'sin',A:.45,freq:11}],
+  golden:[{fn:'sin',A:1,freq:1},{fn:'sin',A:1,freq:1.618},{fn:'sin',A:.5,freq:2.618}],
+  alien:[{fn:'sin',A:1,freq:1},{fn:'sin',A:.7,freq:2.7},{fn:'cos',A:.5,freq:4.1},{fn:'sin',A:.3,freq:7.3}],
+  shark:[{fn:'sawtooth',A:2,freq:1},{fn:'sin',A:.8,freq:5},{fn:'sin',A:.3,freq:11}],
+  spiral:[{fn:'sin',A:1,freq:1},{fn:'cos',A:1,freq:2},{fn:'sin',A:.5,freq:3},{fn:'cos',A:.33,freq:4},{fn:'sin',A:.25,freq:5}],
+};
+
+document.querySelectorAll('.ab').forEach(b => b.addEventListener('click', () => { terms.push(mkTerm(b.dataset.fn)); renderCards(); pushTermsToWorklet(); }));
+document.querySelectorAll('.pb').forEach(b => b.addEventListener('click', () => {
+  terms = []; palIdx = 0;
+  for (const p of PRESETS[b.dataset.preset]) terms.push(mkTerm(p.fn, p));
+  S.dotX = xMin;
+  renderCards();
+  pushTermsToWorklet();
+}));
+
+// ═══════════════════════════════════════════════════════════ TOOLBAR
+document.getElementById('btn-play').addEventListener('click', function() {
+  S.playing = !S.playing;
+  this.textContent = S.playing ? '▶ Play' : '⏸ Pause';
+  this.classList.toggle('on', S.playing);
+});
+document.getElementById('btn-audio').addEventListener('click', () => audioOn ? stopAudio() : startAudio());
+document.getElementById('sl-vol').addEventListener('input', function() { vol = parseFloat(this.value); if (gainNode) gainNode.gain.value = vol; });
+document.getElementById('sl-base').addEventListener('input', function() {
+  baseHz = parseFloat(this.value);
+  document.getElementById('base-val').textContent = baseHz + ' Hz';
+  // updateAudioPitch() next frame will use new baseHz automatically
+});
+
+function togBtn(id, key) {
+  document.getElementById(id).addEventListener('click', function() {
+    S[key] = !S[key]; this.classList.toggle('on', S[key]);
+  });
+}
+togBtn('btn-sum', 'showSum');
+togBtn('btn-parts', 'showParts');
+
+document.getElementById('sel-xrange').addEventListener('change', function() {
+  S.xRange = parseFloat(this.value);
+  updateXRange();
+});
+document.getElementById('btn-clear').addEventListener('click', () => { terms = []; palIdx = 0; S.dotX = xMin; renderCards(); pushTermsToWorklet(); });
+document.getElementById('btn-panel').addEventListener('click', function() {
+  document.getElementById('panel').classList.toggle('closed');
+  this.classList.toggle('on');
+  setTimeout(resize, 240);
+});
+
+// ═══════════════════════════════════════════════════════════ INIT
+(function() {
+  for (const p of PRESETS.cos5) terms.push(mkTerm(p.fn, p));
+  renderCards();
+  pushTermsToWorklet();
+})();
+</script>
+</body>
+</html>

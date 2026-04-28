@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Math Tree Studio</title>
+  <link rel="icon" type="image/x-icon" href="../../images.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./studio.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="back-btn" href="../../index.html">Back Home</a>
+    <div class="title-wrap">
+      <h1>Math Tree Studio</h1>
+      <p>One dataset, multiple ways to explore 1,000+ mathematical structures.</p>
+    </div>
+    <nav class="view-nav">
+      <a class="view-link active" href="./index.html">Studio</a>
+      <a class="view-link" href="./explorer.html">Explorer</a>
+      <a class="view-link" href="./galaxy.html">Galaxy</a>
+    </nav>
+  </header>
+
+  <main class="layout">
+    <section class="panel controls">
+      <h2>Filters</h2>
+      <label>
+        <span>Search</span>
+        <input id="search-input" type="text" placeholder="Try: ring, manifold, topos">
+      </label>
+      <label>
+        <span>Domain</span>
+        <select id="domain-select">
+          <option value="all">All domains</option>
+        </select>
+      </label>
+      <label>
+        <span>Minimum level</span>
+        <input id="level-min" type="number" min="0" step="1" value="0">
+      </label>
+      <label>
+        <span>Maximum level</span>
+        <input id="level-max" type="number" min="0" step="1" value="14">
+      </label>
+      <div class="segmented">
+        <button id="table-btn" class="seg active" type="button">Table</button>
+        <button id="cards-btn" class="seg" type="button">Domain Cards</button>
+      </div>
+      <p id="result-count" class="muted">Loading dataset...</p>
+    </section>
+
+    <section class="panel center">
+      <div class="stats-grid" id="stats-grid"></div>
+
+      <div id="table-view" class="view-block">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Domain</th>
+                <th>Level</th>
+                <th>Parents</th>
+              </tr>
+            </thead>
+            <tbody id="node-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="cards-view" class="view-block hidden">
+        <div id="domain-cards" class="domain-cards"></div>
+      </div>
+    </section>
+
+    <aside class="panel detail">
+      <h2>Inspector</h2>
+      <p class="muted">Click any row/card node to inspect dependencies.</p>
+      <div id="inspector" class="inspector-empty">No node selected.</div>
+    </aside>
+  </main>
+
+  <script src="./data.js"></script>
+  <script src="./core.js"></script>
+  <script src="./studio.js"></script>
+</body>
+</html>

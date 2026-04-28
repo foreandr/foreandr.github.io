@@ -1,0 +1,8753 @@
+{
+  "generated_at": "2026-02-05T19:02:41.795013+00:00",
+  "summary": {
+    "total_posts": 5094,
+    "total_comments": 132793,
+    "total_subreddits": 85,
+    "overall_avg_sentiment": 0.24,
+    "overall_median_sentiment": 0.2553,
+    "global_top_words": [
+      {
+        "word": "money",
+        "count": 11931
+      },
+      {
+        "word": "years",
+        "count": 11034
+      },
+      {
+        "word": "market",
+        "count": 6775
+      },
+      {
+        "word": "work",
+        "count": 6585
+      },
+      {
+        "word": "buy",
+        "count": 6239
+      },
+      {
+        "word": "pay",
+        "count": 5917
+      },
+      {
+        "word": "trump",
+        "count": 4578
+      },
+      {
+        "word": "income",
+        "count": 4299
+      },
+      {
+        "word": "card",
+        "count": 4251
+      },
+      {
+        "word": "tax",
+        "count": 4173
+      },
+      {
+        "word": "cash",
+        "count": 3988
+      },
+      {
+        "word": "account",
+        "count": 3439
+      },
+      {
+        "word": "stock",
+        "count": 3328
+      },
+      {
+        "word": "month",
+        "count": 3313
+      },
+      {
+        "word": "retirement",
+        "count": 3181
+      },
+      {
+        "word": "price",
+        "count": 3079
+      },
+      {
+        "word": "credit",
+        "count": 3030
+      },
+      {
+        "word": "company",
+        "count": 3029
+      },
+      {
+        "word": "job",
+        "count": 2946
+      },
+      {
+        "word": "sell",
+        "count": 2720
+      },
+      {
+        "word": "life",
+        "count": 2398
+      },
+      {
+        "word": "house",
+        "count": 2393
+      },
+      {
+        "word": "stocks",
+        "count": 2382
+      },
+      {
+        "word": "silver",
+        "count": 2349
+      },
+      {
+        "word": "great",
+        "count": 2348
+      },
+      {
+        "word": "spend",
+        "count": 2321
+      },
+      {
+        "word": "world",
+        "count": 2152
+      },
+      {
+        "word": "business",
+        "count": 2037
+      },
+      {
+        "word": "next",
+        "count": 2035
+      },
+      {
+        "word": "months",
+        "count": 2027
+      }
+    ]
+  },
+  "sector_stats": [
+    {
+      "sector": "Personal Finance",
+      "num_subreddits": 8,
+      "num_posts": 735,
+      "num_comments": 24581,
+      "avg_sentiment": 0.3846,
+      "median_sentiment": 0.5121
+    },
+    {
+      "sector": "Fixed Income & Macro",
+      "num_subreddits": 3,
+      "num_posts": 131,
+      "num_comments": 1327,
+      "avg_sentiment": 0.3824,
+      "median_sentiment": 0.4799
+    },
+    {
+      "sector": "Real Estate",
+      "num_subreddits": 2,
+      "num_posts": 96,
+      "num_comments": 1706,
+      "avg_sentiment": 0.3654,
+      "median_sentiment": 0.4579
+    },
+    {
+      "sector": "Tech & AI",
+      "num_subreddits": 7,
+      "num_posts": 700,
+      "num_comments": 19966,
+      "avg_sentiment": 0.2515,
+      "median_sentiment": 0.2651
+    },
+    {
+      "sector": "Equities",
+      "num_subreddits": 23,
+      "num_posts": 1379,
+      "num_comments": 39267,
+      "avg_sentiment": 0.2398,
+      "median_sentiment": 0.2704
+    },
+    {
+      "sector": "Crypto",
+      "num_subreddits": 27,
+      "num_posts": 907,
+      "num_comments": 6432,
+      "avg_sentiment": 0.2231,
+      "median_sentiment": 0.2202
+    },
+    {
+      "sector": "Materials",
+      "num_subreddits": 8,
+      "num_posts": 536,
+      "num_comments": 11904,
+      "avg_sentiment": 0.1628,
+      "median_sentiment": 0.1099
+    },
+    {
+      "sector": "Geopolitics",
+      "num_subreddits": 7,
+      "num_posts": 610,
+      "num_comments": 27610,
+      "avg_sentiment": 0.0955,
+      "median_sentiment": 0.0485
+    }
+  ],
+  "subreddit_stats": [
+    {
+      "sector": "Personal Finance",
+      "subreddit": "churning",
+      "num_posts": 93,
+      "num_comments": 1867,
+      "avg_sentiment": 0.5981,
+      "median_sentiment": 0.6316,
+      "std_sentiment": 0.224,
+      "min_sentiment": -0.3423,
+      "max_sentiment": 0.9394,
+      "median_comment_sentiment": 0.461,
+      "positive_comment_pct": 66.9,
+      "negative_comment_pct": 15.2,
+      "neutral_comment_pct": 17.9,
+      "avg_post_upvotes": 19.5,
+      "most_recent": "2026-02-05T10:05:32+00:00",
+      "least_recent": "2026-01-07T10:00:44+00:00",
+      "top_words": [
+        {
+          "word": "card",
+          "count": 1271
+        },
+        {
+          "word": "cards",
+          "count": 767
+        },
+        {
+          "word": "chase",
+          "count": 679
+        },
+        {
+          "word": "credit",
+          "count": 630
+        },
+        {
+          "word": "points",
+          "count": 605
+        },
+        {
+          "word": "amex",
+          "count": 598
+        },
+        {
+          "word": "biz",
+          "count": 551
+        },
+        {
+          "word": "bonus",
+          "count": 495
+        },
+        {
+          "word": "business",
+          "count": 487
+        },
+        {
+          "word": "account",
+          "count": 484
+        },
+        {
+          "word": "bilt",
+          "count": 412
+        },
+        {
+          "word": "cash",
+          "count": 393
+        },
+        {
+          "word": "bank",
+          "count": 384
+        },
+        {
+          "word": "thread",
+          "count": 334
+        },
+        {
+          "word": "offer",
+          "count": 330
+        },
+        {
+          "word": "sub",
+          "count": 325
+        },
+        {
+          "word": "spend",
+          "count": 306
+        },
+        {
+          "word": "questions",
+          "count": 289
+        },
+        {
+          "word": "days",
+          "count": 267
+        },
+        {
+          "word": "months",
+          "count": 266
+        }
+      ],
+      "rank": 1
+    },
+    {
+      "sector": "Equities",
+      "subreddit": "UKInvesting",
+      "num_posts": 37,
+      "num_comments": 199,
+      "avg_sentiment": 0.5489,
+      "median_sentiment": 0.5673,
+      "std_sentiment": 0.2158,
+      "min_sentiment": -0.068,
+      "max_sentiment": 0.954,
+      "median_comment_sentiment": 0.3951,
+      "positive_comment_pct": 62.8,
+      "negative_comment_pct": 18.1,
+      "neutral_comment_pct": 19.1,
+      "avg_post_upvotes": 9.5,
+      "most_recent": "2026-02-04T17:07:37+00:00",
+      "least_recent": "2026-01-06T20:43:14+00:00",
+      "top_words": [
+        {
+          "word": "years",
+          "count": 51
+        },
+        {
+          "word": "price",
+          "count": 51
+        },
+        {
+          "word": "gold",
+          "count": 47
+        },
+        {
+          "word": "stocks",
+          "count": 45
+        },
+        {
+          "word": "market",
+          "count": 44
+        },
+        {
+          "word": "buy",
+          "count": 39
+        },
+        {
+          "word": "share",
+          "count": 38
+        },
+        {
+          "word": "stock",
+          "count": 35
+        },
+        {
+          "word": "cash",
+          "count": 31
+        },
+        {
+          "word": "current",
+          "count": 29
+        },
+        {
+          "word": "shares",
+          "count": 28
+        },
+        {
+          "word": "hold",
+          "count": 28
+        },
+        {
+          "word": "portfolio",
+          "count": 27
+        },
+        {
+          "word": "dividend",
+          "count": 27
+        },
+        {
+          "word": "value",
+          "count": 25
+        },
+        {
+          "word": "company",
+          "count": 25
+        },
+        {
+          "word": "interest",
+          "count": 25
+        },
+        {
+          "word": "risk",
+          "count": 25
+        },
+        {
+          "word": "growth",
+          "count": 25
+        },
+        {
+          "word": "debt",
+          "count": 24
+        }
+      ],
+      "rank": 2
+    },
+    {
+      "sector": "Personal Finance",
+      "subreddit": "MoneyDiariesACTIVE",
+      "num_posts": 100,
+      "num_comments": 1702,
+      "avg_sentiment": 0.5347,
+      "median_sentiment": 0.6537,
+      "std_sentiment": 0.3229,
+      "min_sentiment": -0.5558,
+      "max_sentiment": 0.9268,
+      "median_comment_sentiment": 0.6335,
+      "positive_comment_pct": 72.3,
+      "negative_comment_pct": 17.0,
+      "neutral_comment_pct": 10.7,
+      "avg_post_upvotes": 61.6,
+      "most_recent": "2026-02-05T02:57:34+00:00",
+      "least_recent": "2026-01-07T04:37:30+00:00",
+      "top_words": [
+        {
+          "word": "money",
+          "count": 549
+        },
+        {
+          "word": "work",
+          "count": 539
+        },
+        {
+          "word": "years",
+          "count": 383
+        },
+        {
+          "word": "job",
+          "count": 318
+        },
+        {
+          "word": "home",
+          "count": 302
+        },
+        {
+          "word": "week",
+          "count": 287
+        },
+        {
+          "word": "feel",
+          "count": 284
+        },
+        {
+          "word": "pay",
+          "count": 277
+        },
+        {
+          "word": "life",
+          "count": 266
+        },
+        {
+          "word": "month",
+          "count": 265
+        },
+        {
+          "word": "spending",
+          "count": 251
+        },
+        {
+          "word": "finances",
+          "count": 242
+        },
+        {
+          "word": "spend",
+          "count": 237
+        },
+        {
+          "word": "savings",
+          "count": 226
+        },
+        {
+          "word": "income",
+          "count": 219
+        },
+        {
+          "word": "kids",
+          "count": 219
+        },
+        {
+          "word": "separate",
+          "count": 215
+        },
+        {
+          "word": "debt",
+          "count": 206
+        },
+        {
+          "word": "account",
+          "count": 200
+        },
+        {
+          "word": "expenses",
+          "count": 200
+        }
+      ],
+      "rank": 3
+    },
+    {
+      "sector": "Fixed Income & Macro",
+      "subreddit": "FinancialPlanning",
+      "num_posts": 100,
+      "num_comments": 1140,
+      "avg_sentiment": 0.5076,
+      "median_sentiment": 0.5876,
+      "std_sentiment": 0.2741,
+      "min_sentiment": -0.1641,
+      "max_sentiment": 0.9655,
+      "median_comment_sentiment": 0.4864,
+      "positive_comment_pct": 71.8,
+      "negative_comment_pct": 18.1,
+      "neutral_comment_pct": 10.1,
+      "avg_post_upvotes": 13.0,
+      "most_recent": "2026-02-05T07:56:12+00:00",
+      "least_recent": "2026-01-06T23:46:02+00:00",
+      "top_words": [
+        {
+          "word": "money",
+          "count": 548
+        },
+        {
+          "word": "roth",
+          "count": 413
+        },
+        {
+          "word": "retirement",
+          "count": 349
+        },
+        {
+          "word": "pay",
+          "count": 349
+        },
+        {
+          "word": "years",
+          "count": 306
+        },
+        {
+          "word": "tax",
+          "count": 304
+        },
+        {
+          "word": "income",
+          "count": 243
+        },
+        {
+          "word": "financial",
+          "count": 232
+        },
+        {
+          "word": "account",
+          "count": 225
+        },
+        {
+          "word": "debt",
+          "count": 220
+        },
+        {
+          "word": "ira",
+          "count": 204
+        },
+        {
+          "word": "plan",
+          "count": 194
+        },
+        {
+          "word": "credit",
+          "count": 182
+        },
+        {
+          "word": "fund",
+          "count": 177
+        },
+        {
+          "word": "life",
+          "count": 162
+        },
+        {
+          "word": "savings",
+          "count": 161
+        },
+        {
+          "word": "month",
+          "count": 158
+        },
+        {
+          "word": "job",
+          "count": 153
+        },
+        {
+          "word": "house",
+          "count": 152
+        },
+        {
+          "word": "interest",
+          "count": 150
+        }
+      ],
+      "rank": 4
+    },
+    {
+      "sector": "Crypto",
+      "subreddit": "arbitrum",
+      "num_posts": 5,
+      "num_comments": 2,
+      "avg_sentiment": 0.4832,
+      "median_sentiment": 0.4869,
+      "std_sentiment": 0.1985,
+      "min_sentiment": 0.2062,
+      "max_sentiment": 0.8225,
+      "median_comment_sentiment": 0.4696,
+      "positive_comment_pct": 50.0,
+      "negative_comment_pct": 0.0,
+      "neutral_comment_pct": 50.0,
+      "avg_post_upvotes": 4.8,
+      "most_recent": "2026-01-17T16:23:44+00:00",
+      "least_recent": "2026-01-08T09:32:33+00:00",
+      "top_words": [
+        {
+          "word": "arbitrum",
+          "count": 10
+        },
+        {
+          "word": "eth",
+          "count": 6
+        },
+        {
+          "word": "capital",
+          "count": 6
+        },
+        {
+          "word": "fees",
+          "count": 4
+        },
+        {
+          "word": "assets",
+          "count": 4
+        },
+        {
+          "word": "institutional",
+          "count": 4
+        },
+        {
+          "word": "consistently",
+          "count": 3
+        },
+        {
+          "word": "lets",
+          "count": 3
+        },
+        {
+          "word": "grayscale",
+          "count": 3
+        },
+        {
+          "word": "teams",
+          "count": 3
+        },
+        {
+          "word": "chain",
+          "count": 2
+        },
+        {
+          "word": "tvl",
+          "count": 2
+        },
+        {
+          "word": "arb",
+          "count": 2
+        },
+        {
+          "word": "upside",
+          "count": 2
+        },
+        {
+          "word": "hopefully",
+          "count": 2
+        },
+        {
+          "word": "defi",
+          "count": 2
+        },
+        {
+          "word": "token",
+          "count": 2
+        },
+        {
+          "word": "returns",
+          "count": 2
+        },
+        {
+          "word": "major",
+          "count": 2
+        },
+        {
+          "word": "without",
+          "count": 2
+        }
+      ],
+      "rank": 5
+    },
+    {
+      "sector": "Crypto",
+      "subreddit": "BitcoinMarkets",
+      "num_posts": 35,
+      "num_comments": 1078,
+      "avg_sentiment": 0.4773,
+      "median_sentiment": 0.4742,
+      "std_sentiment": 0.1111,
+      "min_sentiment": 0.1482,
+      "max_sentiment": 0.8442,
+      "median_comment_sentiment": 0.0,
+      "positive_comment_pct": 41.9,
+      "negative_comment_pct": 35.4,
+      "neutral_comment_pct": 22.7,
+      "avg_post_upvotes": 30.6,
+      "most_recent": "2026-02-05T05:01:13+00:00",
+      "least_recent": "2026-01-07T05:00:42+00:00",
+      "top_words": [
+        {
+          "word": "bitcoin",
+          "count": 280
+        },
+        {
+          "word": "btc",
+          "count": 236
+        },
+        {
+          "word": "daily",
+          "count": 209
+        },
+        {
+          "word": "market",
+          "count": 206
+        },
+        {
+          "word": "thread",
+          "count": 160
+        },
+        {
+          "word": "gold",
+          "count": 148
+        },
+        {
+          "word": "days",
+          "count": 135
+        },
+        {
+          "word": "discussion",
+          "count": 133
+        },
+        {
+          "word": "price",
+          "count": 123
+        },
+        {
+          "word": "low",
+          "count": 106
+        },
+        {
+          "word": "bear",
+          "count": 102
+        },
+        {
+          "word": "buy",
+          "count": 98
+        },
+        {
+          "word": "january",
+          "count": 92
+        },
+        {
+          "word": "years",
+          "count": 76
+        },
+        {
+          "word": "post",
+          "count": 72
+        },
+        {
+          "word": "bottom",
+          "count": 72
+        },
+        {
+          "word": "next",
+          "count": 70
+        },
+        {
+          "word": "trading",
+          "count": 67
+        },
+        {
+          "word": "bitty",
+          "count": 67
+        },
+        {
+          "word": "cycle",
+          "count": 66
+        }
+      ],
+      "rank": 6
+    },
+    {
+      "sector": "Personal Finance",
+      "subreddit": "financialindependence",
+      "num_posts": 97,
+      "num_comments": 2546,
+      "avg_sentiment": 0.453,
+      "median_sentiment": 0.5225,
+      "std_sentiment": 0.279,
+      "min_sentiment": -0.4673,
+      "max_sentiment": 0.9316,
+      "median_comment_sentiment": 0.4329,
+      "positive_comment_pct": 64.0,
+      "negative_comment_pct": 19.7,
+      "neutral_comment_pct": 16.3,
+      "avg_post_upvotes": 50.7,
+      "most_recent": "2026-02-04T19:29:52+00:00",
+      "least_recent": "2026-01-07T04:36:57+00:00",
+      "top_words": [
+        {
+          "word": "years",
+          "count": 793
+        },
+        {
+          "word": "money",
+          "count": 680
+        },
+        {
+          "word": "work",
+          "count": 541
+        },
+        {
+          "word": "job",
+          "count": 464
+        },
+        {
+          "word": "income",
+          "count": 410
+        },
+        {
+          "word": "retirement",
+          "count": 403
+        },
+        {
+          "word": "roth",
+          "count": 392
+        },
+        {
+          "word": "fire",
+          "count": 337
+        },
+        {
+          "word": "tax",
+          "count": 334
+        },
+        {
+          "word": "expenses",
+          "count": 328
+        },
+        {
+          "word": "life",
+          "count": 318
+        },
+        {
+          "word": "plan",
+          "count": 302
+        },
+        {
+          "word": "pay",
+          "count": 282
+        },
+        {
+          "word": "ira",
+          "count": 268
+        },
+        {
+          "word": "market",
+          "count": 260
+        },
+        {
+          "word": "feel",
+          "count": 244
+        },
+        {
+          "word": "month",
+          "count": 238
+        },
+        {
+          "word": "home",
+          "count": 237
+        },
+        {
+          "word": "kids",
+          "count": 236
+        },
+        {
+          "word": "worth",
+          "count": 229
+        }
+      ],
+      "rank": 7
+    },
+    {
+      "sector": "Crypto",
+      "subreddit": "optimismCollective",
+      "num_posts": 4,
+      "num_comments": 0,
+      "avg_sentiment": 0.44,
+      "median_sentiment": 0.44,
+      "std_sentiment": 0.0,
+      "min_sentiment": 0.44,
+      "max_sentiment": 0.44,
+      "median_comment_sentiment": 0,
+      "positive_comment_pct": 0,
+      "negative_comment_pct": 0,
+      "neutral_comment_pct": 0,
+      "avg_post_upvotes": 1.0,
+      "most_recent": "2026-02-02T15:00:54+00:00",
+      "least_recent": "2026-01-12T15:00:53+00:00",
+      "top_words": [
+        {
+          "word": "office",
+          "count": 8
+        },
+        {
+          "word": "hours",
+          "count": 8
+        },
+        {
+          "word": "questions",
+          "count": 8
+        },
+        {
+          "word": "thread",
+          "count": 8
+        },
+        {
+          "word": "optimism",
+          "count": 8
+        },
+        {
+          "word": "ask",
+          "count": 8
+        },
+        {
+          "word": "weeks",
+          "count": 4
+        },
+        {
+          "word": "week",
+          "count": 4
+        },
+        {
+          "word": "bedrock",
+          "count": 4
+        },
+        {
+          "word": "retropgf",
+          "count": 4
+        },
+        {
+          "word": "governance",
+          "count": 4
+        },
+        {
+          "word": "integration",
+          "count": 4
+        },
+        {
+          "word": "call",
+          "count": 4
+        },
+        {
+          "word": "happens",
+          "count": 4
+        },
+        {
+          "word": "discord",
+          "count": 4
+        },
+        {
+          "word": "est",
+          "count": 4
+        },
+        {
+          "word": "sign",
+          "count": 4
+        },
+        {
+          "word": "event",
+          "count": 4
+        },
+        {
+          "word": "question",
+          "count": 4
+        },
+        {
+          "word": "post",
+          "count": 4
+        }
+      ],
+      "rank": 8
+    },
+    {
+      "sector": "Equities",
+      "subreddit": "IndiaInvestments",
+      "num_posts": 27,
+      "num_comments": 370,
+      "avg_sentiment": 0.4302,
+      "median_sentiment": 0.4933,
+      "std_sentiment": 0.3383,
+      "min_sentiment": -0.4411,
+      "max_sentiment": 0.8749,
+      "median_comment_sentiment": 0.0258,
+      "positive_comment_pct": 49.2,
+      "negative_comment_pct": 24.3,
+      "neutral_comment_pct": 26.5,
+      "avg_post_upvotes": 142.3,
+      "most_recent": "2026-02-02T18:30:42+00:00",
+      "least_recent": "2026-01-08T07:15:19+00:00",
+      "top_words": [
+        {
+          "word": "india",
+          "count": 114
+        },
+        {
+          "word": "per",
+          "count": 78
+        },
+        {
+          "word": "fund",
+          "count": 76
+        },
+        {
+          "word": "money",
+          "count": 60
+        },
+        {
+          "word": "years",
+          "count": 60
+        },
+        {
+          "word": "gdp",
+          "count": 60
+        },
+        {
+          "word": "market",
+          "count": 59
+        },
+        {
+          "word": "income",
+          "count": 58
+        },
+        {
+          "word": "growth",
+          "count": 54
+        },
+        {
+          "word": "financial",
+          "count": 53
+        },
+        {
+          "word": "tax",
+          "count": 51
+        },
+        {
+          "word": "capita",
+          "count": 50
+        },
+        {
+          "word": "funds",
+          "count": 44
+        },
+        {
+          "word": "loan",
+          "count": 44
+        },
+        {
+          "word": "invest",
+          "count": 37
+        },
+        {
+          "word": "personal",
+          "count": 37
+        },
+        {
+          "word": "indian",
+          "count": 35
+        },
+        {
+          "word": "investing",
+          "count": 35
+        },
+        {
+          "word": "question",
+          "count": 33
+        },
+        {
+          "word": "portfolio",
+          "count": 32
+        }
+      ],
+      "rank": 9
+    },
+    {
+      "sector": "Geopolitics",
+      "subreddit": "supplychain",
+      "num_posts": 100,
+      "num_comments": 783,
+      "avg_sentiment": 0.4297,
+      "median_sentiment": 0.4909,
+      "std_sentiment": 0.2977,
+      "min_sentiment": -0.4407,
+      "max_sentiment": 0.8752,
+      "median_comment_sentiment": 0.431,
+      "positive_comment_pct": 68.5,
+      "negative_comment_pct": 14.6,
+      "neutral_comment_pct": 16.9,
+      "avg_post_upvotes": 18.6,
+      "most_recent": "2026-02-04T21:35:44+00:00",
+      "least_recent": "2026-01-06T21:17:23+00:00",
+      "top_words": [
+        {
+          "word": "supply",
+          "count": 506
+        },
+        {
+          "word": "chain",
+          "count": 469
+        },
+        {
+          "word": "experience",
+          "count": 348
+        },
+        {
+          "word": "years",
+          "count": 260
+        },
+        {
+          "word": "job",
+          "count": 210
+        },
+        {
+          "word": "work",
+          "count": 202
+        },
+        {
+          "word": "industry",
+          "count": 168
+        },
+        {
+          "word": "office",
+          "count": 163
+        },
+        {
+          "word": "company",
+          "count": 152
+        },
+        {
+          "word": "based",
+          "count": 136
+        },
+        {
+          "word": "bonus",
+          "count": 136
+        },
+        {
+          "word": "planning",
+          "count": 136
+        },
+        {
+          "word": "hybrid",
+          "count": 131
+        },
+        {
+          "word": "salary",
+          "count": 130
+        },
+        {
+          "word": "management",
+          "count": 130
+        },
+        {
+          "word": "logistics",
+          "count": 128
+        },
+        {
+          "word": "roles",
+          "count": 128
+        },
+        {
+          "word": "role",
+          "count": 125
+        },
+        {
+          "word": "pto",
+          "count": 124
+        },
+        {
+          "word": "education",
+          "count": 123
+        }
+      ],
+      "rank": 10
+    },
+    {
+      "sector": "Equities",
+      "subreddit": "ASML",
+      "num_posts": 19,
+      "num_comments": 114,
+      "avg_sentiment": 0.4236,
+      "median_sentiment": 0.4765,
+      "std_sentiment": 0.2564,
+      "min_sentiment": -0.0462,
+      "max_sentiment": 0.7743,
+      "median_comment_sentiment": 0.2732,
+      "positive_comment_pct": 57.0,
+      "negative_comment_pct": 21.1,
+      "neutral_comment_pct": 21.9,
+      "avg_post_upvotes": 19.7,
+      "most_recent": "2026-02-04T20:10:38+00:00",
+      "least_recent": "2026-01-06T20:26:10+00:00",
+      "top_words": [
+        {
+          "word": "asml",
+          "count": 79
+        },
+        {
+          "word": "work",
+          "count": 31
+        },
+        {
+          "word": "company",
+          "count": 25
+        },
+        {
+          "word": "internship",
+          "count": 24
+        },
+        {
+          "word": "engineers",
+          "count": 18
+        },
+        {
+          "word": "roles",
+          "count": 18
+        },
+        {
+          "word": "years",
+          "count": 18
+        },
+        {
+          "word": "job",
+          "count": 17
+        },
+        {
+          "word": "management",
+          "count": 16
+        },
+        {
+          "word": "managers",
+          "count": 15
+        },
+        {
+          "word": "team",
+          "count": 15
+        },
+        {
+          "word": "interview",
+          "count": 14
+        },
+        {
+          "word": "engineering",
+          "count": 13
+        },
+        {
+          "word": "netherlands",
+          "count": 13
+        },
+        {
+          "word": "department",
+          "count": 12
+        },
+        {
+          "word": "experience",
+          "count": 12
+        },
+        {
+          "word": "stay",
+          "count": 11
+        },
+        {
+          "word": "leadership",
+          "count": 11
+        },
+        {
+          "word": "manager",
+          "count": 11
+        },
+        {
+          "word": "months",
+          "count": 11
+        }
+      ],
+      "rank": 11
+    },
+    {
+      "sector": "Tech & AI",
+      "subreddit": "MachineLearning",
+      "num_posts": 100,
+      "num_comments": 1092,
+      "avg_sentiment": 0.4172,
+      "median_sentiment": 0.4931,
+      "std_sentiment": 0.3422,
+      "min_sentiment": -0.4161,
+      "max_sentiment": 0.9514,
+      "median_comment_sentiment": 0.2634,
+      "positive_comment_pct": 57.0,
+      "negative_comment_pct": 21.3,
+      "neutral_comment_pct": 21.7,
+      "avg_post_upvotes": 71.0,
+      "most_recent": "2026-02-04T15:45:40+00:00",
+      "least_recent": "2026-01-07T10:50:59+00:00",
+      "top_words": [
+        {
+          "word": "work",
+          "count": 254
+        },
+        {
+          "word": "paper",
+          "count": 226
+        },
+        {
+          "word": "research",
+          "count": 209
+        },
+        {
+          "word": "data",
+          "count": 195
+        },
+        {
+          "word": "model",
+          "count": 182
+        },
+        {
+          "word": "models",
+          "count": 177
+        },
+        {
+          "word": "papers",
+          "count": 168
+        },
+        {
+          "word": "training",
+          "count": 147
+        },
+        {
+          "word": "learning",
+          "count": 147
+        },
+        {
+          "word": "using",
+          "count": 109
+        },
+        {
+          "word": "problem",
+          "count": 99
+        },
+        {
+          "word": "code",
+          "count": 99
+        },
+        {
+          "word": "review",
+          "count": 86
+        },
+        {
+          "word": "often",
+          "count": 77
+        },
+        {
+          "word": "used",
+          "count": 73
+        },
+        {
+          "word": "without",
+          "count": 70
+        },
+        {
+          "word": "reviewer",
+          "count": 68
+        },
+        {
+          "word": "seems",
+          "count": 68
+        },
+        {
+          "word": "results",
+          "count": 66
+        },
+        {
+          "word": "interesting",
+          "count": 66
+        }
+      ],
+      "rank": 12
+    },
+    {
+      "sector": "Materials",
+      "subreddit": "Commodities",
+      "num_posts": 100,
+      "num_comments": 342,
+      "avg_sentiment": 0.4119,
+      "median_sentiment": 0.4715,
+      "std_sentiment": 0.3417,
+      "min_sentiment": -0.4908,
+      "max_sentiment": 0.9468,
+      "median_comment_sentiment": 0.3071,
+      "positive_comment_pct": 58.8,
+      "negative_comment_pct": 17.8,
+      "neutral_comment_pct": 23.4,
+      "avg_post_upvotes": 8.5,
+      "most_recent": "2026-02-05T13:14:17+00:00",
+      "least_recent": "2026-01-06T21:56:27+00:00",
+      "top_words": [
+        {
+          "word": "trading",
+          "count": 257
+        },
+        {
+          "word": "market",
+          "count": 106
+        },
+        {
+          "word": "gas",
+          "count": 89
+        },
+        {
+          "word": "risk",
+          "count": 87
+        },
+        {
+          "word": "trader",
+          "count": 80
+        },
+        {
+          "word": "commodities",
+          "count": 79
+        },
+        {
+          "word": "trade",
+          "count": 71
+        },
+        {
+          "word": "physical",
+          "count": 70
+        },
+        {
+          "word": "power",
+          "count": 68
+        },
+        {
+          "word": "price",
+          "count": 68
+        },
+        {
+          "word": "work",
+          "count": 64
+        },
+        {
+          "word": "role",
+          "count": 64
+        },
+        {
+          "word": "commodity",
+          "count": 62
+        },
+        {
+          "word": "traders",
+          "count": 60
+        },
+        {
+          "word": "oil",
+          "count": 57
+        },
+        {
+          "word": "energy",
+          "count": 56
+        },
+        {
+          "word": "futures",
+          "count": 56
+        },
+        {
+          "word": "hedge",
+          "count": 47
+        },
+        {
+          "word": "markets",
+          "count": 47
+        },
+        {
+          "word": "roles",
+          "count": 46
+        }
+      ],
+      "rank": 13
+    },
+    {
+      "sector": "Crypto",
+      "subreddit": "SatoshiStreetBets",
+      "num_posts": 4,
+      "num_comments": 18,
+      "avg_sentiment": 0.407,
+      "median_sentiment": 0.4296,
+      "std_sentiment": 0.3803,
+      "min_sentiment": -0.1526,
+      "max_sentiment": 0.9212,
+      "median_comment_sentiment": 0.0,
+      "positive_comment_pct": 33.3,
+      "negative_comment_pct": 27.8,
+      "neutral_comment_pct": 38.9,
+      "avg_post_upvotes": 77.5,
+      "most_recent": "2026-02-04T06:16:20+00:00",
+      "least_recent": "2026-01-07T13:44:51+00:00",
+      "top_words": [
+        {
+          "word": "community",
+          "count": 8
+        },
+        {
+          "word": "meme",
+          "count": 7
+        },
+        {
+          "word": "satoshi",
+          "count": 4
+        },
+        {
+          "word": "epstein",
+          "count": 4
+        },
+        {
+          "word": "fake",
+          "count": 4
+        },
+        {
+          "word": "coin",
+          "count": 4
+        },
+        {
+          "word": "market",
+          "count": 4
+        },
+        {
+          "word": "looks",
+          "count": 3
+        },
+        {
+          "word": "japanese",
+          "count": 3
+        },
+        {
+          "word": "watching",
+          "count": 3
+        },
+        {
+          "word": "dev",
+          "count": 3
+        },
+        {
+          "word": "realtime",
+          "count": 3
+        },
+        {
+          "word": "replay",
+          "count": 3
+        },
+        {
+          "word": "movie",
+          "count": 3
+        },
+        {
+          "word": "asylum",
+          "count": 3
+        },
+        {
+          "word": "base",
+          "count": 3
+        },
+        {
+          "word": "far",
+          "count": 2
+        },
+        {
+          "word": "seems",
+          "count": 2
+        },
+        {
+          "word": "funny",
+          "count": 2
+        },
+        {
+          "word": "love",
+          "count": 2
+        }
+      ],
+      "rank": 14
+    },
+    {
+      "sector": "Equities",
+      "subreddit": "CloudComputing",
+      "num_posts": 6,
+      "num_comments": 55,
+      "avg_sentiment": 0.4028,
+      "median_sentiment": 0.5418,
+      "std_sentiment": 0.4238,
+      "min_sentiment": -0.3786,
+      "max_sentiment": 0.8136,
+      "median_comment_sentiment": 0.2617,
+      "positive_comment_pct": 54.5,
+      "negative_comment_pct": 29.1,
+      "neutral_comment_pct": 16.4,
+      "avg_post_upvotes": 9.7,
+      "most_recent": "2026-02-05T04:36:29+00:00",
+      "least_recent": "2026-01-10T08:53:29+00:00",
+      "top_words": [
+        {
+          "word": "cloud",
+          "count": 27
+        },
+        {
+          "word": "storage",
+          "count": 15
+        },
+        {
+          "word": "aws",
+          "count": 15
+        },
+        {
+          "word": "services",
+          "count": 11
+        },
+        {
+          "word": "access",
+          "count": 10
+        },
+        {
+          "word": "service",
+          "count": 9
+        },
+        {
+          "word": "companies",
+          "count": 9
+        },
+        {
+          "word": "oci",
+          "count": 9
+        },
+        {
+          "word": "cheaper",
+          "count": 8
+        },
+        {
+          "word": "providers",
+          "count": 7
+        },
+        {
+          "word": "trump",
+          "count": 6
+        },
+        {
+          "word": "data",
+          "count": 6
+        },
+        {
+          "word": "block",
+          "count": 6
+        },
+        {
+          "word": "happen",
+          "count": 6
+        },
+        {
+          "word": "provider",
+          "count": 5
+        },
+        {
+          "word": "run",
+          "count": 5
+        },
+        {
+          "word": "experience",
+          "count": 5
+        },
+        {
+          "word": "thinking",
+          "count": 5
+        },
+        {
+          "word": "single",
+          "count": 5
+        },
+        {
+          "word": "backups",
+          "count": 5
+        }
+      ],
+      "rank": 15
+    },
+    {
+      "sector": "Personal Finance",
+      "subreddit": "CreditCards",
+      "num_posts": 100,
+      "num_comments": 3183,
+      "avg_sentiment": 0.3994,
+      "median_sentiment": 0.5177,
+      "std_sentiment": 0.325,
+      "min_sentiment": -0.5322,
+      "max_sentiment": 0.8835,
+      "median_comment_sentiment": 0.2893,
+      "positive_comment_pct": 58.6,
+      "negative_comment_pct": 20.4,
+      "neutral_comment_pct": 21.0,
+      "avg_post_upvotes": 154.6,
+      "most_recent": "2026-02-05T01:18:48+00:00",
+      "least_recent": "2026-01-07T00:45:29+00:00",
+      "top_words": [
+        {
+          "word": "card",
+          "count": 2197
+        },
+        {
+          "word": "bilt",
+          "count": 1590
+        },
+        {
+          "word": "points",
+          "count": 1182
+        },
+        {
+          "word": "credit",
+          "count": 971
+        },
+        {
+          "word": "cash",
+          "count": 970
+        },
+        {
+          "word": "rent",
+          "count": 808
+        },
+        {
+          "word": "spend",
+          "count": 690
+        },
+        {
+          "word": "cards",
+          "count": 686
+        },
+        {
+          "word": "pay",
+          "count": 407
+        },
+        {
+          "word": "fee",
+          "count": 406
+        },
+        {
+          "word": "chase",
+          "count": 369
+        },
+        {
+          "word": "travel",
+          "count": 365
+        },
+        {
+          "word": "amex",
+          "count": 308
+        },
+        {
+          "word": "rewards",
+          "count": 290
+        },
+        {
+          "word": "month",
+          "count": 267
+        },
+        {
+          "word": "mortgage",
+          "count": 249
+        },
+        {
+          "word": "earn",
+          "count": 237
+        },
+        {
+          "word": "bonus",
+          "count": 232
+        },
+        {
+          "word": "palladium",
+          "count": 223
+        },
+        {
+          "word": "value",
+          "count": 216
+        }
+      ],
+      "rank": 16
+    },
+    {
+      "sector": "Real Estate",
+      "subreddit": "realestateinvesting",
+      "num_posts": 79,
+      "num_comments": 1688,
+      "avg_sentiment": 0.3911,
+      "median_sentiment": 0.4754,
+      "std_sentiment": 0.3066,
+      "min_sentiment": -0.4979,
+      "max_sentiment": 0.8453,
+      "median_comment_sentiment": 0.2704,
+      "positive_comment_pct": 56.6,
+      "negative_comment_pct": 21.3,
+      "neutral_comment_pct": 22.1,
+      "avg_post_upvotes": 20.0,
+      "most_recent": "2026-02-05T02:37:59+00:00",
+      "least_recent": "2026-01-06T20:18:21+00:00",
+      "top_words": [
+        {
+          "word": "property",
+          "count": 390
+        },
+        {
+          "word": "cash",
+          "count": 312
+        },
+        {
+          "word": "market",
+          "count": 248
+        },
+        {
+          "word": "properties",
+          "count": 245
+        },
+        {
+          "word": "estate",
+          "count": 208
+        },
+        {
+          "word": "money",
+          "count": 198
+        },
+        {
+          "word": "years",
+          "count": 185
+        },
+        {
+          "word": "flow",
+          "count": 178
+        },
+        {
+          "word": "tenant",
+          "count": 177
+        },
+        {
+          "word": "rent",
+          "count": 172
+        },
+        {
+          "word": "buy",
+          "count": 166
+        },
+        {
+          "word": "work",
+          "count": 163
+        },
+        {
+          "word": "deal",
+          "count": 162
+        },
+        {
+          "word": "tax",
+          "count": 157
+        },
+        {
+          "word": "sell",
+          "count": 150
+        },
+        {
+          "word": "rental",
+          "count": 144
+        },
+        {
+          "word": "worth",
+          "count": 141
+        },
+        {
+          "word": "house",
+          "count": 131
+        },
+        {
+          "word": "pay",
+          "count": 125
+        },
+        {
+          "word": "family",
+          "count": 123
+        }
+      ],
+      "rank": 17
+    },
+    {
+      "sector": "Tech & AI",
+      "subreddit": "SaaS",
+      "num_posts": 100,
+      "num_comments": 3366,
+      "avg_sentiment": 0.3901,
+      "median_sentiment": 0.5797,
+      "std_sentiment": 0.4011,
+      "min_sentiment": -0.472,
+      "max_sentiment": 0.9138,
+      "median_comment_sentiment": 0.3317,
+      "positive_comment_pct": 58.9,
+      "negative_comment_pct": 18.4,
+      "neutral_comment_pct": 22.7,
+      "avg_post_upvotes": 102.6,
+      "most_recent": "2026-02-05T13:23:46+00:00",
+      "least_recent": "2026-01-07T00:02:08+00:00",
+      "top_words": [
+        {
+          "word": "product",
+          "count": 665
+        },
+        {
+          "word": "saas",
+          "count": 599
+        },
+        {
+          "word": "building",
+          "count": 552
+        },
+        {
+          "word": "users",
+          "count": 480
+        },
+        {
+          "word": "work",
+          "count": 423
+        },
+        {
+          "word": "build",
+          "count": 359
+        },
+        {
+          "word": "marketing",
+          "count": 324
+        },
+        {
+          "word": "problem",
+          "count": 291
+        },
+        {
+          "word": "months",
+          "count": 276
+        },
+        {
+          "word": "app",
+          "count": 263
+        },
+        {
+          "word": "without",
+          "count": 251
+        },
+        {
+          "word": "customers",
+          "count": 250
+        },
+        {
+          "word": "code",
+          "count": 215
+        },
+        {
+          "word": "built",
+          "count": 212
+        },
+        {
+          "word": "post",
+          "count": 212
+        },
+        {
+          "word": "early",
+          "count": 209
+        },
+        {
+          "word": "find",
+          "count": 208
+        },
+        {
+          "word": "feedback",
+          "count": 206
+        },
+        {
+          "word": "tools",
+          "count": 204
+        },
+        {
+          "word": "money",
+          "count": 199
+        }
+      ],
+      "rank": 18
+    },
+    {
+      "sector": "Crypto",
+      "subreddit": "Cardano",
+      "num_posts": 100,
+      "num_comments": 309,
+      "avg_sentiment": 0.3797,
+      "median_sentiment": 0.4287,
+      "std_sentiment": 0.2417,
+      "min_sentiment": -0.2969,
+      "max_sentiment": 0.8403,
+      "median_comment_sentiment": 0.3802,
+      "positive_comment_pct": 66.3,
+      "negative_comment_pct": 9.7,
+      "neutral_comment_pct": 24.0,
+      "avg_post_upvotes": 33.2,
+      "most_recent": "2026-02-05T01:50:54+00:00",
+      "least_recent": "2026-01-06T22:33:19+00:00",
+      "top_words": [
+        {
+          "word": "cardano",
+          "count": 275
+        },
+        {
+          "word": "please",
+          "count": 217
+        },
+        {
+          "word": "ada",
+          "count": 147
+        },
+        {
+          "word": "governance",
+          "count": 130
+        },
+        {
+          "word": "wallet",
+          "count": 128
+        },
+        {
+          "word": "questions",
+          "count": 115
+        },
+        {
+          "word": "action",
+          "count": 114
+        },
+        {
+          "word": "security",
+          "count": 109
+        },
+        {
+          "word": "contact",
+          "count": 108
+        },
+        {
+          "word": "getting",
+          "count": 107
+        },
+        {
+          "word": "bot",
+          "count": 107
+        },
+        {
+          "word": "automatically",
+          "count": 107
+        },
+        {
+          "word": "concerns",
+          "count": 107
+        },
+        {
+          "word": "read",
+          "count": 106
+        },
+        {
+          "word": "performed",
+          "count": 106
+        },
+        {
+          "word": "moderators",
+          "count": 106
+        },
+        {
+          "word": "subredditmessagecomposetorcardano",
+          "count": 106
+        },
+        {
+          "word": "wallets",
+          "count": 105
+        },
+        {
+          "word": "rcardano",
+          "count": 102
+        },
+        {
+          "word": "started",
+          "count": 101
+        }
+      ],
+      "rank": 19
+    },
+    {
+      "sector": "Equities",
+      "subreddit": "options",
+      "num_posts": 100,
+      "num_comments": 1846,
+      "avg_sentiment": 0.376,
+      "median_sentiment": 0.5141,
+      "std_sentiment": 0.3477,
+      "min_sentiment": -0.4917,
+      "max_sentiment": 0.8477,
+      "median_comment_sentiment": 0.1531,
+      "positive_comment_pct": 52.5,
+      "negative_comment_pct": 23.9,
+      "neutral_comment_pct": 23.6,
+      "avg_post_upvotes": 62.1,
+      "most_recent": "2026-02-04T17:58:20+00:00",
+      "least_recent": "2026-01-07T02:36:26+00:00",
+      "top_words": [
+        {
+          "word": "options",
+          "count": 487
+        },
+        {
+          "word": "trade",
+          "count": 333
+        },
+        {
+          "word": "sell",
+          "count": 317
+        },
+        {
+          "word": "stock",
+          "count": 305
+        },
+        {
+          "word": "price",
+          "count": 292
+        },
+        {
+          "word": "calls",
+          "count": 291
+        },
+        {
+          "word": "trading",
+          "count": 264
+        },
+        {
+          "word": "call",
+          "count": 254
+        },
+        {
+          "word": "money",
+          "count": 249
+        },
+        {
+          "word": "market",
+          "count": 225
+        },
+        {
+          "word": "buy",
+          "count": 218
+        },
+        {
+          "word": "leaps",
+          "count": 215
+        },
+        {
+          "word": "option",
+          "count": 200
+        },
+        {
+          "word": "risk",
+          "count": 198
+        },
+        {
+          "word": "selling",
+          "count": 188
+        },
+        {
+          "word": "dte",
+          "count": 185
+        },
+        {
+          "word": "premium",
+          "count": 184
+        },
+        {
+          "word": "stocks",
+          "count": 176
+        },
+        {
+          "word": "profit",
+          "count": 171
+        },
+        {
+          "word": "puts",
+          "count": 170
+        }
+      ],
+      "rank": 20
+    },
+    {
+      "sector": "Tech & AI",
+      "subreddit": "startups",
+      "num_posts": 100,
+      "num_comments": 1886,
+      "avg_sentiment": 0.3734,
+      "median_sentiment": 0.5123,
+      "std_sentiment": 0.3976,
+      "min_sentiment": -0.534,
+      "max_sentiment": 0.9049,
+      "median_comment_sentiment": 0.4404,
+      "positive_comment_pct": 65.8,
+      "negative_comment_pct": 21.4,
+      "neutral_comment_pct": 12.8,
+      "avg_post_upvotes": 35.7,
+      "most_recent": "2026-02-05T10:26:48+00:00",
+      "least_recent": "2026-01-07T06:56:38+00:00",
+      "top_words": [
+        {
+          "word": "product",
+          "count": 468
+        },
+        {
+          "word": "startup",
+          "count": 414
+        },
+        {
+          "word": "work",
+          "count": 348
+        },
+        {
+          "word": "building",
+          "count": 342
+        },
+        {
+          "word": "users",
+          "count": 339
+        },
+        {
+          "word": "idea",
+          "count": 335
+        },
+        {
+          "word": "problem",
+          "count": 320
+        },
+        {
+          "word": "business",
+          "count": 309
+        },
+        {
+          "word": "company",
+          "count": 295
+        },
+        {
+          "word": "build",
+          "count": 289
+        },
+        {
+          "word": "early",
+          "count": 286
+        },
+        {
+          "word": "founders",
+          "count": 269
+        },
+        {
+          "word": "founder",
+          "count": 251
+        },
+        {
+          "word": "feedback",
+          "count": 250
+        },
+        {
+          "word": "money",
+          "count": 248
+        },
+        {
+          "word": "app",
+          "count": 231
+        },
+        {
+          "word": "help",
+          "count": 225
+        },
+        {
+          "word": "trying",
+          "count": 210
+        },
+        {
+          "word": "market",
+          "count": 209
+        },
+        {
+          "word": "working",
+          "count": 208
+        }
+      ],
+      "rank": 21
+    },
+    {
+      "sector": "Equities",
+      "subreddit": "dividends",
+      "num_posts": 100,
+      "num_comments": 2949,
+      "avg_sentiment": 0.3724,
+      "median_sentiment": 0.438,
+      "std_sentiment": 0.2594,
+      "min_sentiment": -0.3566,
+      "max_sentiment": 0.7644,
+      "median_comment_sentiment": 0.296,
+      "positive_comment_pct": 56.8,
+      "negative_comment_pct": 14.7,
+      "neutral_comment_pct": 28.5,
+      "avg_post_upvotes": 179.6,
+      "most_recent": "2026-02-04T17:20:11+00:00",
+      "least_recent": "2026-01-06T22:04:05+00:00",
+      "top_words": [
+        {
+          "word": "dividend",
+          "count": 852
+        },
+        {
+          "word": "dividends",
+          "count": 505
+        },
+        {
+          "word": "income",
+          "count": 460
+        },
+        {
+          "word": "growth",
+          "count": 403
+        },
+        {
+          "word": "yield",
+          "count": 379
+        },
+        {
+          "word": "schd",
+          "count": 368
+        },
+        {
+          "word": "please",
+          "count": 327
+        },
+        {
+          "word": "years",
+          "count": 322
+        },
+        {
+          "word": "stocks",
+          "count": 296
+        },
+        {
+          "word": "portfolio",
+          "count": 282
+        },
+        {
+          "word": "investing",
+          "count": 255
+        },
+        {
+          "word": "money",
+          "count": 251
+        },
+        {
+          "word": "funds",
+          "count": 250
+        },
+        {
+          "word": "qqqi",
+          "count": 240
+        },
+        {
+          "word": "price",
+          "count": 226
+        },
+        {
+          "word": "market",
+          "count": 220
+        },
+        {
+          "word": "high",
+          "count": 214
+        },
+        {
+          "word": "month",
+          "count": 206
+        },
+        {
+          "word": "etfs",
+          "count": 199
+        },
+        {
+          "word": "buy",
+          "count": 196
+        }
+      ],
+      "rank": 22
+    },
+    {
+      "sector": "Crypto",
+      "subreddit": "LidoFinance",
+      "num_posts": 1,
+      "num_comments": 0,
+      "avg_sentiment": 0.3483,
+      "median_sentiment": 0.3483,
+      "std_sentiment": 0,
+      "min_sentiment": 0.3483,
+      "max_sentiment": 0.3483,
+      "median_comment_sentiment": 0,
+      "positive_comment_pct": 0,
+      "negative_comment_pct": 0,
+      "neutral_comment_pct": 0,
+      "avg_post_upvotes": 4.0,
+      "most_recent": "2026-01-20T05:06:01+00:00",
+      "least_recent": "2026-01-20T05:06:01+00:00",
+      "top_words": [
+        {
+          "word": "fee",
+          "count": 5
+        },
+        {
+          "word": "rabby",
+          "count": 4
+        },
+        {
+          "word": "trezor",
+          "count": 3
+        },
+        {
+          "word": "high",
+          "count": 2
+        },
+        {
+          "word": "via",
+          "count": 2
+        },
+        {
+          "word": "lido",
+          "count": 2
+        },
+        {
+          "word": "shows",
+          "count": 2
+        },
+        {
+          "word": "transaction",
+          "count": 2
+        },
+        {
+          "word": "approve",
+          "count": 2
+        },
+        {
+          "word": "vault",
+          "count": 1
+        },
+        {
+          "word": "deposit",
+          "count": 1
+        },
+        {
+          "word": "fees",
+          "count": 1
+        },
+        {
+          "word": "hey",
+          "count": 1
+        },
+        {
+          "word": "guys",
+          "count": 1
+        },
+        {
+          "word": "help",
+          "count": 1
+        },
+        {
+          "word": "appreciated",
+          "count": 1
+        },
+        {
+          "word": "connected",
+          "count": 1
+        },
+        {
+          "word": "wallet",
+          "count": 1
+        },
+        {
+          "word": "works",
+          "count": 1
+        },
+        {
+          "word": "amazing",
+          "count": 1
+        }
+      ],
+      "rank": 23
+    },
+    {
+      "sector": "Personal Finance",
+      "subreddit": "MiddleClassFinance",
+      "num_posts": 78,
+      "num_comments": 5216,
+      "avg_sentiment": 0.3478,
+      "median_sentiment": 0.4503,
+      "std_sentiment": 0.328,
+      "min_sentiment": -0.3548,
+      "max_sentiment": 0.7886,
+      "median_comment_sentiment": 0.2732,
+      "positive_comment_pct": 57.2,
+      "negative_comment_pct": 22.8,
+      "neutral_comment_pct": 20.0,
+      "avg_post_upvotes": 242.1,
+      "most_recent": "2026-02-05T06:24:33+00:00",
+      "least_recent": "2026-01-07T17:08:17+00:00",
+      "top_words": [
+        {
+          "word": "money",
+          "count": 1373
+        },
+        {
+          "word": "years",
+          "count": 880
+        },
+        {
+          "word": "pay",
+          "count": 854
+        },
+        {
+          "word": "month",
+          "count": 776
+        },
+        {
+          "word": "kids",
+          "count": 724
+        },
+        {
+          "word": "life",
+          "count": 693
+        },
+        {
+          "word": "income",
+          "count": 688
+        },
+        {
+          "word": "retirement",
+          "count": 673
+        },
+        {
+          "word": "car",
+          "count": 657
+        },
+        {
+          "word": "enough",
+          "count": 588
+        },
+        {
+          "word": "work",
+          "count": 582
+        },
+        {
+          "word": "home",
+          "count": 557
+        },
+        {
+          "word": "house",
+          "count": 542
+        },
+        {
+          "word": "job",
+          "count": 492
+        },
+        {
+          "word": "save",
+          "count": 466
+        },
+        {
+          "word": "savings",
+          "count": 457
+        },
+        {
+          "word": "live",
+          "count": 448
+        },
+        {
+          "word": "buy",
+          "count": 440
+        },
+        {
+          "word": "debt",
+          "count": 384
+        },
+        {
+          "word": "paid",
+          "count": 380
+        }
+      ],
+      "rank": 24
+    },
+    {
+      "sector": "Personal Finance",
+      "subreddit": "leanfire",
+      "num_posts": 67,
+      "num_comments": 1061,
+      "avg_sentiment": 0.3318,
+      "median_sentiment": 0.365,
+      "std_sentiment": 0.3505,
+      "min_sentiment": -0.3723,
+      "max_sentiment": 0.9198,
+      "median_comment_sentiment": 0.3919,
+      "positive_comment_pct": 63.0,
+      "negative_comment_pct": 22.6,
+      "neutral_comment_pct": 14.4,
+      "avg_post_upvotes": 53.6,
+      "most_recent": "2026-02-05T18:24:49+00:00",
+      "least_recent": "2026-01-06T20:38:08+00:00",
+      "top_words": [
+        {
+          "word": "years",
+          "count": 383
+        },
+        {
+          "word": "fire",
+          "count": 274
+        },
+        {
+          "word": "work",
+          "count": 254
+        },
+        {
+          "word": "income",
+          "count": 242
+        },
+        {
+          "word": "money",
+          "count": 222
+        },
+        {
+          "word": "life",
+          "count": 187
+        },
+        {
+          "word": "expenses",
+          "count": 181
+        },
+        {
+          "word": "retirement",
+          "count": 174
+        },
+        {
+          "word": "month",
+          "count": 167
+        },
+        {
+          "word": "working",
+          "count": 152
+        },
+        {
+          "word": "live",
+          "count": 150
+        },
+        {
+          "word": "market",
+          "count": 138
+        },
+        {
+          "word": "job",
+          "count": 132
+        },
+        {
+          "word": "house",
+          "count": 131
+        },
+        {
+          "word": "plan",
+          "count": 124
+        },
+        {
+          "word": "cash",
+          "count": 121
+        },
+        {
+          "word": "retire",
+          "count": 118
+        },
+        {
+          "word": "enough",
+          "count": 114
+        },
+        {
+          "word": "spending",
+          "count": 111
+        },
+        {
+          "word": "home",
+          "count": 111
+        }
+      ],
+      "rank": 25
+    },
+    {
+      "sector": "Crypto",
+      "subreddit": "CryptoTechnology",
+      "num_posts": 55,
+      "num_comments": 126,
+      "avg_sentiment": 0.3267,
+      "median_sentiment": 0.4628,
+      "std_sentiment": 0.4451,
+      "min_sentiment": -0.7007,
+      "max_sentiment": 0.9819,
+      "median_comment_sentiment": 0.296,
+      "positive_comment_pct": 61.1,
+      "negative_comment_pct": 19.0,
+      "neutral_comment_pct": 19.9,
+      "avg_post_upvotes": 3.0,
+      "most_recent": "2026-02-04T20:33:22+00:00",
+      "least_recent": "2026-01-06T19:29:36+00:00",
+      "top_words": [
+        {
+          "word": "crypto",
+          "count": 81
+        },
+        {
+          "word": "blockchain",
+          "count": 44
+        },
+        {
+          "word": "system",
+          "count": 41
+        },
+        {
+          "word": "data",
+          "count": 40
+        },
+        {
+          "word": "trust",
+          "count": 39
+        },
+        {
+          "word": "node",
+          "count": 37
+        },
+        {
+          "word": "security",
+          "count": 36
+        },
+        {
+          "word": "execution",
+          "count": 32
+        },
+        {
+          "word": "users",
+          "count": 31
+        },
+        {
+          "word": "trading",
+          "count": 31
+        },
+        {
+          "word": "onchain",
+          "count": 31
+        },
+        {
+          "word": "wallet",
+          "count": 30
+        },
+        {
+          "word": "agents",
+          "count": 30
+        },
+        {
+          "word": "compute",
+          "count": 29
+        },
+        {
+          "word": "state",
+          "count": 29
+        },
+        {
+          "word": "problem",
+          "count": 28
+        },
+        {
+          "word": "building",
+          "count": 27
+        },
+        {
+          "word": "nexus",
+          "count": 26
+        },
+        {
+          "word": "quantum",
+          "count": 26
+        },
+        {
+          "word": "systems",
+          "count": 25
+        }
+      ],
+      "rank": 26
+    },
+    {
+      "sector": "Equities",
+      "subreddit": "CRISPR",
+      "num_posts": 10,
+      "num_comments": 20,
+      "avg_sentiment": 0.3253,
+      "median_sentiment": 0.3589,
+      "std_sentiment": 0.3812,
+      "min_sentiment": -0.2697,
+      "max_sentiment": 0.8502,
+      "median_comment_sentiment": 0.6854,
+      "positive_comment_pct": 70.0,
+      "negative_comment_pct": 10.0,
+      "neutral_comment_pct": 20.0,
+      "avg_post_upvotes": 22.1,
+      "most_recent": "2026-02-03T19:50:26+00:00",
+      "least_recent": "2026-01-09T14:03:21+00:00",
+      "top_words": [
+        {
+          "word": "crispr",
+          "count": 32
+        },
+        {
+          "word": "skin",
+          "count": 20
+        },
+        {
+          "word": "bacteria",
+          "count": 17
+        },
+        {
+          "word": "lab",
+          "count": 17
+        },
+        {
+          "word": "editing",
+          "count": 14
+        },
+        {
+          "word": "genetic",
+          "count": 13
+        },
+        {
+          "word": "learn",
+          "count": 13
+        },
+        {
+          "word": "school",
+          "count": 12
+        },
+        {
+          "word": "gene",
+          "count": 11
+        },
+        {
+          "word": "research",
+          "count": 10
+        },
+        {
+          "word": "cells",
+          "count": 9
+        },
+        {
+          "word": "years",
+          "count": 9
+        },
+        {
+          "word": "hepatitis",
+          "count": 9
+        },
+        {
+          "word": "able",
+          "count": 9
+        },
+        {
+          "word": "high",
+          "count": 8
+        },
+        {
+          "word": "specific",
+          "count": 8
+        },
+        {
+          "word": "hcv",
+          "count": 8
+        },
+        {
+          "word": "cause",
+          "count": 8
+        },
+        {
+          "word": "diseases",
+          "count": 7
+        },
+        {
+          "word": "help",
+          "count": 7
+        }
+      ],
+      "rank": 27
+    },
+    {
+      "sector": "Crypto",
+      "subreddit": "zkSync",
+      "num_posts": 1,
+      "num_comments": 1,
+      "avg_sentiment": 0.3042,
+      "median_sentiment": 0.3042,
+      "std_sentiment": 0,
+      "min_sentiment": 0.3042,
+      "max_sentiment": 0.3042,
+      "median_comment_sentiment": 0.168,
+      "positive_comment_pct": 100.0,
+      "negative_comment_pct": 0.0,
+      "neutral_comment_pct": 0.0,
+      "avg_post_upvotes": 2.0,
+      "most_recent": "2026-01-16T15:14:28+00:00",
+      "least_recent": "2026-01-16T15:14:28+00:00",
+      "top_words": [
+        {
+          "word": "guidance",
+          "count": 3
+        },
+        {
+          "word": "looking",
+          "count": 2
+        },
+        {
+          "word": "kind",
+          "count": 2
+        },
+        {
+          "word": "hello",
+          "count": 1
+        },
+        {
+          "word": "cse",
+          "count": 1
+        },
+        {
+          "word": "student",
+          "count": 1
+        },
+        {
+          "word": "career",
+          "count": 1
+        },
+        {
+          "word": "engineer",
+          "count": 1
+        },
+        {
+          "word": "math",
+          "count": 1
+        },
+        {
+          "word": "path",
+          "count": 1
+        },
+        {
+          "word": "work",
+          "count": 1
+        },
+        {
+          "word": "experience",
+          "count": 1
+        }
+      ],
+      "rank": 28
+    },
+    {
+      "sector": "Equities",
+      "subreddit": "PLTR",
+      "num_posts": 80,
+      "num_comments": 1537,
+      "avg_sentiment": 0.3035,
+      "median_sentiment": 0.3745,
+      "std_sentiment": 0.2572,
+      "min_sentiment": -0.4493,
+      "max_sentiment": 0.7163,
+      "median_comment_sentiment": 0.0,
+      "positive_comment_pct": 37.4,
+      "negative_comment_pct": 19.8,
+      "neutral_comment_pct": 42.8,
+      "avg_post_upvotes": 95.5,
+      "most_recent": "2026-02-05T00:53:33+00:00",
+      "least_recent": "2026-01-07T08:01:32+00:00",
+      "top_words": [
+        {
+          "word": "pltr",
+          "count": 356
+        },
+        {
+          "word": "palantir",
+          "count": 235
+        },
+        {
+          "word": "earnings",
+          "count": 175
+        },
+        {
+          "word": "shares",
+          "count": 117
+        },
+        {
+          "word": "stock",
+          "count": 116
+        },
+        {
+          "word": "market",
+          "count": 109
+        },
+        {
+          "word": "price",
+          "count": 98
+        },
+        {
+          "word": "today",
+          "count": 95
+        },
+        {
+          "word": "company",
+          "count": 92
+        },
+        {
+          "word": "growth",
+          "count": 71
+        },
+        {
+          "word": "buy",
+          "count": 71
+        },
+        {
+          "word": "screenshot",
+          "count": 63
+        },
+        {
+          "word": "share",
+          "count": 62
+        },
+        {
+          "word": "karp",
+          "count": 55
+        },
+        {
+          "word": "years",
+          "count": 54
+        },
+        {
+          "word": "bought",
+          "count": 52
+        },
+        {
+          "word": "thread",
+          "count": 52
+        },
+        {
+          "word": "bad",
+          "count": 48
+        },
+        {
+          "word": "sell",
+          "count": 46
+        },
+        {
+          "word": "calls",
+          "count": 46
+        }
+      ],
+      "rank": 29
+    },
+    {
+      "sector": "Equities",
+      "subreddit": "wallstreetbetsOGs",
+      "num_posts": 16,
+      "num_comments": 37,
+      "avg_sentiment": 0.2999,
+      "median_sentiment": 0.3218,
+      "std_sentiment": 0.2762,
+      "min_sentiment": -0.3243,
+      "max_sentiment": 0.6634,
+      "median_comment_sentiment": 0.0,
+      "positive_comment_pct": 35.1,
+      "negative_comment_pct": 8.1,
+      "neutral_comment_pct": 56.8,
+      "avg_post_upvotes": 7.5,
+      "most_recent": "2026-02-04T00:20:49+00:00",
+      "least_recent": "2026-01-09T21:00:35+00:00",
+      "top_words": [
+        {
+          "word": "market",
+          "count": 15
+        },
+        {
+          "word": "roughly",
+          "count": 13
+        },
+        {
+          "word": "retail",
+          "count": 10
+        },
+        {
+          "word": "increase",
+          "count": 10
+        },
+        {
+          "word": "precious",
+          "count": 8
+        },
+        {
+          "word": "metals",
+          "count": 8
+        },
+        {
+          "word": "price",
+          "count": 8
+        },
+        {
+          "word": "years",
+          "count": 8
+        },
+        {
+          "word": "stock",
+          "count": 7
+        },
+        {
+          "word": "silver",
+          "count": 7
+        },
+        {
+          "word": "august",
+          "count": 7
+        },
+        {
+          "word": "discussion",
+          "count": 7
+        },
+        {
+          "word": "fund",
+          "count": 6
+        },
+        {
+          "word": "today",
+          "count": 6
+        },
+        {
+          "word": "company",
+          "count": 6
+        },
+        {
+          "word": "past",
+          "count": 6
+        },
+        {
+          "word": "ounce",
+          "count": 6
+        },
+        {
+          "word": "gold",
+          "count": 6
+        },
+        {
+          "word": "boom",
+          "count": 6
+        },
+        {
+          "word": "worth",
+          "count": 5
+        }
+      ],
+      "rank": 30
+    },
+    {
+      "sector": "Crypto",
+      "subreddit": "Ravencoin",
+      "num_posts": 7,
+      "num_comments": 31,
+      "avg_sentiment": 0.2883,
+      "median_sentiment": 0.354,
+      "std_sentiment": 0.197,
+      "min_sentiment": -0.0585,
+      "max_sentiment": 0.5419,
+      "median_comment_sentiment": 0.0,
+      "positive_comment_pct": 41.9,
+      "negative_comment_pct": 25.8,
+      "neutral_comment_pct": 32.3,
+      "avg_post_upvotes": 19.9,
+      "most_recent": "2026-01-25T00:04:09+00:00",
+      "least_recent": "2026-01-09T22:01:42+00:00",
+      "top_words": [
+        {
+          "word": "ravencoin",
+          "count": 11
+        },
+        {
+          "word": "rvn",
+          "count": 10
+        },
+        {
+          "word": "mining",
+          "count": 8
+        },
+        {
+          "word": "price",
+          "count": 8
+        },
+        {
+          "word": "coin",
+          "count": 6
+        },
+        {
+          "word": "crypto",
+          "count": 6
+        },
+        {
+          "word": "miner",
+          "count": 5
+        },
+        {
+          "word": "using",
+          "count": 5
+        },
+        {
+          "word": "mine",
+          "count": 5
+        },
+        {
+          "word": "worth",
+          "count": 5
+        },
+        {
+          "word": "line",
+          "count": 4
+        },
+        {
+          "word": "hope",
+          "count": 4
+        },
+        {
+          "word": "dignity",
+          "count": 4
+        },
+        {
+          "word": "money",
+          "count": 4
+        },
+        {
+          "word": "support",
+          "count": 4
+        },
+        {
+          "word": "buy",
+          "count": 4
+        },
+        {
+          "word": "kyc",
+          "count": 4
+        },
+        {
+          "word": "set",
+          "count": 3
+        },
+        {
+          "word": "block",
+          "count": 3
+        },
+        {
+          "word": "hashrate",
+          "count": 3
+        }
+      ],
+      "rank": 31
+    },
+    {
+      "sector": "Crypto",
+      "subreddit": "Monero",
+      "num_posts": 100,
+      "num_comments": 910,
+      "avg_sentiment": 0.2813,
+      "median_sentiment": 0.2873,
+      "std_sentiment": 0.3589,
+      "min_sentiment": -0.5569,
+      "max_sentiment": 0.8899,
+      "median_comment_sentiment": 0.0,
+      "positive_comment_pct": 49.5,
+      "negative_comment_pct": 25.9,
+      "neutral_comment_pct": 24.6,
+      "avg_post_upvotes": 78.7,
+      "most_recent": "2026-02-04T18:09:59+00:00",
+      "least_recent": "2026-01-06T21:40:35+00:00",
+      "top_words": [
+        {
+          "word": "monero",
+          "count": 651
+        },
+        {
+          "word": "xmr",
+          "count": 259
+        },
+        {
+          "word": "wallet",
+          "count": 181
+        },
+        {
+          "word": "privacy",
+          "count": 172
+        },
+        {
+          "word": "key",
+          "count": 118
+        },
+        {
+          "word": "view",
+          "count": 118
+        },
+        {
+          "word": "crypto",
+          "count": 102
+        },
+        {
+          "word": "bitcoin",
+          "count": 95
+        },
+        {
+          "word": "keys",
+          "count": 93
+        },
+        {
+          "word": "buy",
+          "count": 79
+        },
+        {
+          "word": "used",
+          "count": 77
+        },
+        {
+          "word": "money",
+          "count": 72
+        },
+        {
+          "word": "transaction",
+          "count": 72
+        },
+        {
+          "word": "price",
+          "count": 71
+        },
+        {
+          "word": "using",
+          "count": 71
+        },
+        {
+          "word": "value",
+          "count": 69
+        },
+        {
+          "word": "node",
+          "count": 65
+        },
+        {
+          "word": "without",
+          "count": 65
+        },
+        {
+          "word": "btc",
+          "count": 65
+        },
+        {
+          "word": "currency",
+          "count": 64
+        }
+      ],
+      "rank": 32
+    },
+    {
+      "sector": "Personal Finance",
+      "subreddit": "personalfinance",
+      "num_posts": 100,
+      "num_comments": 6468,
+      "avg_sentiment": 0.2777,
+      "median_sentiment": 0.4459,
+      "std_sentiment": 0.404,
+      "min_sentiment": -0.5362,
+      "max_sentiment": 0.8412,
+      "median_comment_sentiment": 0.3182,
+      "positive_comment_pct": 60.0,
+      "negative_comment_pct": 25.8,
+      "neutral_comment_pct": 14.2,
+      "avg_post_upvotes": 469.5,
+      "most_recent": "2026-02-05T02:14:41+00:00",
+      "least_recent": "2026-01-06T23:21:49+00:00",
+      "top_words": [
+        {
+          "word": "money",
+          "count": 2147
+        },
+        {
+          "word": "pay",
+          "count": 1538
+        },
+        {
+          "word": "years",
+          "count": 1340
+        },
+        {
+          "word": "house",
+          "count": 888
+        },
+        {
+          "word": "car",
+          "count": 888
+        },
+        {
+          "word": "account",
+          "count": 851
+        },
+        {
+          "word": "credit",
+          "count": 831
+        },
+        {
+          "word": "work",
+          "count": 780
+        },
+        {
+          "word": "life",
+          "count": 772
+        },
+        {
+          "word": "insurance",
+          "count": 747
+        },
+        {
+          "word": "income",
+          "count": 739
+        },
+        {
+          "word": "home",
+          "count": 682
+        },
+        {
+          "word": "retirement",
+          "count": 665
+        },
+        {
+          "word": "card",
+          "count": 621
+        },
+        {
+          "word": "tax",
+          "count": 615
+        },
+        {
+          "word": "buy",
+          "count": 608
+        },
+        {
+          "word": "debt",
+          "count": 604
+        },
+        {
+          "word": "cash",
+          "count": 597
+        },
+        {
+          "word": "month",
+          "count": 584
+        },
+        {
+          "word": "parents",
+          "count": 563
+        }
+      ],
+      "rank": 33
+    },
+    {
+      "sector": "Materials",
+      "subreddit": "Copper",
+      "num_posts": 60,
+      "num_comments": 780,
+      "avg_sentiment": 0.2694,
+      "median_sentiment": 0.2626,
+      "std_sentiment": 0.2497,
+      "min_sentiment": -0.403,
+      "max_sentiment": 0.9556,
+      "median_comment_sentiment": 0.0772,
+      "positive_comment_pct": 51.7,
+      "negative_comment_pct": 13.3,
+      "neutral_comment_pct": 35.0,
+      "avg_post_upvotes": 111.7,
+      "most_recent": "2026-02-05T00:59:39+00:00",
+      "least_recent": "2026-01-07T08:38:56+00:00",
+      "top_words": [
+        {
+          "word": "copper",
+          "count": 441
+        },
+        {
+          "word": "buy",
+          "count": 84
+        },
+        {
+          "word": "scrap",
+          "count": 73
+        },
+        {
+          "word": "bars",
+          "count": 73
+        },
+        {
+          "word": "wire",
+          "count": 70
+        },
+        {
+          "word": "sell",
+          "count": 63
+        },
+        {
+          "word": "price",
+          "count": 63
+        },
+        {
+          "word": "cool",
+          "count": 57
+        },
+        {
+          "word": "bullion",
+          "count": 50
+        },
+        {
+          "word": "melt",
+          "count": 39
+        },
+        {
+          "word": "pennies",
+          "count": 39
+        },
+        {
+          "word": "value",
+          "count": 39
+        },
+        {
+          "word": "metal",
+          "count": 37
+        },
+        {
+          "word": "worth",
+          "count": 37
+        },
+        {
+          "word": "pound",
+          "count": 37
+        },
+        {
+          "word": "bar",
+          "count": 34
+        },
+        {
+          "word": "nice",
+          "count": 34
+        },
+        {
+          "word": "silver",
+          "count": 34
+        },
+        {
+          "word": "selling",
+          "count": 33
+        },
+        {
+          "word": "find",
+          "count": 30
+        }
+      ],
+      "rank": 34
+    },
+    {
+      "sector": "Crypto",
+      "subreddit": "ethfinance",
+      "num_posts": 5,
+      "num_comments": 1,
+      "avg_sentiment": 0.268,
+      "median_sentiment": 0.4092,
+      "std_sentiment": 0.3269,
+      "min_sentiment": -0.3829,
+      "max_sentiment": 0.4857,
+      "median_comment_sentiment": 0.5251,
+      "positive_comment_pct": 100.0,
+      "negative_comment_pct": 0.0,
+      "neutral_comment_pct": 0.0,
+      "avg_post_upvotes": 8.4,
+      "most_recent": "2026-01-24T21:09:38+00:00",
+      "least_recent": "2026-01-13T10:14:25+00:00",
+      "top_words": [
+        {
+          "word": "crypto",
+          "count": 6
+        },
+        {
+          "word": "ethereum",
+          "count": 5
+        },
+        {
+          "word": "yield",
+          "count": 5
+        },
+        {
+          "word": "resistance",
+          "count": 4
+        },
+        {
+          "word": "money",
+          "count": 4
+        },
+        {
+          "word": "fake",
+          "count": 4
+        },
+        {
+          "word": "staking",
+          "count": 4
+        },
+        {
+          "word": "walkaway",
+          "count": 3
+        },
+        {
+          "word": "test",
+          "count": 3
+        },
+        {
+          "word": "means",
+          "count": 3
+        },
+        {
+          "word": "longterm",
+          "count": 3
+        },
+        {
+          "word": "must",
+          "count": 3
+        },
+        {
+          "word": "protocol",
+          "count": 3
+        },
+        {
+          "word": "interest",
+          "count": 3
+        },
+        {
+          "word": "bank",
+          "count": 3
+        },
+        {
+          "word": "sybil",
+          "count": 3
+        },
+        {
+          "word": "ethereums",
+          "count": 2
+        },
+        {
+          "word": "post",
+          "count": 2
+        },
+        {
+          "word": "eventually",
+          "count": 2
+        },
+        {
+          "word": "built",
+          "count": 2
+        }
+      ],
+      "rank": 35
+    },
+    {
+      "sector": "Equities",
+      "subreddit": "Bogleheads",
+      "num_posts": 100,
+      "num_comments": 4805,
+      "avg_sentiment": 0.2639,
+      "median_sentiment": 0.3886,
+      "std_sentiment": 0.3373,
+      "min_sentiment": -0.4717,
+      "max_sentiment": 0.7916,
+      "median_comment_sentiment": 0.1531,
+      "positive_comment_pct": 53.4,
+      "negative_comment_pct": 24.2,
+      "neutral_comment_pct": 22.4,
+      "avg_post_upvotes": 218.8,
+      "most_recent": "2026-02-05T01:40:09+00:00",
+      "least_recent": "2026-01-06T21:21:29+00:00",
+      "top_words": [
+        {
+          "word": "money",
+          "count": 1106
+        },
+        {
+          "word": "market",
+          "count": 909
+        },
+        {
+          "word": "years",
+          "count": 879
+        },
+        {
+          "word": "tax",
+          "count": 768
+        },
+        {
+          "word": "funds",
+          "count": 733
+        },
+        {
+          "word": "retirement",
+          "count": 638
+        },
+        {
+          "word": "fund",
+          "count": 629
+        },
+        {
+          "word": "bonds",
+          "count": 575
+        },
+        {
+          "word": "account",
+          "count": 570
+        },
+        {
+          "word": "roth",
+          "count": 521
+        },
+        {
+          "word": "portfolio",
+          "count": 516
+        },
+        {
+          "word": "risk",
+          "count": 443
+        },
+        {
+          "word": "income",
+          "count": 432
+        },
+        {
+          "word": "vanguard",
+          "count": 432
+        },
+        {
+          "word": "financial",
+          "count": 412
+        },
+        {
+          "word": "cash",
+          "count": 402
+        },
+        {
+          "word": "buy",
+          "count": 394
+        },
+        {
+          "word": "stocks",
+          "count": 375
+        },
+        {
+          "word": "investing",
+          "count": 344
+        },
+        {
+          "word": "accounts",
+          "count": 322
+        }
+      ],
+      "rank": 36
+    },
+    {
+      "sector": "Equities",
+      "subreddit": "ValueInvesting",
+      "num_posts": 100,
+      "num_comments": 6783,
+      "avg_sentiment": 0.2621,
+      "median_sentiment": 0.4417,
+      "std_sentiment": 0.3802,
+      "min_sentiment": -0.4964,
+      "max_sentiment": 0.7223,
+      "median_comment_sentiment": 0.0,
+      "positive_comment_pct": 43.7,
+      "negative_comment_pct": 21.7,
+      "neutral_comment_pct": 34.6,
+      "avg_post_upvotes": 246.2,
+      "most_recent": "2026-02-04T14:41:31+00:00",
+      "least_recent": "2026-01-07T11:10:14+00:00",
+      "top_words": [
+        {
+          "word": "value",
+          "count": 895
+        },
+        {
+          "word": "market",
+          "count": 849
+        },
+        {
+          "word": "buy",
+          "count": 829
+        },
+        {
+          "word": "stock",
+          "count": 799
+        },
+        {
+          "word": "companies",
+          "count": 619
+        },
+        {
+          "word": "years",
+          "count": 587
+        },
+        {
+          "word": "stocks",
+          "count": 551
+        },
+        {
+          "word": "company",
+          "count": 526
+        },
+        {
+          "word": "growth",
+          "count": 481
+        },
+        {
+          "word": "price",
+          "count": 458
+        },
+        {
+          "word": "money",
+          "count": 433
+        },
+        {
+          "word": "investing",
+          "count": 363
+        },
+        {
+          "word": "buying",
+          "count": 362
+        },
+        {
+          "word": "earnings",
+          "count": 340
+        },
+        {
+          "word": "software",
+          "count": 317
+        },
+        {
+          "word": "bought",
+          "count": 313
+        },
+        {
+          "word": "business",
+          "count": 312
+        },
+        {
+          "word": "cash",
+          "count": 300
+        },
+        {
+          "word": "adobe",
+          "count": 291
+        },
+        {
+          "word": "high",
+          "count": 264
+        }
+      ],
+      "rank": 37
+    },
+    {
+      "sector": "Crypto",
+      "subreddit": "algorand",
+      "num_posts": 66,
+      "num_comments": 238,
+      "avg_sentiment": 0.2474,
+      "median_sentiment": 0.1953,
+      "std_sentiment": 0.2929,
+      "min_sentiment": -0.4149,
+      "max_sentiment": 0.8318,
+      "median_comment_sentiment": 0.0,
+      "positive_comment_pct": 46.2,
+      "negative_comment_pct": 15.5,
+      "neutral_comment_pct": 38.3,
+      "avg_post_upvotes": 33.7,
+      "most_recent": "2026-02-04T03:26:10+00:00",
+      "least_recent": "2026-01-07T15:43:06+00:00",
+      "top_words": [
+        {
+          "word": "algorand",
+          "count": 81
+        },
+        {
+          "word": "algo",
+          "count": 62
+        },
+        {
+          "word": "wallet",
+          "count": 31
+        },
+        {
+          "word": "nfts",
+          "count": 23
+        },
+        {
+          "word": "price",
+          "count": 22
+        },
+        {
+          "word": "prize",
+          "count": 22
+        },
+        {
+          "word": "grand",
+          "count": 22
+        },
+        {
+          "word": "node",
+          "count": 20
+        },
+        {
+          "word": "market",
+          "count": 19
+        },
+        {
+          "word": "post",
+          "count": 19
+        },
+        {
+          "word": "great",
+          "count": 18
+        },
+        {
+          "word": "nft",
+          "count": 18
+        },
+        {
+          "word": "rewards",
+          "count": 16
+        },
+        {
+          "word": "staking",
+          "count": 15
+        },
+        {
+          "word": "fees",
+          "count": 14
+        },
+        {
+          "word": "case",
+          "count": 14
+        },
+        {
+          "word": "dualstake",
+          "count": 14
+        },
+        {
+          "word": "send",
+          "count": 13
+        },
+        {
+          "word": "network",
+          "count": 13
+        },
+        {
+          "word": "using",
+          "count": 13
+        }
+      ],
+      "rank": 38
+    },
+    {
+      "sector": "Real Estate",
+      "subreddit": "REITs",
+      "num_posts": 17,
+      "num_comments": 18,
+      "avg_sentiment": 0.2459,
+      "median_sentiment": 0.2384,
+      "std_sentiment": 0.3491,
+      "min_sentiment": -0.4378,
+      "max_sentiment": 0.983,
+      "median_comment_sentiment": 0.4496,
+      "positive_comment_pct": 72.2,
+      "negative_comment_pct": 22.2,
+      "neutral_comment_pct": 5.6,
+      "avg_post_upvotes": 2.5,
+      "most_recent": "2026-02-03T15:29:48+00:00",
+      "least_recent": "2026-01-09T09:36:30+00:00",
+      "top_words": [
+        {
+          "word": "buy",
+          "count": 12
+        },
+        {
+          "word": "million",
+          "count": 11
+        },
+        {
+          "word": "equinix",
+          "count": 10
+        },
+        {
+          "word": "property",
+          "count": 10
+        },
+        {
+          "word": "market",
+          "count": 9
+        },
+        {
+          "word": "company",
+          "count": 9
+        },
+        {
+          "word": "might",
+          "count": 8
+        },
+        {
+          "word": "growth",
+          "count": 8
+        },
+        {
+          "word": "reit",
+          "count": 7
+        },
+        {
+          "word": "trade",
+          "count": 7
+        },
+        {
+          "word": "data",
+          "count": 6
+        },
+        {
+          "word": "stock",
+          "count": 6
+        },
+        {
+          "word": "analysts",
+          "count": 6
+        },
+        {
+          "word": "worth",
+          "count": 5
+        },
+        {
+          "word": "space",
+          "count": 5
+        },
+        {
+          "word": "help",
+          "count": 5
+        },
+        {
+          "word": "billion",
+          "count": 5
+        },
+        {
+          "word": "recent",
+          "count": 5
+        },
+        {
+          "word": "companys",
+          "count": 5
+        },
+        {
+          "word": "equinixs",
+          "count": 5
+        }
+      ],
+      "rank": 39
+    },
+    {
+      "sector": "Crypto",
+      "subreddit": "ImmutableX",
+      "num_posts": 2,
+      "num_comments": 2,
+      "avg_sentiment": 0.244,
+      "median_sentiment": 0.244,
+      "std_sentiment": 0.244,
+      "min_sentiment": 0.0,
+      "max_sentiment": 0.488,
+      "median_comment_sentiment": 0.1545,
+      "positive_comment_pct": 50.0,
+      "negative_comment_pct": 0.0,
+      "neutral_comment_pct": 50.0,
+      "avg_post_upvotes": 2.5,
+      "most_recent": "2026-01-24T16:18:11+00:00",
+      "least_recent": "2026-01-21T10:16:26+00:00",
+      "top_words": [
+        {
+          "word": "error",
+          "count": 5
+        },
+        {
+          "word": "tokentrove",
+          "count": 3
+        },
+        {
+          "word": "help",
+          "count": 3
+        },
+        {
+          "word": "list",
+          "count": 2
+        },
+        {
+          "word": "buy",
+          "count": 2
+        },
+        {
+          "word": "transfer",
+          "count": 2
+        },
+        {
+          "word": "nfts",
+          "count": 2
+        },
+        {
+          "word": "message",
+          "count": 2
+        },
+        {
+          "word": "issue",
+          "count": 2
+        },
+        {
+          "word": "listing",
+          "count": 1
+        },
+        {
+          "word": "buying",
+          "count": 1
+        },
+        {
+          "word": "transferring",
+          "count": 1
+        },
+        {
+          "word": "appreciate",
+          "count": 1
+        },
+        {
+          "word": "problem",
+          "count": 1
+        },
+        {
+          "word": "trying",
+          "count": 1
+        },
+        {
+          "word": "habbo",
+          "count": 1
+        },
+        {
+          "word": "whenever",
+          "count": 1
+        },
+        {
+          "word": "displays",
+          "count": 1
+        },
+        {
+          "word": "tried",
+          "count": 1
+        },
+        {
+          "word": "restarting",
+          "count": 1
+        }
+      ],
+      "rank": 40
+    },
+    {
+      "sector": "Equities",
+      "subreddit": "NIO",
+      "num_posts": 100,
+      "num_comments": 636,
+      "avg_sentiment": 0.2412,
+      "median_sentiment": 0.2203,
+      "std_sentiment": 0.2729,
+      "min_sentiment": -0.5502,
+      "max_sentiment": 0.7943,
+      "median_comment_sentiment": 0.0,
+      "positive_comment_pct": 49.2,
+      "negative_comment_pct": 20.8,
+      "neutral_comment_pct": 30.0,
+      "avg_post_upvotes": 43.8,
+      "most_recent": "2026-02-05T12:29:15+00:00",
+      "least_recent": "2026-01-07T08:24:13+00:00",
+      "top_words": [
+        {
+          "word": "nio",
+          "count": 518
+        },
+        {
+          "word": "stock",
+          "count": 134
+        },
+        {
+          "word": "battery",
+          "count": 99
+        },
+        {
+          "word": "sales",
+          "count": 91
+        },
+        {
+          "word": "market",
+          "count": 86
+        },
+        {
+          "word": "tesla",
+          "count": 83
+        },
+        {
+          "word": "company",
+          "count": 80
+        },
+        {
+          "word": "swap",
+          "count": 76
+        },
+        {
+          "word": "years",
+          "count": 74
+        },
+        {
+          "word": "china",
+          "count": 59
+        },
+        {
+          "word": "shares",
+          "count": 57
+        },
+        {
+          "word": "profit",
+          "count": 54
+        },
+        {
+          "word": "price",
+          "count": 53
+        },
+        {
+          "word": "cars",
+          "count": 51
+        },
+        {
+          "word": "chinese",
+          "count": 49
+        },
+        {
+          "word": "money",
+          "count": 46
+        },
+        {
+          "word": "january",
+          "count": 44
+        },
+        {
+          "word": "numbers",
+          "count": 43
+        },
+        {
+          "word": "news",
+          "count": 43
+        },
+        {
+          "word": "million",
+          "count": 42
+        }
+      ],
+      "rank": 41
+    },
+    {
+      "sector": "Tech & AI",
+      "subreddit": "webdev",
+      "num_posts": 100,
+      "num_comments": 4981,
+      "avg_sentiment": 0.2398,
+      "median_sentiment": 0.2747,
+      "std_sentiment": 0.3467,
+      "min_sentiment": -0.5218,
+      "max_sentiment": 0.805,
+      "median_comment_sentiment": 0.1655,
+      "positive_comment_pct": 52.9,
+      "negative_comment_pct": 25.4,
+      "neutral_comment_pct": 21.7,
+      "avg_post_upvotes": 427.3,
+      "most_recent": "2026-02-04T21:57:21+00:00",
+      "least_recent": "2026-01-07T01:43:49+00:00",
+      "top_words": [
+        {
+          "word": "code",
+          "count": 1164
+        },
+        {
+          "word": "work",
+          "count": 743
+        },
+        {
+          "word": "using",
+          "count": 479
+        },
+        {
+          "word": "coding",
+          "count": 442
+        },
+        {
+          "word": "years",
+          "count": 439
+        },
+        {
+          "word": "vibe",
+          "count": 388
+        },
+        {
+          "word": "job",
+          "count": 380
+        },
+        {
+          "word": "web",
+          "count": 357
+        },
+        {
+          "word": "project",
+          "count": 332
+        },
+        {
+          "word": "app",
+          "count": 324
+        },
+        {
+          "word": "dev",
+          "count": 323
+        },
+        {
+          "word": "css",
+          "count": 317
+        },
+        {
+          "word": "software",
+          "count": 304
+        },
+        {
+          "word": "used",
+          "count": 302
+        },
+        {
+          "word": "build",
+          "count": 284
+        },
+        {
+          "word": "tools",
+          "count": 267
+        },
+        {
+          "word": "projects",
+          "count": 258
+        },
+        {
+          "word": "without",
+          "count": 253
+        },
+        {
+          "word": "problem",
+          "count": 246
+        },
+        {
+          "word": "learn",
+          "count": 243
+        }
+      ],
+      "rank": 42
+    },
+    {
+      "sector": "Crypto",
+      "subreddit": "chainlink",
+      "num_posts": 17,
+      "num_comments": 88,
+      "avg_sentiment": 0.2317,
+      "median_sentiment": 0.3062,
+      "std_sentiment": 0.2759,
+      "min_sentiment": -0.4152,
+      "max_sentiment": 0.5645,
+      "median_comment_sentiment": 0.0,
+      "positive_comment_pct": 34.1,
+      "negative_comment_pct": 14.8,
+      "neutral_comment_pct": 51.1,
+      "avg_post_upvotes": 44.5,
+      "most_recent": "2026-02-04T20:44:28+00:00",
+      "least_recent": "2026-01-09T10:17:07+00:00",
+      "top_words": [
+        {
+          "word": "chainlink",
+          "count": 33
+        },
+        {
+          "word": "link",
+          "count": 13
+        },
+        {
+          "word": "token",
+          "count": 12
+        },
+        {
+          "word": "infrastructure",
+          "count": 10
+        },
+        {
+          "word": "staking",
+          "count": 8
+        },
+        {
+          "word": "aws",
+          "count": 8
+        },
+        {
+          "word": "coin",
+          "count": 7
+        },
+        {
+          "word": "morph",
+          "count": 7
+        },
+        {
+          "word": "crosschain",
+          "count": 7
+        },
+        {
+          "word": "data",
+          "count": 6
+        },
+        {
+          "word": "years",
+          "count": 5
+        },
+        {
+          "word": "trust",
+          "count": 5
+        },
+        {
+          "word": "markets",
+          "count": 5
+        },
+        {
+          "word": "great",
+          "count": 5
+        },
+        {
+          "word": "bill",
+          "count": 5
+        },
+        {
+          "word": "ccip",
+          "count": 5
+        },
+        {
+          "word": "glnk",
+          "count": 5
+        },
+        {
+          "word": "post",
+          "count": 4
+        },
+        {
+          "word": "financial",
+          "count": 4
+        },
+        {
+          "word": "using",
+          "count": 4
+        }
+      ],
+      "rank": 43
+    },
+    {
+      "sector": "Tech & AI",
+      "subreddit": "artificial",
+      "num_posts": 100,
+      "num_comments": 1143,
+      "avg_sentiment": 0.2234,
+      "median_sentiment": 0.2558,
+      "std_sentiment": 0.3005,
+      "min_sentiment": -0.586,
+      "max_sentiment": 0.7299,
+      "median_comment_sentiment": 0.0,
+      "positive_comment_pct": 47.1,
+      "negative_comment_pct": 26.0,
+      "neutral_comment_pct": 26.9,
+      "avg_post_upvotes": 110.9,
+      "most_recent": "2026-02-05T10:30:54+00:00",
+      "least_recent": "2026-01-06T20:58:13+00:00",
+      "top_words": [
+        {
+          "word": "models",
+          "count": 152
+        },
+        {
+          "word": "model",
+          "count": 88
+        },
+        {
+          "word": "data",
+          "count": 82
+        },
+        {
+          "word": "work",
+          "count": 82
+        },
+        {
+          "word": "llms",
+          "count": 81
+        },
+        {
+          "word": "world",
+          "count": 76
+        },
+        {
+          "word": "without",
+          "count": 75
+        },
+        {
+          "word": "using",
+          "count": 72
+        },
+        {
+          "word": "gemini",
+          "count": 70
+        },
+        {
+          "word": "code",
+          "count": 68
+        },
+        {
+          "word": "human",
+          "count": 62
+        },
+        {
+          "word": "next",
+          "count": 54
+        },
+        {
+          "word": "claude",
+          "count": 53
+        },
+        {
+          "word": "system",
+          "count": 51
+        },
+        {
+          "word": "problem",
+          "count": 50
+        },
+        {
+          "word": "agi",
+          "count": 49
+        },
+        {
+          "word": "humans",
+          "count": 48
+        },
+        {
+          "word": "google",
+          "count": 48
+        },
+        {
+          "word": "context",
+          "count": 46
+        },
+        {
+          "word": "money",
+          "count": 42
+        }
+      ],
+      "rank": 44
+    },
+    {
+      "sector": "Equities",
+      "subreddit": "CanadianInvestor",
+      "num_posts": 100,
+      "num_comments": 2866,
+      "avg_sentiment": 0.22,
+      "median_sentiment": 0.1628,
+      "std_sentiment": 0.2663,
+      "min_sentiment": -0.3075,
+      "max_sentiment": 0.766,
+      "median_comment_sentiment": 0.0,
+      "positive_comment_pct": 43.0,
+      "negative_comment_pct": 26.8,
+      "neutral_comment_pct": 30.2,
+      "avg_post_upvotes": 162.7,
+      "most_recent": "2026-02-05T11:01:12+00:00",
+      "least_recent": "2026-01-07T00:48:11+00:00",
+      "top_words": [
+        {
+          "word": "gold",
+          "count": 347
+        },
+        {
+          "word": "market",
+          "count": 318
+        },
+        {
+          "word": "buy",
+          "count": 252
+        },
+        {
+          "word": "canada",
+          "count": 234
+        },
+        {
+          "word": "canadian",
+          "count": 222
+        },
+        {
+          "word": "stocks",
+          "count": 209
+        },
+        {
+          "word": "money",
+          "count": 209
+        },
+        {
+          "word": "years",
+          "count": 203
+        },
+        {
+          "word": "stock",
+          "count": 182
+        },
+        {
+          "word": "silver",
+          "count": 168
+        },
+        {
+          "word": "trump",
+          "count": 162
+        },
+        {
+          "word": "today",
+          "count": 130
+        },
+        {
+          "word": "etfs",
+          "count": 129
+        },
+        {
+          "word": "companies",
+          "count": 116
+        },
+        {
+          "word": "buying",
+          "count": 114
+        },
+        {
+          "word": "csu",
+          "count": 112
+        },
+        {
+          "word": "etf",
+          "count": 112
+        },
+        {
+          "word": "price",
+          "count": 109
+        },
+        {
+          "word": "markets",
+          "count": 109
+        },
+        {
+          "word": "invest",
+          "count": 107
+        }
+      ],
+      "rank": 45
+    },
+    {
+      "sector": "Equities",
+      "subreddit": "thetagang",
+      "num_posts": 100,
+      "num_comments": 3542,
+      "avg_sentiment": 0.189,
+      "median_sentiment": 0.2306,
+      "std_sentiment": 0.3783,
+      "min_sentiment": -0.3914,
+      "max_sentiment": 0.8494,
+      "median_comment_sentiment": 0.0,
+      "positive_comment_pct": 43.5,
+      "negative_comment_pct": 20.3,
+      "neutral_comment_pct": 36.2,
+      "avg_post_upvotes": 55.8,
+      "most_recent": "2026-02-05T04:00:44+00:00",
+      "least_recent": "2026-01-06T23:06:25+00:00",
+      "top_words": [
+        {
+          "word": "sto",
+          "count": 643
+        },
+        {
+          "word": "sell",
+          "count": 423
+        },
+        {
+          "word": "today",
+          "count": 333
+        },
+        {
+          "word": "puts",
+          "count": 325
+        },
+        {
+          "word": "sold",
+          "count": 325
+        },
+        {
+          "word": "week",
+          "count": 320
+        },
+        {
+          "word": "btc",
+          "count": 298
+        },
+        {
+          "word": "options",
+          "count": 288
+        },
+        {
+          "word": "call",
+          "count": 281
+        },
+        {
+          "word": "selling",
+          "count": 278
+        },
+        {
+          "word": "premium",
+          "count": 265
+        },
+        {
+          "word": "calls",
+          "count": 252
+        },
+        {
+          "word": "shares",
+          "count": 242
+        },
+        {
+          "word": "trade",
+          "count": 239
+        },
+        {
+          "word": "dte",
+          "count": 237
+        },
+        {
+          "word": "profit",
+          "count": 232
+        },
+        {
+          "word": "market",
+          "count": 229
+        },
+        {
+          "word": "short",
+          "count": 220
+        },
+        {
+          "word": "close",
+          "count": 211
+        },
+        {
+          "word": "stock",
+          "count": 205
+        }
+      ],
+      "rank": 46
+    },
+    {
+      "sector": "Materials",
+      "subreddit": "Silverbugs",
+      "num_posts": 100,
+      "num_comments": 8773,
+      "avg_sentiment": 0.1859,
+      "median_sentiment": 0.1138,
+      "std_sentiment": 0.2432,
+      "min_sentiment": -0.5165,
+      "max_sentiment": 0.7258,
+      "median_comment_sentiment": 0.0,
+      "positive_comment_pct": 41.4,
+      "negative_comment_pct": 17.5,
+      "neutral_comment_pct": 41.1,
+      "avg_post_upvotes": 1102.3,
+      "most_recent": "2026-02-05T00:04:55+00:00",
+      "least_recent": "2026-01-07T02:46:59+00:00",
+      "top_words": [
+        {
+          "word": "silver",
+          "count": 1838
+        },
+        {
+          "word": "buy",
+          "count": 610
+        },
+        {
+          "word": "sell",
+          "count": 544
+        },
+        {
+          "word": "price",
+          "count": 535
+        },
+        {
+          "word": "bought",
+          "count": 412
+        },
+        {
+          "word": "gold",
+          "count": 394
+        },
+        {
+          "word": "buying",
+          "count": 376
+        },
+        {
+          "word": "stack",
+          "count": 316
+        },
+        {
+          "word": "years",
+          "count": 290
+        },
+        {
+          "word": "sold",
+          "count": 272
+        },
+        {
+          "word": "spot",
+          "count": 272
+        },
+        {
+          "word": "money",
+          "count": 249
+        },
+        {
+          "word": "nice",
+          "count": 230
+        },
+        {
+          "word": "value",
+          "count": 224
+        },
+        {
+          "word": "selling",
+          "count": 210
+        },
+        {
+          "word": "hold",
+          "count": 198
+        },
+        {
+          "word": "ounce",
+          "count": 197
+        },
+        {
+          "word": "ago",
+          "count": 193
+        },
+        {
+          "word": "cool",
+          "count": 188
+        },
+        {
+          "word": "worth",
+          "count": 182
+        }
+      ],
+      "rank": 47
+    },
+    {
+      "sector": "Equities",
+      "subreddit": "stocks",
+      "num_posts": 100,
+      "num_comments": 9611,
+      "avg_sentiment": 0.1852,
+      "median_sentiment": 0.3274,
+      "std_sentiment": 0.3536,
+      "min_sentiment": -0.5339,
+      "max_sentiment": 0.6337,
+      "median_comment_sentiment": 0.0,
+      "positive_comment_pct": 37.7,
+      "negative_comment_pct": 29.6,
+      "neutral_comment_pct": 32.7,
+      "avg_post_upvotes": 1709.3,
+      "most_recent": "2026-02-05T03:31:25+00:00",
+      "least_recent": "2026-01-07T09:09:00+00:00",
+      "top_words": [
+        {
+          "word": "market",
+          "count": 1223
+        },
+        {
+          "word": "trump",
+          "count": 999
+        },
+        {
+          "word": "money",
+          "count": 644
+        },
+        {
+          "word": "stock",
+          "count": 639
+        },
+        {
+          "word": "buy",
+          "count": 628
+        },
+        {
+          "word": "stocks",
+          "count": 549
+        },
+        {
+          "word": "years",
+          "count": 466
+        },
+        {
+          "word": "companies",
+          "count": 440
+        },
+        {
+          "word": "company",
+          "count": 430
+        },
+        {
+          "word": "world",
+          "count": 350
+        },
+        {
+          "word": "dollar",
+          "count": 335
+        },
+        {
+          "word": "sell",
+          "count": 322
+        },
+        {
+          "word": "markets",
+          "count": 316
+        },
+        {
+          "word": "buying",
+          "count": 308
+        },
+        {
+          "word": "china",
+          "count": 300
+        },
+        {
+          "word": "google",
+          "count": 294
+        },
+        {
+          "word": "greenland",
+          "count": 284
+        },
+        {
+          "word": "price",
+          "count": 256
+        },
+        {
+          "word": "silver",
+          "count": 242
+        },
+        {
+          "word": "trade",
+          "count": 241
+        }
+      ],
+      "rank": 48
+    },
+    {
+      "sector": "Crypto",
+      "subreddit": "THORChain",
+      "num_posts": 1,
+      "num_comments": 2,
+      "avg_sentiment": 0.182,
+      "median_sentiment": 0.182,
+      "std_sentiment": 0,
+      "min_sentiment": 0.182,
+      "max_sentiment": 0.182,
+      "median_comment_sentiment": 0.0657,
+      "positive_comment_pct": 50.0,
+      "negative_comment_pct": 50.0,
+      "neutral_comment_pct": 0.0,
+      "avg_post_upvotes": 2.0,
+      "most_recent": "2026-02-02T15:28:21+00:00",
+      "least_recent": "2026-02-02T15:28:21+00:00",
+      "top_words": [
+        {
+          "word": "exodus",
+          "count": 3
+        },
+        {
+          "word": "support",
+          "count": 3
+        },
+        {
+          "word": "knows",
+          "count": 2
+        },
+        {
+          "word": "possible",
+          "count": 2
+        },
+        {
+          "word": "swap",
+          "count": 2
+        },
+        {
+          "word": "thorchain",
+          "count": 2
+        },
+        {
+          "word": "wallet",
+          "count": 2
+        },
+        {
+          "word": "forum",
+          "count": 2
+        },
+        {
+          "word": "community",
+          "count": 2
+        },
+        {
+          "word": "links",
+          "count": 2
+        },
+        {
+          "word": "scam",
+          "count": 2
+        },
+        {
+          "word": "send",
+          "count": 2
+        },
+        {
+          "word": "usdc",
+          "count": 1
+        },
+        {
+          "word": "native",
+          "count": 1
+        },
+        {
+          "word": "btc",
+          "count": 1
+        },
+        {
+          "word": "looking",
+          "count": 1
+        },
+        {
+          "word": "party",
+          "count": 1
+        },
+        {
+          "word": "providers",
+          "count": 1
+        },
+        {
+          "word": "directly",
+          "count": 1
+        },
+        {
+          "word": "tried",
+          "count": 1
+        }
+      ],
+      "rank": 49
+    },
+    {
+      "sector": "Crypto",
+      "subreddit": "USDC",
+      "num_posts": 25,
+      "num_comments": 49,
+      "avg_sentiment": 0.177,
+      "median_sentiment": 0.2094,
+      "std_sentiment": 0.2144,
+      "min_sentiment": -0.2859,
+      "max_sentiment": 0.5321,
+      "median_comment_sentiment": 0.0,
+      "positive_comment_pct": 34.7,
+      "negative_comment_pct": 30.6,
+      "neutral_comment_pct": 34.7,
+      "avg_post_upvotes": 3.5,
+      "most_recent": "2026-02-02T22:27:39+00:00",
+      "least_recent": "2026-01-07T21:01:50+00:00",
+      "top_words": [
+        {
+          "word": "usdc",
+          "count": 36
+        },
+        {
+          "word": "usdt",
+          "count": 21
+        },
+        {
+          "word": "yield",
+          "count": 13
+        },
+        {
+          "word": "flash",
+          "count": 12
+        },
+        {
+          "word": "payments",
+          "count": 9
+        },
+        {
+          "word": "crypto",
+          "count": 9
+        },
+        {
+          "word": "exchange",
+          "count": 8
+        },
+        {
+          "word": "rates",
+          "count": 8
+        },
+        {
+          "word": "buy",
+          "count": 8
+        },
+        {
+          "word": "solana",
+          "count": 8
+        },
+        {
+          "word": "pay",
+          "count": 7
+        },
+        {
+          "word": "worth",
+          "count": 7
+        },
+        {
+          "word": "cash",
+          "count": 7
+        },
+        {
+          "word": "wallet",
+          "count": 7
+        },
+        {
+          "word": "using",
+          "count": 6
+        },
+        {
+          "word": "direct",
+          "count": 6
+        },
+        {
+          "word": "atm",
+          "count": 6
+        },
+        {
+          "word": "funds",
+          "count": 5
+        },
+        {
+          "word": "card",
+          "count": 5
+        },
+        {
+          "word": "cards",
+          "count": 5
+        }
+      ],
+      "rank": 50
+    },
+    {
+      "sector": "Crypto",
+      "subreddit": "wallstreetbetscrypto",
+      "num_posts": 30,
+      "num_comments": 348,
+      "avg_sentiment": 0.1765,
+      "median_sentiment": 0.107,
+      "std_sentiment": 0.2933,
+      "min_sentiment": -0.4512,
+      "max_sentiment": 0.6129,
+      "median_comment_sentiment": 0.0,
+      "positive_comment_pct": 30.5,
+      "negative_comment_pct": 23.3,
+      "neutral_comment_pct": 46.2,
+      "avg_post_upvotes": 65.4,
+      "most_recent": "2026-02-04T16:21:26+00:00",
+      "least_recent": "2026-01-06T19:29:03+00:00",
+      "top_words": [
+        {
+          "word": "crypto",
+          "count": 45
+        },
+        {
+          "word": "market",
+          "count": 30
+        },
+        {
+          "word": "btc",
+          "count": 27
+        },
+        {
+          "word": "bitcoin",
+          "count": 21
+        },
+        {
+          "word": "trump",
+          "count": 20
+        },
+        {
+          "word": "next",
+          "count": 13
+        },
+        {
+          "word": "rally",
+          "count": 13
+        },
+        {
+          "word": "bear",
+          "count": 13
+        },
+        {
+          "word": "sentiment",
+          "count": 11
+        },
+        {
+          "word": "ever",
+          "count": 11
+        },
+        {
+          "word": "money",
+          "count": 11
+        },
+        {
+          "word": "trade",
+          "count": 11
+        },
+        {
+          "word": "looking",
+          "count": 11
+        },
+        {
+          "word": "coins",
+          "count": 10
+        },
+        {
+          "word": "buy",
+          "count": 10
+        },
+        {
+          "word": "price",
+          "count": 10
+        },
+        {
+          "word": "hold",
+          "count": 10
+        },
+        {
+          "word": "short",
+          "count": 10
+        },
+        {
+          "word": "bottom",
+          "count": 9
+        },
+        {
+          "word": "coin",
+          "count": 9
+        }
+      ],
+      "rank": 51
+    },
+    {
+      "sector": "Crypto",
+      "subreddit": "dogecoin",
+      "num_posts": 100,
+      "num_comments": 1935,
+      "avg_sentiment": 0.1754,
+      "median_sentiment": 0.1525,
+      "std_sentiment": 0.2363,
+      "min_sentiment": -0.3779,
+      "max_sentiment": 0.7318,
+      "median_comment_sentiment": 0.0,
+      "positive_comment_pct": 35.5,
+      "negative_comment_pct": 20.4,
+      "neutral_comment_pct": 44.1,
+      "avg_post_upvotes": 115.6,
+      "most_recent": "2026-02-05T11:43:05+00:00",
+      "least_recent": "2026-01-06T21:40:53+00:00",
+      "top_words": [
+        {
+          "word": "doge",
+          "count": 295
+        },
+        {
+          "word": "buy",
+          "count": 174
+        },
+        {
+          "word": "crypto",
+          "count": 108
+        },
+        {
+          "word": "money",
+          "count": 104
+        },
+        {
+          "word": "dogecoin",
+          "count": 95
+        },
+        {
+          "word": "sell",
+          "count": 87
+        },
+        {
+          "word": "coin",
+          "count": 79
+        },
+        {
+          "word": "years",
+          "count": 73
+        },
+        {
+          "word": "moon",
+          "count": 67
+        },
+        {
+          "word": "price",
+          "count": 66
+        },
+        {
+          "word": "bought",
+          "count": 60
+        },
+        {
+          "word": "market",
+          "count": 59
+        },
+        {
+          "word": "cents",
+          "count": 58
+        },
+        {
+          "word": "coins",
+          "count": 58
+        },
+        {
+          "word": "buying",
+          "count": 57
+        },
+        {
+          "word": "sold",
+          "count": 54
+        },
+        {
+          "word": "meme",
+          "count": 51
+        },
+        {
+          "word": "holding",
+          "count": 45
+        },
+        {
+          "word": "selling",
+          "count": 39
+        },
+        {
+          "word": "next",
+          "count": 38
+        }
+      ],
+      "rank": 52
+    },
+    {
+      "sector": "Geopolitics",
+      "subreddit": "EuropeanFederalists",
+      "num_posts": 100,
+      "num_comments": 1099,
+      "avg_sentiment": 0.1736,
+      "median_sentiment": 0.19,
+      "std_sentiment": 0.3333,
+      "min_sentiment": -0.6175,
+      "max_sentiment": 0.9495,
+      "median_comment_sentiment": 0.0,
+      "positive_comment_pct": 46.2,
+      "negative_comment_pct": 25.9,
+      "neutral_comment_pct": 27.9,
+      "avg_post_upvotes": 332.9,
+      "most_recent": "2026-02-04T17:32:53+00:00",
+      "least_recent": "2026-01-06T23:32:07+00:00",
+      "top_words": [
+        {
+          "word": "europe",
+          "count": 410
+        },
+        {
+          "word": "european",
+          "count": 404
+        },
+        {
+          "word": "countries",
+          "count": 121
+        },
+        {
+          "word": "states",
+          "count": 117
+        },
+        {
+          "word": "united",
+          "count": 116
+        },
+        {
+          "word": "russia",
+          "count": 116
+        },
+        {
+          "word": "federation",
+          "count": 114
+        },
+        {
+          "word": "trump",
+          "count": 88
+        },
+        {
+          "word": "must",
+          "count": 85
+        },
+        {
+          "word": "world",
+          "count": 81
+        },
+        {
+          "word": "union",
+          "count": 78
+        },
+        {
+          "word": "flag",
+          "count": 77
+        },
+        {
+          "word": "country",
+          "count": 76
+        },
+        {
+          "word": "army",
+          "count": 74
+        },
+        {
+          "word": "federal",
+          "count": 73
+        },
+        {
+          "word": "nato",
+          "count": 68
+        },
+        {
+          "word": "future",
+          "count": 67
+        },
+        {
+          "word": "military",
+          "count": 65
+        },
+        {
+          "word": "power",
+          "count": 63
+        },
+        {
+          "word": "greenland",
+          "count": 62
+        }
+      ],
+      "rank": 53
+    },
+    {
+      "sector": "Equities",
+      "subreddit": "SecurityAnalysis",
+      "num_posts": 17,
+      "num_comments": 33,
+      "avg_sentiment": 0.1703,
+      "median_sentiment": 0.1122,
+      "std_sentiment": 0.2971,
+      "min_sentiment": -0.3243,
+      "max_sentiment": 0.7525,
+      "median_comment_sentiment": 0.0,
+      "positive_comment_pct": 33.3,
+      "negative_comment_pct": 0.0,
+      "neutral_comment_pct": 66.7,
+      "avg_post_upvotes": 12.5,
+      "most_recent": "2026-02-05T03:25:43+00:00",
+      "least_recent": "2026-01-06T23:19:49+00:00",
+      "top_words": [
+        {
+          "word": "capital",
+          "count": 31
+        },
+        {
+          "word": "january",
+          "count": 24
+        },
+        {
+          "word": "february",
+          "count": 12
+        },
+        {
+          "word": "management",
+          "count": 9
+        },
+        {
+          "word": "research",
+          "count": 7
+        },
+        {
+          "word": "markets",
+          "count": 7
+        },
+        {
+          "word": "equity",
+          "count": 6
+        },
+        {
+          "word": "interview",
+          "count": 5
+        },
+        {
+          "word": "valuation",
+          "count": 5
+        },
+        {
+          "word": "partners",
+          "count": 4
+        },
+        {
+          "word": "fund",
+          "count": 4
+        },
+        {
+          "word": "asset",
+          "count": 4
+        },
+        {
+          "word": "market",
+          "count": 4
+        },
+        {
+          "word": "data",
+          "count": 4
+        },
+        {
+          "word": "associates",
+          "count": 3
+        },
+        {
+          "word": "value",
+          "count": 3
+        },
+        {
+          "word": "cap",
+          "count": 3
+        },
+        {
+          "word": "bought",
+          "count": 3
+        },
+        {
+          "word": "finance",
+          "count": 3
+        },
+        {
+          "word": "cava",
+          "count": 3
+        }
+      ],
+      "rank": 54
+    },
+    {
+      "sector": "Crypto",
+      "subreddit": "Tezos",
+      "num_posts": 24,
+      "num_comments": 12,
+      "avg_sentiment": 0.1647,
+      "median_sentiment": 0.0,
+      "std_sentiment": 0.2071,
+      "min_sentiment": 0.0,
+      "max_sentiment": 0.5978,
+      "median_comment_sentiment": 0.4531,
+      "positive_comment_pct": 75.0,
+      "negative_comment_pct": 16.7,
+      "neutral_comment_pct": 8.3,
+      "avg_post_upvotes": 16.3,
+      "most_recent": "2026-02-04T00:48:31+00:00",
+      "least_recent": "2026-01-07T01:19:33+00:00",
+      "top_words": [
+        {
+          "word": "tezos",
+          "count": 27
+        },
+        {
+          "word": "bakers",
+          "count": 8
+        },
+        {
+          "word": "baking",
+          "count": 7
+        },
+        {
+          "word": "help",
+          "count": 5
+        },
+        {
+          "word": "tallinn",
+          "count": 5
+        },
+        {
+          "word": "live",
+          "count": 5
+        },
+        {
+          "word": "key",
+          "count": 4
+        },
+        {
+          "word": "etherlink",
+          "count": 4
+        },
+        {
+          "word": "upgrade",
+          "count": 4
+        },
+        {
+          "word": "ico",
+          "count": 4
+        },
+        {
+          "word": "ecosystem",
+          "count": 4
+        },
+        {
+          "word": "sheet",
+          "count": 4
+        },
+        {
+          "word": "issue",
+          "count": 4
+        },
+        {
+          "word": "tenx",
+          "count": 3
+        },
+        {
+          "word": "tokens",
+          "count": 3
+        },
+        {
+          "word": "foundation",
+          "count": 3
+        },
+        {
+          "word": "great",
+          "count": 3
+        },
+        {
+          "word": "explorer",
+          "count": 3
+        },
+        {
+          "word": "sort",
+          "count": 3
+        },
+        {
+          "word": "faster",
+          "count": 3
+        }
+      ],
+      "rank": 55
+    },
+    {
+      "sector": "Crypto",
+      "subreddit": "polkadot",
+      "num_posts": 100,
+      "num_comments": 85,
+      "avg_sentiment": 0.1617,
+      "median_sentiment": 0.1513,
+      "std_sentiment": 0.2258,
+      "min_sentiment": -0.3502,
+      "max_sentiment": 0.6423,
+      "median_comment_sentiment": 0.0,
+      "positive_comment_pct": 29.4,
+      "negative_comment_pct": 15.3,
+      "neutral_comment_pct": 55.3,
+      "avg_post_upvotes": 21.6,
+      "most_recent": "2026-02-05T07:04:22+00:00",
+      "least_recent": "2026-01-07T07:00:05+00:00",
+      "top_words": [
+        {
+          "word": "polkadot",
+          "count": 151
+        },
+        {
+          "word": "users",
+          "count": 38
+        },
+        {
+          "word": "hub",
+          "count": 35
+        },
+        {
+          "word": "dot",
+          "count": 33
+        },
+        {
+          "word": "nonx",
+          "count": 28
+        },
+        {
+          "word": "hydration",
+          "count": 26
+        },
+        {
+          "word": "ecosystem",
+          "count": 25
+        },
+        {
+          "word": "layer",
+          "count": 25
+        },
+        {
+          "word": "smart",
+          "count": 24
+        },
+        {
+          "word": "jam",
+          "count": 22
+        },
+        {
+          "word": "token",
+          "count": 21
+        },
+        {
+          "word": "architecture",
+          "count": 20
+        },
+        {
+          "word": "game",
+          "count": 20
+        },
+        {
+          "word": "contracts",
+          "count": 18
+        },
+        {
+          "word": "wallet",
+          "count": 17
+        },
+        {
+          "word": "package",
+          "count": 17
+        },
+        {
+          "word": "news",
+          "count": 16
+        },
+        {
+          "word": "system",
+          "count": 16
+        },
+        {
+          "word": "core",
+          "count": 16
+        },
+        {
+          "word": "assets",
+          "count": 14
+        }
+      ],
+      "rank": 56
+    },
+    {
+      "sector": "Crypto",
+      "subreddit": "cosmosnetwork",
+      "num_posts": 71,
+      "num_comments": 346,
+      "avg_sentiment": 0.1596,
+      "median_sentiment": 0.2009,
+      "std_sentiment": 0.3556,
+      "min_sentiment": -0.6545,
+      "max_sentiment": 0.8881,
+      "median_comment_sentiment": 0.0,
+      "positive_comment_pct": 37.6,
+      "negative_comment_pct": 25.1,
+      "neutral_comment_pct": 37.3,
+      "avg_post_upvotes": 13.6,
+      "most_recent": "2026-02-04T10:02:16+00:00",
+      "least_recent": "2026-01-06T19:15:22+00:00",
+      "top_words": [
+        {
+          "word": "cosmos",
+          "count": 188
+        },
+        {
+          "word": "atom",
+          "count": 136
+        },
+        {
+          "word": "chain",
+          "count": 55
+        },
+        {
+          "word": "bridge",
+          "count": 50
+        },
+        {
+          "word": "staking",
+          "count": 47
+        },
+        {
+          "word": "gravity",
+          "count": 43
+        },
+        {
+          "word": "ibc",
+          "count": 41
+        },
+        {
+          "word": "liquidity",
+          "count": 40
+        },
+        {
+          "word": "chains",
+          "count": 35
+        },
+        {
+          "word": "osmosis",
+          "count": 33
+        },
+        {
+          "word": "burn",
+          "count": 33
+        },
+        {
+          "word": "price",
+          "count": 32
+        },
+        {
+          "word": "security",
+          "count": 29
+        },
+        {
+          "word": "ecosystem",
+          "count": 28
+        },
+        {
+          "word": "ethereum",
+          "count": 26
+        },
+        {
+          "word": "fees",
+          "count": 26
+        },
+        {
+          "word": "coin",
+          "count": 25
+        },
+        {
+          "word": "token",
+          "count": 25
+        },
+        {
+          "word": "tokens",
+          "count": 25
+        },
+        {
+          "word": "value",
+          "count": 24
+        }
+      ],
+      "rank": 57
+    },
+    {
+      "sector": "Equities",
+      "subreddit": "LCID",
+      "num_posts": 45,
+      "num_comments": 442,
+      "avg_sentiment": 0.1595,
+      "median_sentiment": 0.1658,
+      "std_sentiment": 0.3581,
+      "min_sentiment": -0.5451,
+      "max_sentiment": 0.7675,
+      "median_comment_sentiment": 0.0,
+      "positive_comment_pct": 38.9,
+      "negative_comment_pct": 24.0,
+      "neutral_comment_pct": 37.1,
+      "avg_post_upvotes": 17.0,
+      "most_recent": "2026-02-03T21:21:24+00:00",
+      "least_recent": "2026-01-06T21:20:20+00:00",
+      "top_words": [
+        {
+          "word": "lucid",
+          "count": 159
+        },
+        {
+          "word": "stock",
+          "count": 80
+        },
+        {
+          "word": "lcid",
+          "count": 48
+        },
+        {
+          "word": "company",
+          "count": 47
+        },
+        {
+          "word": "car",
+          "count": 42
+        },
+        {
+          "word": "years",
+          "count": 39
+        },
+        {
+          "word": "tesla",
+          "count": 39
+        },
+        {
+          "word": "money",
+          "count": 36
+        },
+        {
+          "word": "uber",
+          "count": 34
+        },
+        {
+          "word": "buy",
+          "count": 32
+        },
+        {
+          "word": "price",
+          "count": 32
+        },
+        {
+          "word": "shares",
+          "count": 30
+        },
+        {
+          "word": "market",
+          "count": 29
+        },
+        {
+          "word": "gravity",
+          "count": 25
+        },
+        {
+          "word": "vehicle",
+          "count": 23
+        },
+        {
+          "word": "cars",
+          "count": 22
+        },
+        {
+          "word": "short",
+          "count": 21
+        },
+        {
+          "word": "buying",
+          "count": 21
+        },
+        {
+          "word": "next",
+          "count": 20
+        },
+        {
+          "word": "bought",
+          "count": 20
+        }
+      ],
+      "rank": 58
+    },
+    {
+      "sector": "Crypto",
+      "subreddit": "NFT",
+      "num_posts": 18,
+      "num_comments": 132,
+      "avg_sentiment": 0.1575,
+      "median_sentiment": 0.1862,
+      "std_sentiment": 0.2951,
+      "min_sentiment": -0.3588,
+      "max_sentiment": 0.6237,
+      "median_comment_sentiment": 0.0,
+      "positive_comment_pct": 45.5,
+      "negative_comment_pct": 25.8,
+      "neutral_comment_pct": 28.7,
+      "avg_post_upvotes": 72.6,
+      "most_recent": "2026-02-04T18:11:35+00:00",
+      "least_recent": "2026-01-08T12:55:14+00:00",
+      "top_words": [
+        {
+          "word": "nft",
+          "count": 36
+        },
+        {
+          "word": "nfts",
+          "count": 30
+        },
+        {
+          "word": "dead",
+          "count": 15
+        },
+        {
+          "word": "digital",
+          "count": 13
+        },
+        {
+          "word": "art",
+          "count": 12
+        },
+        {
+          "word": "eth",
+          "count": 10
+        },
+        {
+          "word": "blockchain",
+          "count": 10
+        },
+        {
+          "word": "mint",
+          "count": 9
+        },
+        {
+          "word": "artwork",
+          "count": 8
+        },
+        {
+          "word": "project",
+          "count": 8
+        },
+        {
+          "word": "wallet",
+          "count": 8
+        },
+        {
+          "word": "technology",
+          "count": 8
+        },
+        {
+          "word": "buy",
+          "count": 7
+        },
+        {
+          "word": "trade",
+          "count": 7
+        },
+        {
+          "word": "web",
+          "count": 7
+        },
+        {
+          "word": "opensea",
+          "count": 7
+        },
+        {
+          "word": "ape",
+          "count": 6
+        },
+        {
+          "word": "years",
+          "count": 6
+        },
+        {
+          "word": "ownership",
+          "count": 6
+        },
+        {
+          "word": "work",
+          "count": 6
+        }
+      ],
+      "rank": 59
+    },
+    {
+      "sector": "Equities",
+      "subreddit": "MU_Stock",
+      "num_posts": 39,
+      "num_comments": 80,
+      "avg_sentiment": 0.1486,
+      "median_sentiment": 0.148,
+      "std_sentiment": 0.2395,
+      "min_sentiment": -0.4135,
+      "max_sentiment": 0.6594,
+      "median_comment_sentiment": 0.0,
+      "positive_comment_pct": 43.8,
+      "negative_comment_pct": 17.5,
+      "neutral_comment_pct": 38.7,
+      "avg_post_upvotes": 4.9,
+      "most_recent": "2026-02-05T04:08:29+00:00",
+      "least_recent": "2026-01-07T01:28:42+00:00",
+      "top_words": [
+        {
+          "word": "micron",
+          "count": 44
+        },
+        {
+          "word": "memory",
+          "count": 24
+        },
+        {
+          "word": "stock",
+          "count": 19
+        },
+        {
+          "word": "buy",
+          "count": 15
+        },
+        {
+          "word": "price",
+          "count": 13
+        },
+        {
+          "word": "nvidia",
+          "count": 11
+        },
+        {
+          "word": "data",
+          "count": 10
+        },
+        {
+          "word": "market",
+          "count": 9
+        },
+        {
+          "word": "high",
+          "count": 9
+        },
+        {
+          "word": "sold",
+          "count": 9
+        },
+        {
+          "word": "demand",
+          "count": 9
+        },
+        {
+          "word": "today",
+          "count": 8
+        },
+        {
+          "word": "sell",
+          "count": 8
+        },
+        {
+          "word": "next",
+          "count": 8
+        },
+        {
+          "word": "share",
+          "count": 8
+        },
+        {
+          "word": "storage",
+          "count": 8
+        },
+        {
+          "word": "earnings",
+          "count": 7
+        },
+        {
+          "word": "worth",
+          "count": 7
+        },
+        {
+          "word": "cycle",
+          "count": 7
+        },
+        {
+          "word": "dip",
+          "count": 7
+        }
+      ],
+      "rank": 60
+    },
+    {
+      "sector": "Equities",
+      "subreddit": "TSLA",
+      "num_posts": 2,
+      "num_comments": 46,
+      "avg_sentiment": 0.1373,
+      "median_sentiment": 0.1373,
+      "std_sentiment": 0.1728,
+      "min_sentiment": -0.0355,
+      "max_sentiment": 0.3101,
+      "median_comment_sentiment": 0.0,
+      "positive_comment_pct": 32.6,
+      "negative_comment_pct": 23.9,
+      "neutral_comment_pct": 43.5,
+      "avg_post_upvotes": 31.5,
+      "most_recent": "2026-01-25T18:00:54+00:00",
+      "least_recent": "2026-01-20T13:36:28+00:00",
+      "top_words": [
+        {
+          "word": "tesla",
+          "count": 11
+        },
+        {
+          "word": "market",
+          "count": 6
+        },
+        {
+          "word": "selling",
+          "count": 5
+        },
+        {
+          "word": "tsla",
+          "count": 4
+        },
+        {
+          "word": "billion",
+          "count": 4
+        },
+        {
+          "word": "company",
+          "count": 4
+        },
+        {
+          "word": "value",
+          "count": 4
+        },
+        {
+          "word": "years",
+          "count": 4
+        },
+        {
+          "word": "money",
+          "count": 4
+        },
+        {
+          "word": "car",
+          "count": 4
+        },
+        {
+          "word": "sales",
+          "count": 3
+        },
+        {
+          "word": "seems",
+          "count": 3
+        },
+        {
+          "word": "next",
+          "count": 3
+        },
+        {
+          "word": "price",
+          "count": 3
+        },
+        {
+          "word": "hes",
+          "count": 3
+        },
+        {
+          "word": "gordon",
+          "count": 3
+        },
+        {
+          "word": "robots",
+          "count": 3
+        },
+        {
+          "word": "lower",
+          "count": 2
+        },
+        {
+          "word": "product",
+          "count": 2
+        },
+        {
+          "word": "short",
+          "count": 2
+        }
+      ],
+      "rank": 61
+    },
+    {
+      "sector": "Personal Finance",
+      "subreddit": "tax",
+      "num_posts": 100,
+      "num_comments": 2538,
+      "avg_sentiment": 0.1259,
+      "median_sentiment": 0.1338,
+      "std_sentiment": 0.3647,
+      "min_sentiment": -0.6436,
+      "max_sentiment": 0.7733,
+      "median_comment_sentiment": 0.0516,
+      "positive_comment_pct": 50.1,
+      "negative_comment_pct": 25.6,
+      "neutral_comment_pct": 24.3,
+      "avg_post_upvotes": 57.7,
+      "most_recent": "2026-02-05T00:11:13+00:00",
+      "least_recent": "2026-01-08T03:32:22+00:00",
+      "top_words": [
+        {
+          "word": "tax",
+          "count": 1287
+        },
+        {
+          "word": "taxes",
+          "count": 674
+        },
+        {
+          "word": "income",
+          "count": 585
+        },
+        {
+          "word": "pay",
+          "count": 554
+        },
+        {
+          "word": "irs",
+          "count": 515
+        },
+        {
+          "word": "file",
+          "count": 411
+        },
+        {
+          "word": "overtime",
+          "count": 303
+        },
+        {
+          "word": "years",
+          "count": 296
+        },
+        {
+          "word": "money",
+          "count": 294
+        },
+        {
+          "word": "return",
+          "count": 290
+        },
+        {
+          "word": "state",
+          "count": 256
+        },
+        {
+          "word": "amount",
+          "count": 238
+        },
+        {
+          "word": "work",
+          "count": 235
+        },
+        {
+          "word": "filing",
+          "count": 224
+        },
+        {
+          "word": "hours",
+          "count": 220
+        },
+        {
+          "word": "free",
+          "count": 211
+        },
+        {
+          "word": "federal",
+          "count": 210
+        },
+        {
+          "word": "filed",
+          "count": 200
+        },
+        {
+          "word": "withholding",
+          "count": 185
+        },
+        {
+          "word": "owe",
+          "count": 178
+        }
+      ],
+      "rank": 62
+    },
+    {
+      "sector": "Tech & AI",
+      "subreddit": "singularity",
+      "num_posts": 100,
+      "num_comments": 5238,
+      "avg_sentiment": 0.1218,
+      "median_sentiment": 0.0931,
+      "std_sentiment": 0.2247,
+      "min_sentiment": -0.4292,
+      "max_sentiment": 0.6541,
+      "median_comment_sentiment": 0.0,
+      "positive_comment_pct": 42.0,
+      "negative_comment_pct": 24.9,
+      "neutral_comment_pct": 33.1,
+      "avg_post_upvotes": 1087.0,
+      "most_recent": "2026-02-04T21:30:22+00:00",
+      "least_recent": "2026-01-07T05:46:44+00:00",
+      "top_words": [
+        {
+          "word": "years",
+          "count": 231
+        },
+        {
+          "word": "human",
+          "count": 210
+        },
+        {
+          "word": "code",
+          "count": 187
+        },
+        {
+          "word": "model",
+          "count": 177
+        },
+        {
+          "word": "claude",
+          "count": 175
+        },
+        {
+          "word": "models",
+          "count": 172
+        },
+        {
+          "word": "work",
+          "count": 160
+        },
+        {
+          "word": "world",
+          "count": 154
+        },
+        {
+          "word": "openai",
+          "count": 152
+        },
+        {
+          "word": "data",
+          "count": 147
+        },
+        {
+          "word": "agi",
+          "count": 146
+        },
+        {
+          "word": "google",
+          "count": 146
+        },
+        {
+          "word": "using",
+          "count": 131
+        },
+        {
+          "word": "chatgpt",
+          "count": 130
+        },
+        {
+          "word": "anthropic",
+          "count": 125
+        },
+        {
+          "word": "humans",
+          "count": 124
+        },
+        {
+          "word": "gemini",
+          "count": 124
+        },
+        {
+          "word": "money",
+          "count": 118
+        },
+        {
+          "word": "future",
+          "count": 111
+        },
+        {
+          "word": "seems",
+          "count": 108
+        }
+      ],
+      "rank": 63
+    },
+    {
+      "sector": "Crypto",
+      "subreddit": "polygonnetwork",
+      "num_posts": 41,
+      "num_comments": 161,
+      "avg_sentiment": 0.118,
+      "median_sentiment": 0.0795,
+      "std_sentiment": 0.2564,
+      "min_sentiment": -0.4343,
+      "max_sentiment": 0.5157,
+      "median_comment_sentiment": 0.0,
+      "positive_comment_pct": 33.5,
+      "negative_comment_pct": 32.3,
+      "neutral_comment_pct": 34.2,
+      "avg_post_upvotes": 6.4,
+      "most_recent": "2026-02-01T07:43:44+00:00",
+      "least_recent": "2026-01-07T12:13:30+00:00",
+      "top_words": [
+        {
+          "word": "polygon",
+          "count": 61
+        },
+        {
+          "word": "pol",
+          "count": 47
+        },
+        {
+          "word": "transaction",
+          "count": 20
+        },
+        {
+          "word": "network",
+          "count": 18
+        },
+        {
+          "word": "wallet",
+          "count": 18
+        },
+        {
+          "word": "pump",
+          "count": 17
+        },
+        {
+          "word": "money",
+          "count": 17
+        },
+        {
+          "word": "gas",
+          "count": 17
+        },
+        {
+          "word": "coin",
+          "count": 16
+        },
+        {
+          "word": "token",
+          "count": 15
+        },
+        {
+          "word": "polymarket",
+          "count": 14
+        },
+        {
+          "word": "dump",
+          "count": 13
+        },
+        {
+          "word": "transactions",
+          "count": 13
+        },
+        {
+          "word": "without",
+          "count": 13
+        },
+        {
+          "word": "crypto",
+          "count": 12
+        },
+        {
+          "word": "top",
+          "count": 11
+        },
+        {
+          "word": "days",
+          "count": 11
+        },
+        {
+          "word": "onchain",
+          "count": 11
+        },
+        {
+          "word": "buy",
+          "count": 10
+        },
+        {
+          "word": "bought",
+          "count": 9
+        }
+      ],
+      "rank": 64
+    },
+    {
+      "sector": "Crypto",
+      "subreddit": "Tether",
+      "num_posts": 10,
+      "num_comments": 0,
+      "avg_sentiment": 0.1145,
+      "median_sentiment": 0.0,
+      "std_sentiment": 0.1768,
+      "min_sentiment": 0.0,
+      "max_sentiment": 0.4442,
+      "median_comment_sentiment": 0,
+      "positive_comment_pct": 0,
+      "negative_comment_pct": 0,
+      "neutral_comment_pct": 0,
+      "avg_post_upvotes": 1.5,
+      "most_recent": "2026-01-08T14:37:08+00:00",
+      "least_recent": "2026-01-07T13:37:25+00:00",
+      "top_words": [
+        {
+          "word": "tether",
+          "count": 6
+        },
+        {
+          "word": "rumble",
+          "count": 5
+        },
+        {
+          "word": "happy",
+          "count": 3
+        },
+        {
+          "word": "wallet",
+          "count": 3
+        },
+        {
+          "word": "creators",
+          "count": 3
+        },
+        {
+          "word": "launch",
+          "count": 2
+        },
+        {
+          "word": "bringing",
+          "count": 2
+        },
+        {
+          "word": "selfcustodial",
+          "count": 2
+        },
+        {
+          "word": "crypto",
+          "count": 2
+        },
+        {
+          "word": "payments",
+          "count": 2
+        },
+        {
+          "word": "millions",
+          "count": 2
+        },
+        {
+          "word": "users",
+          "count": 2
+        },
+        {
+          "word": "learn",
+          "count": 2
+        },
+        {
+          "word": "read",
+          "count": 2
+        },
+        {
+          "word": "usd",
+          "count": 2
+        },
+        {
+          "word": "kaiachain",
+          "count": 2
+        },
+        {
+          "word": "live",
+          "count": 2
+        },
+        {
+          "word": "tetherto",
+          "count": 2
+        },
+        {
+          "word": "times",
+          "count": 1
+        },
+        {
+          "word": "jan",
+          "count": 1
+        }
+      ],
+      "rank": 65
+    },
+    {
+      "sector": "Equities",
+      "subreddit": "Microsoft",
+      "num_posts": 69,
+      "num_comments": 968,
+      "avg_sentiment": 0.1115,
+      "median_sentiment": 0.0795,
+      "std_sentiment": 0.3108,
+      "min_sentiment": -0.7148,
+      "max_sentiment": 0.8513,
+      "median_comment_sentiment": 0.0,
+      "positive_comment_pct": 42.7,
+      "negative_comment_pct": 30.1,
+      "neutral_comment_pct": 27.2,
+      "avg_post_upvotes": 87.5,
+      "most_recent": "2026-02-04T23:15:28+00:00",
+      "least_recent": "2026-01-07T05:52:16+00:00",
+      "top_words": [
+        {
+          "word": "microsoft",
+          "count": 321
+        },
+        {
+          "word": "windows",
+          "count": 201
+        },
+        {
+          "word": "copilot",
+          "count": 123
+        },
+        {
+          "word": "years",
+          "count": 68
+        },
+        {
+          "word": "company",
+          "count": 66
+        },
+        {
+          "word": "work",
+          "count": 58
+        },
+        {
+          "word": "satya",
+          "count": 57
+        },
+        {
+          "word": "products",
+          "count": 52
+        },
+        {
+          "word": "product",
+          "count": 50
+        },
+        {
+          "word": "data",
+          "count": 46
+        },
+        {
+          "word": "google",
+          "count": 44
+        },
+        {
+          "word": "cloud",
+          "count": 44
+        },
+        {
+          "word": "users",
+          "count": 43
+        },
+        {
+          "word": "using",
+          "count": 42
+        },
+        {
+          "word": "money",
+          "count": 39
+        },
+        {
+          "word": "office",
+          "count": 38
+        },
+        {
+          "word": "consumer",
+          "count": 38
+        },
+        {
+          "word": "app",
+          "count": 38
+        },
+        {
+          "word": "xbox",
+          "count": 38
+        },
+        {
+          "word": "msft",
+          "count": 36
+        }
+      ],
+      "rank": 66
+    },
+    {
+      "sector": "Equities",
+      "subreddit": "NVDA_Stock",
+      "num_posts": 100,
+      "num_comments": 1900,
+      "avg_sentiment": 0.1107,
+      "median_sentiment": 0.1071,
+      "std_sentiment": 0.2829,
+      "min_sentiment": -0.553,
+      "max_sentiment": 0.8155,
+      "median_comment_sentiment": 0.0,
+      "positive_comment_pct": 34.1,
+      "negative_comment_pct": 29.1,
+      "neutral_comment_pct": 36.8,
+      "avg_post_upvotes": 46.9,
+      "most_recent": "2026-02-04T21:34:22+00:00",
+      "least_recent": "2026-01-06T19:38:42+00:00",
+      "top_words": [
+        {
+          "word": "nvidia",
+          "count": 337
+        },
+        {
+          "word": "nvda",
+          "count": 234
+        },
+        {
+          "word": "stock",
+          "count": 234
+        },
+        {
+          "word": "china",
+          "count": 132
+        },
+        {
+          "word": "market",
+          "count": 117
+        },
+        {
+          "word": "news",
+          "count": 116
+        },
+        {
+          "word": "today",
+          "count": 114
+        },
+        {
+          "word": "amd",
+          "count": 107
+        },
+        {
+          "word": "buy",
+          "count": 104
+        },
+        {
+          "word": "jensen",
+          "count": 85
+        },
+        {
+          "word": "earnings",
+          "count": 83
+        },
+        {
+          "word": "chips",
+          "count": 83
+        },
+        {
+          "word": "money",
+          "count": 82
+        },
+        {
+          "word": "shit",
+          "count": 70
+        },
+        {
+          "word": "company",
+          "count": 67
+        },
+        {
+          "word": "price",
+          "count": 65
+        },
+        {
+          "word": "billion",
+          "count": 63
+        },
+        {
+          "word": "red",
+          "count": 56
+        },
+        {
+          "word": "next",
+          "count": 56
+        },
+        {
+          "word": "openai",
+          "count": 53
+        }
+      ],
+      "rank": 67
+    },
+    {
+      "sector": "Materials",
+      "subreddit": "Lithium",
+      "num_posts": 28,
+      "num_comments": 111,
+      "avg_sentiment": 0.1046,
+      "median_sentiment": 0.0287,
+      "std_sentiment": 0.3766,
+      "min_sentiment": -0.3913,
+      "max_sentiment": 0.7728,
+      "median_comment_sentiment": 0.2647,
+      "positive_comment_pct": 53.2,
+      "negative_comment_pct": 28.8,
+      "neutral_comment_pct": 18.0,
+      "avg_post_upvotes": 3.8,
+      "most_recent": "2026-02-05T11:23:09+00:00",
+      "least_recent": "2026-01-09T11:29:17+00:00",
+      "top_words": [
+        {
+          "word": "lithium",
+          "count": 150
+        },
+        {
+          "word": "dose",
+          "count": 41
+        },
+        {
+          "word": "side",
+          "count": 31
+        },
+        {
+          "word": "effects",
+          "count": 31
+        },
+        {
+          "word": "depression",
+          "count": 26
+        },
+        {
+          "word": "bipolar",
+          "count": 25
+        },
+        {
+          "word": "blood",
+          "count": 24
+        },
+        {
+          "word": "levels",
+          "count": 23
+        },
+        {
+          "word": "feel",
+          "count": 22
+        },
+        {
+          "word": "doctor",
+          "count": 21
+        },
+        {
+          "word": "started",
+          "count": 20
+        },
+        {
+          "word": "mood",
+          "count": 19
+        },
+        {
+          "word": "night",
+          "count": 19
+        },
+        {
+          "word": "weight",
+          "count": 18
+        },
+        {
+          "word": "symptoms",
+          "count": 17
+        },
+        {
+          "word": "week",
+          "count": 17
+        },
+        {
+          "word": "psychiatrist",
+          "count": 17
+        },
+        {
+          "word": "months",
+          "count": 16
+        },
+        {
+          "word": "water",
+          "count": 16
+        },
+        {
+          "word": "issues",
+          "count": 16
+        }
+      ],
+      "rank": 68
+    },
+    {
+      "sector": "Equities",
+      "subreddit": "amazon",
+      "num_posts": 96,
+      "num_comments": 402,
+      "avg_sentiment": 0.0923,
+      "median_sentiment": 0.089,
+      "std_sentiment": 0.2035,
+      "min_sentiment": -0.3922,
+      "max_sentiment": 0.5524,
+      "median_comment_sentiment": 0.0,
+      "positive_comment_pct": 42.8,
+      "negative_comment_pct": 31.8,
+      "neutral_comment_pct": 25.4,
+      "avg_post_upvotes": 17.2,
+      "most_recent": "2026-02-05T02:00:05+00:00",
+      "least_recent": "2026-01-06T20:00:04+00:00",
+      "top_words": [
+        {
+          "word": "amazon",
+          "count": 327
+        },
+        {
+          "word": "account",
+          "count": 77
+        },
+        {
+          "word": "order",
+          "count": 72
+        },
+        {
+          "word": "delivery",
+          "count": 62
+        },
+        {
+          "word": "return",
+          "count": 55
+        },
+        {
+          "word": "item",
+          "count": 49
+        },
+        {
+          "word": "questions",
+          "count": 48
+        },
+        {
+          "word": "thread",
+          "count": 47
+        },
+        {
+          "word": "place",
+          "count": 43
+        },
+        {
+          "word": "email",
+          "count": 41
+        },
+        {
+          "word": "ordered",
+          "count": 40
+        },
+        {
+          "word": "discussion",
+          "count": 39
+        },
+        {
+          "word": "address",
+          "count": 39
+        },
+        {
+          "word": "prime",
+          "count": 38
+        },
+        {
+          "word": "package",
+          "count": 37
+        },
+        {
+          "word": "number",
+          "count": 35
+        },
+        {
+          "word": "help",
+          "count": 33
+        },
+        {
+          "word": "card",
+          "count": 32
+        },
+        {
+          "word": "items",
+          "count": 32
+        },
+        {
+          "word": "shipping",
+          "count": 31
+        }
+      ],
+      "rank": 69
+    },
+    {
+      "sector": "Materials",
+      "subreddit": "NaturalGas",
+      "num_posts": 72,
+      "num_comments": 177,
+      "avg_sentiment": 0.0838,
+      "median_sentiment": 0.0,
+      "std_sentiment": 0.2512,
+      "min_sentiment": -0.4535,
+      "max_sentiment": 0.7815,
+      "median_comment_sentiment": 0.0,
+      "positive_comment_pct": 34.5,
+      "negative_comment_pct": 29.4,
+      "neutral_comment_pct": 36.1,
+      "avg_post_upvotes": 2.8,
+      "most_recent": "2026-02-04T19:23:33+00:00",
+      "least_recent": "2026-01-06T21:15:35+00:00",
+      "top_words": [
+        {
+          "word": "gas",
+          "count": 234
+        },
+        {
+          "word": "natural",
+          "count": 51
+        },
+        {
+          "word": "storage",
+          "count": 44
+        },
+        {
+          "word": "energy",
+          "count": 40
+        },
+        {
+          "word": "house",
+          "count": 37
+        },
+        {
+          "word": "meter",
+          "count": 32
+        },
+        {
+          "word": "level",
+          "count": 31
+        },
+        {
+          "word": "line",
+          "count": 29
+        },
+        {
+          "word": "lng",
+          "count": 29
+        },
+        {
+          "word": "demand",
+          "count": 28
+        },
+        {
+          "word": "supply",
+          "count": 26
+        },
+        {
+          "word": "leak",
+          "count": 26
+        },
+        {
+          "word": "company",
+          "count": 25
+        },
+        {
+          "word": "capacity",
+          "count": 22
+        },
+        {
+          "word": "pressure",
+          "count": 22
+        },
+        {
+          "word": "smell",
+          "count": 21
+        },
+        {
+          "word": "call",
+          "count": 20
+        },
+        {
+          "word": "prices",
+          "count": 20
+        },
+        {
+          "word": "bill",
+          "count": 20
+        },
+        {
+          "word": "water",
+          "count": 18
+        }
+      ],
+      "rank": 70
+    },
+    {
+      "sector": "Materials",
+      "subreddit": "agriculture",
+      "num_posts": 16,
+      "num_comments": 45,
+      "avg_sentiment": 0.0775,
+      "median_sentiment": 0.0192,
+      "std_sentiment": 0.2256,
+      "min_sentiment": -0.2859,
+      "max_sentiment": 0.6717,
+      "median_comment_sentiment": 0.0,
+      "positive_comment_pct": 40.0,
+      "negative_comment_pct": 33.3,
+      "neutral_comment_pct": 26.7,
+      "avg_post_upvotes": 197.4,
+      "most_recent": "2026-02-02T20:24:31+00:00",
+      "least_recent": "2026-01-16T18:04:24+00:00",
+      "top_words": [
+        {
+          "word": "farmers",
+          "count": 9
+        },
+        {
+          "word": "trump",
+          "count": 8
+        },
+        {
+          "word": "tariffs",
+          "count": 7
+        },
+        {
+          "word": "trade",
+          "count": 6
+        },
+        {
+          "word": "extra",
+          "count": 6
+        },
+        {
+          "word": "china",
+          "count": 5
+        },
+        {
+          "word": "land",
+          "count": 5
+        },
+        {
+          "word": "soybeans",
+          "count": 4
+        },
+        {
+          "word": "hope",
+          "count": 4
+        },
+        {
+          "word": "american",
+          "count": 4
+        },
+        {
+          "word": "month",
+          "count": 3
+        },
+        {
+          "word": "canada",
+          "count": 3
+        },
+        {
+          "word": "war",
+          "count": 3
+        },
+        {
+          "word": "soybean",
+          "count": 3
+        },
+        {
+          "word": "futures",
+          "count": 3
+        },
+        {
+          "word": "google",
+          "count": 3
+        },
+        {
+          "word": "per",
+          "count": 3
+        },
+        {
+          "word": "brazil",
+          "count": 3
+        },
+        {
+          "word": "amazon",
+          "count": 3
+        },
+        {
+          "word": "hard",
+          "count": 3
+        }
+      ],
+      "rank": 71
+    },
+    {
+      "sector": "Equities",
+      "subreddit": "Meta",
+      "num_posts": 16,
+      "num_comments": 26,
+      "avg_sentiment": 0.0733,
+      "median_sentiment": 0.0,
+      "std_sentiment": 0.3485,
+      "min_sentiment": -0.4667,
+      "max_sentiment": 0.7504,
+      "median_comment_sentiment": 0.0,
+      "positive_comment_pct": 38.5,
+      "negative_comment_pct": 38.5,
+      "neutral_comment_pct": 23.0,
+      "avg_post_upvotes": 1.9,
+      "most_recent": "2026-02-01T23:30:15+00:00",
+      "least_recent": "2026-01-08T20:43:07+00:00",
+      "top_words": [
+        {
+          "word": "business",
+          "count": 26
+        },
+        {
+          "word": "posts",
+          "count": 21
+        },
+        {
+          "word": "meta",
+          "count": 15
+        },
+        {
+          "word": "tech",
+          "count": 14
+        },
+        {
+          "word": "verification",
+          "count": 13
+        },
+        {
+          "word": "provider",
+          "count": 13
+        },
+        {
+          "word": "subreddits",
+          "count": 9
+        },
+        {
+          "word": "access",
+          "count": 9
+        },
+        {
+          "word": "platforms",
+          "count": 8
+        },
+        {
+          "word": "algorithm",
+          "count": 7
+        },
+        {
+          "word": "post",
+          "count": 7
+        },
+        {
+          "word": "subs",
+          "count": 7
+        },
+        {
+          "word": "small",
+          "count": 7
+        },
+        {
+          "word": "businesses",
+          "count": 7
+        },
+        {
+          "word": "wikipedia",
+          "count": 6
+        },
+        {
+          "word": "conservative",
+          "count": 6
+        },
+        {
+          "word": "app",
+          "count": 6
+        },
+        {
+          "word": "build",
+          "count": 6
+        },
+        {
+          "word": "legal",
+          "count": 6
+        },
+        {
+          "word": "work",
+          "count": 6
+        }
+      ],
+      "rank": 72
+    },
+    {
+      "sector": "Geopolitics",
+      "subreddit": "China",
+      "num_posts": 100,
+      "num_comments": 1928,
+      "avg_sentiment": 0.0607,
+      "median_sentiment": 0.0656,
+      "std_sentiment": 0.2926,
+      "min_sentiment": -0.5402,
+      "max_sentiment": 0.7642,
+      "median_comment_sentiment": 0.0,
+      "positive_comment_pct": 41.4,
+      "negative_comment_pct": 30.5,
+      "neutral_comment_pct": 28.1,
+      "avg_post_upvotes": 278.1,
+      "most_recent": "2026-02-04T00:30:39+00:00",
+      "least_recent": "2026-01-07T02:04:07+00:00",
+      "top_words": [
+        {
+          "word": "china",
+          "count": 816
+        },
+        {
+          "word": "chinese",
+          "count": 466
+        },
+        {
+          "word": "please",
+          "count": 163
+        },
+        {
+          "word": "taiwan",
+          "count": 145
+        },
+        {
+          "word": "questions",
+          "count": 143
+        },
+        {
+          "word": "post",
+          "count": 137
+        },
+        {
+          "word": "case",
+          "count": 121
+        },
+        {
+          "word": "contact",
+          "count": 119
+        },
+        {
+          "word": "action",
+          "count": 118
+        },
+        {
+          "word": "bot",
+          "count": 116
+        },
+        {
+          "word": "automatically",
+          "count": 115
+        },
+        {
+          "word": "concerns",
+          "count": 115
+        },
+        {
+          "word": "performed",
+          "count": 112
+        },
+        {
+          "word": "moderators",
+          "count": 112
+        },
+        {
+          "word": "subredditmessagecomposetorchina",
+          "count": 112
+        },
+        {
+          "word": "trump",
+          "count": 110
+        },
+        {
+          "word": "weiwei",
+          "count": 107
+        },
+        {
+          "word": "original",
+          "count": 106
+        },
+        {
+          "word": "countries",
+          "count": 101
+        },
+        {
+          "word": "copy",
+          "count": 100
+        }
+      ],
+      "rank": 73
+    },
+    {
+      "sector": "Crypto",
+      "subreddit": "SHIBArmy",
+      "num_posts": 44,
+      "num_comments": 531,
+      "avg_sentiment": 0.05,
+      "median_sentiment": 0.0056,
+      "std_sentiment": 0.2818,
+      "min_sentiment": -0.5612,
+      "max_sentiment": 0.5666,
+      "median_comment_sentiment": 0.0,
+      "positive_comment_pct": 29.8,
+      "negative_comment_pct": 29.6,
+      "neutral_comment_pct": 40.6,
+      "avg_post_upvotes": 88.9,
+      "most_recent": "2026-02-05T16:30:03+00:00",
+      "least_recent": "2026-01-06T21:22:26+00:00",
+      "top_words": [
+        {
+          "word": "shib",
+          "count": 88
+        },
+        {
+          "word": "money",
+          "count": 57
+        },
+        {
+          "word": "years",
+          "count": 42
+        },
+        {
+          "word": "buy",
+          "count": 37
+        },
+        {
+          "word": "shiba",
+          "count": 37
+        },
+        {
+          "word": "sell",
+          "count": 34
+        },
+        {
+          "word": "coin",
+          "count": 31
+        },
+        {
+          "word": "crypto",
+          "count": 24
+        },
+        {
+          "word": "holding",
+          "count": 23
+        },
+        {
+          "word": "price",
+          "count": 23
+        },
+        {
+          "word": "dead",
+          "count": 20
+        },
+        {
+          "word": "inu",
+          "count": 19
+        },
+        {
+          "word": "loss",
+          "count": 18
+        },
+        {
+          "word": "buying",
+          "count": 17
+        },
+        {
+          "word": "ill",
+          "count": 17
+        },
+        {
+          "word": "market",
+          "count": 16
+        },
+        {
+          "word": "bro",
+          "count": 15
+        },
+        {
+          "word": "lost",
+          "count": 15
+        },
+        {
+          "word": "coins",
+          "count": 15
+        },
+        {
+          "word": "hold",
+          "count": 15
+        }
+      ],
+      "rank": 74
+    },
+    {
+      "sector": "Geopolitics",
+      "subreddit": "Anticonsumption",
+      "num_posts": 100,
+      "num_comments": 6859,
+      "avg_sentiment": 0.0494,
+      "median_sentiment": 0.0089,
+      "std_sentiment": 0.3324,
+      "min_sentiment": -0.5644,
+      "max_sentiment": 0.7535,
+      "median_comment_sentiment": 0.0,
+      "positive_comment_pct": 45.0,
+      "negative_comment_pct": 29.9,
+      "neutral_comment_pct": 25.1,
+      "avg_post_upvotes": 2951.9,
+      "most_recent": "2026-02-04T20:49:23+00:00",
+      "least_recent": "2026-01-07T17:39:48+00:00",
+      "top_words": [
+        {
+          "word": "buy",
+          "count": 647
+        },
+        {
+          "word": "money",
+          "count": 494
+        },
+        {
+          "word": "years",
+          "count": 481
+        },
+        {
+          "word": "amazon",
+          "count": 450
+        },
+        {
+          "word": "stuff",
+          "count": 362
+        },
+        {
+          "word": "consumption",
+          "count": 330
+        },
+        {
+          "word": "used",
+          "count": 311
+        },
+        {
+          "word": "buying",
+          "count": 300
+        },
+        {
+          "word": "store",
+          "count": 296
+        },
+        {
+          "word": "food",
+          "count": 293
+        },
+        {
+          "word": "ads",
+          "count": 286
+        },
+        {
+          "word": "work",
+          "count": 278
+        },
+        {
+          "word": "free",
+          "count": 257
+        },
+        {
+          "word": "shave",
+          "count": 249
+        },
+        {
+          "word": "less",
+          "count": 247
+        },
+        {
+          "word": "plastic",
+          "count": 237
+        },
+        {
+          "word": "hair",
+          "count": 236
+        },
+        {
+          "word": "pay",
+          "count": 231
+        },
+        {
+          "word": "find",
+          "count": 229
+        },
+        {
+          "word": "media",
+          "count": 227
+        }
+      ],
+      "rank": 75
+    },
+    {
+      "sector": "Crypto",
+      "subreddit": "axieinfinity",
+      "num_posts": 10,
+      "num_comments": 8,
+      "avg_sentiment": 0.0372,
+      "median_sentiment": 0.0759,
+      "std_sentiment": 0.2526,
+      "min_sentiment": -0.3458,
+      "max_sentiment": 0.4536,
+      "median_comment_sentiment": 0.0,
+      "positive_comment_pct": 12.5,
+      "negative_comment_pct": 25.0,
+      "neutral_comment_pct": 62.5,
+      "avg_post_upvotes": 1.7,
+      "most_recent": "2026-01-28T04:32:23+00:00",
+      "least_recent": "2026-01-14T20:26:05+00:00",
+      "top_words": [
+        {
+          "word": "axie",
+          "count": 10
+        },
+        {
+          "word": "axies",
+          "count": 8
+        },
+        {
+          "word": "infinity",
+          "count": 7
+        },
+        {
+          "word": "axs",
+          "count": 5
+        },
+        {
+          "word": "hyperrealistic",
+          "count": 4
+        },
+        {
+          "word": "rally",
+          "count": 4
+        },
+        {
+          "word": "week",
+          "count": 4
+        },
+        {
+          "word": "discord",
+          "count": 3
+        },
+        {
+          "word": "origins",
+          "count": 3
+        },
+        {
+          "word": "dance",
+          "count": 3
+        },
+        {
+          "word": "glow",
+          "count": 3
+        },
+        {
+          "word": "breakbeat",
+          "count": 3
+        },
+        {
+          "word": "energy",
+          "count": 3
+        },
+        {
+          "word": "regression",
+          "count": 3
+        },
+        {
+          "word": "sma",
+          "count": 3
+        },
+        {
+          "word": "binance",
+          "count": 2
+        },
+        {
+          "word": "please",
+          "count": 2
+        },
+        {
+          "word": "help",
+          "count": 2
+        },
+        {
+          "word": "nfts",
+          "count": 2
+        },
+        {
+          "word": "gaming",
+          "count": 2
+        }
+      ],
+      "rank": 76
+    },
+    {
+      "sector": "Fixed Income & Macro",
+      "subreddit": "finance",
+      "num_posts": 22,
+      "num_comments": 185,
+      "avg_sentiment": 0.0314,
+      "median_sentiment": 0.0459,
+      "std_sentiment": 0.3228,
+      "min_sentiment": -0.6825,
+      "max_sentiment": 0.6487,
+      "median_comment_sentiment": 0.0,
+      "positive_comment_pct": 40.0,
+      "negative_comment_pct": 30.3,
+      "neutral_comment_pct": 29.7,
+      "avg_post_upvotes": 346.1,
+      "most_recent": "2026-02-02T17:27:58+00:00",
+      "least_recent": "2026-01-07T23:51:21+00:00",
+      "top_words": [
+        {
+          "word": "reserve",
+          "count": 20
+        },
+        {
+          "word": "dollar",
+          "count": 20
+        },
+        {
+          "word": "trump",
+          "count": 15
+        },
+        {
+          "word": "finance",
+          "count": 15
+        },
+        {
+          "word": "financial",
+          "count": 14
+        },
+        {
+          "word": "currency",
+          "count": 14
+        },
+        {
+          "word": "fed",
+          "count": 13
+        },
+        {
+          "word": "markets",
+          "count": 13
+        },
+        {
+          "word": "questions",
+          "count": 13
+        },
+        {
+          "word": "money",
+          "count": 11
+        },
+        {
+          "word": "problems",
+          "count": 11
+        },
+        {
+          "word": "global",
+          "count": 10
+        },
+        {
+          "word": "independence",
+          "count": 9
+        },
+        {
+          "word": "status",
+          "count": 9
+        },
+        {
+          "word": "rates",
+          "count": 9
+        },
+        {
+          "word": "years",
+          "count": 9
+        },
+        {
+          "word": "trade",
+          "count": 9
+        },
+        {
+          "word": "question",
+          "count": 9
+        },
+        {
+          "word": "federal",
+          "count": 8
+        },
+        {
+          "word": "american",
+          "count": 8
+        }
+      ],
+      "rank": 77
+    },
+    {
+      "sector": "Crypto",
+      "subreddit": "Floki",
+      "num_posts": 31,
+      "num_comments": 19,
+      "avg_sentiment": 0.0241,
+      "median_sentiment": 0.0,
+      "std_sentiment": 0.3008,
+      "min_sentiment": -0.4969,
+      "max_sentiment": 0.6331,
+      "median_comment_sentiment": 0.0,
+      "positive_comment_pct": 21.1,
+      "negative_comment_pct": 0.0,
+      "neutral_comment_pct": 78.9,
+      "avg_post_upvotes": 6.0,
+      "most_recent": "2026-02-05T00:54:44+00:00",
+      "least_recent": "2026-01-07T14:53:38+00:00",
+      "top_words": [
+        {
+          "word": "floki",
+          "count": 23
+        },
+        {
+          "word": "vera",
+          "count": 17
+        },
+        {
+          "word": "veras",
+          "count": 17
+        },
+        {
+          "word": "tiles",
+          "count": 12
+        },
+        {
+          "word": "tokenfi",
+          "count": 11
+        },
+        {
+          "word": "valhalla",
+          "count": 10
+        },
+        {
+          "word": "mobile",
+          "count": 10
+        },
+        {
+          "word": "damage",
+          "count": 10
+        },
+        {
+          "word": "rune",
+          "count": 10
+        },
+        {
+          "word": "flokis",
+          "count": 8
+        },
+        {
+          "word": "within",
+          "count": 8
+        },
+        {
+          "word": "turns",
+          "count": 7
+        },
+        {
+          "word": "dealing",
+          "count": 7
+        },
+        {
+          "word": "ama",
+          "count": 7
+        },
+        {
+          "word": "robinhood",
+          "count": 6
+        },
+        {
+          "word": "range",
+          "count": 6
+        },
+        {
+          "word": "updates",
+          "count": 6
+        },
+        {
+          "word": "grabbur",
+          "count": 6
+        },
+        {
+          "word": "abilities",
+          "count": 6
+        },
+        {
+          "word": "turn",
+          "count": 6
+        }
+      ],
+      "rank": 78
+    },
+    {
+      "sector": "Materials",
+      "subreddit": "farming",
+      "num_posts": 60,
+      "num_comments": 488,
+      "avg_sentiment": 0.0075,
+      "median_sentiment": 0.0,
+      "std_sentiment": 0.2329,
+      "min_sentiment": -0.7812,
+      "max_sentiment": 0.5921,
+      "median_comment_sentiment": 0.0,
+      "positive_comment_pct": 35.9,
+      "negative_comment_pct": 36.7,
+      "neutral_comment_pct": 27.4,
+      "avg_post_upvotes": 120.4,
+      "most_recent": "2026-02-04T04:55:40+00:00",
+      "least_recent": "2026-01-07T00:32:54+00:00",
+      "top_words": [
+        {
+          "word": "dogs",
+          "count": 120
+        },
+        {
+          "word": "dog",
+          "count": 70
+        },
+        {
+          "word": "livestock",
+          "count": 64
+        },
+        {
+          "word": "farmers",
+          "count": 62
+        },
+        {
+          "word": "shoot",
+          "count": 52
+        },
+        {
+          "word": "farm",
+          "count": 42
+        },
+        {
+          "word": "donkey",
+          "count": 30
+        },
+        {
+          "word": "money",
+          "count": 29
+        },
+        {
+          "word": "week",
+          "count": 27
+        },
+        {
+          "word": "pay",
+          "count": 26
+        },
+        {
+          "word": "state",
+          "count": 25
+        },
+        {
+          "word": "farms",
+          "count": 25
+        },
+        {
+          "word": "property",
+          "count": 24
+        },
+        {
+          "word": "land",
+          "count": 23
+        },
+        {
+          "word": "work",
+          "count": 23
+        },
+        {
+          "word": "years",
+          "count": 21
+        },
+        {
+          "word": "great",
+          "count": 21
+        },
+        {
+          "word": "getting",
+          "count": 20
+        },
+        {
+          "word": "shot",
+          "count": 20
+        },
+        {
+          "word": "local",
+          "count": 19
+        }
+      ],
+      "rank": 79
+    },
+    {
+      "sector": "Materials",
+      "subreddit": "oil",
+      "num_posts": 100,
+      "num_comments": 1188,
+      "avg_sentiment": 0.0069,
+      "median_sentiment": -0.0001,
+      "std_sentiment": 0.2699,
+      "min_sentiment": -0.69,
+      "max_sentiment": 0.9152,
+      "median_comment_sentiment": 0.0,
+      "positive_comment_pct": 33.5,
+      "negative_comment_pct": 34.9,
+      "neutral_comment_pct": 31.6,
+      "avg_post_upvotes": 188.2,
+      "most_recent": "2026-02-04T16:16:04+00:00",
+      "least_recent": "2026-01-06T21:09:20+00:00",
+      "top_words": [
+        {
+          "word": "oil",
+          "count": 658
+        },
+        {
+          "word": "trump",
+          "count": 200
+        },
+        {
+          "word": "venezuela",
+          "count": 170
+        },
+        {
+          "word": "prices",
+          "count": 114
+        },
+        {
+          "word": "companies",
+          "count": 110
+        },
+        {
+          "word": "money",
+          "count": 88
+        },
+        {
+          "word": "venezuelan",
+          "count": 87
+        },
+        {
+          "word": "crude",
+          "count": 84
+        },
+        {
+          "word": "production",
+          "count": 73
+        },
+        {
+          "word": "gas",
+          "count": 67
+        },
+        {
+          "word": "industry",
+          "count": 58
+        },
+        {
+          "word": "energy",
+          "count": 56
+        },
+        {
+          "word": "price",
+          "count": 55
+        },
+        {
+          "word": "drill",
+          "count": 54
+        },
+        {
+          "word": "country",
+          "count": 49
+        },
+        {
+          "word": "market",
+          "count": 49
+        },
+        {
+          "word": "years",
+          "count": 48
+        },
+        {
+          "word": "supply",
+          "count": 47
+        },
+        {
+          "word": "heavy",
+          "count": 46
+        },
+        {
+          "word": "trumps",
+          "count": 43
+        }
+      ],
+      "rank": 80
+    },
+    {
+      "sector": "Tech & AI",
+      "subreddit": "technews",
+      "num_posts": 100,
+      "num_comments": 2260,
+      "avg_sentiment": -0.0054,
+      "median_sentiment": -0.006,
+      "std_sentiment": 0.2044,
+      "min_sentiment": -0.6182,
+      "max_sentiment": 0.6181,
+      "median_comment_sentiment": 0.0,
+      "positive_comment_pct": 36.7,
+      "negative_comment_pct": 30.3,
+      "neutral_comment_pct": 33.0,
+      "avg_post_upvotes": 983.6,
+      "most_recent": "2026-02-04T23:19:36+00:00",
+      "least_recent": "2026-01-06T22:21:54+00:00",
+      "top_words": [
+        {
+          "word": "windows",
+          "count": 88
+        },
+        {
+          "word": "data",
+          "count": 81
+        },
+        {
+          "word": "microsoft",
+          "count": 70
+        },
+        {
+          "word": "using",
+          "count": 69
+        },
+        {
+          "word": "shit",
+          "count": 67
+        },
+        {
+          "word": "app",
+          "count": 64
+        },
+        {
+          "word": "work",
+          "count": 60
+        },
+        {
+          "word": "used",
+          "count": 57
+        },
+        {
+          "word": "grok",
+          "count": 56
+        },
+        {
+          "word": "free",
+          "count": 53
+        },
+        {
+          "word": "news",
+          "count": 50
+        },
+        {
+          "word": "tech",
+          "count": 50
+        },
+        {
+          "word": "linux",
+          "count": 50
+        },
+        {
+          "word": "users",
+          "count": 50
+        },
+        {
+          "word": "great",
+          "count": 49
+        },
+        {
+          "word": "company",
+          "count": 49
+        },
+        {
+          "word": "years",
+          "count": 49
+        },
+        {
+          "word": "google",
+          "count": 46
+        },
+        {
+          "word": "youtube",
+          "count": 45
+        },
+        {
+          "word": "fuck",
+          "count": 43
+        }
+      ],
+      "rank": 81
+    },
+    {
+      "sector": "Geopolitics",
+      "subreddit": "GlobalMarkets",
+      "num_posts": 10,
+      "num_comments": 11,
+      "avg_sentiment": -0.013,
+      "median_sentiment": 0.0418,
+      "std_sentiment": 0.2225,
+      "min_sentiment": -0.3502,
+      "max_sentiment": 0.2787,
+      "median_comment_sentiment": 0.0,
+      "positive_comment_pct": 18.2,
+      "negative_comment_pct": 9.1,
+      "neutral_comment_pct": 72.7,
+      "avg_post_upvotes": 4.2,
+      "most_recent": "2026-01-30T12:07:29+00:00",
+      "least_recent": "2026-01-21T00:13:50+00:00",
+      "top_words": [
+        {
+          "word": "source",
+          "count": 12
+        },
+        {
+          "word": "trump",
+          "count": 4
+        },
+        {
+          "word": "officially",
+          "count": 3
+        },
+        {
+          "word": "greenland",
+          "count": 3
+        },
+        {
+          "word": "amid",
+          "count": 2
+        },
+        {
+          "word": "federal",
+          "count": 2
+        },
+        {
+          "word": "reserve",
+          "count": 2
+        },
+        {
+          "word": "market",
+          "count": 2
+        },
+        {
+          "word": "denmark",
+          "count": 2
+        },
+        {
+          "word": "crypto",
+          "count": 2
+        },
+        {
+          "word": "suspended",
+          "count": 1
+        },
+        {
+          "word": "trade",
+          "count": 1
+        },
+        {
+          "word": "deal",
+          "count": 1
+        },
+        {
+          "word": "tariff",
+          "count": 1
+        },
+        {
+          "word": "tensions",
+          "count": 1
+        },
+        {
+          "word": "signs",
+          "count": 1
+        },
+        {
+          "word": "order",
+          "count": 1
+        },
+        {
+          "word": "restrict",
+          "count": 1
+        },
+        {
+          "word": "wall",
+          "count": 1
+        },
+        {
+          "word": "street",
+          "count": 1
+        }
+      ],
+      "rank": 82
+    },
+    {
+      "sector": "Geopolitics",
+      "subreddit": "worldnews",
+      "num_posts": 100,
+      "num_comments": 14131,
+      "avg_sentiment": -0.0472,
+      "median_sentiment": -0.048,
+      "std_sentiment": 0.217,
+      "min_sentiment": -0.4416,
+      "max_sentiment": 0.5364,
+      "median_comment_sentiment": 0.0,
+      "positive_comment_pct": 35.8,
+      "negative_comment_pct": 42.0,
+      "neutral_comment_pct": 22.2,
+      "avg_post_upvotes": 31408.1,
+      "most_recent": "2026-02-04T11:49:44+00:00",
+      "least_recent": "2026-01-06T21:04:36+00:00",
+      "top_words": [
+        {
+          "word": "trump",
+          "count": 2742
+        },
+        {
+          "word": "world",
+          "count": 1054
+        },
+        {
+          "word": "greenland",
+          "count": 926
+        },
+        {
+          "word": "country",
+          "count": 791
+        },
+        {
+          "word": "hes",
+          "count": 708
+        },
+        {
+          "word": "american",
+          "count": 673
+        },
+        {
+          "word": "canada",
+          "count": 642
+        },
+        {
+          "word": "america",
+          "count": 596
+        },
+        {
+          "word": "nato",
+          "count": 573
+        },
+        {
+          "word": "fucking",
+          "count": 546
+        },
+        {
+          "word": "war",
+          "count": 544
+        },
+        {
+          "word": "russia",
+          "count": 539
+        },
+        {
+          "word": "peace",
+          "count": 534
+        },
+        {
+          "word": "fuck",
+          "count": 513
+        },
+        {
+          "word": "americans",
+          "count": 489
+        },
+        {
+          "word": "europe",
+          "count": 471
+        },
+        {
+          "word": "president",
+          "count": 466
+        },
+        {
+          "word": "shit",
+          "count": 465
+        },
+        {
+          "word": "countries",
+          "count": 435
+        },
+        {
+          "word": "usa",
+          "count": 410
+        }
+      ],
+      "rank": 83
+    },
+    {
+      "sector": "Geopolitics",
+      "subreddit": "PrepperIntel",
+      "num_posts": 100,
+      "num_comments": 2799,
+      "avg_sentiment": -0.0823,
+      "median_sentiment": -0.0735,
+      "std_sentiment": 0.2396,
+      "min_sentiment": -0.5138,
+      "max_sentiment": 0.4797,
+      "median_comment_sentiment": 0.0,
+      "positive_comment_pct": 30.3,
+      "negative_comment_pct": 37.8,
+      "neutral_comment_pct": 31.9,
+      "avg_post_upvotes": 1079.3,
+      "most_recent": "2026-02-04T16:52:26+00:00",
+      "least_recent": "2026-01-07T15:36:20+00:00",
+      "top_words": [
+        {
+          "word": "trump",
+          "count": 205
+        },
+        {
+          "word": "ice",
+          "count": 176
+        },
+        {
+          "word": "power",
+          "count": 111
+        },
+        {
+          "word": "war",
+          "count": 107
+        },
+        {
+          "word": "state",
+          "count": 100
+        },
+        {
+          "word": "iran",
+          "count": 95
+        },
+        {
+          "word": "greenland",
+          "count": 79
+        },
+        {
+          "word": "states",
+          "count": 78
+        },
+        {
+          "word": "government",
+          "count": 75
+        },
+        {
+          "word": "fuck",
+          "count": 70
+        },
+        {
+          "word": "military",
+          "count": 70
+        },
+        {
+          "word": "years",
+          "count": 70
+        },
+        {
+          "word": "country",
+          "count": 68
+        },
+        {
+          "word": "water",
+          "count": 67
+        },
+        {
+          "word": "next",
+          "count": 63
+        },
+        {
+          "word": "hes",
+          "count": 63
+        },
+        {
+          "word": "shit",
+          "count": 62
+        },
+        {
+          "word": "used",
+          "count": 61
+        },
+        {
+          "word": "snow",
+          "count": 61
+        },
+        {
+          "word": "happen",
+          "count": 59
+        }
+      ],
+      "rank": 84
+    },
+    {
+      "sector": "Fixed Income & Macro",
+      "subreddit": "econmonitor",
+      "num_posts": 9,
+      "num_comments": 2,
+      "avg_sentiment": -0.1517,
+      "median_sentiment": -0.2202,
+      "std_sentiment": 0.218,
+      "min_sentiment": -0.5957,
+      "max_sentiment": 0.2553,
+      "median_comment_sentiment": -0.0851,
+      "positive_comment_pct": 50.0,
+      "negative_comment_pct": 50.0,
+      "neutral_comment_pct": 0.0,
+      "avg_post_upvotes": 16.6,
+      "most_recent": "2026-02-01T11:00:30+00:00",
+      "least_recent": "2026-01-08T13:30:35+00:00",
+      "top_words": [
+        {
+          "word": "probability",
+          "count": 5
+        },
+        {
+          "word": "indicator",
+          "count": 4
+        },
+        {
+          "word": "cre",
+          "count": 4
+        },
+        {
+          "word": "unemployment",
+          "count": 4
+        },
+        {
+          "word": "insurance",
+          "count": 4
+        },
+        {
+          "word": "weekly",
+          "count": 4
+        },
+        {
+          "word": "claims",
+          "count": 4
+        },
+        {
+          "word": "correction",
+          "count": 3
+        },
+        {
+          "word": "ath",
+          "count": 3
+        },
+        {
+          "word": "recession",
+          "count": 3
+        },
+        {
+          "word": "thread",
+          "count": 3
+        },
+        {
+          "word": "framework",
+          "count": 2
+        },
+        {
+          "word": "methodology",
+          "count": 2
+        },
+        {
+          "word": "summary",
+          "count": 2
+        },
+        {
+          "word": "rrp",
+          "count": 2
+        },
+        {
+          "word": "depleted",
+          "count": 2
+        },
+        {
+          "word": "reserves",
+          "count": 2
+        },
+        {
+          "word": "structure",
+          "count": 2
+        },
+        {
+          "word": "curve",
+          "count": 2
+        },
+        {
+          "word": "maturities",
+          "count": 2
+        }
+      ],
+      "rank": 85
+    }
+  ]
+}

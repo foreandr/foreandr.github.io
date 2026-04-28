@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Math Proof Editor</title>
+<link rel="icon" type="image/x-icon" href="../../images.ico">
+
+<!-- jQuery (MathQuill dependency) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<!-- MathQuill -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mathquill/0.10.1/mathquill.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathquill/0.10.1/mathquill.min.js"></script>
+
+<style>
+:root {
+  --bg: #fafaf8;
+  --surface: #ffffff;
+  --panel: #f3f2ef;
+  --border: #dddbd5;
+  --text: #1a1917;
+  --muted: #888580;
+  --accent: #2563eb;
+  --accent-bg: rgba(37,99,235,0.07);
+  --sans: "Segoe UI", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, monospace;
+  --radius: 6px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── Topbar ── */
+.topbar {
+  display: flex; align-items: center; gap: 12px;
+  padding: 0 18px; height: 48px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  z-index: 20;
+}
+.back { color: var(--muted); text-decoration: none; font-size: 13px; padding: 4px 8px; border-radius: 4px; }
+.back:hover { background: var(--panel); color: var(--text); }
+.app-title { font-size: 14px; font-weight: 700; color: var(--text); }
+.topbar-sep { width: 1px; height: 20px; background: var(--border); }
+.spacer { flex: 1; }
+.tb-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 12px; border-radius: var(--radius);
+  font-size: 12px; font-weight: 600; cursor: pointer;
+  border: 1px solid var(--border); background: var(--surface); color: var(--text);
+  transition: all .12s; white-space: nowrap;
+}
+.tb-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-bg); }
+.tb-btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+.tb-btn.primary:hover { background: #1d4ed8; }
+
+/* ── Layout: palette | document ── */
+.workspace {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ── Symbol Palette (left) ── */
+.palette {
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.pal-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  background: var(--panel);
+  flex-shrink: 0;
+  overflow-x: auto;
+}
+.pal-tabs::-webkit-scrollbar { height: 0; }
+.ptab {
+  padding: 8px 12px; font-size: 11px; font-weight: 600;
+  letter-spacing: .3px; cursor: pointer; color: var(--muted);
+  border-bottom: 2px solid transparent; white-space: nowrap;
+  transition: all .12s; flex-shrink: 0;
+}
+.ptab.active { color: var(--accent); border-bottom-color: var(--accent); }
+.ptab:hover:not(.active) { color: var(--text); }
+.pal-body { flex: 1; overflow-y: auto; padding: 10px; }
+.pal-body::-webkit-scrollbar { width: 4px; }
+.pal-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+.pal-section { display: none; }
+.pal-section.active { display: block; }
+.pal-group { margin-bottom: 12px; }
+.pal-group-title {
+  font-size: 9px; font-weight: 700; letter-spacing: 1px;
+  text-transform: uppercase; color: var(--muted);
+  margin-bottom: 5px; padding: 0 2px;
+}
+.sym-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(44px, 1fr)); gap: 3px; }
+.sym-btn {
+  padding: 5px 3px; border: 1px solid var(--border);
+  border-radius: 4px; background: var(--panel);
+  cursor: pointer; text-align: center; font-size: 15px;
+  transition: all .1s; color: var(--text); user-select: none;
+  display: flex; flex-direction: column; align-items: center; gap: 1px;
+  line-height: 1.2;
+}
+.sym-btn:hover { border-color: var(--accent); background: var(--accent-bg); }
+.sym-label { font-size: 8px; color: var(--muted); font-family: var(--mono); }
+.sym-btn:hover .sym-label { color: var(--accent); }
+.tpl-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-bottom: 4px; }
+.tpl-btn {
+  padding: 7px 5px; border: 1px solid var(--border);
+  border-radius: 4px; background: var(--panel);
+  cursor: pointer; text-align: center;
+  transition: all .1s; user-select: none;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+}
+.tpl-btn:hover { border-color: var(--accent); background: var(--accent-bg); }
+.tpl-preview { font-size: 16px; line-height: 1.3; color: var(--text); pointer-events: none; }
+.tpl-label { font-size: 8px; color: var(--muted); font-family: var(--mono); }
+.tpl-btn:hover .tpl-label { color: var(--accent); }
+
+/* ── Document area (right) ── */
+.doc-area {
+  display: flex; flex-direction: column; overflow: hidden;
+  background: var(--bg);
+}
+.doc-toolbar {
+  display: flex; align-items: center; gap: 4px;
+  padding: 6px 12px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+.doc-tb-btn {
+  padding: 4px 9px; border-radius: 4px;
+  border: 1px solid transparent; background: none;
+  font-size: 12px; cursor: pointer; color: var(--text);
+  transition: all .1s; font-family: var(--sans);
+  white-space: nowrap;
+}
+.doc-tb-btn:hover { background: var(--accent-bg); border-color: var(--border); color: var(--accent); }
+.doc-tb-sep { width: 1px; height: 16px; background: var(--border); margin: 0 2px; }
+.doc-name-input {
+  font-size: 12px; font-weight: 600; color: var(--text);
+  border: none; background: transparent; outline: none;
+  padding: 2px 6px; border-radius: 4px;
+  min-width: 120px; max-width: 240px;
+}
+.doc-name-input:focus { background: var(--panel); }
+.doc-hint {
+  font-size: 11px; color: var(--muted); margin-left: auto;
+}
+
+.doc-scroll {
+  flex: 1; overflow-y: auto; padding: 40px 60px;
+  display: flex; flex-direction: column; gap: 0;
+}
+.doc-scroll::-webkit-scrollbar { width: 7px; }
+.doc-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+/* ── Line (one equation row) ── */
+.eq-line {
+  display: flex; align-items: center; gap: 10px;
+  padding: 2px 0;
+  position: relative;
+  min-height: 44px;
+}
+.eq-line:hover .line-num { opacity: .5; }
+.eq-line.focused .line-num { opacity: 1; color: var(--accent); }
+.line-num {
+  width: 28px; text-align: right;
+  font-size: 10px; font-family: var(--mono); color: var(--muted);
+  opacity: .25; flex-shrink: 0; user-select: none;
+  transition: opacity .1s, color .1s;
+}
+.line-label {
+  font-size: 12px; color: var(--muted); flex-shrink: 0;
+  min-width: 20px; cursor: text;
+  font-family: var(--sans);
+  white-space: nowrap;
+}
+.line-label:empty { min-width: 0; }
+
+/* MathQuill field wrapper */
+.mq-wrap {
+  flex: 1; min-width: 0;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 4px 8px;
+  transition: border-color .12s, background .12s;
+  cursor: text;
+}
+.mq-wrap:hover { border-color: var(--border); }
+.eq-line.focused .mq-wrap {
+  border-color: var(--accent);
+  background: #fff;
+}
+
+/* Override MathQuill internals to match our style */
+.mq-wrap .mq-editable-field {
+  border: none !important;
+  box-shadow: none !important;
+  font-size: 20px;
+  line-height: 1.6;
+  min-height: 34px;
+  background: transparent;
+}
+.mq-wrap .mq-editable-field.mq-focused {
+  border: none !important;
+  box-shadow: none !important;
+}
+.mq-math-mode .mq-sqrt-prefix { color: var(--text); }
+
+.line-actions {
+  display: flex; gap: 3px;
+  opacity: 0; flex-shrink: 0;
+  transition: opacity .12s;
+}
+.eq-line:hover .line-actions,
+.eq-line.focused .line-actions { opacity: 1; }
+.line-action-btn {
+  width: 22px; height: 22px;
+  border: 1px solid var(--border); border-radius: 4px;
+  background: var(--surface); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; color: var(--muted);
+  transition: all .1s;
+}
+.line-action-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-bg); }
+.line-action-btn.del:hover { border-color: #dc2626; color: #dc2626; background: rgba(220,38,38,.07); }
+
+/* ── Text line variant ── */
+.eq-line.text-line .mq-wrap { display: none; }
+.eq-line.text-line .text-input {
+  flex: 1; border: 1px solid transparent; border-radius: 4px;
+  background: transparent; font-size: 14px; color: var(--text);
+  padding: 5px 8px; outline: none; font-family: var(--sans);
+  line-height: 1.5;
+}
+.eq-line.text-line .text-input:focus { border-color: var(--accent); background: #fff; }
+.eq-line.text-line.focused .text-input { border-color: var(--accent); background: #fff; }
+
+/* ── Section divider ── */
+.eq-line.divider-line { min-height: 24px; align-items: center; }
+.eq-line.divider-line hr {
+  flex: 1; border: none; border-top: 1px solid var(--border);
+  margin: 0 4px;
+}
+
+/* ── Empty doc placeholder ── */
+.doc-empty {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  flex: 1; color: var(--muted); text-align: center; gap: 10px;
+  user-select: none;
+}
+.doc-empty .icon { font-size: 40px; opacity: .25; }
+.doc-empty p { font-size: 13px; max-width: 260px; line-height: 1.6; }
+
+/* ── LaTeX export overlay ── */
+.export-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,.4); z-index: 100;
+  align-items: center; justify-content: center;
+}
+.export-overlay.open { display: flex; }
+.export-box {
+  background: var(--surface); border-radius: 10px;
+  padding: 24px; width: 600px; max-width: 90vw;
+  max-height: 80vh; display: flex; flex-direction: column; gap: 12px;
+  box-shadow: 0 8px 40px rgba(0,0,0,.25);
+}
+.export-box h3 { font-size: 15px; font-weight: 700; }
+.export-textarea {
+  flex: 1; min-height: 200px; max-height: 400px;
+  font-family: var(--mono); font-size: 12px;
+  border: 1px solid var(--border); border-radius: 6px;
+  padding: 12px; background: var(--panel); color: var(--text);
+  resize: none; outline: none;
+}
+.export-row { display: flex; gap: 8px; justify-content: flex-end; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a class="back" href="../../index.html">← Back</a>
+  <div class="topbar-sep"></div>
+  <span class="app-title">Math Proof Editor</span>
+  <input class="doc-name-input" id="docName" value="Untitled Proof" spellcheck="false">
+  <div class="spacer"></div>
+  <button class="tb-btn" id="btnExport">LaTeX ↗</button>
+  <button class="tb-btn primary" id="btnCopyAll">Copy All</button>
+</div>
+
+<div class="workspace">
+
+  <!-- ── Symbol Palette ── -->
+  <div class="palette">
+    <div class="pal-tabs">
+      <div class="ptab active" data-tab="structs">Structures</div>
+      <div class="ptab" data-tab="greek">Greek</div>
+      <div class="ptab" data-tab="ops">Operators</div>
+      <div class="ptab" data-tab="rels">Relations</div>
+      <div class="ptab" data-tab="arrows">Arrows</div>
+      <div class="ptab" data-tab="sets">Sets</div>
+      <div class="ptab" data-tab="misc">Misc</div>
+    </div>
+    <div class="pal-body">
+
+      <!-- Structures -->
+      <div class="pal-section active" data-section="structs">
+        <div class="pal-group">
+          <div class="pal-group-title">Fractions &amp; Roots</div>
+          <div class="tpl-grid">
+            <div class="tpl-btn" data-cmd="\\frac"><div class="tpl-preview">ᵃ⁄ᵦ</div><div class="tpl-label">\frac</div></div>
+            <div class="tpl-btn" data-cmd="\\sqrt"><div class="tpl-preview">√</div><div class="tpl-label">\sqrt</div></div>
+            <div class="tpl-btn" data-latex="\\nthroot"><div class="tpl-preview">ⁿ√</div><div class="tpl-label">nth root</div></div>
+            <div class="tpl-btn" data-cmd="\\dfrac"><div class="tpl-preview">ᵃ⁄ᵦ</div><div class="tpl-label">\dfrac</div></div>
+          </div>
+        </div>
+        <div class="pal-group">
+          <div class="pal-group-title">Powers &amp; Indices</div>
+          <div class="tpl-grid">
+            <div class="tpl-btn" data-key="^"><div class="tpl-preview">xⁿ</div><div class="tpl-label">superscript</div></div>
+            <div class="tpl-btn" data-key="_"><div class="tpl-preview">xₙ</div><div class="tpl-label">subscript</div></div>
+            <div class="tpl-btn" data-latex="x^{n}_{m}"><div class="tpl-preview">xⁿₘ</div><div class="tpl-label">both</div></div>
+            <div class="tpl-btn" data-latex="'"><div class="tpl-preview">f′</div><div class="tpl-label">prime</div></div>
+          </div>
+        </div>
+        <div class="pal-group">
+          <div class="pal-group-title">Integrals</div>
+          <div class="tpl-grid">
+            <div class="tpl-btn" data-cmd="\\int"><div class="tpl-preview">∫</div><div class="tpl-label">integral</div></div>
+            <div class="tpl-btn" data-latex="\\int_{a}^{b}"><div class="tpl-preview">∫ᵃᵦ</div><div class="tpl-label">definite</div></div>
+            <div class="tpl-btn" data-cmd="\\iint"><div class="tpl-preview">∬</div><div class="tpl-label">double</div></div>
+            <div class="tpl-btn" data-cmd="\\iiint"><div class="tpl-preview">∭</div><div class="tpl-label">triple</div></div>
+            <div class="tpl-btn" data-cmd="\\oint"><div class="tpl-preview">∮</div><div class="tpl-label">contour</div></div>
+            <div class="tpl-btn" data-latex="\\int_{-\\infty}^{\\infty}"><div class="tpl-preview">∫±∞</div><div class="tpl-label">−∞ to ∞</div></div>
+          </div>
+        </div>
+        <div class="pal-group">
+          <div class="pal-group-title">Derivatives</div>
+          <div class="tpl-grid">
+            <div class="tpl-btn" data-latex="\\frac{d}{dx}"><div class="tpl-preview">d/dx</div><div class="tpl-label">deriv.</div></div>
+            <div class="tpl-btn" data-latex="\\frac{d^{n}}{dx^{n}}"><div class="tpl-preview">dⁿ/dxⁿ</div><div class="tpl-label">nth</div></div>
+            <div class="tpl-btn" data-latex="\\frac{\\partial}{\\partial x}"><div class="tpl-preview">∂/∂x</div><div class="tpl-label">partial</div></div>
+            <div class="tpl-btn" data-latex="\\frac{\\partial^{2}}{\\partial x^{2}}"><div class="tpl-preview">∂²/∂x²</div><div class="tpl-label">2nd ∂</div></div>
+            <div class="tpl-btn" data-cmd="\\nabla"><div class="tpl-preview">∇</div><div class="tpl-label">nabla</div></div>
+            <div class="tpl-btn" data-latex="\\nabla^{2}"><div class="tpl-preview">∇²</div><div class="tpl-label">laplacian</div></div>
+          </div>
+        </div>
+        <div class="pal-group">
+          <div class="pal-group-title">Sums &amp; Limits</div>
+          <div class="tpl-grid">
+            <div class="tpl-btn" data-cmd="\\sum"><div class="tpl-preview">Σ</div><div class="tpl-label">sum</div></div>
+            <div class="tpl-btn" data-cmd="\\prod"><div class="tpl-preview">∏</div><div class="tpl-label">product</div></div>
+            <div class="tpl-btn" data-cmd="\\lim"><div class="tpl-preview">lim</div><div class="tpl-label">limit</div></div>
+            <div class="tpl-btn" data-latex="\\lim_{x \\to \\infty}"><div class="tpl-preview">lim∞</div><div class="tpl-label">lim→∞</div></div>
+          </div>
+        </div>
+        <div class="pal-group">
+          <div class="pal-group-title">Brackets</div>
+          <div class="tpl-grid">
+            <div class="tpl-btn" data-latex="\\left(  \\right)"><div class="tpl-preview">( )</div><div class="tpl-label">parens</div></div>
+            <div class="tpl-btn" data-latex="\\left[  \\right]"><div class="tpl-preview">[ ]</div><div class="tpl-label">brackets</div></div>
+            <div class="tpl-btn" data-latex="\\left\\{  \\right\\}"><div class="tpl-preview">{ }</div><div class="tpl-label">braces</div></div>
+            <div class="tpl-btn" data-latex="\\left|  \\right|"><div class="tpl-preview">| |</div><div class="tpl-label">abs</div></div>
+            <div class="tpl-btn" data-latex="\\left\\|  \\right\\|"><div class="tpl-preview">‖ ‖</div><div class="tpl-label">norm</div></div>
+            <div class="tpl-btn" data-latex="\\left\\langle  \\right\\rangle"><div class="tpl-preview">⟨ ⟩</div><div class="tpl-label">angle</div></div>
+            <div class="tpl-btn" data-latex="\\left\\lfloor  \\right\\rfloor"><div class="tpl-preview">⌊ ⌋</div><div class="tpl-label">floor</div></div>
+            <div class="tpl-btn" data-latex="\\left\\lceil  \\right\\rceil"><div class="tpl-preview">⌈ ⌉</div><div class="tpl-label">ceil</div></div>
+          </div>
+        </div>
+        <div class="pal-group">
+          <div class="pal-group-title">Log &amp; Trig</div>
+          <div class="tpl-grid">
+            <div class="tpl-btn" data-cmd="\\log"><div class="tpl-preview">log</div><div class="tpl-label">\log</div></div>
+            <div class="tpl-btn" data-cmd="\\ln"><div class="tpl-preview">ln</div><div class="tpl-label">\ln</div></div>
+            <div class="tpl-btn" data-cmd="\\sin"><div class="tpl-preview">sin</div><div class="tpl-label">\sin</div></div>
+            <div class="tpl-btn" data-cmd="\\cos"><div class="tpl-preview">cos</div><div class="tpl-label">\cos</div></div>
+            <div class="tpl-btn" data-cmd="\\tan"><div class="tpl-preview">tan</div><div class="tpl-label">\tan</div></div>
+            <div class="tpl-btn" data-cmd="\\exp"><div class="tpl-preview">exp</div><div class="tpl-label">\exp</div></div>
+          </div>
+        </div>
+        <div class="pal-group">
+          <div class="pal-group-title">Matrices</div>
+          <div class="tpl-grid">
+            <div class="tpl-btn" data-latex="\\begin{pmatrix} a &amp; b \\\\ c &amp; d \\end{pmatrix}"><div class="tpl-preview">(M)</div><div class="tpl-label">2×2</div></div>
+            <div class="tpl-btn" data-latex="\\begin{bmatrix} a &amp; b \\\\ c &amp; d \\end{bmatrix}"><div class="tpl-preview">[M]</div><div class="tpl-label">2×2 [</div></div>
+            <div class="tpl-btn" data-latex="\\begin{cases} a &amp; \\text{if } x \\\\ b &amp; \\text{else} \\end{cases}"><div class="tpl-preview">{ cases</div><div class="tpl-label">cases</div></div>
+            <div class="tpl-btn" data-latex="\\begin{vmatrix} a &amp; b \\\\ c &amp; d \\end{vmatrix}"><div class="tpl-preview">|M|</div><div class="tpl-label">det</div></div>
+          </div>
+        </div>
+        <div class="pal-group">
+          <div class="pal-group-title">Accents</div>
+          <div class="tpl-grid">
+            <div class="tpl-btn" data-cmd="\\hat"><div class="tpl-preview">x̂</div><div class="tpl-label">\hat</div></div>
+            <div class="tpl-btn" data-cmd="\\bar"><div class="tpl-preview">x̄</div><div class="tpl-label">\bar</div></div>
+            <div class="tpl-btn" data-cmd="\\vec"><div class="tpl-preview">x⃗</div><div class="tpl-label">\vec</div></div>
+            <div class="tpl-btn" data-cmd="\\dot"><div class="tpl-preview">ẋ</div><div class="tpl-label">\dot</div></div>
+            <div class="tpl-btn" data-cmd="\\ddot"><div class="tpl-preview">ẍ</div><div class="tpl-label">\ddot</div></div>
+            <div class="tpl-btn" data-cmd="\\tilde"><div class="tpl-preview">x̃</div><div class="tpl-label">\tilde</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Greek -->
+      <div class="pal-section" data-section="greek">
+        <div class="pal-group"><div class="pal-group-title">Lowercase</div><div class="sym-grid" id="gk-lower"></div></div>
+        <div class="pal-group"><div class="pal-group-title">Uppercase</div><div class="sym-grid" id="gk-upper"></div></div>
+        <div class="pal-group"><div class="pal-group-title">Variants</div><div class="sym-grid" id="gk-var"></div></div>
+      </div>
+      <!-- Operators -->
+      <div class="pal-section" data-section="ops">
+        <div class="pal-group"><div class="pal-group-title">Arithmetic</div><div class="sym-grid" id="op-arith"></div></div>
+        <div class="pal-group"><div class="pal-group-title">Binary</div><div class="sym-grid" id="op-bin"></div></div>
+      </div>
+      <!-- Relations -->
+      <div class="pal-section" data-section="rels">
+        <div class="pal-group"><div class="pal-group-title">Comparison</div><div class="sym-grid" id="rel-cmp"></div></div>
+        <div class="pal-group"><div class="pal-group-title">Equivalence</div><div class="sym-grid" id="rel-eq"></div></div>
+      </div>
+      <!-- Arrows -->
+      <div class="pal-section" data-section="arrows">
+        <div class="pal-group"><div class="pal-group-title">Arrows</div><div class="sym-grid" id="arr-all"></div></div>
+      </div>
+      <!-- Sets -->
+      <div class="pal-section" data-section="sets">
+        <div class="pal-group"><div class="pal-group-title">Set Operations</div><div class="sym-grid" id="set-ops"></div></div>
+        <div class="pal-group"><div class="pal-group-title">Number Sets</div><div class="sym-grid" id="set-nums"></div></div>
+      </div>
+      <!-- Misc -->
+      <div class="pal-section" data-section="misc">
+        <div class="pal-group"><div class="pal-group-title">Logic</div><div class="sym-grid" id="misc-logic"></div></div>
+        <div class="pal-group"><div class="pal-group-title">Dots</div><div class="sym-grid" id="misc-dots"></div></div>
+        <div class="pal-group"><div class="pal-group-title">Geometry</div><div class="sym-grid" id="misc-geo"></div></div>
+        <div class="pal-group"><div class="pal-group-title">Calligraphic</div><div class="sym-grid" id="misc-cal"></div></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── Document area ── -->
+  <div class="doc-area">
+    <div class="doc-toolbar">
+      <button class="doc-tb-btn" id="btn-add-eq">+ Equation</button>
+      <button class="doc-tb-btn" id="btn-add-text">+ Text</button>
+      <button class="doc-tb-btn" id="btn-add-div">― Divider</button>
+      <div class="doc-tb-sep"></div>
+      <button class="doc-tb-btn" id="btn-dup">Duplicate</button>
+      <button class="doc-tb-btn" id="btn-del-line">Delete Line</button>
+      <div class="doc-tb-sep"></div>
+      <button class="doc-tb-btn" id="btn-copy-line">Copy LaTeX</button>
+      <span class="doc-hint">Enter = new equation · Shift+Enter = new text · ↑↓ navigate</span>
+    </div>
+
+    <div class="doc-scroll" id="docScroll">
+      <!-- Lines injected here -->
+    </div>
+  </div>
+
+</div>
+
+<!-- LaTeX Export overlay -->
+<div class="export-overlay" id="exportOverlay">
+  <div class="export-box">
+    <h3>LaTeX Export</h3>
+    <textarea class="export-textarea" id="exportTextarea" readonly></textarea>
+    <div class="export-row">
+      <button class="tb-btn" id="btnCopyExport">Copy</button>
+      <button class="tb-btn" id="btnDownloadExport">Download .tex</button>
+      <button class="tb-btn primary" id="btnCloseExport">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const MQ = MathQuill.getInterface(2);
+
+// ── Symbol data ──
+const SYMS = {
+  'gk-lower': [['α','\\alpha'],['β','\\beta'],['γ','\\gamma'],['δ','\\delta'],['ε','\\epsilon'],['ζ','\\zeta'],['η','\\eta'],['θ','\\theta'],['ι','\\iota'],['κ','\\kappa'],['λ','\\lambda'],['μ','\\mu'],['ν','\\nu'],['ξ','\\xi'],['π','\\pi'],['ρ','\\rho'],['σ','\\sigma'],['τ','\\tau'],['υ','\\upsilon'],['φ','\\phi'],['χ','\\chi'],['ψ','\\psi'],['ω','\\omega']],
+  'gk-upper': [['Γ','\\Gamma'],['Δ','\\Delta'],['Θ','\\Theta'],['Λ','\\Lambda'],['Ξ','\\Xi'],['Π','\\Pi'],['Σ','\\Sigma'],['Υ','\\Upsilon'],['Φ','\\Phi'],['Ψ','\\Psi'],['Ω','\\Omega']],
+  'gk-var':   [['ε','\\varepsilon'],['ϑ','\\vartheta'],['ϰ','\\varkappa'],['φ','\\varphi'],['ϱ','\\varrho'],['ς','\\varsigma']],
+  'op-arith': [['+','+'],['−','-'],['×','\\times'],['÷','\\div'],['±','\\pm'],['∓','\\mp'],['·','\\cdot'],['∘','\\circ']],
+  'op-bin':   [['⊕','\\oplus'],['⊗','\\otimes'],['⊙','\\odot'],['⊖','\\ominus'],['∧','\\wedge'],['∨','\\vee'],['⊓','\\sqcap'],['⊔','\\sqcup']],
+  'rel-cmp':  [['=','='],['≠','\\neq'],['<','<'],['≤','\\leq'],['>','>'],['≥','\\geq'],['≪','\\ll'],['≫','\\gg'],['≈','\\approx'],['∼','\\sim'],['≅','\\cong'],['∝','\\propto']],
+  'rel-eq':   [['≡','\\equiv'],['≐','\\doteq'],['⊂','\\subset'],['⊃','\\supset'],['⊆','\\subseteq'],['⊇','\\supseteq'],['∈','\\in'],['∉','\\notin'],['∋','\\ni']],
+  'arr-all':  [['→','\\to'],['←','\\leftarrow'],['↔','\\leftrightarrow'],['⟹','\\Rightarrow'],['⟸','\\Leftarrow'],['⟺','\\Leftrightarrow'],['↦','\\mapsto'],['↑','\\uparrow'],['↓','\\downarrow'],['⟶','\\longrightarrow'],['⟵','\\longleftarrow'],['⟷','\\longleftrightarrow'],['⇝','\\rightsquigarrow'],['∞','\\infty']],
+  'set-ops':  [['∅','\\emptyset'],['∪','\\cup'],['∩','\\cap'],['⊂','\\subset'],['⊃','\\supset'],['∈','\\in'],['∉','\\notin'],['∖','\\setminus'],['℘','\\wp']],
+  'set-nums': [['ℕ','\\mathbb{N}'],['ℤ','\\mathbb{Z}'],['ℚ','\\mathbb{Q}'],['ℝ','\\mathbb{R}'],['ℂ','\\mathbb{C}'],['ℙ','\\mathbb{P}'],['𝔽','\\mathbb{F}']],
+  'misc-logic':[['¬','\\neg'],['∧','\\wedge'],['∨','\\vee'],['⊤','\\top'],['⊥','\\bot'],['∀','\\forall'],['∃','\\exists'],['∄','\\nexists'],['⊢','\\vdash'],['⊨','\\models']],
+  'misc-dots': [['…','\\ldots'],['⋯','\\cdots'],['⋮','\\vdots'],['⋱','\\ddots']],
+  'misc-geo':  [['∠','\\angle'],['⊥','\\perp'],['∥','\\parallel'],['△','\\triangle'],['°','°']],
+  'misc-cal':  [['ℒ','\\mathcal{L}'],['ℋ','\\mathcal{H}'],['ℱ','\\mathcal{F}'],['ℰ','\\mathcal{E}'],['𝒟','\\mathcal{D}'],['ℬ','\\mathcal{B}'],['ℏ','\\hbar'],['ℓ','\\ell'],['∂','\\partial'],['∇','\\nabla']],
+};
+
+function buildSymGrids() {
+  Object.entries(SYMS).forEach(([id, data]) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    data.forEach(([display, latex]) => {
+      const btn = document.createElement('div');
+      btn.className = 'sym-btn';
+      btn.title = latex;
+      btn.innerHTML = `<span>${display}</span><span class="sym-label">${latex.replace(/\\/g,'\\')}</span>`;
+      btn.addEventListener('mousedown', e => { e.preventDefault(); insertIntoActive(latex, 'write'); });
+      el.appendChild(btn);
+    });
+  });
+}
+
+// ── Line state ──
+let lines = [];       // {id, type:'eq'|'text'|'divider', mq?:MQField, el:HTMLElement}
+let activeLineId = null;
+let lineIdSeq = 0;
+function newId() { return 'L' + (++lineIdSeq); }
+
+// ── DOM ──
+const docScroll = document.getElementById('docScroll');
+
+function focusLine(id) {
+  if (activeLineId === id) return;
+  activeLineId = id;
+  document.querySelectorAll('.eq-line').forEach(el => el.classList.remove('focused'));
+  const line = lines.find(l => l.id === id);
+  if (line) { line.el.classList.add('focused'); }
+}
+
+function addLine(type = 'eq', afterId = null, initialLatex = '') {
+  const id = newId();
+  const el = document.createElement('div');
+  el.className = 'eq-line' + (type !== 'eq' ? ' ' + type + '-line' : '');
+  el.dataset.lid = id;
+
+  // Line number
+  const numEl = document.createElement('div');
+  numEl.className = 'line-num';
+
+  // Actions
+  const actions = document.createElement('div');
+  actions.className = 'line-actions';
+  const copyBtn = document.createElement('button');
+  copyBtn.className = 'line-action-btn'; copyBtn.title = 'Copy LaTeX'; copyBtn.textContent = '📋';
+  const delBtn = document.createElement('button');
+  delBtn.className = 'line-action-btn del'; delBtn.title = 'Delete'; delBtn.textContent = '✕';
+  actions.appendChild(copyBtn); actions.appendChild(delBtn);
+
+  let mqField = null;
+
+  if (type === 'eq') {
+    const wrap = document.createElement('div');
+    wrap.className = 'mq-wrap';
+    const mqEl = document.createElement('span');
+    wrap.appendChild(mqEl);
+    el.appendChild(numEl);
+    el.appendChild(wrap);
+    el.appendChild(actions);
+    docScroll.insertBefore(el, afterId ? getLineEl(afterId)?.nextSibling ?? null : null);
+
+    mqField = MQ.MathField(mqEl, {
+      spaceBehavesLikeTab: false,
+      leftRightIntoCmdGoes: 'up',
+      restrictMismatchedBrackets: false,
+      supSubsRequireOperand: false,
+      handlers: {
+        enter() { addLine('eq', id); },
+        upOutOf(mf) { focusPrevLine(id); },
+        downOutOf(mf) { focusNextLine(id); },
+        edit(mf) { /* live */ }
+      }
+    });
+
+    if (initialLatex) mqField.latex(initialLatex);
+
+    wrap.addEventListener('mousedown', () => { setTimeout(() => { focusLine(id); mqField.focus(); }, 0); });
+    copyBtn.addEventListener('click', e => { e.stopPropagation(); copyLineLatex(id); });
+
+  } else if (type === 'text') {
+    const inp = document.createElement('input');
+    inp.className = 'text-input'; inp.type = 'text';
+    inp.placeholder = 'Note, label, or description…';
+    inp.value = initialLatex;
+    inp.addEventListener('focus', () => focusLine(id));
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); addLine('eq', id); }
+      if (e.key === 'ArrowUp') focusPrevLine(id);
+      if (e.key === 'ArrowDown') focusNextLine(id);
+      if (e.key === 'Backspace' && inp.value === '') { e.preventDefault(); deleteLine(id); }
+    });
+    el.appendChild(numEl); el.appendChild(inp); el.appendChild(actions);
+    docScroll.insertBefore(el, afterId ? getLineEl(afterId)?.nextSibling ?? null : null);
+    copyBtn.addEventListener('click', e => { e.stopPropagation(); navigator.clipboard.writeText(inp.value); });
+
+  } else { // divider
+    const hr = document.createElement('hr');
+    el.appendChild(numEl); el.appendChild(hr); el.appendChild(actions);
+    docScroll.insertBefore(el, afterId ? getLineEl(afterId)?.nextSibling ?? null : null);
+    copyBtn.style.display = 'none';
+  }
+
+  delBtn.addEventListener('click', e => { e.stopPropagation(); deleteLine(id); });
+
+  const lineObj = { id, type, mq: mqField, el };
+  const afterIdx = afterId ? lines.findIndex(l => l.id === afterId) : -1;
+  if (afterIdx >= 0) lines.splice(afterIdx + 1, 0, lineObj);
+  else lines.push(lineObj);
+
+  updateLineNumbers();
+  focusLine(id);
+
+  setTimeout(() => {
+    if (type === 'eq' && mqField) mqField.focus();
+    else if (type === 'text') el.querySelector('.text-input')?.focus();
+    el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, 30);
+
+  return lineObj;
+}
+
+function getLineEl(id) {
+  return lines.find(l => l.id === id)?.el;
+}
+
+function deleteLine(id) {
+  const idx = lines.findIndex(l => l.id === id);
+  if (idx < 0) return;
+  lines[idx].el.remove();
+  lines.splice(idx, 1);
+  updateLineNumbers();
+  if (lines.length === 0) { activeLineId = null; return; }
+  const newIdx = Math.min(idx, lines.length - 1);
+  const next = lines[newIdx];
+  focusLine(next.id);
+  if (next.type === 'eq' && next.mq) setTimeout(() => next.mq.focus(), 10);
+  else if (next.type === 'text') setTimeout(() => next.el.querySelector('.text-input')?.focus(), 10);
+}
+
+function focusPrevLine(id) {
+  const idx = lines.findIndex(l => l.id === id);
+  if (idx <= 0) return;
+  const prev = lines[idx - 1];
+  focusLine(prev.id);
+  if (prev.type === 'eq' && prev.mq) prev.mq.focus();
+  else if (prev.type === 'text') prev.el.querySelector('.text-input')?.focus();
+}
+function focusNextLine(id) {
+  const idx = lines.findIndex(l => l.id === id);
+  if (idx < 0 || idx >= lines.length - 1) return;
+  const next = lines[idx + 1];
+  focusLine(next.id);
+  if (next.type === 'eq' && next.mq) next.mq.focus();
+  else if (next.type === 'text') next.el.querySelector('.text-input')?.focus();
+}
+
+function updateLineNumbers() {
+  let eqN = 0;
+  lines.forEach(line => {
+    if (line.type === 'eq') { eqN++; line.el.querySelector('.line-num').textContent = eqN; }
+    else if (line.type === 'text') line.el.querySelector('.line-num').textContent = '';
+    else line.el.querySelector('.line-num').textContent = '';
+  });
+}
+
+function copyLineLatex(id) {
+  const line = lines.find(l => l.id === id);
+  if (!line || line.type !== 'eq') return;
+  const latex = line.mq.latex();
+  navigator.clipboard.writeText(latex).then(() => {
+    const btn = line.el.querySelector('.line-action-btn');
+    if (btn) { btn.textContent = '✓'; setTimeout(() => btn.textContent = '📋', 1200); }
+  });
+}
+
+// ── Insert into active MathQuill ──
+function insertIntoActive(thing, method = 'write') {
+  const line = lines.find(l => l.id === activeLineId);
+  if (!line || line.type !== 'eq' || !line.mq) {
+    // No active eq line — create one
+    const newLine = addLine('eq');
+    setTimeout(() => {
+      if (method === 'cmd') newLine.mq.cmd(thing);
+      else if (method === 'keystroke') newLine.mq.keystroke(thing);
+      else newLine.mq.write(thing);
+    }, 60);
+    return;
+  }
+  line.mq.focus();
+  if (method === 'cmd') line.mq.cmd(thing);
+  else if (method === 'keystroke') line.mq.keystroke(thing);
+  else line.mq.write(thing);
+}
+
+// ── Palette tabs ──
+document.querySelectorAll('.ptab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.ptab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.pal-section').forEach(s => s.classList.remove('active'));
+    tab.classList.add('active');
+    document.querySelector(`[data-section="${tab.dataset.tab}"]`)?.classList.add('active');
+  });
+});
+
+// ── Template/symbol buttons ──
+document.querySelectorAll('[data-cmd]').forEach(btn => {
+  btn.addEventListener('mousedown', e => { e.preventDefault(); insertIntoActive(btn.dataset.cmd, 'cmd'); });
+});
+document.querySelectorAll('[data-key]').forEach(btn => {
+  btn.addEventListener('mousedown', e => { e.preventDefault(); insertIntoActive(btn.dataset.key, 'write'); });
+});
+document.querySelectorAll('[data-latex]').forEach(btn => {
+  btn.addEventListener('mousedown', e => { e.preventDefault(); insertIntoActive(btn.dataset.latex, 'write'); });
+});
+
+// ── Toolbar buttons ──
+document.getElementById('btn-add-eq').addEventListener('click', () => addLine('eq', activeLineId));
+document.getElementById('btn-add-text').addEventListener('click', () => addLine('text', activeLineId));
+document.getElementById('btn-add-div').addEventListener('click', () => addLine('divider', activeLineId));
+document.getElementById('btn-dup').addEventListener('click', () => {
+  const line = lines.find(l => l.id === activeLineId);
+  if (!line) return;
+  const latex = line.type === 'eq' ? line.mq?.latex() || '' : line.type === 'text' ? line.el.querySelector('.text-input')?.value || '' : '';
+  addLine(line.type, activeLineId, latex);
+});
+document.getElementById('btn-del-line').addEventListener('click', () => { if (activeLineId) deleteLine(activeLineId); });
+document.getElementById('btn-copy-line').addEventListener('click', () => { if (activeLineId) copyLineLatex(activeLineId); });
+
+// ── Topbar copy all ──
+document.getElementById('btnCopyAll').addEventListener('click', () => {
+  const parts = lines.map((l, i) => {
+    if (l.type === 'eq') return `$$ ${l.mq?.latex() || ''} $$`;
+    if (l.type === 'text') return l.el.querySelector('.text-input')?.value || '';
+    return '\\hrule';
+  });
+  navigator.clipboard.writeText(parts.join('\n')).then(() => {
+    const btn = document.getElementById('btnCopyAll');
+    btn.textContent = 'Copied!'; setTimeout(() => btn.textContent = 'Copy All', 1400);
+  });
+});
+
+// ── Export ──
+document.getElementById('btnExport').addEventListener('click', () => {
+  const docName = document.getElementById('docName').value || 'Untitled Proof';
+  const body = lines.map((l, i) => {
+    if (l.type === 'eq') {
+      const latex = l.mq?.latex() || '';
+      return `\\begin{equation}\n  ${latex}\n\\end{equation}`;
+    }
+    if (l.type === 'text') return l.el.querySelector('.text-input')?.value || '';
+    return '\\vspace{8pt}\\hrule\\vspace{8pt}';
+  }).join('\n\n');
+  const full = `\\documentclass{article}\n\\usepackage{amsmath,amssymb}\n\\title{${docName}}\n\\begin{document}\n\\maketitle\n\n${body}\n\n\\end{document}`;
+  document.getElementById('exportTextarea').value = full;
+  document.getElementById('exportOverlay').classList.add('open');
+});
+document.getElementById('btnCloseExport').addEventListener('click', () => document.getElementById('exportOverlay').classList.remove('open'));
+document.getElementById('btnCopyExport').addEventListener('click', () => {
+  const ta = document.getElementById('exportTextarea');
+  navigator.clipboard.writeText(ta.value).then(() => {
+    const btn = document.getElementById('btnCopyExport');
+    btn.textContent = 'Copied!'; setTimeout(() => btn.textContent = 'Copy', 1400);
+  });
+});
+document.getElementById('btnDownloadExport').addEventListener('click', () => {
+  const name = (document.getElementById('docName').value || 'proof').replace(/\s+/g,'_').toLowerCase();
+  const blob = new Blob([document.getElementById('exportTextarea').value], {type:'text/plain'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name + '.tex'; a.click();
+});
+document.getElementById('exportOverlay').addEventListener('click', e => { if (e.target === e.currentTarget) e.currentTarget.classList.remove('open'); });
+
+// ── Global keyboard shortcuts ──
+document.addEventListener('keydown', e => {
+  const tag = document.activeElement?.tagName;
+  if (tag === 'TEXTAREA') return;
+  // Shift+Enter: add text line
+  if (e.key === 'Enter' && e.shiftKey && tag !== 'INPUT') {
+    e.preventDefault(); addLine('text', activeLineId);
+  }
+});
+
+// ── Init ──
+buildSymGrids();
+
+// Start with a few example lines
+addLine('text', null, 'Proof: Gaussian Integral');
+addLine('divider');
+addLine('eq', null, '\\int_{-\\infty}^{\\infty} e^{-x^2} \\, dx = \\sqrt{\\pi}');
+addLine('text', null, 'Let I = the integral, then I² = the double integral over ℝ²:');
+addLine('eq', null, 'I^2 = \\int_{-\\infty}^{\\infty}\\int_{-\\infty}^{\\infty} e^{-(x^2+y^2)} \\, dx \\, dy');
+addLine('text', null, 'Convert to polar coordinates (r, θ):');
+addLine('eq', null, 'I^2 = \\int_0^{2\\pi}\\int_0^{\\infty} e^{-r^2} \\, r \\, dr \\, d\\theta = 2\\pi \\cdot \\frac{1}{2} = \\pi');
+addLine('eq', null, '\\therefore \\quad I = \\sqrt{\\pi}');
+</script>
+</body>
+</html>

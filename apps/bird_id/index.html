@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Bird ID</title>
+<link rel="icon" type="image/x-icon" href="../../images.ico">
+<style>
+:root {
+  --bg: #050a14; --panel: #0a1020; --panel2: #0f1828;
+  --border: #1a2a40; --text: #cce4ff; --muted: #4a6a90;
+  --accent: #38bdf8; --accent2: #0ea5e9;
+  --mono: "JetBrains Mono", ui-monospace, monospace;
+  --sans: "Segoe UI", system-ui, sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--text); font-family: var(--sans); display: flex; flex-direction: column; min-height: 100vh; }
+.topbar { display: flex; align-items: center; gap: 12px; padding: 0 16px; height: 48px; background: var(--panel); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.back { color: var(--muted); text-decoration: none; font-size: 13px; }
+.back:hover { color: var(--accent); }
+.app-title { font-size: 14px; font-weight: 700; color: var(--accent); }
+.spacer { flex: 1; }
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+.img-area { flex: 1; background: #000; display: flex; align-items: center; justify-content: center; min-height: 0; position: relative; overflow: hidden; }
+.placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 32px; text-align: center; height: 100%; }
+.ph-icon { font-size: 80px; opacity: .2; }
+.ph-title { font-size: 18px; font-weight: 700; color: var(--muted); }
+.ph-sub { font-size: 13px; color: var(--muted); opacity: .7; max-width: 240px; line-height: 1.6; }
+#previewImg { width: 100%; height: 100%; object-fit: contain; display: none; background: #000; }
+.model-bar { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,.7); padding: 10px 16px; display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--accent); font-family: var(--mono); }
+.spin { width: 14px; height: 14px; border-radius: 50%; border: 2px solid rgba(56,189,248,.3); border-top-color: var(--accent); animation: spin .7s linear infinite; flex-shrink: 0; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.scan-overlay { position: absolute; inset: 0; background: rgba(0,0,0,.65); display: none; flex-direction: column; align-items: center; justify-content: center; gap: 16px; }
+.scan-overlay.show { display: flex; }
+.scan-ring { width: 60px; height: 60px; border-radius: 50%; border: 3px solid rgba(56,189,248,.2); border-top-color: var(--accent); animation: spin .8s linear infinite; }
+.scan-lbl { font-size: 14px; color: var(--accent); font-family: var(--mono); }
+.controls { background: var(--panel); border-top: 1px solid var(--border); padding: 14px 18px 20px; flex-shrink: 0; }
+.action-row { display: flex; gap: 10px; }
+.btn-primary { flex: 1; background: var(--accent); color: #000; border: none; border-radius: 12px; padding: 14px; font-size: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; }
+.btn-primary:hover { background: var(--accent2); }
+.btn-primary:disabled { opacity: .4; cursor: not-allowed; }
+.btn-sec { background: var(--panel2); border: 1px solid var(--border); color: var(--muted); border-radius: 12px; padding: 14px 18px; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; }
+.btn-sec:hover { border-color: var(--accent); color: var(--accent); }
+.btn-retake { display: none; }
+.btn-retake.show { display: flex; }
+.results-panel { position: absolute; bottom: 0; left: 0; right: 0; background: var(--panel); border-top: 1px solid var(--border); border-radius: 20px 20px 0 0; max-height: 80vh; overflow-y: auto; transform: translateY(100%); transition: transform .35s cubic-bezier(.32,.72,0,1); z-index: 30; }
+.results-panel.open { transform: translateY(0); }
+.results-panel::-webkit-scrollbar { width: 3px; } .results-panel::-webkit-scrollbar-thumb { background: var(--border); }
+.rp-head { display: flex; align-items: center; gap: 10px; padding: 14px 18px 12px; position: sticky; top: 0; background: var(--panel); border-bottom: 1px solid var(--border); z-index: 1; }
+.rp-pill { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 10px; }
+.rp-title { font-size: 15px; font-weight: 700; color: var(--accent); flex: 1; }
+.rp-close { background: var(--panel2); border: 1px solid var(--border); color: var(--muted); border-radius: 8px; padding: 4px 10px; font-size: 13px; cursor: pointer; }
+.rp-close:hover { border-color: #f87171; color: #f87171; }
+.rp-body { padding: 16px 18px 28px; display: flex; flex-direction: column; gap: 14px; }
+.top-card { background: var(--panel2); border: 1px solid rgba(56,189,248,.25); border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+.top-head { display: flex; gap: 14px; }
+.match-img { width: 84px; height: 84px; border-radius: 10px; object-fit: cover; flex-shrink: 0; border: 1px solid var(--border); background: var(--bg); }
+.match-info { flex: 1; min-width: 0; }
+.match-name { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+.match-sci { font-size: 12px; color: var(--muted); font-style: italic; margin-bottom: 6px; }
+.match-tax { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+.badge { display: inline-flex; align-items: center; border-radius: 20px; padding: 3px 11px; font-size: 12px; font-weight: 700; font-family: var(--mono); }
+.wiki { font-size: 13px; line-height: 1.75; opacity: .88; border-top: 1px solid var(--border); padding-top: 13px; }
+.wiki a { color: var(--accent); font-size: 11px; }
+.sec-lbl { font-size: 10px; letter-spacing: 1.8px; text-transform: uppercase; color: var(--muted); }
+.cand { background: var(--panel2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; display: flex; align-items: center; gap: 12px; }
+.ci { flex: 1; min-width: 0; }
+.ci-name { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+.ci-sci { font-size: 11px; color: var(--muted); font-style: italic; }
+.ci-bar { height: 4px; background: var(--bg); border-radius: 2px; margin-top: 6px; overflow: hidden; }
+.ci-fill { height: 100%; background: var(--accent2); border-radius: 2px; }
+.ci-pct { font-size: 12px; font-family: var(--mono); color: var(--muted); min-width: 36px; text-align: right; }
+.err { font-size: 14px; color: var(--muted); line-height: 1.7; }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <a class="back" href="../../index.html">← Back</a>
+  <span class="app-title">🐦 Bird ID</span>
+  <div class="spacer"></div>
+</div>
+<div class="main">
+  <div class="img-area" id="imgArea">
+    <div class="placeholder" id="placeholder">
+      <div class="ph-icon">🐦</div>
+      <div class="ph-title">Identify any bird</div>
+      <div class="ph-sub">Take a photo or upload one — works on sparrows, eagles, parrots, and more.</div>
+    </div>
+    <img id="previewImg" alt="bird photo">
+    <div class="model-bar" id="modelBar"><div class="spin"></div> Loading classifier model…</div>
+    <div class="scan-overlay" id="scanOverlay"><div class="scan-ring"></div><div class="scan-lbl" id="scanLbl">Classifying…</div></div>
+  </div>
+  <div class="controls">
+    <div class="action-row">
+      <label class="btn-primary" id="cameraLabel">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        Take Photo
+        <input type="file" accept="image/*" capture="environment" id="cameraInput" style="display:none">
+      </label>
+      <label class="btn-sec">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        Gallery
+        <input type="file" accept="image/*" id="galleryInput" style="display:none">
+      </label>
+      <button class="btn-sec btn-retake" id="retakeBtn">↺ Retake</button>
+    </div>
+  </div>
+  <div class="results-panel" id="resultsPanel">
+    <div class="rp-head"><div style="flex:1"><div class="rp-pill"></div><div class="rp-title" id="rpTitle">Result</div></div><button class="rp-close" id="rpClose">✕</button></div>
+    <div class="rp-body" id="rpBody"></div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.15.0/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.0/dist/mobilenet.min.js"></script>
+<script>
+// ── Config ────────────────────────────────────────────────────────────────────
+const APP      = { name: 'Bird', taxon: 'Aves', color: '#38bdf8' };
+const KEYWORDS = ['jay','junco','robin','finch','sparrow','crow','raven','magpie',
+  'eagle','hawk','owl','duck','goose','swan','pigeon','dove','parrot','cockatoo',
+  'toucan','hummingbird','woodpecker','wren','warbler','starling','pelican',
+  'flamingo','penguin','ostrich','peacock','kite','vulture','gull','tern',
+  'heron','egret','stork','kingfisher','swift','bee eater','hornbill','grouse',
+  'quail','partridge','albatross','cormorant','ibis','sandpiper','crane','coot','rail',
+  'lorikeet','macaw','parakeet','budgerigar','bulbul','myna','bluebird',
+  'cardinal','tanager','oriole','nuthatch','tit','chickadee','bunting'];
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let model = null;
+let capturedFile = null;
+
+// ── DOM ───────────────────────────────────────────────────────────────────────
+const previewImg   = document.getElementById('previewImg');
+const placeholder  = document.getElementById('placeholder');
+const modelBar     = document.getElementById('modelBar');
+const scanOverlay  = document.getElementById('scanOverlay');
+const scanLbl      = document.getElementById('scanLbl');
+const resultsPanel = document.getElementById('resultsPanel');
+const rpTitle      = document.getElementById('rpTitle');
+const rpBody       = document.getElementById('rpBody');
+const retakeBtn    = document.getElementById('retakeBtn');
+
+// ── Load model ────────────────────────────────────────────────────────────────
+mobilenet.load({ version: 2, alpha: 1.0 }).then(m => {
+  model = m;
+  modelBar.style.display = 'none';
+}).catch(() => {
+  modelBar.innerHTML = '⚠ Model failed to load. Check your connection.';
+});
+
+// ── File handlers ─────────────────────────────────────────────────────────────
+function handleFile(file) {
+  if (!file) return;
+  capturedFile = file;
+  const url = URL.createObjectURL(file);
+  previewImg.src = url;
+  previewImg.onload = () => { classify(); };
+  previewImg.style.display = 'block';
+  placeholder.style.display = 'none';
+  retakeBtn.classList.add('show');
+  resultsPanel.classList.remove('open');
+}
+
+document.getElementById('cameraInput').addEventListener('change',  e => handleFile(e.target.files[0]));
+document.getElementById('galleryInput').addEventListener('change', e => handleFile(e.target.files[0]));
+
+retakeBtn.addEventListener('click', () => {
+  capturedFile = null;
+  previewImg.style.display = 'none';
+  placeholder.style.display = 'flex';
+  retakeBtn.classList.remove('show');
+  resultsPanel.classList.remove('open');
+  document.getElementById('cameraInput').value = '';
+  document.getElementById('galleryInput').value = '';
+});
+
+// ── Classify ──────────────────────────────────────────────────────────────────
+async function classify() {
+  if (!model) { showErr('Model still loading, please wait a moment and try again.'); return; }
+  scanLbl.textContent = 'Classifying…';
+  scanOverlay.classList.add('show');
+  try {
+    const preds = await model.classify(previewImg, 10);
+    const match = preds.find(p => KEYWORDS.some(k => p.className.toLowerCase().includes(k)));
+    if (!match) { showErr(`No ${APP.name.toLowerCase()} detected. Try a clearer photo with the ${APP.name.toLowerCase()} centered.`); return; }
+
+    const rawName = match.className.split(',')[0].trim();
+    const score   = Math.round(match.probability * 100);
+    scanLbl.textContent = 'Looking up species…';
+
+    // iNaturalist lookup
+    let taxon = null;
+    try {
+      const r = await fetch(`https://api.inaturalist.org/v1/taxa?q=${encodeURIComponent(rawName)}&iconic_taxa=${APP.taxon}&rank=species,genus&per_page=1`);
+      const d  = await r.json();
+      taxon    = d.results?.[0] || null;
+    } catch { /* optional */ }
+
+    // Wikipedia fallback
+    let wikiText = '', wikiUrl = '', wikiThumb = '';
+    const lookupName = taxon?.name || rawName;
+    try {
+      const wr = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(lookupName)}`, { headers: { Accept: 'application/json' } });
+      if (wr.ok) {
+        const w = await wr.json();
+        wikiText  = w.extract || '';
+        wikiUrl   = w.content_urls?.desktop?.page || '';
+        wikiThumb = w.thumbnail?.source || '';
+      }
+    } catch { /* optional */ }
+
+    renderResult(preds, match, score, taxon, rawName, wikiText, wikiUrl, wikiThumb);
+  } catch (e) {
+    showErr('Classification error: ' + e.message);
+  } finally {
+    scanOverlay.classList.remove('show');
+  }
+}
+
+// ── Render ────────────────────────────────────────────────────────────────────
+function renderResult(allPreds, topMatch, score, taxon, rawName, wikiText, wikiUrl, wikiThumb) {
+  const commonName = taxon?.preferred_common_name || rawName;
+  const sciName    = taxon?.name || '';
+  const imgSrc     = wikiThumb || taxon?.default_photo?.medium_url || '';
+  const cc = score >= 70 ? APP.color : score >= 40 ? '#fbbf24' : '#f87171';
+  const cl = score >= 70 ? 'High confidence' : score >= 40 ? 'Possible match' : 'Low confidence';
+
+  const others = allPreds.filter(p => p !== topMatch && KEYWORDS.some(k => p.className.toLowerCase().includes(k))).slice(0,3);
+
+  rpTitle.textContent = `🐦 ${commonName}`;
+  rpBody.innerHTML = `
+    <div class="top-card">
+      <div class="top-head">
+        ${imgSrc ? `<img class="match-img" src="${imgSrc}" onerror="this.style.display='none'" alt="">` : ''}
+        <div class="match-info">
+          <div class="match-name">${commonName}</div>
+          ${sciName ? `<div class="match-sci">${sciName}</div>` : ''}
+          ${taxon?.rank ? `<div class="match-tax">${capitalize(taxon.rank)} · ${taxon?.ancestor_ids?.length ? '' : ''}</div>` : ''}
+          <span class="badge" style="background:${cc}18;border:1px solid ${cc}44;color:${cc}">✓ ${score}% — ${cl}</span>
+        </div>
+      </div>
+      ${wikiText ? `<div class="wiki">${wikiText.slice(0,600)}${wikiText.length>600?'…':''}${wikiUrl?`<br><a href="${wikiUrl}" target="_blank">Read more on Wikipedia →</a>`:''}` : ''}
+    </div>
+    ${others.length ? `<div class="sec-lbl">Other possibilities</div>
+    ${others.map(p => {
+      const n   = p.className.split(',')[0].trim();
+      const pct = Math.round(p.probability * 100);
+      return `<div class="cand"><div class="ci"><div class="ci-name">${n}</div><div class="ci-bar"><div class="ci-fill" style="width:${pct}%"></div></div></div><div class="ci-pct">${pct}%</div></div>`;
+    }).join('')}` : ''}`;
+  resultsPanel.classList.add('open');
+}
+
+function showErr(msg) {
+  scanOverlay.classList.remove('show');
+  rpTitle.textContent = '⚠ Not identified';
+  rpBody.innerHTML = `<div class="err">${msg}</div>`;
+  resultsPanel.classList.add('open');
+}
+
+function capitalize(s) { return s ? s[0].toUpperCase() + s.slice(1) : ''; }
+
+document.getElementById('rpClose').addEventListener('click', () => resultsPanel.classList.remove('open'));
+</script>
+</body>
+</html>

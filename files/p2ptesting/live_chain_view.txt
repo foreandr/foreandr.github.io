@@ -1,0 +1,52 @@
+=== LIVE BLOCKCHAIN BRANCHING MAP ===
+Format: Node(CurrentHash)<-ParentHash
+
+BLOCK 40:
+  └── 5001(00d724cc5f)[ACCEPTED] <--- Parent: 006e51368d
+  └── 5004(00d724cc5f)[ACCEPTED] <--- Parent: 006e51368d
+
+BLOCK 41:
+  └── 5001(003e82c95b)[SUCCESS] <--- Parent: 00d724cc5f
+  └── 5002(003e82c95b)[ACCEPTED] <--- Parent: 00d724cc5f
+
+BLOCK 42:
+  └── 5005(0090e87378)[SUCCESS] <--- Parent: 003e82c95b
+  └── 5002(0090e87378)[ACCEPTED] <--- Parent: 003e82c95b
+
+BLOCK 43:
+  └── 5004(005a8df5ee)[SUCCESS] <--- Parent: 0090e87378
+  └── 5002(005a8df5ee)[ACCEPTED] <--- Parent: 0090e87378
+
+BLOCK 44:
+  └── 5002(003cb0acd5)[SUCCESS] <--- Parent: 005a8df5ee
+  └── 5003(003cb0acd5)[ACCEPTED] <--- Parent: 005a8df5ee
+
+BLOCK 45:
+  └── 5003(00f35e9227)[SUCCESS] <--- Parent: 003cb0acd5
+  └── 5004(00f35e9227)[ACCEPTED] <--- Parent: 003cb0acd5
+
+BLOCK 46:
+  └── 5000(0081d800fe)[SUCCESS] <--- Parent: 00f35e9227
+  └── 5004(0081d800fe)[ACCEPTED] <--- Parent: 00f35e9227
+  └── 5003(0081d800fe)[ACCEPTED] <--- Parent: 00f35e9227
+
+BLOCK 47:
+  └── 5001(001a89fbb7)[SUCCESS] <--- Parent: 0081d800fe
+  └── 5003(001a89fbb7)[ACCEPTED] <--- Parent: 0081d800fe
+
+BLOCK 48:
+  └── 5004(002ce5ba4d)[SUCCESS] <--- Parent: 001a89fbb7
+  └── 5001(002ce5ba4d)[ACCEPTED] <--- Parent: 001a89fbb7
+
+BLOCK 49:
+  └── 5005(000fba28df)[SUCCESS] <--- Parent: 002ce5ba4d
+  └── 5004(000fba28df)[ACCEPTED] <--- Parent: 002ce5ba4d
+
+BLOCK 50:
+  └── 5002(000ebd5fa5)[SUCCESS] <--- Parent: 000fba28df
+  └── 5000(000ebd5fa5)[ACCEPTED] <--- Parent: 000fba28df
+
+BLOCK 51:
+  └── 5000(005d40752d)[SUCCESS] <--- Parent: 000ebd5fa5
+  └── 5005(005d40752d)[ACCEPTED] <--- Parent: 000ebd5fa5
+

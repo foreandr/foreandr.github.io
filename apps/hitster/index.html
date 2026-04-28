@@ -1,0 +1,1382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HITSTER — Music Timeline Game</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#08090f;--s1:#10111c;--s2:#181928;--border:#252640;
+  --text:#f0f0ff;--dim:#7878aa;--dimmer:#404060;
+  --accent:#ff3366;--accent2:#33aaff;--gold:#ffcc00;
+  --green:#00cc66;--chip:#ff9900;--purple:#aa44ff;
+}
+html,body{height:100%;font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text)}
+body{display:flex;flex-direction:column;overflow:hidden}
+
+/* ── SCREENS ── */
+.screen{display:none;flex-direction:column;height:100%}
+.screen.active{display:flex}
+
+/* ══════════════════════════════════════
+   SETUP SCREEN
+══════════════════════════════════════ */
+#setup{align-items:center;justify-content:center;gap:0;overflow-y:auto;padding:30px 20px}
+.logo{font-size:52px;font-weight:900;letter-spacing:6px;text-transform:uppercase;
+      background:linear-gradient(135deg,var(--accent),var(--purple),var(--accent2));
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+      background-clip:text;margin-bottom:4px}
+.logo-sub{color:var(--dim);font-size:13px;letter-spacing:3px;text-transform:uppercase;margin-bottom:36px}
+.setup-card{background:var(--s1);border:1px solid var(--border);border-radius:16px;
+            padding:28px 32px;width:100%;max-width:520px;display:flex;flex-direction:column;gap:22px}
+.setup-section{display:flex;flex-direction:column;gap:10px}
+.setup-label{font-size:11px;text-transform:uppercase;letter-spacing:2px;color:var(--dim);font-weight:600}
+.stepper{display:flex;align-items:center;gap:0;background:var(--s2);border:1px solid var(--border);
+         border-radius:8px;overflow:hidden;width:140px}
+.stepper button{background:none;border:none;color:var(--text);font-size:20px;
+                width:40px;height:40px;cursor:pointer;transition:background .15s}
+.stepper button:hover{background:var(--border)}
+.stepper span{flex:1;text-align:center;font-size:18px;font-weight:700}
+.players-list{display:flex;flex-direction:column;gap:8px}
+.player-row{display:flex;align-items:center;gap:10px}
+.player-color{width:12px;height:12px;border-radius:50%;flex-shrink:0}
+.player-name-input{flex:1;background:var(--s2);border:1px solid var(--border);border-radius:8px;
+                   padding:9px 14px;color:var(--text);font-size:15px;font-family:inherit;outline:none;
+                   transition:border-color .15s}
+.player-name-input:focus{border-color:var(--accent2)}
+.remove-player{background:none;border:none;color:var(--dimmer);font-size:18px;cursor:pointer;
+               padding:4px 8px;border-radius:6px;transition:all .15s}
+.remove-player:hover{color:var(--accent);background:rgba(255,51,102,.1)}
+.add-player-btn{background:none;border:1px dashed var(--border);border-radius:8px;
+                color:var(--dim);padding:9px;font-size:13px;cursor:pointer;letter-spacing:1px;
+                transition:all .15s;font-family:inherit}
+.add-player-btn:hover{border-color:var(--accent2);color:var(--accent2)}
+.setup-row{display:flex;gap:24px;flex-wrap:wrap}
+.setup-field{display:flex;flex-direction:column;gap:8px;flex:1;min-width:140px}
+.start-btn{background:linear-gradient(135deg,var(--accent),var(--purple));
+           border:none;border-radius:10px;color:#fff;font-size:18px;font-weight:800;
+           padding:15px;cursor:pointer;letter-spacing:2px;text-transform:uppercase;
+           transition:opacity .15s;font-family:inherit}
+.start-btn:hover{opacity:.85}
+
+/* ══════════════════════════════════════
+   GAME SCREEN
+══════════════════════════════════════ */
+#game{flex-direction:column;overflow:hidden}
+
+/* header bar */
+.g-header{background:var(--s1);border-bottom:1px solid var(--border);
+          padding:8px 16px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.g-logo{font-size:18px;font-weight:900;letter-spacing:3px;
+        background:linear-gradient(90deg,var(--accent),var(--purple));
+        -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.turn-badge{background:var(--s2);border:1px solid var(--border);border-radius:20px;
+            padding:4px 14px;font-size:12px;color:var(--dim);letter-spacing:1px}
+.turn-badge b{letter-spacing:1px}
+.g-header-right{margin-left:auto;display:flex;gap:8px;align-items:center}
+.reset-btn{background:none;border:1px solid var(--border);border-radius:6px;
+           color:var(--dim);font-size:11px;padding:5px 12px;cursor:pointer;
+           letter-spacing:1px;font-family:inherit;transition:all .15s}
+.reset-btn:hover{border-color:var(--accent);color:var(--accent)}
+
+/* players strip */
+.players-strip{display:flex;gap:0;border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto}
+.player-chip{display:flex;align-items:center;gap:8px;padding:10px 18px;
+             border-right:1px solid var(--border);min-width:140px;
+             transition:background .15s;position:relative;flex-shrink:0}
+.player-chip.active-turn{background:var(--s2)}
+.player-chip.active-turn::after{content:'';position:absolute;bottom:0;left:0;right:0;
+                                 height:2px;background:var(--accent)}
+.pc-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.pc-name{font-size:13px;font-weight:600;white-space:nowrap}
+.pc-score{font-size:20px;font-weight:900;margin-left:auto;min-width:24px;text-align:right}
+.pc-chips{display:flex;gap:2px;margin-left:6px}
+.pc-chip-icon{font-size:13px}
+
+/* main game area */
+.g-main{flex:1;display:flex;overflow:hidden}
+
+/* center column */
+.g-center{flex:1;display:flex;flex-direction:column;overflow:hidden;padding:14px 16px;gap:12px}
+
+/* song card */
+.song-card{background:var(--s1);border:1px solid var(--border);border-radius:14px;
+           overflow:hidden;flex-shrink:0}
+.song-card-top{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border)}
+.round-label{font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--dim)}
+.song-mystery{font-size:22px;font-weight:900;color:var(--accent);letter-spacing:2px}
+.yt-wrap{position:relative;background:#000;flex-shrink:0}
+.yt-cover{position:absolute;inset:0;background:var(--bg);display:flex;align-items:center;
+          justify-content:center;flex-direction:column;gap:8px;z-index:5;cursor:pointer;
+          transition:opacity .3s}
+.yt-cover.hidden{opacity:0;pointer-events:none}
+.yt-cover-icon{font-size:52px}
+.yt-cover-text{font-size:12px;color:var(--dim);letter-spacing:2px;text-transform:uppercase}
+#yt-player{width:100%;height:200px;display:block}
+
+/* phase UI */
+.phase-ui{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:12px}
+
+/* timeline placement */
+.timeline-section{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:14px 16px}
+.timeline-title{font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--dim);margin-bottom:12px}
+.timeline-row{display:flex;align-items:center;gap:0;overflow-x:auto;padding-bottom:4px}
+.tl-gap{display:flex;flex-direction:column;align-items:center;gap:4px;padding:0 3px}
+.tl-gap-btn{background:var(--s2);border:1px dashed var(--border);border-radius:8px;
+            padding:7px 10px;font-size:11px;color:var(--dim);cursor:pointer;white-space:nowrap;
+            transition:all .2s;font-family:inherit;letter-spacing:.5px}
+.tl-gap-btn:hover,.tl-gap-btn:focus{background:rgba(51,170,255,.15);border-color:var(--accent2);
+                                     color:var(--accent2);outline:none}
+.tl-card{background:var(--s2);border:1px solid var(--border);border-radius:8px;
+         padding:8px 12px;text-align:center;min-width:90px;flex-shrink:0}
+.tl-card-year{font-size:18px;font-weight:900;letter-spacing:1px}
+.tl-card-title{font-size:9px;color:var(--dim);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:90px}
+.tl-card-artist{font-size:9px;color:var(--dimmer);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:90px}
+.tl-empty{color:var(--dimmer);font-size:12px;font-style:italic;padding:8px 0}
+
+/* artist bonus */
+.bonus-section{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:14px 16px}
+.bonus-title{font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--gold);margin-bottom:10px}
+.bonus-desc{font-size:12px;color:var(--dim);margin-bottom:10px}
+.bonus-row{display:flex;gap:8px}
+.bonus-input{flex:1;background:var(--s2);border:1px solid var(--border);border-radius:8px;
+             padding:9px 14px;color:var(--text);font-size:14px;font-family:inherit;outline:none;transition:border-color .15s}
+.bonus-input:focus{border-color:var(--gold)}
+.bonus-btn{background:rgba(255,204,0,.12);border:1px solid var(--gold);border-radius:8px;
+           color:var(--gold);font-size:12px;padding:0 16px;cursor:pointer;font-family:inherit;
+           letter-spacing:1px;font-weight:600;transition:all .15s;white-space:nowrap}
+.bonus-btn:hover{background:rgba(255,204,0,.25)}
+
+/* steal section */
+.steal-section{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:14px 16px}
+.steal-title{font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--chip);margin-bottom:10px}
+.steal-desc{font-size:12px;color:var(--dim);margin-bottom:12px}
+.steal-players{display:flex;flex-wrap:wrap;gap:8px}
+.steal-player-btn{display:flex;align-items:center;gap:8px;background:var(--s2);
+                  border:1px solid var(--border);border-radius:10px;padding:10px 16px;
+                  cursor:pointer;transition:all .2s;font-family:inherit;color:var(--text)}
+.steal-player-btn:hover:not(:disabled){border-color:var(--chip);background:rgba(255,153,0,.1)}
+.steal-player-btn:disabled{opacity:.35;cursor:not-allowed}
+.steal-btn-name{font-size:13px;font-weight:600}
+.steal-btn-chips{font-size:11px;color:var(--chip)}
+
+/* steal guess row */
+.steal-guess-row{display:flex;gap:8px;margin-top:10px;align-items:center;flex-wrap:wrap}
+.steal-year-input{background:var(--s2);border:1px solid var(--border);border-radius:8px;
+                  padding:9px 14px;color:var(--text);font-size:16px;font-family:inherit;
+                  outline:none;width:100px;transition:border-color .15s}
+.steal-year-input:focus{border-color:var(--chip)}
+.steal-submit-btn{background:rgba(255,153,0,.15);border:1px solid var(--chip);border-radius:8px;
+                  color:var(--chip);font-size:13px;padding:9px 18px;cursor:pointer;
+                  font-family:inherit;font-weight:700;letter-spacing:1px;transition:all .15s}
+.steal-submit-btn:hover{background:rgba(255,153,0,.3)}
+.steal-cancel-btn{background:none;border:1px solid var(--border);border-radius:8px;
+                  color:var(--dim);font-size:12px;padding:9px 14px;cursor:pointer;
+                  font-family:inherit;transition:all .15s}
+.steal-cancel-btn:hover{border-color:var(--accent);color:var(--accent)}
+
+/* result overlay */
+.result-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;
+                display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.result-card{background:var(--s1);border:1px solid var(--border);border-radius:20px;
+             padding:36px 44px;max-width:420px;width:90%;text-align:center;
+             display:flex;flex-direction:column;align-items:center;gap:16px}
+.result-icon{font-size:60px}
+.result-title{font-size:28px;font-weight:900;letter-spacing:2px}
+.result-title.right{color:var(--green)}
+.result-title.wrong{color:var(--accent)}
+.result-title.steal{color:var(--chip)}
+.result-song{font-size:15px;color:var(--text)}
+.result-song b{font-size:18px}
+.result-year{font-size:36px;font-weight:900;letter-spacing:2px}
+.result-detail{font-size:13px;color:var(--dim);line-height:1.7}
+.result-next-btn{background:linear-gradient(135deg,var(--accent2),var(--purple));
+                 border:none;border-radius:10px;color:#fff;font-size:15px;font-weight:800;
+                 padding:13px 32px;cursor:pointer;letter-spacing:2px;text-transform:uppercase;
+                 font-family:inherit;transition:opacity .15s;margin-top:8px}
+.result-next-btn:hover{opacity:.85}
+
+/* right panel — all players' timelines */
+.g-right{width:280px;border-left:1px solid var(--border);overflow-y:auto;
+         flex-shrink:0;display:flex;flex-direction:column;background:var(--s1)}
+.g-right-title{padding:10px 14px;font-size:10px;text-transform:uppercase;letter-spacing:2px;
+               color:var(--dim);border-bottom:1px solid var(--border);flex-shrink:0}
+.mini-player{padding:12px 14px;border-bottom:1px solid var(--border)}
+.mini-player-header{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.mini-dot{width:8px;height:8px;border-radius:50%}
+.mini-name{font-size:12px;font-weight:600}
+.mini-score{margin-left:auto;font-size:12px;font-weight:700;color:var(--dim)}
+.mini-chips{display:flex;gap:2px;font-size:11px}
+.mini-timeline{display:flex;flex-wrap:wrap;gap:4px}
+.mini-card{background:var(--s2);border:1px solid var(--border);border-radius:5px;
+           padding:3px 8px;font-size:10px;font-weight:700;white-space:nowrap}
+.mini-empty{font-size:10px;color:var(--dimmer);font-style:italic}
+
+/* ══════════════════════════════════════
+   WIN SCREEN
+══════════════════════════════════════ */
+#win{align-items:center;justify-content:center;text-align:center;gap:20px;padding:40px 20px}
+.win-title{font-size:48px;font-weight:900;letter-spacing:4px;text-transform:uppercase;
+           background:linear-gradient(135deg,var(--gold),var(--accent),var(--purple));
+           -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.win-winner{font-size:28px;font-weight:700}
+.win-timeline{background:var(--s1);border:1px solid var(--border);border-radius:16px;
+              padding:24px 32px;max-width:600px;width:100%}
+.win-timeline h3{font-size:12px;text-transform:uppercase;letter-spacing:2px;color:var(--dim);margin-bottom:16px}
+.win-cards{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.win-card{background:var(--s2);border:1px solid var(--border);border-radius:8px;
+          padding:8px 14px;text-align:center;min-width:100px}
+.win-card-year{font-size:20px;font-weight:900}
+.win-card-info{font-size:9px;color:var(--dim);margin-top:2px}
+.win-scoreboard{background:var(--s1);border:1px solid var(--border);border-radius:16px;
+                padding:20px 28px;max-width:400px;width:100%}
+.win-scoreboard h3{font-size:12px;text-transform:uppercase;letter-spacing:2px;color:var(--dim);margin-bottom:14px}
+.win-score-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border)}
+.win-score-row:last-child{border-bottom:none}
+.win-score-dot{width:10px;height:10px;border-radius:50%}
+.win-score-name{font-size:14px;font-weight:600;flex:1}
+.win-score-val{font-size:20px;font-weight:900}
+.play-again-btn{background:linear-gradient(135deg,var(--accent),var(--purple));
+                border:none;border-radius:10px;color:#fff;font-size:16px;font-weight:800;
+                padding:14px 40px;cursor:pointer;letter-spacing:2px;text-transform:uppercase;
+                font-family:inherit;transition:opacity .15s}
+.play-again-btn:hover{opacity:.85}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════ SETUP SCREEN ═══════════════════ -->
+<div class="screen active" id="setup">
+  <div class="logo">HITSTER</div>
+  <div class="logo-sub">The Music Timeline Game</div>
+
+  <div class="setup-card">
+    <div class="setup-section">
+      <div class="setup-label">Players</div>
+      <div class="players-list" id="players-list"></div>
+      <button class="add-player-btn" onclick="addPlayerRow()">＋ Add Player</button>
+    </div>
+
+    <div class="setup-row">
+      <div class="setup-field">
+        <div class="setup-label">Starting Chips 🪙</div>
+        <div class="stepper">
+          <button onclick="adj('chips',-1)">−</button>
+          <span id="chips-val">3</span>
+          <button onclick="adj('chips',1)">＋</button>
+        </div>
+      </div>
+      <div class="setup-field">
+        <div class="setup-label">Cards to Win 🏆</div>
+        <div class="stepper">
+          <button onclick="adj('win',-1)">−</button>
+          <span id="win-val">10</span>
+          <button onclick="adj('win',1)">＋</button>
+        </div>
+      </div>
+    </div>
+
+    <button class="start-btn" onclick="startGame()">▶ START GAME</button>
+  </div>
+</div>
+
+<!-- ═══════════════════ GAME SCREEN ═══════════════════ -->
+<div class="screen" id="game">
+  <div class="g-header">
+    <div class="g-logo">HITSTER</div>
+    <div class="turn-badge" id="turn-badge">Round 1</div>
+    <div class="g-header-right">
+      <button class="reset-btn" onclick="goSetup()">↺ New Game</button>
+    </div>
+  </div>
+
+  <div class="players-strip" id="players-strip"></div>
+
+  <div class="g-main">
+    <div class="g-center">
+      <div class="song-card">
+        <div class="song-card-top">
+          <div>
+            <div class="round-label" id="round-label">Card</div>
+            <div class="song-mystery">🎵 ???</div>
+          </div>
+        </div>
+        <div class="yt-wrap">
+          <div class="yt-cover" id="yt-cover" onclick="revealSong()">
+            <div class="yt-cover-icon">▶️</div>
+            <div class="yt-cover-text">Tap to reveal &amp; play song</div>
+          </div>
+          <iframe id="yt-iframe"
+            src="about:blank"
+            width="100%" height="200" frameborder="0"
+            allow="autoplay; encrypted-media; picture-in-picture"
+            allowfullscreen
+            style="display:block"></iframe>
+          <div id="yt-fallback" style="display:none;padding:8px 16px;background:#0a0f1e;
+               border-top:1px solid var(--border);font-size:12px;color:var(--dim)">
+            Video not loading?
+            <a id="yt-link" href="#" target="_blank" rel="noopener"
+               style="color:var(--accent2);margin-left:6px">Open on YouTube ↗</a>
+            &nbsp;·&nbsp;
+            <button onclick="skipSong()" style="background:none;border:none;color:var(--dim);
+                    cursor:pointer;font-size:12px;font-family:inherit;text-decoration:underline">Skip song</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="phase-ui" id="phase-ui"></div>
+    </div>
+
+    <div class="g-right">
+      <div class="g-right-title">All Timelines</div>
+      <div id="all-timelines"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ WIN SCREEN ═══════════════════ -->
+<div class="screen" id="win">
+  <div style="font-size:72px">🏆</div>
+  <div class="win-title">WINNER!</div>
+  <div class="win-winner" id="win-winner-name"></div>
+  <div class="win-timeline" id="win-timeline-box">
+    <h3>Winning Timeline</h3>
+    <div class="win-cards" id="win-cards"></div>
+  </div>
+  <div class="win-scoreboard" id="win-scoreboard"></div>
+  <button class="play-again-btn" onclick="goSetup()">▶ Play Again</button>
+</div>
+
+<!-- ═══════════════════ RESULT OVERLAY ═══════════════════ -->
+<div class="result-overlay" id="result-overlay" style="display:none">
+  <div class="result-card">
+    <div class="result-icon" id="res-icon"></div>
+    <div class="result-title" id="res-title"></div>
+    <div class="result-song" id="res-song"></div>
+    <div class="result-year" id="res-year"></div>
+    <div class="result-detail" id="res-detail"></div>
+    <button class="result-next-btn" id="res-next-btn" onclick="dismissResult()">Next Turn →</button>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+// ═══════════════════════════════════════════════════
+// SONG DATABASE (500+ songs, YouTube IDs)
+// ═══════════════════════════════════════════════════
+const SONGS = [
+  // ── 1950s ──────────────────────────────────────
+  {y:1951,a:'Ike Turner',t:"Rocket 88",id:'c_jn1NMg4oA'},
+  {y:1954,a:'Elvis Presley',t:"That's All Right",id:'hJKSJ_I5FpI'},
+  {y:1955,a:'Chuck Berry',t:'Maybellene',id:'t5Qsn6PGQSQ'},
+  {y:1955,a:'Little Richard',t:'Tutti Frutti',id:'E4AdGEBFBIs'},
+  {y:1956,a:'Elvis Presley',t:'Hound Dog',id:'MckhsXQtGk4'},
+  {y:1956,a:'Elvis Presley',t:'Heartbreak Hotel',id:'2TXMfmx_d5Y'},
+  {y:1956,a:'Carl Perkins',t:'Blue Suede Shoes',id:'_HZ40hKWiPw'},
+  {y:1957,a:'Jerry Lee Lewis',t:'Great Balls of Fire',id:'RBdkFaQmUNI'},
+  {y:1957,a:'Buddy Holly',t:"That'll Be the Day",id:'ZxvFbSWqT-o'},
+  {y:1957,a:'Sam Cooke',t:'You Send Me',id:'s3pEBGV5pTM'},
+  {y:1958,a:'Chuck Berry',t:'Johnny B. Goode',id:'V7ItGDQYHwA'},
+  {y:1958,a:'The Everly Brothers',t:'All I Have to Do Is Dream',id:'tbsx8S3eGHE'},
+  {y:1959,a:'Ray Charles',t:"What'd I Say",id:'2V2nZKgKn-M'},
+  {y:1959,a:'Buddy Holly',t:'Peggy Sue',id:'LgZiTdJMbwU'},
+  // ── 1960s ──────────────────────────────────────
+  {y:1960,a:'Roy Orbison',t:'Only the Lonely',id:'sNKMl2CTANQ'},
+  {y:1960,a:'Chubby Checker',t:'The Twist',id:'5HHjPaGqZRg'},
+  {y:1961,a:'Ben E. King',t:'Stand by Me',id:'hwZNL7QVJjE'},
+  {y:1961,a:'The Marvelettes',t:'Please Mr. Postman',id:'ztmVTNpkLis'},
+  {y:1962,a:'Ray Charles',t:"I Can't Stop Loving You",id:'Y9FKzOhLRf4'},
+  {y:1962,a:'Gene Chandler',t:'Duke of Earl',id:'ZAuHOlpDrqg'},
+  {y:1963,a:'The Beatles',t:'She Loves You',id:'suIg9l3IPqk'},
+  {y:1963,a:'The Beatles',t:'I Want to Hold Your Hand',id:'jenWdylTtzs'},
+  {y:1963,a:'The Ronettes',t:'Be My Baby',id:'GvGr0s7TgIU'},
+  {y:1963,a:'Martha and the Vandellas',t:'Heat Wave',id:'BXV7V4Ewqm4'},
+  {y:1964,a:'The Beatles',t:"Can't Buy Me Love",id:'BQLPhQNMSTI'},
+  {y:1964,a:'The Animals',t:'House of the Rising Sun',id:'pDOMkPSVBhQ'},
+  {y:1964,a:'The Supremes',t:'Where Did Our Love Go',id:'xRHmEEjR3-g'},
+  {y:1964,a:'Roy Orbison',t:'Oh, Pretty Woman',id:'BFQh-IpBjdE'},
+  {y:1965,a:'The Rolling Stones',t:"(I Can't Get No) Satisfaction",id:'4ESGegewDU0'},
+  {y:1965,a:'Bob Dylan',t:'Like a Rolling Stone',id:'IwOfCgkyEj0'},
+  {y:1965,a:'The Byrds',t:"Mr. Tambourine Man",id:'VNnJWFSME0s'},
+  {y:1965,a:'The Who',t:'My Generation',id:'594SNUALGKo'},
+  {y:1965,a:'The Kinks',t:'Sunny Afternoon',id:'9kCYe99bsYY'},
+  {y:1966,a:'The Beach Boys',t:'Good Vibrations',id:'Eab_beh07HU'},
+  {y:1966,a:'The Beatles',t:'Eleanor Rigby',id:'HuS5NuXRb5Y'},
+  {y:1966,a:'The Four Tops',t:"Reach Out I'll Be There",id:'hYdSifEVEhA'},
+  {y:1966,a:'Simon & Garfunkel',t:'The Sound of Silence',id:'4zLfCnGVeL4'},
+  {y:1967,a:'Aretha Franklin',t:'Respect',id:'6FOUqQt3Kg0'},
+  {y:1967,a:'The Doors',t:'Light My Fire',id:'t107DcCMoSo'},
+  {y:1967,a:'Jefferson Airplane',t:'Somebody to Love',id:'LsHBnGfQwME'},
+  {y:1967,a:'Procol Harum',t:'A Whiter Shade of Pale',id:'Mb3iPP-tHdA'},
+  {y:1967,a:'The Temptations',t:'Ain\'t Too Proud to Beg',id:'RbWovC-N3J8'},
+  {y:1967,a:'Otis Redding',t:'(Sittin\' On) The Dock of the Bay',id:'rTVjnBo96Ug'},
+  {y:1968,a:'The Beatles',t:'Hey Jude',id:'A_MjCqQoLLA'},
+  {y:1968,a:'The Beatles',t:'Come Together',id:'45cYwDMibGo'},
+  {y:1968,a:'Marvin Gaye',t:'I Heard It Through the Grapevine',id:'sgvSJeEqRno'},
+  {y:1968,a:'Jimi Hendrix',t:'All Along the Watchtower',id:'TLV4_xaYynY'},
+  {y:1969,a:'Led Zeppelin',t:'Whole Lotta Love',id:'HQmmM_qwG4k'},
+  {y:1969,a:'The Rolling Stones',t:'Honky Tonk Women',id:'U9LMFetSniU'},
+  {y:1969,a:'Creedence Clearwater Revival',t:'Proud Mary',id:'EbI0cMyyw_M'},
+  {y:1969,a:'The Beatles',t:'Something',id:'UelDrZ1aFeY'},
+  {y:1969,a:'Elvis Presley',t:'Suspicious Minds',id:'sOH3KBqzwno'},
+  // ── 1970s ──────────────────────────────────────
+  {y:1970,a:'Simon & Garfunkel',t:'Bridge over Troubled Water',id:'4G-YQA_bsOU'},
+  {y:1970,a:'The Temptations',t:'Ball of Confusion',id:'OjCFGPzUqMk'},
+  {y:1971,a:'David Bowie',t:'Changes',id:'pl3vxEudif8'},
+  {y:1971,a:'John Lennon',t:'Imagine',id:'YkgkThdzX-8'},
+  {y:1971,a:'Marvin Gaye',t:"What's Going On",id:'H-kL8A4RNQ8'},
+  {y:1971,a:'Led Zeppelin',t:'Stairway to Heaven',id:'QkF3oxziUI4'},
+  {y:1971,a:'Rod Stewart',t:'Maggie May',id:'q5WBaWuytKc'},
+  {y:1971,a:'The Rolling Stones',t:'Brown Sugar',id:'nqFepYOKTBE'},
+  {y:1972,a:'Stevie Wonder',t:'Superstition',id:'B0TJLaGfsSM'},
+  {y:1972,a:'David Bowie',t:'Ziggy Stardust',id:'K2JE90UIYQQ'},
+  {y:1972,a:'The O\'Jays',t:'Back Stabbers',id:'pHF-hZbhqiA'},
+  {y:1972,a:'Bill Withers',t:'Lean on Me',id:'fOZ-MySzAac'},
+  {y:1972,a:'Neil Young',t:'Heart of Gold',id:'Jqm5SIP9fgA'},
+  {y:1973,a:'Pink Floyd',t:'Money',id:'cpbcGMGKR4c'},
+  {y:1973,a:'Elton John',t:'Crocodile Rock',id:'4Y9o3KSHpBo'},
+  {y:1973,a:'Stevie Wonder',t:'Higher Ground',id:'lmHvSalv1_0'},
+  {y:1973,a:'War',t:'Low Rider',id:'tLKd4FKFiWs'},
+  {y:1974,a:'ABBA',t:'Waterloo',id:'Sj_9CiNkkn4'},
+  {y:1974,a:'Elton John',t:'Bennie and the Jets',id:'Po_RIMGJo_c'},
+  {y:1974,a:'Stevie Wonder',t:'You Haven\'t Done Nothin\'',id:'0oBN56_l5WQ'},
+  {y:1974,a:'Paul McCartney & Wings',t:'Jet',id:'tTdopGTLMsg'},
+  {y:1975,a:'Queen',t:'Bohemian Rhapsody',id:'fJ9rUzIMcZQ'},
+  {y:1975,a:'David Bowie',t:'Fame',id:'w6SE_dgIRhs'},
+  {y:1975,a:'Bruce Springsteen',t:'Born to Run',id:'IiNDhA5Y9Vc'},
+  {y:1975,a:'Eagles',t:'One of These Nights',id:'4OkVY6IrZsg'},
+  {y:1975,a:'10cc',t:"I\'m Not in Love",id:'5Fgm3VLXaQE'},
+  {y:1976,a:'ABBA',t:'Dancing Queen',id:'cs3J7b52LDs'},
+  {y:1976,a:'Stevie Wonder',t:"Isn't She Lovely",id:'4M8nQLRpkZA'},
+  {y:1976,a:'Thin Lizzy',t:'The Boys Are Back in Town',id:'7NeQMQ1wFqE'},
+  {y:1976,a:'Peter Frampton',t:'Baby, I Love Your Way',id:'W-9VvpjxHIU'},
+  {y:1977,a:'Eagles',t:'Hotel California',id:'BciS5krYL80'},
+  {y:1977,a:'Bee Gees',t:"Stayin' Alive",id:'I_izvAbhExY'},
+  {y:1977,a:'Fleetwood Mac',t:'Go Your Own Way',id:'6ul-cZyuYq4'},
+  {y:1977,a:'Fleetwood Mac',t:'The Chain',id:'5aBDTAOFg7g'},
+  {y:1977,a:'David Bowie',t:'Heroes',id:'kRa-dMNpP2E'},
+  {y:1977,a:'Sex Pistols',t:'God Save the Queen',id:'yqrAPOZxgz0'},
+  {y:1977,a:'Donna Summer',t:'I Feel Love',id:'oE3aB2PgMgQ'},
+  {y:1977,a:'Elvis Costello',t:'Alison',id:'Gj8IgYoJCuA'},
+  {y:1978,a:'Chic',t:'Le Freak',id:'hIAt6w0KVKE'},
+  {y:1978,a:'Donna Summer',t:'Last Dance',id:'_lM3YAqI97E'},
+  {y:1978,a:'Kate Bush',t:'Wuthering Heights',id:'BW3gKKiTvjs'},
+  {y:1978,a:'Billy Joel',t:'Piano Man',id:'gxEPV4kolz0'},
+  {y:1978,a:'Bonnie Tyler',t:'It\'s a Heartache',id:'JjwgH0sGhIg'},
+  {y:1979,a:'Michael Jackson',t:"Don't Stop 'Til You Get Enough",id:'yURRmWtbTbo'},
+  {y:1979,a:'The Clash',t:'London Calling',id:'EfKuB863KXo'},
+  {y:1979,a:'Blondie',t:'Heart of Glass',id:'WGU_4-5RaxU'},
+  {y:1979,a:'The Knack',t:'My Sharona',id:'pEIAHMdgpBU'},
+  {y:1979,a:'The Sugarhill Gang',t:"Rapper's Delight",id:'mcCK99mNcKU'},
+  {y:1979,a:'Gary Numan',t:'Cars',id:'BPsHVF2p_kU'},
+  // ── 1980s ──────────────────────────────────────
+  {y:1980,a:'AC/DC',t:'Back in Black',id:'pAgnJDJN4VA'},
+  {y:1980,a:'Blondie',t:'Call Me',id:'StKVS0eI85I'},
+  {y:1980,a:'The Pretenders',t:'Brass in Pocket',id:'sNdPhOiQ5gE'},
+  {y:1980,a:'Pink Floyd',t:'Another Brick in the Wall Pt.2',id:'YR5ApYxkU-U'},
+  {y:1980,a:'Diana Ross',t:'Upside Down',id:'8jJDWvpXi5c'},
+  {y:1980,a:'Kool & the Gang',t:'Celebration',id:'GCFEFaFMPNo'},
+  {y:1980,a:'Queen',t:'Another One Bites the Dust',id:'rY0WxgSXdEE'},
+  {y:1981,a:'Journey',t:"Don't Stop Believin'",id:'UrIiLvg58SY'},
+  {y:1981,a:'Soft Cell',t:'Tainted Love',id:'XZVpR3Pk-r8'},
+  {y:1981,a:'Kim Carnes',t:'Bette Davis Eyes',id:'4baTyIxH72U'},
+  {y:1981,a:'Human League',t:"Don't You Want Me",id:'uPudE8nDog0'},
+  {y:1981,a:'Rick James',t:'Super Freak',id:'M42kS5mPAL4'},
+  {y:1981,a:'Pat Benatar',t:'Hit Me with Your Best Shot',id:'YeRowlMhNKo'},
+  {y:1981,a:'Olivia Newton-John',t:'Physical',id:'vWz9VN40nCA'},
+  {y:1982,a:'Michael Jackson',t:'Thriller',id:'sOnqjkJTMaA'},
+  {y:1982,a:'Toto',t:'Africa',id:'FTQbiNvZqaY'},
+  {y:1982,a:'Eye of the Tiger',t:'Survivor',id:'btPJPFnesV4'},
+  {y:1982,a:'Devo',t:'Whip It',id:'IiIBwd3bH5U'},
+  {y:1982,a:'Yazoo',t:"Don't Go",id:'OlxCdxMaY5w'},
+  {y:1982,a:'Depeche Mode',t:'Just Can\'t Get Enough',id:'_6FBfAQ-NQk'},
+  {y:1982,a:'Fleetwood Mac',t:'Hold Me',id:'6nRwXcSFqlc'},
+  {y:1982,a:'Men at Work',t:'Who Can It Be Now',id:'HcFNFL6PTIE'},
+  {y:1983,a:'Michael Jackson',t:'Billie Jean',id:'Zi_XLOBDo_Y'},
+  {y:1983,a:'Cyndi Lauper',t:'Girls Just Want to Have Fun',id:'PIb6AZdTr-A'},
+  {y:1983,a:'The Police',t:'Every Breath You Take',id:'OMIGzvaveff'},
+  {y:1983,a:'David Bowie',t:'Let\'s Dance',id:'N4d7Wp9kKqA'},
+  {y:1983,a:'Eurythmics',t:'Sweet Dreams (Are Made of This)',id:'qeMFqkcPYcg'},
+  {y:1983,a:'Culture Club',t:'Karma Chameleon',id:'JmcA9LIIXWw'},
+  {y:1983,a:'Duran Duran',t:'Is There Something I Should Know',id:'N9zNS8MKLE8'},
+  {y:1983,a:'New Order',t:'Blue Monday',id:'FYH8DsE5QJg'},
+  {y:1983,a:'Bonnie Tyler',t:'Total Eclipse of the Heart',id:'lcOxiU1ObJ4'},
+  {y:1984,a:'Wham!',t:'Wake Me Up Before You Go-Go',id:'pIE_H5Sy3eQ'},
+  {y:1984,a:'Prince',t:'When Doves Cry',id:'UG3VcCAlUgE'},
+  {y:1984,a:'Prince',t:'Purple Rain',id:'TJ8GxjEFkqo'},
+  {y:1984,a:'Bruce Springsteen',t:'Born in the U.S.A.',id:'EPhWR3C9a-I'},
+  {y:1984,a:'Tina Turner',t:"What's Love Got to Do with It",id:'oHNaACMcLBQ'},
+  {y:1984,a:'Madonna',t:'Like a Virgin',id:'s__rX_WL100'},
+  {y:1984,a:'The Cars',t:'Drive',id:'MKn9xhBpOik'},
+  {y:1984,a:'Foreigner',t:"I Want to Know What Love Is",id:'yXUZXHlHZFw'},
+  {y:1984,a:'Van Halen',t:'Jump',id:'SwYN7mTi6HM'},
+  {y:1985,a:'a-ha',t:'Take On Me',id:'djV11Xbc914'},
+  {y:1985,a:'Tears for Fears',t:'Everybody Wants to Rule the World',id:'ycc3MccMPkw'},
+  {y:1985,a:'Madonna',t:'Material Girl',id:'6p-lDYPR2HY'},
+  {y:1985,a:'Dire Straits',t:'Money for Nothing',id:'wTP2RUD_cL0'},
+  {y:1985,a:'Whitney Houston',t:'Saving All My Love for You',id:'JIsYFhqIGKA'},
+  {y:1985,a:'Simple Minds',t:"Don't You (Forget About Me)",id:'CdqoNKCCt7A'},
+  {y:1985,a:'Tears for Fears',t:'Shout',id:'Ksf4O8JrNQs'},
+  {y:1985,a:'Wham!',t:"Careless Whisper",id:'izGwDsrQ1eQ'},
+  {y:1985,a:'USA for Africa',t:'We Are the World',id:'M9BNoNFey2Y'},
+  {y:1986,a:'Peter Gabriel',t:'Sledgehammer',id:'OJWJE0x7T4s'},
+  {y:1986,a:'Falco',t:'Rock Me Amadeus',id:'cVikZ8Oe_y8'},
+  {y:1986,a:'Robert Palmer',t:'Addicted to Love',id:'XcATvu5f9vE'},
+  {y:1986,a:'Cyndi Lauper',t:'True Colors',id:'LPn0KFlbqX8'},
+  {y:1986,a:'Berlin',t:'Take My Breath Away',id:'BxRvBBRQRMo'},
+  {y:1986,a:'Pet Shop Boys',t:'West End Girls',id:'p3j2NYAhF84'},
+  {y:1986,a:'Madonna',t:'Papa Don\'t Preach',id:'GoiqHFV9Wrw'},
+  {y:1986,a:'Bangles',t:'Manic Monday',id:'SsmVNrQr3Fg'},
+  {y:1987,a:'Rick Astley',t:'Never Gonna Give You Up',id:'dQw4w9WgXcQ'},
+  {y:1987,a:"Guns N' Roses",t:"Sweet Child O' Mine",id:'1w7OgIMMRc4'},
+  {y:1987,a:'U2',t:'With or Without You',id:'ujNeHIo7oTE'},
+  {y:1987,a:'Whitney Houston',t:'I Wanna Dance with Somebody',id:'eH3giaIzONA'},
+  {y:1987,a:'Michael Jackson',t:'Bad',id:'dsUXAEzaC3Q'},
+  {y:1987,a:'Crowded House',t:"Don't Dream It's Over",id:'ggHSMEBzB-E'},
+  {y:1987,a:'Los Lobos',t:'La Bamba',id:'_fbFnQHbDNA'},
+  {y:1987,a:'Heart',t:'Alone',id:'W5-NMkL2Hlw'},
+  {y:1987,a:'Terence Trent D\'Arby',t:'Wishing Well',id:'Lg-6EBbGp-o'},
+  {y:1988,a:'George Michael',t:'Faith',id:'6Cs3Pvmmv0E'},
+  {y:1988,a:'Bobby McFerrin',t:"Don't Worry, Be Happy",id:'d-diB65scQU'},
+  {y:1988,a:'Tracy Chapman',t:'Fast Car',id:'AIOAlaAuV2s'},
+  {y:1988,a:'INXS',t:'Need You Tonight',id:'DjdFvjnW3rk'},
+  {y:1988,a:'Def Leppard',t:'Pour Some Sugar on Me',id:'o8SHKEBBoT8'},
+  {y:1988,a:'Salt-N-Pepa',t:'Push It',id:'vCadcBR95oU'},
+  {y:1988,a:'Michael Jackson',t:'Man in the Mirror',id:'PivWY9wn5ps'},
+  {y:1989,a:'Madonna',t:'Like a Prayer',id:'79fzeNykO6M'},
+  {y:1989,a:'New Kids on the Block',t:'You Got It (The Right Stuff)',id:'E1fzJ_AYajA'},
+  {y:1989,a:'Roxette',t:'The Look',id:'p0bGHP1nXOs'},
+  {y:1989,a:'Milli Vanilli',t:'Girl You Know It\'s True',id:'CkEBHs5buZY'},
+  {y:1989,a:'Bette Midler',t:'Wind Beneath My Wings',id:'Y0yYJJFBgss'},
+  {y:1989,a:'Paula Abdul',t:'Straight Up',id:'El3GIBv4crc'},
+  {y:1989,a:'Fine Young Cannibals',t:'She Drives Me Crazy',id:'dOk-HNJZAXM'},
+  // ── 1990s ──────────────────────────────────────
+  {y:1990,a:"Sinéad O'Connor",t:'Nothing Compares 2 U',id:'0-EF60neguk'},
+  {y:1990,a:'MC Hammer',t:"U Can't Touch This",id:'otCpCn0l4Wo'},
+  {y:1990,a:'Vanilla Ice',t:'Ice Ice Baby',id:'rog8ou-ZepE'},
+  {y:1990,a:'Wilson Phillips',t:'Hold On',id:'HuBTmz4fF6M'},
+  {y:1990,a:'Phil Collins',t:"Another Day in Paradise",id:'Qt2mbGP6vFI'},
+  {y:1990,a:'Madonna',t:'Vogue',id:'GuJQSAiODqI'},
+  {y:1990,a:'Depeche Mode',t:'Personal Jesus',id:'u1xrNaTO1bI'},
+  {y:1990,a:'The Charlatans',t:'The Only One I Know',id:'VUxvv5tTBD0'},
+  {y:1991,a:'Nirvana',t:'Smells Like Teen Spirit',id:'hTWKbfoikeg'},
+  {y:1991,a:'R.E.M.',t:'Losing My Religion',id:'xwtdhWltSIg'},
+  {y:1991,a:'Michael Jackson',t:'Black or White',id:'pTFE8cirkdQ'},
+  {y:1991,a:'U2',t:'One',id:'ftjEcrrf7r0'},
+  {y:1991,a:'Bryan Adams',t:'(Everything I Do) I Do It for You',id:'ZuI3QBCoVUs'},
+  {y:1991,a:'Metallica',t:'Enter Sandman',id:'CD-E6LQquZc'},
+  {y:1991,a:'Pearl Jam',t:'Alive',id:'aJBImRKFCVo'},
+  {y:1991,a:'Red Hot Chili Peppers',t:'Under the Bridge',id:'lwZP-BTYRwA'},
+  {y:1991,a:'Seal',t:'Crazy',id:'4Emx-HHfb2o'},
+  {y:1992,a:'Whitney Houston',t:'I Will Always Love You',id:'3JWTaaS7LdU'},
+  {y:1992,a:'Boyz II Men',t:'End of the Road',id:'9KFbaGcKFHM'},
+  {y:1992,a:'Sir Mix-a-Lot',t:'Baby Got Back',id:'reTx5sqvVJ4'},
+  {y:1992,a:'4 Non Blondes',t:"What's Up",id:'6NXnxTNIWkc'},
+  {y:1992,a:'Snap!',t:'Rhythm Is a Dancer',id:'FMy3J7CpNvI'},
+  {y:1992,a:'Right Said Fred',t:"I'm Too Sexy",id:'CGSN0Y0rYaU'},
+  {y:1992,a:'Kris Kross',t:'Jump',id:'010KKILxGAs'},
+  {y:1993,a:'Ace of Base',t:'The Sign',id:'3vHx_MvCBi8'},
+  {y:1993,a:'Whitney Houston',t:"I\'m Every Woman",id:'hzGy-PYnZak'},
+  {y:1993,a:'UB40',t:"(I Can't Help) Falling in Love with You",id:'f7sflOHLTvI'},
+  {y:1993,a:'Haddaway',t:'What Is Love',id:'HEXWRTEbj1I'},
+  {y:1993,a:'Meat Loaf',t:"I'd Do Anything for Love",id:'9X_ViIPA-Gc'},
+  {y:1993,a:'Björk',t:'Human Behaviour',id:'rCQkrqr1DXE'},
+  {y:1993,a:'Primal Scream',t:'Rocks',id:'9GKwFqNRmEA'},
+  {y:1994,a:"Boyz II Men",t:"I'll Make Love to You",id:'BJ21TGCRIRk'},
+  {y:1994,a:'Green Day',t:'Basket Case',id:'NUTGr5t3MoY'},
+  {y:1994,a:'Wet Wet Wet',t:'Love Is All Around',id:'hcH8UAycYcY'},
+  {y:1994,a:'Warren G',t:'Regulate',id:'1plPyJdXKIY'},
+  {y:1994,a:'Sheryl Crow',t:'All I Wanna Do',id:'rI1dRyE9UHM'},
+  {y:1994,a:'R. Kelly',t:'Bump N\' Grind',id:'kAF8lHPFdKQ'},
+  {y:1994,a:'Aaliyah',t:'Back & Forth',id:'wfm4GGhAoCI'},
+  {y:1994,a:'The Cranberries',t:'Zombie',id:'6Ejga4kJUts'},
+  {y:1994,a:'Soundgarden',t:'Black Hole Sun',id:'3mbBbFH9fAg'},
+  {y:1995,a:'TLC',t:'Waterfalls',id:'8WEtxJ4-sh4'},
+  {y:1995,a:'Oasis',t:'Wonderwall',id:'bx58NL-xFTQ'},
+  {y:1995,a:'Coolio',t:"Gangsta's Paradise",id:'fPO76Jlnz6c'},
+  {y:1995,a:'Mariah Carey',t:'Fantasy',id:'nR6bWKxoNso'},
+  {y:1995,a:'Blur',t:'Country House',id:'N36Jba3kPUE'},
+  {y:1995,a:'Pulp',t:'Common People',id:'yuTMWgOduFM'},
+  {y:1995,a:'Alanis Morissette',t:'You Oughta Know',id:'NPcyTyilmYY'},
+  {y:1995,a:'Montell Jordan',t:'This Is How We Do It',id:'QwV8LRQXKXA'},
+  {y:1995,a:'Take That',t:'Back for Good',id:'MnhAadhFgXI'},
+  {y:1996,a:'Alanis Morissette',t:'Ironic',id:'Jne9t8sHpUc'},
+  {y:1996,a:'Los Del Rio',t:'Macarena',id:'XiBYM6g8Tck'},
+  {y:1996,a:'The Spice Girls',t:'Wannabe',id:'gQlMMD8auMs'},
+  {y:1996,a:'Fugees',t:'Killing Me Softly',id:'PThsXNrD-_A'},
+  {y:1996,a:'Garbage',t:'Stupid Girl',id:'L0SxByN5KWQ'},
+  {y:1996,a:'2Pac',t:'California Love',id:'5wEl0ZYRMIY'},
+  {y:1996,a:'The Notorious B.I.G.',t:'Hypnotize',id:'eVqPDyNyJoE'},
+  {y:1996,a:'No Doubt',t:'Just a Girl',id:'aGj3ysOrX-c'},
+  {y:1996,a:'Toni Braxton',t:'Un-Break My Heart',id:'v4lOjkHnKDM'},
+  {y:1997,a:'Celine Dion',t:'My Heart Will Go On',id:'WNIPqafd4As'},
+  {y:1997,a:'Hanson',t:'MMMBop',id:'NHozn0YXAeE'},
+  {y:1997,a:'Puff Daddy',t:"I'll Be Missing You",id:'NKMtZm2YkCc'},
+  {y:1997,a:'Verve',t:'Bitter Sweet Symphony',id:'1lyu1KKwC74'},
+  {y:1997,a:'Radiohead',t:'Karma Police',id:'1uYWYWPc9HU'},
+  {y:1997,a:'Aqua',t:'Barbie Girl',id:'ZyhrYis509A'},
+  {y:1997,a:'Blur',t:'Song 2',id:'SSbBvKaM6sk'},
+  {y:1997,a:'Will Smith',t:'Gettin\' Jiggy Wit It',id:'3JcmQONgXJM'},
+  {y:1997,a:'Backstreet Boys',t:'Quit Playing Games',id:'4e4_RlFqLYE'},
+  {y:1997,a:'Jamiroquai',t:'Virtual Insanity',id:'4JkIs37a2JA'},
+  {y:1998,a:'Britney Spears',t:'...Baby One More Time',id:'C-u5WLJ9Yk4'},
+  {y:1998,a:'Beastie Boys',t:'Intergalactic',id:'qORYO0atSPg'},
+  {y:1998,a:'Massive Attack',t:'Teardrop',id:'u7K72X4WidI'},
+  {y:1998,a:'Savage Garden',t:'Truly Madly Deeply',id:'gCYcHz2k5x0'},
+  {y:1998,a:'Marcy Playground',t:'Sex and Candy',id:'NdYdB3kQvUM'},
+  {y:1998,a:'Natalie Imbruglia',t:'Torn',id:'peSczjScGAg'},
+  {y:1998,a:'Garbage',t:'Push It',id:'ov9HBwVKPxs'},
+  {y:1999,a:'TLC',t:'No Scrubs',id:'FrLequ6dUdM'},
+  {y:1999,a:'Ricky Martin',t:"Livin' la Vida Loca",id:'p47fEXGabaY'},
+  {y:1999,a:'Smash Mouth',t:'All Star',id:'L_jWHffIx5E'},
+  {y:1999,a:'Cher',t:'Believe',id:'nZXRV4MezEw'},
+  {y:1999,a:'Lou Bega',t:'Mambo No. 5',id:'EK_LN3XE3aA'},
+  {y:1999,a:'Santana ft. Rob Thomas',t:'Smooth',id:'6Whgn_2guEo'},
+  {y:1999,a:'Eminem',t:'My Name Is',id:'sNPnDNFD5Qs'},
+  {y:1999,a:'Shania Twain',t:"Man! I Feel Like a Woman",id:'FkpL0ROwBbQ'},
+  // ── 2000s ──────────────────────────────────────
+  {y:2000,a:'Linkin Park',t:'In the End',id:'eVTXPUF4Oz4'},
+  {y:2000,a:'Nelly',t:'Country Grammar',id:'Wr9ie2J2690'},
+  {y:2000,a:'Destiny\'s Child',t:'Say My Name',id:'sQgd6MccwZc'},
+  {y:2000,a:"*NSYNC",t:"Bye Bye Bye",id:'Eo-KmOd3i7s'},
+  {y:2000,a:'Madonna',t:'Music',id:'t_DTWgEr1qQ'},
+  {y:2000,a:'Dido',t:'Thank You',id:'1TO48Cnl66w'},
+  {y:2000,a:'Craig David',t:'Fill Me In',id:'SN3epfJFaEk'},
+  {y:2000,a:'Eminem',t:'The Real Slim Shady',id:'eJO5HU_7_1w'},
+  {y:2001,a:'Alicia Keys',t:"Fallin'",id:'Urdl3i_KvYI'},
+  {y:2001,a:'Outkast',t:'Ms. Jackson',id:'6Xygu0kM01c'},
+  {y:2001,a:'Daft Punk',t:'Harder Better Faster Stronger',id:'gAjR4_CbPpQ'},
+  {y:2001,a:'Jay-Z',t:"Izzo (H.O.V.A.)",id:'BZ1WzfOBmek'},
+  {y:2001,a:'Gorillaz',t:'Clint Eastwood',id:'1V_xRb0x9aw'},
+  {y:2001,a:'System of a Down',t:'Chop Suey!',id:'CSvFpBOe8eY'},
+  {y:2001,a:'Bob the Builder',t:'Can We Fix It?',id:'GiB7lhJUbkY'},
+  {y:2002,a:'Eminem',t:'Without Me',id:'YVkUvmDQ3HY'},
+  {y:2002,a:'Nelly',t:'Hot in Herre',id:'EVRv5hqBFJk'},
+  {y:2002,a:'Justin Timberlake',t:'Cry Me a River',id:'DksSH9RRFSA'},
+  {y:2002,a:'Nickelback',t:'How You Remind Me',id:'1cQh1ccqu8M'},
+  {y:2002,a:'The Hives',t:'Hate to Say I Told You So',id:'oM3HNpxyLGc'},
+  {y:2002,a:'The White Stripes',t:'Fell in Love with a Girl',id:'CbGqxKrZdZ0'},
+  {y:2002,a:'Shakira',t:'Whenever, Wherever',id:'CRFhLygLMsw'},
+  {y:2003,a:'Beyoncé',t:'Crazy in Love',id:'ViwtNLUqkMY'},
+  {y:2003,a:'Linkin Park',t:'Numb',id:'kXYiU_JCYtU'},
+  {y:2003,a:'50 Cent',t:'In da Club',id:'dFzE8LWdifA'},
+  {y:2003,a:'Outkast',t:'Hey Ya!',id:'PWgvGjAhvIw'},
+  {y:2003,a:'Coldplay',t:'The Scientist',id:'RB-RcX5DS5A'},
+  {y:2003,a:'Justin Timberlake',t:'Rock Your Body',id:'IMChByOn4FE'},
+  {y:2003,a:'Evanescence',t:'Bring Me to Life',id:'3YxaaGgTQYM'},
+  {y:2003,a:'The Black Eyed Peas',t:'Where Is the Love?',id:'WpYeekQkAdc'},
+  {y:2004,a:'Usher',t:'Yeah!',id:'GxBSyx85Kp8'},
+  {y:2004,a:'Britney Spears',t:'Toxic',id:'LOZuxwVk7TU'},
+  {y:2004,a:'Alicia Keys',t:'If I Ain\'t Got You',id:'Ju8Hr50Ckwk'},
+  {y:2004,a:'Franz Ferdinand',t:'Take Me Out',id:'g8qeKl5V2cA'},
+  {y:2004,a:'Maroon 5',t:'This Love',id:'XPpTgCh_dxs'},
+  {y:2004,a:'Kanye West',t:'Jesus Walks',id:'MYF7H_fpc-g'},
+  {y:2004,a:'The Killers',t:'Somebody Told Me',id:'bkIhEoOJFXI'},
+  {y:2005,a:'Kelly Clarkson',t:'Since U Been Gone',id:'R7UrFYvl5TE'},
+  {y:2005,a:'50 Cent',t:'Candy Shop',id:'EcRkbktvGRM'},
+  {y:2005,a:'The Black Eyed Peas',t:"Don't Phunk with My Heart",id:'jQkZwAQlKw0'},
+  {y:2005,a:'Kanye West',t:'Gold Digger',id:'6vwNcNOTVzY'},
+  {y:2005,a:'Mariah Carey',t:'We Belong Together',id:'_tFDMHrmPmA'},
+  {y:2005,a:'Gwen Stefani',t:'Hollaback Girl',id:'Kgjkth6BRJE'},
+  {y:2005,a:'The Killers',t:'Mr. Brightside',id:'gGdGFtwCNBE'},
+  {y:2005,a:'James Blunt',t:'You\'re Beautiful',id:'G5-H_y4OIQU'},
+  {y:2005,a:'Nine Inch Nails',t:'Only',id:'O0-jxNZo_bM'},
+  {y:2006,a:'Justin Timberlake',t:'SexyBack',id:'3gOHvDP_vCs'},
+  {y:2006,a:'Beyoncé',t:'Irreplaceable',id:'2EwViQxSJJQ'},
+  {y:2006,a:'Nelly Furtado',t:'Maneater',id:'HkOQpQGVp6w'},
+  {y:2006,a:'Shakira',t:'Hips Don\'t Lie',id:'DUT5rEU6pqM'},
+  {y:2006,a:'Sean Paul',t:'Temperature',id:'k2R5_6TB6Dw'},
+  {y:2006,a:'Fergie',t:'London Bridge',id:'oJXNGE5dyFE'},
+  {y:2006,a:'T.I.',t:'What You Know',id:'7eDNbyHMwFo'},
+  {y:2006,a:'Snow Patrol',t:'Chasing Cars',id:'GemKqzILV4w'},
+  {y:2007,a:'Rihanna',t:'Umbrella',id:'CvBfHwUxHIk'},
+  {y:2007,a:'Timbaland ft. OneRepublic',t:'Apologize',id:'ZSM3w1v-A_Y'},
+  {y:2007,a:'Amy Winehouse',t:'Rehab',id:'KUmZp8pR1uc'},
+  {y:2007,a:'Kanye West',t:'Stronger',id:'PsO6ZnUZI0g'},
+  {y:2007,a:'Maroon 5',t:'Makes Me Wonder',id:'6-9Q7eTHRXE'},
+  {y:2007,a:'Plain White T\'s',t:'Hey There Delilah',id:'_0oBmBB-UVQ'},
+  {y:2007,a:'T-Pain',t:'Buy U a Drank',id:'Z_bFrQRQuWU'},
+  {y:2007,a:'Soulja Boy',t:'Crank That',id:'8UFIYGkROII'},
+  {y:2008,a:'Katy Perry',t:'I Kissed a Girl',id:'tAp9BKosZXs'},
+  {y:2008,a:'MGMT',t:'Kids',id:'GNEHlpVodGs'},
+  {y:2008,a:'Coldplay',t:'Viva la Vida',id:'dvgZkm1xWPE'},
+  {y:2008,a:'Lil Wayne',t:'Lollipop',id:'BpKIFHPWCss'},
+  {y:2008,a:'Rihanna',t:'Take a Bow',id:'aRQ3NpUiWTo'},
+  {y:2008,a:'T.I. ft. Rihanna',t:'Live Your Life',id:'koVHN6eO4Xg'},
+  {y:2008,a:'Leona Lewis',t:'Bleeding Love',id:'AZvSNBOmWto'},
+  {y:2008,a:'Ne-Yo',t:'Closer',id:'5PBiF4Hjt6k'},
+  {y:2009,a:'Lady Gaga',t:'Bad Romance',id:'qrO4YZeyl0I'},
+  {y:2009,a:'Black Eyed Peas',t:'I Gotta Feeling',id:'uSD4vsh1zDA'},
+  {y:2009,a:'Taylor Swift',t:'You Belong with Me',id:'VuNIsY6JdUw'},
+  {y:2009,a:'Pitbull',t:'I Know You Want Me',id:'kEVSlSR8MtE'},
+  {y:2009,a:'Jay-Z ft. Alicia Keys',t:'Empire State of Mind',id:'O4oRhMfbMSg'},
+  {y:2009,a:'Ke$ha',t:'TiK ToK',id:'iP6XpLQM2Cs'},
+  {y:2009,a:'Kings of Leon',t:'Sex on Fire',id:'8vJHOrD-RpM'},
+  {y:2009,a:'Flo Rida',t:'Right Round',id:'tBDp9RPRioM'},
+  // ── 2010s ──────────────────────────────────────
+  {y:2010,a:'Adele',t:'Rolling in the Deep',id:'rYEDA3JcQqw'},
+  {y:2010,a:'Bruno Mars',t:'Just the Way You Are',id:'LjhCEhWiKXk'},
+  {y:2010,a:'Eminem ft. Rihanna',t:'Love the Way You Lie',id:'uelHwf8o7_U'},
+  {y:2010,a:'Katy Perry',t:'California Gurls',id:'F57P9C4SAW4'},
+  {y:2010,a:'Taio Cruz',t:'Dynamite',id:'MAGH3eQfMmo'},
+  {y:2010,a:'B.o.B ft. Hayley Williams',t:'Airplanes',id:'kn6-c223DUU'},
+  {y:2010,a:'Usher',t:'OMG',id:'WkJZEs_ZM7A'},
+  {y:2010,a:'Cee Lo Green',t:'Forget You',id:'sc5Dy0Lyqns'},
+  {y:2010,a:'Train',t:'Hey, Soul Sister',id:'kVpv8-5XWBI'},
+  {y:2011,a:'Gotye',t:'Somebody That I Used to Know',id:'8UVNT4wvIGY'},
+  {y:2011,a:'Adele',t:'Someone Like You',id:'hLQl3WQQoQ0'},
+  {y:2011,a:'LMFAO',t:'Party Rock Anthem',id:'KQ6zr6kCPj8'},
+  {y:2011,a:'Katy Perry',t:'Last Friday Night',id:'KlyXNRrsk4A'},
+  {y:2011,a:'Pitbull ft. Ne-Yo',t:'Give Me Everything',id:'EPo5wWmKEaI'},
+  {y:2011,a:'The Black Keys',t:'Lonely Boy',id:'a9eVk2J2GEk'},
+  {y:2011,a:'Foster the People',t:'Pumped Up Kicks',id:'SDTZ7iX4vTQ'},
+  {y:2011,a:'Bruno Mars',t:'The Lazy Song',id:'fLexgOxsZu0'},
+  {y:2011,a:'Skrillex',t:'Scary Monsters and Nice Sprites',id:'WSeNSzJ2-Jw'},
+  {y:2012,a:'Carly Rae Jepsen',t:'Call Me Maybe',id:'fWNaR-rxAic'},
+  {y:2012,a:'PSY',t:'Gangnam Style',id:'9bZkp7q19f0'},
+  {y:2012,a:'Gotye',t:'Eyes Wide Open',id:'Xp8JHrDnD7Y'},
+  {y:2012,a:'fun.',t:'We Are Young',id:'Sv6dMFF_ez8'},
+  {y:2012,a:'Nicki Minaj',t:'Starships',id:'kfBzSJsGOyE'},
+  {y:2012,a:'Maroon 5',t:'Payphone',id:'KRaWnd3LJms'},
+  {y:2012,a:'Ellie Goulding',t:'Lights',id:'oyEuk8j8imI'},
+  {y:2012,a:'Adele',t:'Skyfall',id:'VdBlaFA6STo'},
+  {y:2013,a:'Pharrell Williams',t:'Happy',id:'ZbZSe6N_BXs'},
+  {y:2013,a:'Lorde',t:'Royals',id:'nl2nUMhAIlI'},
+  {y:2013,a:'Robin Thicke',t:'Blurred Lines',id:'yyDUC1LUXSU'},
+  {y:2013,a:'Daft Punk',t:'Get Lucky',id:'5NV6Rdv1h3Q'},
+  {y:2013,a:'Miley Cyrus',t:'Wrecking Ball',id:'My2FRPA3Gf8'},
+  {y:2013,a:'Bruno Mars',t:'Treasure',id:'p8uAHSMBH3E'},
+  {y:2013,a:'Taylor Swift',t:'22',id:'AgFeZr5ptV8'},
+  {y:2013,a:'Avicii',t:'Wake Me Up',id:'IcrbM1l_BoI'},
+  {y:2013,a:'Selena Gomez',t:'Come & Get It',id:'pGQAzQaYSb8'},
+  {y:2014,a:'Taylor Swift',t:'Shake It Off',id:'nfWlot6h_JM'},
+  {y:2014,a:'Mark Ronson ft. Bruno Mars',t:'Uptown Funk',id:'OPf0YbXqDm0'},
+  {y:2014,a:'Iggy Azalea ft. Charli XCX',t:'Fancy',id:'O-zpOMYs9r8'},
+  {y:2014,a:'Meghan Trainor',t:'All About That Bass',id:'7PCkvCPvDXk'},
+  {y:2014,a:'Katy Perry',t:'Roar',id:'CevxZvSJLk8'},
+  {y:2014,a:'Jason Derulo',t:'Talk Dirty',id:'BO-IGHdS_WU'},
+  {y:2014,a:'Pharrell Williams',t:'Come Get It Bae',id:'72UO0y6VCo4'},
+  {y:2014,a:'Sam Smith',t:'Stay with Me',id:'pB-5XG-DbAA'},
+  {y:2015,a:'Adele',t:'Hello',id:'YQHsXMglC9A'},
+  {y:2015,a:'Wiz Khalifa',t:'See You Again',id:'RgKAFK5djSk'},
+  {y:2015,a:'The Weeknd',t:'The Hills',id:'yzTuBuRdAyA'},
+  {y:2015,a:'Ed Sheeran',t:'Thinking Out Loud',id:'lp-EBx4cKa8'},
+  {y:2015,a:'Taylor Swift',t:'Bad Blood',id:'QcIy9NiNbmo'},
+  {y:2015,a:'Fetty Wap',t:'Trap Queen',id:'i_kF4zLNVrE'},
+  {y:2015,a:'Drake',t:'Hotline Bling',id:'uxpDa-c-4Mc'},
+  {y:2015,a:'Silentó',t:'Watch Me (Whip/Nae Nae)',id:'vjW8wmF5H3s'},
+  {y:2015,a:'Major Lazer & DJ Snake',t:'Lean On',id:'YqeW9_5kURI'},
+  {y:2016,a:'Drake',t:'One Dance',id:'AqfbJUKSZMU'},
+  {y:2016,a:'Sia',t:'Cheap Thrills',id:'73yNh3WQNLS'},
+  {y:2016,a:'Justin Bieber',t:'Love Yourself',id:'oyEuk8j8imI'},
+  {y:2016,a:'Beyoncé',t:'Formation',id:'LrCHz1gwzTo'},
+  {y:2016,a:'Rihanna ft. Drake',t:'Work',id:'HL1UzIK-flA'},
+  {y:2016,a:'Twenty One Pilots',t:'Stressed Out',id:'pXRviuL6vMY'},
+  {y:2016,a:'Mike Posner',t:'I Took a Pill in Ibiza',id:'foE1mO2yM04'},
+  {y:2016,a:'Shawn Mendes',t:'Stitches',id:'VbfpW0pbvaU'},
+  {y:2016,a:'Lukas Graham',t:'7 Years',id:'LHCob76kigA'},
+  {y:2017,a:'Ed Sheeran',t:'Shape of You',id:'JGwWNGJdvx8'},
+  {y:2017,a:'Luis Fonsi',t:'Despacito',id:'ktvTqknDobU'},
+  {y:2017,a:'Bruno Mars',t:'That\'s What I Like',id:'PMivT7MJ41M'},
+  {y:2017,a:'The Chainsmokers',t:'Something Just Like This',id:'FM7MFYoylVs'},
+  {y:2017,a:'Post Malone',t:'Congratulations',id:'SC4xMk98Pdc'},
+  {y:2017,a:'Ed Sheeran',t:'Perfect',id:'2Vv-BfVoq4g'},
+  {y:2017,a:'DJ Khaled ft. Beyoncé',t:'Shining',id:'SqrKNsGiUak'},
+  {y:2017,a:'Kendrick Lamar',t:'HUMBLE.',id:'tvTRZJ-4EyI'},
+  {y:2017,a:'Harry Styles',t:'Sign of the Times',id:'qN4ooNx77u0'},
+  {y:2018,a:'Drake',t:"God's Plan",id:'xpVfcZ0ZcFM'},
+  {y:2018,a:'Ariana Grande',t:'God is a Woman',id:'kHLHSlExFis'},
+  {y:2018,a:'Post Malone',t:'Psycho',id:'J6bhf1J1Qoc'},
+  {y:2018,a:'Cardi B',t:'Bodak Yellow',id:'PEGccV-NOm8'},
+  {y:2018,a:'XXXTentacion',t:'SAD!',id:'TzLGGMgu6vk'},
+  {y:2018,a:'Childish Gambino',t:'This Is America',id:'VYOjWnS4cMY'},
+  {y:2018,a:'Dua Lipa',t:'New Rules',id:'k2qgadSvNyU'},
+  {y:2018,a:'BTS',t:'DNA',id:'MBdVXkSdhwU'},
+  {y:2018,a:'Camila Cabello',t:'Havana',id:'BQ4nuqmKseU'},
+  {y:2019,a:'Billie Eilish',t:'bad guy',id:'DyDfgMOUjCI'},
+  {y:2019,a:'The Weeknd',t:'Blinding Lights',id:'4NRXx6U8ABQ'},
+  {y:2019,a:'Lil Nas X',t:'Old Town Road',id:'r7qovpFAGrQ'},
+  {y:2019,a:'Post Malone',t:'Sunflower',id:'ApXoWvfEYVU'},
+  {y:2019,a:'Lizzo',t:'Truth Hurts',id:'Pb-uxDkNDVE'},
+  {y:2019,a:'Taylor Swift',t:'ME!',id:'FuXNumBwDOM'},
+  {y:2019,a:'Ariana Grande',t:'7 Rings',id:'QYh6mYIJG2Y'},
+  {y:2019,a:'Ed Sheeran & Justin Bieber',t:"I Don't Care",id:'y83x7MgzWOA'},
+  {y:2019,a:'Shawn Mendes & Camila Cabello',t:'Señorita',id:'Pkh8UtuejGw'},
+  // ── 2020s ──────────────────────────────────────
+  {y:2020,a:'Dua Lipa',t:'Levitating',id:'TUVcZfQe-Kw'},
+  {y:2020,a:'The Weeknd',t:'Save Your Tears',id:'XXYlFuWiqLg'},
+  {y:2020,a:'Billie Eilish',t:'Therefore I Am',id:'RUCEMLBc7TQ'},
+  {y:2020,a:'Harry Styles',t:'Watermelon Sugar',id:'E07s5ZYygMg'},
+  {y:2020,a:'Taylor Swift',t:'cardigan',id:'K-a8s8OLBSE'},
+  {y:2020,a:'Dua Lipa',t:'Don\'t Start Now',id:'oygrmJFkg68'},
+  {y:2020,a:'Ariana Grande',t:'positions',id:'tcYodQoapMg'},
+  {y:2020,a:'BTS',t:'Dynamite',id:'gdZLi9oWNZg'},
+  {y:2020,a:'Cardi B ft. Megan Thee Stallion',t:'WAP',id:'hsm4poTWjMs'},
+  {y:2020,a:'Roddy Ricch',t:'The Box',id:'nYh-n7EOtMA'},
+  {y:2021,a:'Olivia Rodrigo',t:'drivers license',id:'H5v3kku4y6Q'},
+  {y:2021,a:'Doja Cat ft. SZA',t:'Kiss Me More',id:'0EHQBEJMpsA'},
+  {y:2021,a:'The Weeknd & Ariana Grande',t:'Save Your Tears (Remix)',id:'rOh6_wMumsg'},
+  {y:2021,a:'Lil Nas X ft. Jack Harlow',t:'INDUSTRY BABY',id:'UTHLKHL_whs'},
+  {y:2021,a:'Justin Bieber ft. Daniel Caesar',t:'Peaches',id:'tQ0yjYMIaMY'},
+  {y:2021,a:'Silk Sonic',t:'Leave the Door Open',id:'adLGHcjiSmE'},
+  {y:2021,a:'Olivia Rodrigo',t:'good 4 u',id:'gNi_6U5Pm_o'},
+  {y:2021,a:'Ed Sheeran',t:'Bad Habits',id:'orJSJGHjBLI'},
+  {y:2022,a:'Harry Styles',t:'As It Was',id:'H5v3kku4y6Q'},
+  {y:2022,a:'Taylor Swift',t:'Anti-Hero',id:'b1kbLwvqugk'},
+  {y:2022,a:'Beyoncé',t:'BREAK MY SOUL',id:'bEKDpjgfT-k'},
+  {y:2022,a:'Bad Bunny',t:'Me Porto Bonito',id:'hEhSELYkIYg'},
+  {y:2022,a:'Steve Lacy',t:'Bad Habit',id:'VF-r7WoWp8k'},
+  {y:2022,a:'Lizzo',t:'About Damn Time',id:'IXXxciRUMzM'},
+  {y:2022,a:'Kendrick Lamar',t:'The Heart Part 5',id:'GINgbyBPG2Q'},
+  {y:2022,a:'Dua Lipa',t:'Levitating (feat. DaBaby)',id:'TUVcZfQe-Kw'},
+  {y:2023,a:'Miley Cyrus',t:'Flowers',id:'G7KNmW9a75Y'},
+  {y:2023,a:'SZA',t:'Kill Bill',id:'xQGcFAVHPE4'},
+  {y:2023,a:'Taylor Swift',t:'Cruel Summer',id:'ic8j13piAhQ'},
+  {y:2023,a:'Morgan Wallen',t:'Last Night',id:'hBfKs3Yw9-4'},
+  {y:2023,a:'Eslabon Armado & Peso Pluma',t:'Ella Baila Sola',id:'YdQhBqBBMto'},
+  {y:2023,a:'Jung Kook',t:'Seven',id:'QU9c0053UAU'},
+  {y:2023,a:'Doja Cat',t:'Attention',id:'IECivVXFpxQ'},
+  {y:2024,a:'Sabrina Carpenter',t:'Espresso',id:'cwLMHhNHNig'},
+  {y:2024,a:'Kendrick Lamar',t:'Not Like Us',id:'AHVh7oJMwCs'},
+  {y:2024,a:'Chappell Roan',t:'Good Luck, Babe!',id:'LqVNQTf21ow'},
+  {y:2024,a:'Billie Eilish',t:'Birds of a Feather',id:'TR3Vdo5etCQ'},
+  {y:2024,a:'Beyoncé',t:'Texas Hold \'Em',id:'cKOb0RFMkOk'},
+];
+
+// ═══════════════════════════════════════════════════
+// PLAYER COLORS
+// ═══════════════════════════════════════════════════
+const COLORS = ['#ff3366','#33aaff','#ffcc00','#00cc66','#aa44ff','#ff9900'];
+const DEFAULT_NAMES = ['Alice','Bob','Charlie','Dana','Eve','Frank'];
+
+// ═══════════════════════════════════════════════════
+// SETUP STATE
+// ═══════════════════════════════════════════════════
+let setupChips = 3;
+let setupWin   = 10;
+let playerRows = [];
+
+function adj(key, delta){
+  if(key==='chips'){ setupChips=Math.max(1,Math.min(10,setupChips+delta)); document.getElementById('chips-val').textContent=setupChips; }
+  if(key==='win'){   setupWin  =Math.max(3,Math.min(20,setupWin  +delta)); document.getElementById('win-val')  .textContent=setupWin;   }
+}
+
+function addPlayerRow(name=''){
+  if(playerRows.length>=6) return;
+  const idx=playerRows.length;
+  const id='pname-'+idx;
+  const row={id,idx};
+  playerRows.push(row);
+  const div=document.createElement('div');
+  div.className='player-row';
+  div.id='pr-'+idx;
+  div.innerHTML=`
+    <div class="player-color" style="background:${COLORS[idx]}"></div>
+    <input class="player-name-input" id="${id}" placeholder="${DEFAULT_NAMES[idx]||'Player '+(idx+1)}"
+           value="${name}" maxlength="20">
+    <button class="remove-player" onclick="removePlayerRow(${idx})" title="Remove">✕</button>`;
+  document.getElementById('players-list').appendChild(div);
+}
+
+function removePlayerRow(idx){
+  if(playerRows.length<=2) return;
+  playerRows=playerRows.filter(r=>r.idx!==idx);
+  rebuildPlayerList();
+}
+
+function rebuildPlayerList(){
+  const names=[];
+  playerRows.forEach(r=>{ const el=document.getElementById(r.id); if(el) names.push(el.value); });
+  playerRows=[];
+  document.getElementById('players-list').innerHTML='';
+  names.forEach((n,i)=>addPlayerRow(n));
+}
+
+// ═══════════════════════════════════════════════════
+// GAME STATE
+// ═══════════════════════════════════════════════════
+let G = {};
+
+function startGame(){
+  // collect players
+  const players=[];
+  for(let i=0;i<playerRows.length;i++){
+    const el=document.getElementById(playerRows[i].id);
+    const name=(el?.value.trim())||DEFAULT_NAMES[i]||('Player '+(i+1));
+    players.push({name,color:COLORS[i],chips:setupChips,timeline:[],score:0});
+  }
+  if(players.length<2){ alert('Need at least 2 players!'); return; }
+
+  // shuffle deck
+  const deck=[...SONGS].sort(()=>Math.random()-.5);
+
+  G={
+    players,
+    deck,
+    deckIdx:0,
+    currentPlayer:0,
+    currentSong:null,
+    phase:'waiting',   // waiting | guessing | steal_phase | bonus
+    cardsToWin:setupWin,
+    startChips:setupChips,
+    round:1,
+    stealActive:null,  // {playerIdx} during steal attempt
+    revealed:false,
+  };
+
+  showScreen('game');
+  renderPlayersStrip();
+  renderAllTimelines();
+  nextTurn();
+}
+
+function drawSong(){
+  if(G.deckIdx>=G.deck.length){ G.deck=[...SONGS].sort(()=>Math.random()-.5); G.deckIdx=0; }
+  return G.deck[G.deckIdx++];
+}
+
+function nextTurn(){
+  G.currentSong=drawSong();
+  G.phase='waiting';
+  G.revealed=false;
+  G.stealActive=null;
+
+  document.getElementById('yt-cover').classList.remove('hidden');
+  document.getElementById('round-label').textContent=`Round ${G.round} — ${G.players[G.currentPlayer].name}'s Turn`;
+  document.getElementById('turn-badge').innerHTML=`Round <b>${G.round}</b>`;
+
+  stopYtIframe();
+
+  renderPlayersStrip();
+  renderAllTimelines();
+  renderPhaseUI();
+}
+
+// ═══════════════════════════════════════════════════
+// YOUTUBE — plain iframe, no API needed
+// ═══════════════════════════════════════════════════
+function revealSong(){
+  if(!G.currentSong) return;
+  document.getElementById('yt-cover').classList.add('hidden');
+  G.revealed=true;
+  G.phase='guessing';
+  loadYtIframe(G.currentSong.id);
+  renderPhaseUI();
+}
+
+function loadYtIframe(videoId){
+  const iframe=document.getElementById('yt-iframe');
+  iframe.src=`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1`;
+  // show fallback link after 4s in case video is blocked/unavailable
+  const fb=document.getElementById('yt-fallback');
+  const lnk=document.getElementById('yt-link');
+  fb.style.display='none';
+  lnk.href=`https://www.youtube.com/watch?v=${videoId}`;
+  clearTimeout(window._ytFallbackTimer);
+  window._ytFallbackTimer=setTimeout(()=>{ fb.style.display='block'; },4000);
+}
+
+function stopYtIframe(){
+  const iframe=document.getElementById('yt-iframe');
+  iframe.src='about:blank';
+  clearTimeout(window._ytFallbackTimer);
+  document.getElementById('yt-fallback').style.display='none';
+}
+
+function skipSong(){
+  stopYtIframe();
+  G.currentSong=drawSong();
+  loadYtIframe(G.currentSong.id);
+}
+
+// ═══════════════════════════════════════════════════
+// RENDERING
+// ═══════════════════════════════════════════════════
+function showScreen(name){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(name).classList.add('active');
+}
+
+function renderPlayersStrip(){
+  const strip=document.getElementById('players-strip');
+  strip.innerHTML=G.players.map((p,i)=>`
+    <div class="player-chip${i===G.currentPlayer?' active-turn':''}">
+      <div class="pc-dot" style="background:${p.color}"></div>
+      <div>
+        <div class="pc-name">${esc(p.name)}</div>
+        <div class="pc-chips">${'🪙'.repeat(p.chips)}${'<span style="opacity:.2">🪙</span>'.repeat(Math.max(0,G.startChips-p.chips))}</div>
+      </div>
+      <div class="pc-score" style="color:${p.color}">${p.score}</div>
+    </div>`).join('');
+}
+
+function renderAllTimelines(){
+  const box=document.getElementById('all-timelines');
+  box.innerHTML=G.players.map((p,i)=>`
+    <div class="mini-player">
+      <div class="mini-player-header">
+        <div class="mini-dot" style="background:${p.color}"></div>
+        <div class="mini-name" style="color:${p.color}">${esc(p.name)}</div>
+        <div class="mini-score">${p.score}/${G.cardsToWin}</div>
+      </div>
+      <div class="mini-timeline">
+        ${p.timeline.length===0
+          ? '<div class="mini-empty">no cards yet</div>'
+          : p.timeline.map(c=>`<div class="mini-card" style="border-color:${p.color}22;color:${p.color}">${c.y}</div>`).join('')}
+      </div>
+    </div>`).join('');
+}
+
+function renderPhaseUI(){
+  const ui=document.getElementById('phase-ui');
+  const p=G.players[G.currentPlayer];
+
+  if(G.phase==='waiting'){
+    ui.innerHTML=`
+      <div class="timeline-section">
+        <div class="timeline-title">${esc(p.name)}'s Timeline</div>
+        <div style="color:var(--dim);font-size:13px;text-align:center;padding:20px 0">
+          Press the card above to reveal the song, then place it in your timeline.
+        </div>
+      </div>`;
+    renderStealButtons(ui, false);
+    return;
+  }
+
+  if(G.phase==='guessing'){
+    ui.innerHTML=`
+      <div class="timeline-section">
+        <div class="timeline-title">${esc(p.name)} — place this song in your timeline</div>
+        ${renderTimelineGaps(G.currentPlayer)}
+      </div>`;
+    renderStealButtons(ui, true);
+    return;
+  }
+
+  if(G.phase==='steal_phase'){
+    const stealing=G.players[G.stealActive];
+    ui.innerHTML=`
+      <div class="steal-section">
+        <div class="steal-title">🪙 Steal Attempt!</div>
+        <div class="steal-desc">
+          <b style="color:${stealing.color}">${esc(stealing.name)}</b> is spending a chip — guess the <b>exact year</b> (within ±3) to steal the card!
+        </div>
+        <div class="steal-guess-row">
+          <input class="steal-year-input" id="steal-year-inp" type="number" min="1950" max="2024" placeholder="Year…" onkeydown="if(event.key==='Enter')submitSteal()">
+          <button class="steal-submit-btn" onclick="submitSteal()">STEAL IT</button>
+          <button class="steal-cancel-btn" onclick="cancelSteal()">Cancel (lose chip)</button>
+        </div>
+      </div>`;
+    setTimeout(()=>document.getElementById('steal-year-inp')?.focus(),50);
+    return;
+  }
+
+  if(G.phase==='bonus'){
+    const winner=G.players[G._bonusPlayer];
+    ui.innerHTML=`
+      <div class="bonus-section">
+        <div class="bonus-title">⭐ BONUS: Name the Artist!</div>
+        <div class="bonus-desc">Correct placement! Guess the artist to earn back a chip. (Skip to continue)</div>
+        <div class="bonus-row">
+          <input class="bonus-input" id="bonus-artist-inp" placeholder="Artist name…"
+                 onkeydown="if(event.key==='Enter')submitBonus()">
+          <button class="bonus-btn" onclick="submitBonus()">GUESS</button>
+          <button class="steal-cancel-btn" onclick="dismissBonus()">Skip</button>
+        </div>
+      </div>`;
+    setTimeout(()=>document.getElementById('bonus-artist-inp')?.focus(),50);
+    return;
+  }
+}
+
+function renderTimelineGaps(playerIdx){
+  const p=G.players[playerIdx];
+  const tl=p.timeline; // sorted by year
+
+  if(tl.length===0){
+    return `<div class="timeline-row">
+      <div class="tl-gap">
+        <button class="tl-gap-btn" onclick="makeGuess(0)">📍 Place here (first card — always correct!)</button>
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--dimmer);text-align:center;padding:6px 0">Your timeline is empty — this card goes anywhere.</div>`;
+  }
+
+  let html='<div class="timeline-row">';
+  // gap before first card
+  html+=`<div class="tl-gap"><button class="tl-gap-btn" onclick="makeGuess(0)">← Before</button></div>`;
+
+  tl.forEach((card,i)=>{
+    html+=`<div class="tl-card" style="border-color:${p.color}44">
+      <div class="tl-card-year" style="color:${p.color}">${card.y}</div>
+      <div class="tl-card-title">${esc(card.t)}</div>
+      <div class="tl-card-artist">${esc(card.a)}</div>
+    </div>`;
+    if(i<tl.length-1){
+      html+=`<div class="tl-gap"><button class="tl-gap-btn" onclick="makeGuess(${i+1})">↕</button></div>`;
+    }
+  });
+
+  // gap after last card
+  html+=`<div class="tl-gap"><button class="tl-gap-btn" onclick="makeGuess(${tl.length})">After →</button></div>`;
+  html+='</div>';
+  return html;
+}
+
+function renderStealButtons(container, enabled){
+  const others=G.players.map((p,i)=>({p,i})).filter(({i})=>i!==G.currentPlayer);
+  if(!others.length) return;
+
+  const div=document.createElement('div');
+  div.className='steal-section';
+  div.innerHTML=`
+    <div class="steal-title">🪙 Steal</div>
+    <div class="steal-desc">${enabled
+      ? 'Other players: spend a chip to steal this card by guessing the exact year (±3).'
+      : 'Listen to the song, then steal if the active player misses.'}</div>
+    <div class="steal-players">
+      ${others.map(({p,i})=>`
+        <button class="steal-player-btn" onclick="initSteal(${i})" ${(!enabled||p.chips<=0)?'disabled':''}>
+          <div class="pc-dot" style="background:${p.color}"></div>
+          <span class="steal-btn-name" style="color:${p.color}">${esc(p.name)}</span>
+          <span class="steal-btn-chips">${'🪙'.repeat(p.chips)}</span>
+        </button>`).join('')}
+    </div>`;
+  container.appendChild(div);
+}
+
+// ═══════════════════════════════════════════════════
+// GAME LOGIC
+// ═══════════════════════════════════════════════════
+
+function makeGuess(gapIdx){
+  // gapIdx: 0=before first, 1=between 0&1, ..., n=after last
+  const p=G.players[G.currentPlayer];
+  const song=G.currentSong;
+  const tl=p.timeline;
+  let correct=false;
+
+  if(tl.length===0){
+    correct=true; // first card always placed correctly
+  } else {
+    const lo = gapIdx===0    ? -Infinity : tl[gapIdx-1].y;
+    const hi = gapIdx>=tl.length ? Infinity : tl[gapIdx].y;
+    correct = song.y > lo && song.y <= hi;
+  }
+
+  if(correct){
+    // insert into timeline at gapIdx, keep sorted
+    p.timeline.splice(gapIdx,0,{y:song.y,t:song.t,a:song.a});
+    p.score=p.timeline.length;
+    showResult('right', G.currentPlayer, song, null);
+    G.phase='bonus';
+    G._bonusPlayer=G.currentPlayer;
+  } else {
+    // wrong — offer steal
+    showResult('wrong', G.currentPlayer, song, null);
+    // steal phase is handled via result dismiss
+    G._pendingSongAfterWrong=song;
+    G._wrongGap=gapIdx;
+  }
+}
+
+function showResult(type, playerIdx, song, detail){
+  const p=G.players[playerIdx];
+  const overlay=document.getElementById('result-overlay');
+
+  if(type==='right'){
+    document.getElementById('res-icon').textContent='✅';
+    document.getElementById('res-title').textContent='CORRECT!';
+    document.getElementById('res-title').className='result-title right';
+    document.getElementById('res-song').innerHTML=`<b>${esc(song.t)}</b>`;
+    document.getElementById('res-year').textContent=song.y;
+    document.getElementById('res-detail').innerHTML=`<b style="color:${p.color}">${esc(p.name)}</b> placed it correctly — ${esc(song.a)} (${song.y})<br>Score: ${p.score}/${G.cardsToWin}`;
+    document.getElementById('res-next-btn').textContent='Guess Artist? →';
+    document.getElementById('res-next-btn').onclick=()=>{ overlay.style.display='none'; renderPhaseUI(); };
+  } else if(type==='wrong'){
+    document.getElementById('res-icon').textContent='❌';
+    document.getElementById('res-title').textContent='WRONG!';
+    document.getElementById('res-title').className='result-title wrong';
+    document.getElementById('res-song').innerHTML=`<b>${esc(song.t)}</b>`;
+    document.getElementById('res-year').textContent=song.y;
+    document.getElementById('res-detail').innerHTML=`${esc(song.a)} (${song.y})<br>Card goes back to the deck. Others can steal!`;
+    document.getElementById('res-next-btn').textContent='Open Steal →';
+    document.getElementById('res-next-btn').onclick=()=>{
+      overlay.style.display='none';
+      G.phase='steal_phase_open';
+      renderStealPhaseOpen();
+    };
+  } else if(type==='steal'){
+    document.getElementById('res-icon').textContent='🪙';
+    document.getElementById('res-title').textContent='STOLEN!';
+    document.getElementById('res-title').className='result-title steal';
+    document.getElementById('res-song').innerHTML=`<b>${esc(song.t)}</b>`;
+    document.getElementById('res-year').textContent=song.y;
+    document.getElementById('res-detail').innerHTML=`<b style="color:${p.color}">${esc(p.name)}</b> snagged it! ${esc(song.a)} (${song.y})<br>Score: ${p.score}/${G.cardsToWin}`;
+    document.getElementById('res-next-btn').textContent='Next Turn →';
+    document.getElementById('res-next-btn').onclick=()=>dismissResult();
+  } else if(type==='steal_fail'){
+    document.getElementById('res-icon').textContent='💸';
+    document.getElementById('res-title').textContent='MISSED!';
+    document.getElementById('res-title').className='result-title wrong';
+    document.getElementById('res-song').innerHTML=`<b>${esc(song.t)}</b>`;
+    document.getElementById('res-year').textContent=song.y;
+    document.getElementById('res-detail').innerHTML=`${esc(song.a)} (${song.y})<br>Chip lost! ${detail||''}`;
+    document.getElementById('res-next-btn').textContent='Next Turn →';
+    document.getElementById('res-next-btn').onclick=()=>dismissResult();
+  }
+
+  overlay.style.display='flex';
+}
+
+function renderStealPhaseOpen(){
+  const ui=document.getElementById('phase-ui');
+  const others=G.players.map((p,i)=>({p,i})).filter(({i})=>i!==G.currentPlayer);
+  ui.innerHTML=`
+    <div class="steal-section">
+      <div class="steal-title">🪙 Steal Window Open!</div>
+      <div class="steal-desc">Anyone can spend a chip and guess the year (±3 years) to steal this card!</div>
+      <div class="steal-players">
+        ${others.map(({p,i})=>`
+          <button class="steal-player-btn" onclick="initSteal(${i})" ${p.chips<=0?'disabled':''}>
+            <div class="pc-dot" style="background:${p.color}"></div>
+            <span class="steal-btn-name" style="color:${p.color}">${esc(p.name)}</span>
+            <span class="steal-btn-chips">${'🪙'.repeat(p.chips)}</span>
+          </button>`).join('')}
+      </div>
+      <div style="margin-top:12px">
+        <button class="steal-cancel-btn" onclick="noSteal()">Nobody steals — Next Turn →</button>
+      </div>
+    </div>`;
+}
+
+function noSteal(){
+  advanceTurn();
+}
+
+function initSteal(playerIdx){
+  G.stealActive=playerIdx;
+  G.phase='steal_phase';
+  renderPhaseUI();
+}
+
+function submitSteal(){
+  const inp=document.getElementById('steal-year-inp');
+  const guess=parseInt(inp?.value)||0;
+  const song=G.currentSong || G._pendingSongAfterWrong;
+  const stealer=G.players[G.stealActive];
+
+  stealer.chips=Math.max(0,stealer.chips-1); // spend chip
+
+  const diff=Math.abs(guess-song.y);
+  if(diff<=3){
+    // steal success — chip refunded
+    stealer.chips=Math.min(G.startChips,stealer.chips+1);
+    stealer.timeline.push({y:song.y,t:song.t,a:song.a});
+    stealer.timeline.sort((a,b)=>a.y-b.y);
+    stealer.score=stealer.timeline.length;
+    showResult('steal', G.stealActive, song, null);
+    G._stealSuccess=true;
+  } else {
+    showResult('steal_fail', G.stealActive, song, `Correct year: ${song.y}. You guessed ${guess}.`);
+    G._stealSuccess=false;
+  }
+}
+
+function cancelSteal(){
+  // Spent chip, no guess
+  const stealer=G.players[G.stealActive];
+  stealer.chips=Math.max(0,stealer.chips-1);
+  G.stealActive=null;
+  G.phase='steal_phase_open';
+  renderStealPhaseOpen();
+  renderPlayersStrip();
+}
+
+function submitBonus(){
+  const inp=document.getElementById('bonus-artist-inp');
+  const guess=(inp?.value||'').trim().toLowerCase();
+  const song=G.currentSong;
+  const p=G.players[G._bonusPlayer];
+  const correct=song.a.toLowerCase().split(' ').some(w=>w.length>3&&guess.includes(w));
+  if(correct){
+    p.chips=Math.min(G.startChips+3,p.chips+1); // allow going above start as bonus
+    alert(`✅ Correct! ${song.a} — you earned a chip! 🪙 (${p.chips} chips)`);
+  } else {
+    alert(`❌ Nope — it was ${song.a}.`);
+  }
+  dismissBonus();
+}
+
+function dismissBonus(){
+  checkWin(G._bonusPlayer);
+}
+
+function dismissResult(){
+  document.getElementById('result-overlay').style.display='none';
+  renderPlayersStrip();
+  renderAllTimelines();
+  advanceTurn();
+}
+
+function advanceTurn(){
+  document.getElementById('result-overlay').style.display='none';
+  G.stealActive=null;
+  G._pendingSongAfterWrong=null;
+  G._stealSuccess=false;
+  G.currentPlayer=(G.currentPlayer+1)%G.players.length;
+  if(G.currentPlayer===0) G.round++;
+  nextTurn();
+}
+
+function checkWin(playerIdx){
+  const p=G.players[playerIdx];
+  renderPlayersStrip();
+  renderAllTimelines();
+  if(p.score>=G.cardsToWin){
+    showWin(playerIdx);
+  } else {
+    advanceTurn();
+  }
+}
+
+function showWin(winnerIdx){
+  const winner=G.players[winnerIdx];
+  document.getElementById('win-winner-name').innerHTML=`🎉 <span style="color:${winner.color}">${esc(winner.name)}</span> wins!`;
+
+  const cards=document.getElementById('win-cards');
+  cards.innerHTML=winner.timeline.map(c=>`
+    <div class="win-card" style="border-color:${winner.color}">
+      <div class="win-card-year" style="color:${winner.color}">${c.y}</div>
+      <div class="win-card-info">${esc(c.t)}<br>${esc(c.a)}</div>
+    </div>`).join('');
+
+  const sb=document.getElementById('win-scoreboard');
+  const sorted=[...G.players].sort((a,b)=>b.score-a.score);
+  sb.innerHTML='<h3>Final Scores</h3>'+sorted.map(p=>`
+    <div class="win-score-row">
+      <div class="win-score-dot" style="background:${p.color}"></div>
+      <div class="win-score-name">${esc(p.name)}</div>
+      <div class="win-score-val" style="color:${p.color}">${p.score}</div>
+    </div>`).join('');
+
+  showScreen('win');
+}
+
+function goSetup(){
+  stopYtIframe();
+  showScreen('setup');
+}
+
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ═══════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════
+addPlayerRow('Alice');
+addPlayerRow('Bob');
+</script>
+</body>
+</html>

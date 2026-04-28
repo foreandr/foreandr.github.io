@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Comparing Calendars</title>
+  <link rel="icon" type="image/x-icon" href="../../images.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="back-btn" href="../../index.html">Back Home</a>
+    <div class="title-wrap">
+      <p class="eyebrow">Deep-Time Chronology Lab</p>
+      <h1>Comparing Calendars</h1>
+      <p class="subtitle">A 20,000-year synchronization matrix across mainstream, ritual, civil, and fringe calendar systems.</p>
+    </div>
+  </header>
+
+  <main class="page">
+    <section class="hero card">
+      <div class="hero-copy">
+        <h2>Calendars side by side</h2>
+        <p>Start from 1 CE, compare with today, and inspect how each calendar labels the same day. Click any matrix cell for details and formulas.</p>
+      </div>
+      <div class="hero-pills">
+        <span>Range: 8000 BCE to 12,000 CE</span>
+        <span>17 calendar systems</span>
+        <span>Clickable sync matrix</span>
+        <span>Drift diagnostics</span>
+      </div>
+    </section>
+
+    <section class="controls card">
+      <div class="control-grid">
+        <label>
+          <span>Timeline View</span>
+          <select id="epoch-set">
+            <option value="christ" selected>Christ-Centered Timeline</option>
+            <option value="deep">Deep-Time Timeline</option>
+          </select>
+        </label>
+
+        <label>
+          <span>Custom Year</span>
+          <div class="inline-controls">
+            <input id="custom-year" type="number" value="2026" min="1" max="12000">
+            <select id="custom-era">
+              <option value="CE" selected>CE</option>
+              <option value="BCE">BCE</option>
+            </select>
+          </div>
+        </label>
+
+        <label>
+          <span>Custom Month</span>
+          <select id="custom-month"></select>
+        </label>
+
+        <label>
+          <span>Custom Day</span>
+          <select id="custom-day"></select>
+        </label>
+      </div>
+      <p id="custom-summary" class="control-note"></p>
+      <div id="calendar-filter" class="calendar-filter"></div>
+    </section>
+
+    <section class="birthday card">
+      <div class="matrix-head">
+        <h3>Birthday Age Converter</h3>
+        <p>Enter your birthday and compare your age today across different calendar year systems.</p>
+      </div>
+      <div class="control-grid">
+        <label>
+          <span>Birth Year</span>
+          <div class="inline-controls">
+            <input id="birth-year" type="number" value="2000" min="1" max="12000">
+            <select id="birth-era">
+              <option value="CE" selected>CE</option>
+              <option value="BCE">BCE</option>
+            </select>
+          </div>
+        </label>
+        <label>
+          <span>Birth Month</span>
+          <select id="birth-month"></select>
+        </label>
+        <label>
+          <span>Birth Day</span>
+          <select id="birth-day"></select>
+        </label>
+        <label>
+          <span>Reference Date</span>
+          <input id="today-readonly" type="text" value="" readonly>
+        </label>
+      </div>
+      <p id="birthday-summary" class="control-note"></p>
+      <ul id="age-list" class="insight-list"></ul>
+    </section>
+
+    <section class="matrix card">
+      <div class="matrix-head">
+        <h3>Synchronization Matrix</h3>
+        <p>Click any cell to inspect derivation details and assumptions.</p>
+      </div>
+      <div class="matrix-layout">
+        <div class="table-shell">
+          <table id="sync-table"></table>
+        </div>
+        <aside class="inspector">
+          <h4 id="inspector-title">Select a cell</h4>
+          <p id="inspector-subtitle">Details will appear here.</p>
+          <div id="inspector-body" class="inspector-body"></div>
+          <div id="inspector-formula" class="latex-box"></div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="analysis-grid">
+      <article class="card">
+        <h3>Seasonal Drift: 10,000 CE</h3>
+        <p>How far fixed-year systems desynchronize from the tropical year at 10,000 CE.</p>
+        <div class="drift-bars">
+          <div class="drift-row">
+            <div class="drift-label">Enochic (364-day)</div>
+            <div class="drift-track"><span id="enochic-bar"></span></div>
+            <div id="enochic-value" class="drift-value"></div>
+          </div>
+          <div class="drift-row">
+            <div class="drift-label">Egyptian Civil (365-day)</div>
+            <div class="drift-track"><span id="egyptian-bar"></span></div>
+            <div id="egyptian-value" class="drift-value"></div>
+          </div>
+        </div>
+        <div id="drift-formula" class="latex-box"></div>
+      </article>
+
+      <article class="card">
+        <h3>Seasonal Flip: Hijri New Year</h3>
+        <p>Estimated time for Islamic New Year to traverse all seasons twice.</p>
+        <ul id="seasonal-list" class="insight-list"></ul>
+        <div id="seasonal-formula" class="latex-box"></div>
+      </article>
+
+      <article class="card">
+        <h3>Fastest Breakers</h3>
+        <p>Approximate long-run stability ranking by mean year-length error.</p>
+        <ol id="stability-list" class="rank-list"></ol>
+      </article>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script src="./script.js"></script>
+</body>
+</html>

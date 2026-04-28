@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Sentiment Analyzer</title>
+  <link rel="icon" type="image/x-icon" href="../../images.ico">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #0a0a0f; --surface: #111118; --border: #222230;
+    --accent: #00e5ff; --accent2: #ff3cac; --text: #e8e8f0; --muted: #555570;
+    --pos: #00e5a0; --neg: #ff3c3c; --neu: #f5a623; --radius: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'Space Mono', monospace;
+    min-height: 100dvh; display: flex; flex-direction: column;
+    align-items: center; padding: 40px 20px 80px;
+  }
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background-image: linear-gradient(rgba(0,229,255,0.025) 1px,transparent 1px), linear-gradient(90deg,rgba(0,229,255,0.025) 1px,transparent 1px);
+    background-size: 40px 40px; pointer-events: none; z-index: 0;
+  }
+  .page { position: relative; z-index: 1; width: 100%; max-width: 680px; }
+
+  header { text-align: center; margin-bottom: 40px; }
+  header h1 {
+    font-family: 'Syne', sans-serif; font-size: clamp(2rem,5vw,3rem);
+    font-weight: 800; letter-spacing: -2px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  header p { color: var(--muted); font-size: 0.65rem; letter-spacing: 3px; text-transform: uppercase; margin-top: 8px; }
+
+  .status-bar {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 14px;
+    font-size: 0.62rem; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 12px;
+  }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); flex-shrink: 0; transition: background 0.3s; }
+  .dot.loading { background: #f5a623; animation: pulse 1s infinite; }
+  .dot.ready { background: var(--pos); }
+  .dot.error { background: var(--neg); }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  .progress-wrap { height: 2px; background: var(--border); border-radius: 1px; margin-bottom: 16px; overflow: hidden; display: none; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); width: 0%; transition: width 0.3s ease; }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin-bottom: 16px; }
+  .card-label { font-size: 0.6rem; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
+
+  textarea {
+    width: 100%; padding: 14px; background: #000; border: 1px solid var(--border);
+    border-radius: 8px; color: var(--text); font-family: 'Space Mono', monospace;
+    font-size: 0.82rem; line-height: 1.7; resize: vertical; min-height: 140px;
+    outline: none; transition: border-color 0.2s;
+  }
+  textarea:focus { border-color: var(--accent); }
+  textarea:disabled { opacity: 0.4; }
+  textarea::placeholder { color: var(--muted); }
+
+  .btn {
+    width: 100%; margin-top: 12px; padding: 13px;
+    background: var(--accent); color: #000; border: none; border-radius: 8px;
+    font-family: 'Space Mono', monospace; font-size: 0.7rem; font-weight: 700;
+    letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: all 0.15s;
+  }
+  .btn:hover:not(:disabled) { filter: brightness(1.15); }
+  .btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+  /* Result */
+  .result-card { display: none; }
+  .sentiment-label {
+    font-family: 'Syne', sans-serif; font-size: 3rem; font-weight: 800;
+    text-align: center; padding: 20px 0 8px; transition: color 0.3s;
+  }
+  .sentiment-label.POSITIVE { color: var(--pos); }
+  .sentiment-label.NEGATIVE { color: var(--neg); }
+  .sentiment-label.NEUTRAL  { color: var(--neu); }
+
+  .conf-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 0.65rem; }
+  .conf-name { width: 70px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .conf-track { flex: 1; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .conf-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
+  .conf-fill.POSITIVE { background: var(--pos); }
+  .conf-fill.NEGATIVE { background: var(--neg); }
+  .conf-fill.NEUTRAL  { background: var(--neu); }
+  .conf-pct { width: 42px; text-align: right; color: var(--muted); }
+
+  .examples { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+  .ex-chip {
+    padding: 6px 12px; background: var(--bg); border: 1px solid var(--border);
+    border-radius: 20px; font-size: 0.62rem; color: var(--muted); cursor: pointer;
+    transition: all 0.15s; letter-spacing: 0.5px;
+  }
+  .ex-chip:hover { border-color: var(--accent); color: var(--accent); }
+
+  footer { text-align: center; margin-top: 48px; color: var(--muted); font-size: 0.55rem; letter-spacing: 2px; text-transform: uppercase; }
+  .back-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    color: var(--muted); font-size: 0.65rem; letter-spacing: 2px;
+    text-transform: uppercase; text-decoration: none;
+    margin-bottom: 28px; transition: color 0.2s;
+  }
+  .back-btn:hover { color: var(--accent); }
+  .browser-notice {
+    background: rgba(245,166,35,0.07); border: 1px solid rgba(245,166,35,0.3);
+    border-left: 4px solid #f5a623; border-radius: 8px;
+    padding: 16px 20px; margin-bottom: 32px; font-size: 0.78rem; line-height: 1.65;
+  }
+  .browser-notice strong { display: block; color: #f5a623; font-size: 0.8rem; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 6px; }
+  .browser-notice p { color: var(--text); opacity: 0.8; }
+</style>
+</head>
+<body>
+<div class="page">
+  <a class="back-btn" href="../../index.html">← Back Home</a>
+  <header>
+    <h1>Sentiment</h1>
+    <p>Distilbert · runs in your browser · no server</p>
+  </header>
+
+  <div class="browser-notice">
+    <strong>⚠ Runs entirely in your browser</strong>
+    <p>All AI processing happens locally on your device via WebAssembly — no server involved. Browser AI is dramatically slower and less accurate than any server-side or locally-installed tool. First load downloads the model (~65 MB). This is a proof-of-concept, not a production service.</p>
+  </div>
+
+  <div class="status-bar">
+    <div class="dot loading" id="dot"></div>
+    <span id="status-text">Loading model…</span>
+  </div>
+  <div class="progress-wrap" id="progress-wrap">
+    <div class="progress-fill" id="progress-fill"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">Enter text to analyze</div>
+    <textarea id="input" rows="5" placeholder="Loading…" disabled></textarea>
+    <button class="btn" id="analyze-btn" disabled>Analyze</button>
+    <div class="examples" id="examples"></div>
+  </div>
+
+  <div class="card result-card" id="result-card">
+    <div class="card-label">Result</div>
+    <div class="sentiment-label" id="sentiment-label">—</div>
+    <div id="conf-bars"></div>
+  </div>
+
+  <footer>distilbert-base-uncased-finetuned-sst-2 · Transformers.js v3 · WebAssembly</footer>
+</div>
+
+<script type="module">
+import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.5.1/dist/transformers.min.js';
+env.allowLocalModels = false; env.useBrowserCache = true;
+
+const dot          = document.getElementById('dot');
+const statusText   = document.getElementById('status-text');
+const progressWrap = document.getElementById('progress-wrap');
+const progressFill = document.getElementById('progress-fill');
+const inputEl      = document.getElementById('input');
+const analyzeBtn   = document.getElementById('analyze-btn');
+const resultCard   = document.getElementById('result-card');
+const sentLabel    = document.getElementById('sentiment-label');
+const confBars     = document.getElementById('conf-bars');
+
+const EXAMPLES = [
+  "I absolutely loved this movie, it was fantastic!",
+  "This product is terrible and broke after one day.",
+  "The weather today is okay, nothing special.",
+  "Best experience I've ever had, highly recommend!",
+  "I'm really disappointed with the service.",
+];
+
+// Populate example chips
+const exContainer = document.getElementById('examples');
+EXAMPLES.forEach(ex => {
+  const chip = document.createElement('div');
+  chip.className = 'ex-chip';
+  chip.textContent = ex.length > 40 ? ex.slice(0,40)+'…' : ex;
+  chip.onclick = () => { inputEl.value = ex; };
+  exContainer.appendChild(chip);
+});
+
+function setStatus(msg, state = 'loading') {
+  statusText.textContent = msg;
+  dot.className = 'dot ' + state;
+}
+function setProgress(pct) {
+  progressWrap.style.display = 'block';
+  progressFill.style.width = pct + '%';
+}
+
+let classifier = null;
+
+async function init() {
+  try {
+    classifier = await pipeline('sentiment-analysis', 'Xenova/distilbert-base-uncased-finetuned-sst-2-english', {
+      device: 'wasm',
+      progress_callback: p => {
+        if (p.status === 'progress') { setProgress(p.progress ?? 0); setStatus(`Downloading… ${(p.progress??0).toFixed(0)}%`); }
+      }
+    });
+    progressWrap.style.display = 'none';
+    setStatus('Ready', 'ready');
+    inputEl.disabled = false; inputEl.placeholder = 'Type or pick an example…'; analyzeBtn.disabled = false;
+    inputEl.focus();
+  } catch(e) {
+    setStatus('Failed to load', 'error');
+    console.error(e);
+  }
+}
+
+async function analyze() {
+  const text = inputEl.value.trim();
+  if (!text || !classifier) return;
+  analyzeBtn.disabled = true; setStatus('Analyzing…', 'loading');
+
+  try {
+    // top_k returns scores for all labels
+    const results = await classifier(text, { top_k: null });
+    const sorted = results.sort((a,b) => b.score - a.score);
+    const top = sorted[0];
+
+    resultCard.style.display = 'block';
+    sentLabel.textContent = top.label;
+    sentLabel.className = 'sentiment-label ' + top.label;
+
+    confBars.innerHTML = sorted.map(r => `
+      <div class="conf-row">
+        <span class="conf-name">${r.label}</span>
+        <div class="conf-track"><div class="conf-fill ${r.label}" style="width:${(r.score*100).toFixed(1)}%"></div></div>
+        <span class="conf-pct">${(r.score*100).toFixed(1)}%</span>
+      </div>`).join('');
+
+    setStatus('Done ✓', 'ready');
+  } catch(e) {
+    setStatus('Error', 'error'); console.error(e);
+  }
+  analyzeBtn.disabled = false;
+}
+
+analyzeBtn.addEventListener('click', analyze);
+inputEl.addEventListener('keydown', e => { if (e.key === 'Enter' && e.ctrlKey) analyze(); });
+init();
+</script>
+</body>
+</html>

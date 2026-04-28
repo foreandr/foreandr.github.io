@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game of Life · 4D</title>
+    <link rel="icon" href="../../images.ico" type="image/x-icon">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0d0d0f;
+            color: #e8e8f0;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        #canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .ui-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .top-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #141417;
+            border-bottom: 1px solid #2a2a35;
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            pointer-events: auto;
+            gap: 16px;
+        }
+
+        .back-link {
+            color: #f97316;
+            text-decoration: none;
+            font-size: 14px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .back-link:hover {
+            background: #2a2a35;
+        }
+
+        h1 {
+            font-size: 18px;
+            font-weight: 500;
+            flex: 1;
+            text-align: center;
+        }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+            font-size: 13px;
+        }
+
+        .stat {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+
+        .stat-label {
+            color: #a0a0b0;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            font-weight: 600;
+            color: #f97316;
+            margin-top: 2px;
+        }
+
+        .sidebar {
+            position: absolute;
+            left: 0;
+            top: 60px;
+            bottom: 0;
+            width: 280px;
+            background: #141417;
+            border-right: 1px solid #2a2a35;
+            padding: 16px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            pointer-events: auto;
+            transition: transform 0.3s;
+        }
+
+        .sidebar.collapsed {
+            transform: translateX(-280px);
+        }
+
+        .toggle-sidebar {
+            position: absolute;
+            left: 280px;
+            top: 70px;
+            background: #141417;
+            border: 1px solid #2a2a35;
+            border-left: none;
+            width: 24px;
+            height: 40px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #f97316;
+            pointer-events: auto;
+            transition: left 0.3s;
+            z-index: 101;
+        }
+
+        .sidebar.collapsed ~ .toggle-sidebar {
+            left: 0;
+        }
+
+        .sidebar-section {
+            margin-bottom: 24px;
+        }
+
+        .sidebar-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #a0a0b0;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        button {
+            background: #2a2a35;
+            color: #e8e8f0;
+            border: 1px solid #3a3a45;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        button:hover {
+            background: #353540;
+            border-color: #4a4a55;
+        }
+
+        button:active {
+            background: #2a2a35;
+        }
+
+        button.primary {
+            background: #f97316;
+            color: #0d0d0f;
+            border-color: #f97316;
+        }
+
+        button.primary:hover {
+            background: #ea6b1f;
+            border-color: #ea6b1f;
+        }
+
+        .rule-presets {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+
+        .rule-presets button {
+            font-size: 11px;
+            padding: 6px 8px;
+        }
+
+        .slider-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .slider-label {
+            font-size: 11px;
+            color: #a0a0b0;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 4px;
+            border-radius: 2px;
+            background: #2a2a35;
+            outline: none;
+            -webkit-appearance: none;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #f97316;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #f97316;
+            cursor: pointer;
+            border: none;
+        }
+
+        .w-slices {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .w-slice {
+            background: #1a1a1f;
+            border: 1px solid #2a2a35;
+            border-radius: 4px;
+            padding: 8px;
+            font-size: 12px;
+        }
+
+        .w-slice-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .w-slice-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+        }
+
+        .w-slice-pop {
+            color: #a0a0b0;
+            font-size: 11px;
+        }
+
+        .instructions {
+            font-size: 11px;
+            color: #a0a0b0;
+            line-height: 1.4;
+            margin-top: auto;
+            padding-top: 16px;
+            border-top: 1px solid #2a2a35;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+
+    <div class="ui-overlay">
+        <div class="top-bar">
+            <a href="../../index.html" class="back-link">← Back</a>
+            <h1>Game of Life · 4D</h1>
+            <div class="stats">
+                <div class="stat">
+                    <span class="stat-label">Generation</span>
+                    <span class="stat-value" id="generation">0</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Population</span>
+                    <span class="stat-value" id="population">0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-title">Playback</div>
+                <div class="controls">
+                    <button class="primary" id="playPauseBtn">Play</button>
+                    <button id="stepBtn">Step</button>
+                    <button id="clearBtn">Clear</button>
+                    <button id="randomBtn">Random</button>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-title">Speed</div>
+                <div class="slider-group">
+                    <div class="slider-label">
+                        <span>Update Rate</span>
+                        <span id="speedValue">2</span>
+                    </div>
+                    <input type="range" id="speedSlider" min="1" max="20" value="2">
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-title">Rule Presets</div>
+                <div class="rule-presets">
+                    <button id="rule1">Classic</button>
+                    <button id="rule2">Slow</button>
+                    <button id="rule3">Fast</button>
+                    <button id="rule4">Chaotic</button>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-title">W-Slice Population</div>
+                <div class="w-slices" id="wSlices"></div>
+            </div>
+
+            <div class="instructions">
+                <strong>Controls:</strong><br>
+                • Left drag: rotate<br>
+                • Right drag: pan<br>
+                • Scroll: zoom<br>
+                <strong>Rules:</strong><br>
+                • Birth: 5 neighbors<br>
+                • Survive: 5–8 neighbors
+            </div>
+        </div>
+
+        <div class="toggle-sidebar" id="toggleSidebar">›</div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Configuration
+        const GRID_SIZE = 10;
+        const W_SLICES = 4;
+        const CELL_SPACING = 1.2;
+        const GAP_BETWEEN_SHEETS = 4;
+        const INITIAL_FILL = 0.15;
+
+        // 4D Rules (per W-slice)
+        let rules = {
+            surviveMin: 5,
+            surviveMax: 8,
+            birthNeighbors: 5
+        };
+
+        // State
+        let cells = new Set();
+        let generation = 0;
+        let isPlaying = false;
+        let speedMultiplier = 1;
+        let lastUpdateTime = Date.now();
+        let updateInterval = 500;
+
+        // Color mapping for W slices
+        const wColors = [
+            0xff8c00,  // orange (W=0)
+            0x00bfff,  // cyan (W=1)
+            0x32cd32,  // lime (W=2)
+            0xff69b4   // pink (W=3)
+        ];
+
+        // Three.js Setup
+        const canvas = document.getElementById('canvas');
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(
+            75,
+            window.innerWidth / window.innerHeight,
+            0.1,
+            1000
+        );
+        const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setClearColor(0x0d0d0f);
+
+        // Camera position
+        camera.position.set(15, 15, 15);
+        camera.lookAt(0, 0, 0);
+
+        // Simple orbit controls
+        const orbitState = {
+            isRotating: false,
+            isPanning: false,
+            prevX: 0,
+            prevY: 0,
+            theta: Math.PI / 4,
+            phi: Math.PI / 4,
+            distance: 25,
+            panX: 0,
+            panY: 0
+        };
+
+        function updateCameraPosition() {
+            const radius = orbitState.distance;
+            camera.position.x = radius * Math.sin(orbitState.phi) * Math.cos(orbitState.theta) + orbitState.panX;
+            camera.position.y = radius * Math.cos(orbitState.phi) + orbitState.panY;
+            camera.position.z = radius * Math.sin(orbitState.phi) * Math.sin(orbitState.theta);
+            camera.lookAt(orbitState.panX, orbitState.panY, 0);
+        }
+
+        document.addEventListener('mousedown', (e) => {
+            if (e.button === 0) orbitState.isRotating = true;
+            if (e.button === 2) orbitState.isPanning = true;
+            orbitState.prevX = e.clientX;
+            orbitState.prevY = e.clientY;
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            const deltaX = e.clientX - orbitState.prevX;
+            const deltaY = e.clientY - orbitState.prevY;
+
+            if (orbitState.isRotating) {
+                orbitState.theta -= deltaX * 0.01;
+                orbitState.phi += deltaY * 0.01;
+                orbitState.phi = Math.max(0.1, Math.min(Math.PI - 0.1, orbitState.phi));
+                updateCameraPosition();
+            }
+
+            if (orbitState.isPanning) {
+                orbitState.panX -= deltaX * 0.05;
+                orbitState.panY += deltaY * 0.05;
+                updateCameraPosition();
+            }
+
+            orbitState.prevX = e.clientX;
+            orbitState.prevY = e.clientY;
+        });
+
+        document.addEventListener('mouseup', () => {
+            orbitState.isRotating = false;
+            orbitState.isPanning = false;
+        });
+
+        document.addEventListener('contextmenu', (e) => e.preventDefault());
+
+        document.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            orbitState.distance += e.deltaY * 0.02;
+            orbitState.distance = Math.max(10, Math.min(50, orbitState.distance));
+            updateCameraPosition();
+        });
+
+        // Game Logic - 4D
+        function countNeighbors(x, y, z, w) {
+            let count = 0;
+            for (let dx = -1; dx <= 1; dx++) {
+                for (let dy = -1; dy <= 1; dy++) {
+                    for (let dz = -1; dz <= 1; dz++) {
+                        for (let dw = -1; dw <= 1; dw++) {
+                            if (dx === 0 && dy === 0 && dz === 0 && dw === 0) continue;
+                            const nx = (x + dx + GRID_SIZE) % GRID_SIZE;
+                            const ny = (y + dy + GRID_SIZE) % GRID_SIZE;
+                            const nz = (z + dz + GRID_SIZE) % GRID_SIZE;
+                            const nw = (w + dw + W_SLICES) % W_SLICES;
+                            if (cells.has(`${nx},${ny},${nz},${nw}`)) count++;
+                        }
+                    }
+                }
+            }
+            return count;
+        }
+
+        function step() {
+            const newCells = new Set();
+            const checked = new Set();
+
+            // Check all living cells and their neighbors
+            for (const key of cells) {
+                const [x, y, z, w] = key.split(',').map(Number);
+                for (let dx = -1; dx <= 1; dx++) {
+                    for (let dy = -1; dy <= 1; dy++) {
+                        for (let dz = -1; dz <= 1; dz++) {
+                            for (let dw = -1; dw <= 1; dw++) {
+                                const nx = (x + dx + GRID_SIZE) % GRID_SIZE;
+                                const ny = (y + dy + GRID_SIZE) % GRID_SIZE;
+                                const nz = (z + dz + GRID_SIZE) % GRID_SIZE;
+                                const nw = (w + dw + W_SLICES) % W_SLICES;
+                                const checkKey = `${nx},${ny},${nz},${nw}`;
+                                if (!checked.has(checkKey)) {
+                                    checked.add(checkKey);
+                                    const neighbors = countNeighbors(nx, ny, nz, nw);
+                                    const isAlive = cells.has(checkKey);
+
+                                    if (isAlive && neighbors >= rules.surviveMin && neighbors <= rules.surviveMax) {
+                                        newCells.add(checkKey);
+                                    } else if (!isAlive && neighbors === rules.birthNeighbors) {
+                                        newCells.add(checkKey);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            cells = newCells;
+            generation++;
+            updateUI();
+            updateVisualization();
+        }
+
+        function randomize() {
+            cells.clear();
+            for (let x = 0; x < GRID_SIZE; x++) {
+                for (let y = 0; y < GRID_SIZE; y++) {
+                    for (let z = 0; z < GRID_SIZE; z++) {
+                        for (let w = 0; w < W_SLICES; w++) {
+                            if (Math.random() < INITIAL_FILL) {
+                                cells.add(`${x},${y},${z},${w}`);
+                            }
+                        }
+                    }
+                }
+            }
+            generation = 0;
+            updateUI();
+            updateVisualization();
+        }
+
+        function clear() {
+            cells.clear();
+            generation = 0;
+            updateUI();
+            updateVisualization();
+        }
+
+        // Rendering
+        let cellMeshes = [];
+        let sheetMeshes = [];
+
+        function createVisualization() {
+            // Clear old meshes
+            cellMeshes.forEach(mesh => scene.remove(mesh));
+            sheetMeshes.forEach(mesh => scene.remove(mesh));
+            cellMeshes = [];
+            sheetMeshes = [];
+
+            // Create bounding boxes and separators for each W-slice
+            for (let w = 0; w < W_SLICES; w++) {
+                const yOffset = w * (GRID_SIZE * CELL_SPACING + GAP_BETWEEN_SHEETS);
+
+                // Bounding box
+                const boxGeom = new THREE.BoxGeometry(
+                    GRID_SIZE * CELL_SPACING + 1,
+                    GRID_SIZE * CELL_SPACING + 1,
+                    GRID_SIZE * CELL_SPACING + 1
+                );
+                const boxMat = new THREE.LineBasicMaterial({ color: wColors[w], transparent: true, opacity: 0.3 });
+                const boxWireframe = new THREE.LineSegments(
+                    new THREE.EdgesGeometry(boxGeom),
+                    boxMat
+                );
+                boxWireframe.position.y = yOffset + GRID_SIZE * CELL_SPACING / 2;
+                scene.add(boxWireframe);
+                sheetMeshes.push(boxWireframe);
+
+                // W-slice label (as small text via canvas texture or just use geometry)
+                // We'll skip labels for now; they're indicated by color
+            }
+
+            // Create cells
+            for (const key of cells) {
+                const [x, y, z, w] = key.split(',').map(Number);
+                const yOffset = w * (GRID_SIZE * CELL_SPACING + GAP_BETWEEN_SHEETS);
+
+                const geometry = new THREE.BoxGeometry(0.8, 0.8, 0.8);
+                const color = wColors[w];
+                const material = new THREE.MeshPhongMaterial({
+                    color: color,
+                    emissive: color,
+                    emissiveIntensity: 0.3,
+                    flatShading: true
+                });
+
+                const cube = new THREE.Mesh(geometry, material);
+                cube.position.set(
+                    x * CELL_SPACING - GRID_SIZE * CELL_SPACING / 2,
+                    yOffset + z * CELL_SPACING,
+                    y * CELL_SPACING - GRID_SIZE * CELL_SPACING / 2
+                );
+
+                scene.add(cube);
+                cellMeshes.push(cube);
+            }
+        }
+
+        function updateVisualization() {
+            createVisualization();
+        }
+
+        // UI Updates
+        function updateUI() {
+            document.getElementById('generation').textContent = generation;
+            document.getElementById('population').textContent = cells.size;
+
+            // Update W-slice breakdown
+            const wSlicesDiv = document.getElementById('wSlices');
+            wSlicesDiv.innerHTML = '';
+            for (let w = 0; w < W_SLICES; w++) {
+                let count = 0;
+                for (const key of cells) {
+                    const [, , , wVal] = key.split(',').map(Number);
+                    if (wVal === w) count++;
+                }
+
+                const sliceEl = document.createElement('div');
+                sliceEl.className = 'w-slice';
+                sliceEl.innerHTML = `
+                    <div class="w-slice-name">
+                        <div class="w-slice-color" style="background: #${wColors[w].toString(16).padStart(6, '0')}"></div>
+                        W=${w}
+                    </div>
+                    <div class="w-slice-pop">${count} cells</div>
+                `;
+                wSlicesDiv.appendChild(sliceEl);
+            }
+        }
+
+        // Event Listeners
+        document.getElementById('playPauseBtn').addEventListener('click', () => {
+            isPlaying = !isPlaying;
+            document.getElementById('playPauseBtn').textContent = isPlaying ? 'Pause' : 'Play';
+        });
+
+        document.getElementById('stepBtn').addEventListener('click', step);
+        document.getElementById('clearBtn').addEventListener('click', clear);
+        document.getElementById('randomBtn').addEventListener('click', randomize);
+
+        document.getElementById('speedSlider').addEventListener('input', (e) => {
+            speedMultiplier = parseInt(e.target.value);
+            document.getElementById('speedValue').textContent = speedMultiplier;
+            updateInterval = Math.max(50, 500 / speedMultiplier);
+        });
+
+        document.getElementById('rule1').addEventListener('click', () => {
+            rules = { surviveMin: 5, surviveMax: 8, birthNeighbors: 5 };
+        });
+        document.getElementById('rule2').addEventListener('click', () => {
+            rules = { surviveMin: 6, surviveMax: 7, birthNeighbors: 6 };
+        });
+        document.getElementById('rule3').addEventListener('click', () => {
+            rules = { surviveMin: 4, surviveMax: 9, birthNeighbors: 4 };
+        });
+        document.getElementById('rule4').addEventListener('click', () => {
+            rules = { surviveMin: 3, surviveMax: 10, birthNeighbors: 4 };
+        });
+
+        document.getElementById('toggleSidebar').addEventListener('click', () => {
+            const sidebar = document.querySelector('.sidebar');
+            sidebar.classList.toggle('collapsed');
+            const btn = document.getElementById('toggleSidebar');
+            btn.textContent = sidebar.classList.contains('collapsed') ? '‹' : '›';
+        });
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+
+        const pointLight = new THREE.PointLight(0xffffff, 1);
+        pointLight.position.set(20, 20, 20);
+        scene.add(pointLight);
+
+        // Initialize
+        randomize();
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const now = Date.now();
+            if (isPlaying && now - lastUpdateTime > updateInterval) {
+                step();
+                lastUpdateTime = now;
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
