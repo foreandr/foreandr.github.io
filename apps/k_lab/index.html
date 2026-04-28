@@ -304,16 +304,22 @@ sup{font-size:.7em;}
     <div>
       <div class="card-title">String X</div>
       <textarea class="ki" id="d-x" rows="5"></textarea>
+      <div class="chips" id="d-chips-x" style="margin-top:6px;"></div>
     </div>
     <div>
       <div class="card-title">String Y</div>
       <textarea class="ki" id="d-y" rows="5"></textarea>
+      <div class="chips" id="d-chips-y" style="margin-top:6px;"></div>
     </div>
   </div>
-  <div class="chips" id="d-chips" style="margin-top:8px;"></div>
-  <div class="row" style="margin-top:10px;">
+  <div style="margin-top:10px;">
+    <div class="card-title" style="margin-bottom:6px;">Load Pair</div>
+    <div class="chips" id="d-chips"></div>
+  </div>
+  <div class="row" style="margin-top:12px;">
     <button class="btn b" id="d-run">↔ Compute NCD</button>
-    <span id="d-status" class="dim" style="font-size:.65rem;"></span>
+    <button class="btn ghost" id="d-swap" style="font-size:.8rem;">⇄ Swap X↔Y</button>
+    <span id="d-status" class="dim" style="font-size:.72rem;"></span>
   </div>
   <div class="sep"></div>
   <div class="g2" id="d-result-area">
@@ -992,30 +998,61 @@ function localEntropyBytes(bytes, win = 16) {
 // ═══════════════════════════════════════════ DISTANCE MODULE
 
 function initDistance() {
-  const chips = document.getElementById('d-chips');
-  const pairs = {
-    'dna_pair':'DNA sequences','code_pair':'Code (JS vs Python)','primes_fib':'Primes vs Fibonacci'
-  };
-  Object.entries(pairs).forEach(([k, label]) => {
+  // ── individual X chips
+  const xKeys = ['pi','fib','primes','zeros','english','random','rand_bytes','markov','brownian','lcg','lorenz_b','dna','rand_dna','code','mandel'];
+  xKeys.forEach(k => {
     const btn = document.createElement('button');
-    btn.className = 'chip'; btn.textContent = label;
-    btn.onclick = () => {
-      const e = EXAMPLES[k];
-      document.getElementById('d-x').value = e.x;
-      document.getElementById('d-y').value = e.y;
-    };
-    chips.appendChild(btn);
-  });
-  // Also add single-string examples that load same string into both
-  ['pi','primes','english','random'].forEach(k => {
-    const btn = document.createElement('button');
-    btn.className = 'chip'; btn.textContent = `X = ${EXAMPLES[k].label}`;
+    btn.className = 'chip'; btn.textContent = EXAMPLES[k].label;
     btn.onclick = () => {
       const v = EXAMPLES[k].v;
       document.getElementById('d-x').value = typeof v === 'function' ? v() : v;
     };
-    chips.appendChild(btn);
+    document.getElementById('d-chips-x').appendChild(btn);
   });
+
+  // ── individual Y chips
+  const yKeys = ['random','rand_bytes','brownian','markov','lcg','lorenz_b','sine_q','pi','fib','primes','english','dna','rand_dna','code','zeros','mandel'];
+  yKeys.forEach(k => {
+    const btn = document.createElement('button');
+    btn.className = 'chip'; btn.textContent = EXAMPLES[k].label;
+    btn.onclick = () => {
+      const v = EXAMPLES[k].v;
+      document.getElementById('d-y').value = typeof v === 'function' ? v() : v;
+    };
+    document.getElementById('d-chips-y').appendChild(btn);
+  });
+
+  // ── pair chips (loads both X and Y)
+  const PAIRS = [
+    {label:'DNA vs DNA (similar)',    x:EXAMPLES.dna.v,          y:'ATGCGATCGATCGAAGCTAGCTAGCGATCGATCGAAGCTAGCGATCGATCGATCGAAGCTAGCTAGCTAG'},
+    {label:'Code: JS vs Python',      x:EXAMPLES.code.v,         y:'def fibonacci(n):\n  if n<=1: return n\n  memo={}\n  def fib(k):\n    if k in memo: return memo[k]\n    memo[k]=fib(k-1)+fib(k-2)\n    return memo[k]\n  return fib(n)'},
+    {label:'Primes vs Fibonacci',     x:EXAMPLES.primes.v,       y:EXAMPLES.fib.v},
+    {label:'π vs Random',             x:EXAMPLES.pi.v,           y:EXAMPLES.random.v()},
+    {label:'English vs DNA',          x:EXAMPLES.english.v,      y:EXAMPLES.dna.v},
+    {label:'Markov vs Brownian',      x:EXAMPLES.markov.v(),     y:EXAMPLES.brownian.v()},
+    {label:'LCG vs Lorenz',           x:EXAMPLES.lcg.v(),        y:EXAMPLES.lorenz_b.v()},
+    {label:'Zeros vs Random',         x:EXAMPLES.zeros.v,        y:EXAMPLES.random.v()},
+    {label:'π vs Fibonacci',          x:EXAMPLES.pi.v,           y:EXAMPLES.fib.v},
+    {label:'DNA vs Random DNA',       x:EXAMPLES.dna.v,          y:EXAMPLES.rand_dna.v()},
+    {label:'Mandelbrot vs Primes',    x:EXAMPLES.mandel.v,       y:EXAMPLES.primes.v},
+    {label:'Sine vs LCG',             x:EXAMPLES.sine_q.v(),     y:EXAMPLES.lcg.v()},
+  ];
+  PAIRS.forEach(p => {
+    const btn = document.createElement('button');
+    btn.className = 'chip'; btn.textContent = p.label;
+    btn.onclick = () => {
+      document.getElementById('d-x').value = p.x;
+      document.getElementById('d-y').value = p.y;
+    };
+    document.getElementById('d-chips').appendChild(btn);
+  });
+
+  // ── swap button
+  document.getElementById('d-swap').onclick = () => {
+    const x = document.getElementById('d-x');
+    const y = document.getElementById('d-y');
+    [x.value, y.value] = [y.value, x.value];
+  };
 
   document.getElementById('d-run').onclick = async () => {
     const x = document.getElementById('d-x').value.trim();
@@ -1385,11 +1422,25 @@ initOmega();
 initBitmap();
 initLibrary();
 
-// Pre-load pi into analyze on start + show binary preview
+// Pre-load defaults into every panel so every Run button works immediately
 (function() {
-  const v = EXAMPLES.pi.v;
-  document.getElementById('a-input').value = v;
-  renderBinaryPreview(stringToBytes(v));
+  // Analyze — π digits
+  const piV = EXAMPLES.pi.v;
+  document.getElementById('a-input').value = piV;
+  renderBinaryPreview(stringToBytes(piV));
+
+  // Distance — DNA pair
+  document.getElementById('d-x').value = EXAMPLES.dna.v;
+  document.getElementById('d-y').value = 'ATGCGATCGATCGAAGCTAGCTAGCGATCGATCGAAGCTAGCGATCGATCGATCGAAGCTAGCTAGCTAG';
+
+  // Depth — Mandelbrot (high-depth canonical example)
+  document.getElementById('dep-input').value = EXAMPLES.mandel.v;
+  drawDepthCanvas(null);
+
+  // Bitmap — English text (shows nice structure gradient)
+  document.getElementById('bm-input').value = EXAMPLES.english.v;
+
+  // Omega has no text input — the Run Simulation button is the entry point
 })();
 
 window.addEventListener('resize', () => {
