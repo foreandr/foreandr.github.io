@@ -695,6 +695,7 @@ document.getElementById('btn-play').addEventListener('click', function() {
   S.playing = !S.playing;
   this.textContent = S.playing ? '▶ Play' : '⏸ Pause';
   this.classList.toggle('on', S.playing);
+  if (S.playing && !audioOn) startAudio();
 });
 document.getElementById('btn-audio').addEventListener('click', () => audioOn ? stopAudio() : startAudio());
 document.getElementById('sl-vol').addEventListener('input', function() { vol = parseFloat(this.value); if (gainNode) gainNode.gain.value = vol; });
