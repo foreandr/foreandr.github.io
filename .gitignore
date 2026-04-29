@@ -143,8 +143,12 @@ apps/natural_resources/Statistical Review of World Energy Narrow format.csv
 # 🚫 LFS BUSTERS — large data files that killed the LFS budget
 apps/jobs_analysis/aggregated_jobs.json
 apps/jobs_analysis/jobs_min.json
+# openalex_data.js (old monolithic file) — still ignored if it exists
 apps/openalex_pipeline/openalex_data.js
+# CSV source file — too large for GitHub (273 MB)
 apps/openalex_pipeline/openalex_papers.csv
+# chunk files are ~45 MB each — allowed by GitHub, NOT ignored
+# openalex_data_NNN.js and openalex_manifest.js are committed normally
 apps/blockchain_tracker/graph_data.js
 apps/finance_sentiment/raw_sentiment.json
 apps/finance_sentiment/sentiment_data.js

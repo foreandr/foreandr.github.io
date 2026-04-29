@@ -1,5 +1,5 @@
 {
-  "last_scanned": "2026-04-27 20:00:09",
+  "last_scanned": "2026-04-28 20:00:13",
   "total_arbs": 21,
   "min_net": 0.0,
   "scan_history": [
@@ -145,6 +145,14 @@
       "n_events": 269,
       "api_requests": 13,
       "new_arbs": 1,
+      "total_arbs": 21
+    },
+    {
+      "scanned_at": "2026-04-28 20:00:13",
+      "scan_seconds": 7.49,
+      "n_events": 281,
+      "api_requests": 13,
+      "new_arbs": 0,
       "total_arbs": 21
     }
   ],

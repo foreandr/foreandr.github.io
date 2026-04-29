@@ -531,12 +531,24 @@ body::before {
 
 <div id="noDataOverlay" class="no-data-overlay">
   <h2>No data yet</h2>
-  <p>Run the pipeline to generate <code>openalex_data.js</code>, then reload this page.</p>
+  <p>Run the pipeline to generate the JS chunk files, then reload this page.</p>
   <p style="margin-top:12px;">
     <code>python get_data.py --from-year 1980</code><br>
-    <span style="color:var(--text-muted);font-size:0.8rem;margin:0 8px;">then</span><br>
-    <code>python main.py</code>
+    <span style="color:var(--text-muted);font-size:0.8rem;margin:0 8px;">(calls main.py automatically every 50 K papers)</span>
   </p>
+</div>
+
+<div id="loadingOverlay" style="
+  display:none; position:fixed; inset:0; z-index:9999;
+  background:rgba(8,8,12,0.97); flex-direction:column;
+  align-items:center; justify-content:center; gap:18px;
+  font-family:var(--font-mono); color:var(--text-dim);">
+  <div style="font-size:1.6rem; color:var(--accent); letter-spacing:.1em;">OpenAlex Zeitgeist</div>
+  <div id="loadStatus" style="font-size:0.75rem; letter-spacing:.08em; text-transform:uppercase;"></div>
+  <div style="width:320px; height:4px; background:var(--surface3); border-radius:2px; overflow:hidden;">
+    <div id="loadBar" style="height:100%; width:0%; background:var(--accent); border-radius:2px; transition:width .3s;"></div>
+  </div>
+  <div id="loadDetail" style="font-size:0.65rem; color:var(--text-muted);"></div>
 </div>
 
 <div class="page-wrap">
@@ -642,17 +654,99 @@ body::before {
   </div>
 </div>
 
-<script src="openalex_data.js"></script>
 <script>
-(() => {
-  'use strict';
+// ── Chunk loader ──────────────────────────────────────────────────────────────
+function _loadScript(src) {
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = src;
+    s.onload  = resolve;
+    s.onerror = () => reject(new Error('Failed to load ' + src));
+    document.head.appendChild(s);
+  });
+}
 
-  if (typeof OPENALEX_DATA === 'undefined') {
-    document.getElementById('noDataOverlay').style.display = 'flex';
+function _mergeChunks(chunks) {
+  const m = {
+    meta:{}, years:{}, globalUnigrams:[], globalBigrams:[],
+    journalList:[], fieldList:[], journals:{}, fields:{}
+  };
+  for (const c of chunks) {
+    if (c.meta)           Object.assign(m.meta, c.meta);
+    if (c.years)          Object.assign(m.years, c.years);
+    if (c.journals)       Object.assign(m.journals, c.journals);
+    if (c.fields)         Object.assign(m.fields, c.fields);
+    if (c.globalUnigrams?.length)  m.globalUnigrams  = c.globalUnigrams;
+    if (c.globalBigrams?.length)   m.globalBigrams   = c.globalBigrams;
+    if (c.journalList?.length)     m.journalList     = c.journalList;
+    if (c.fieldList?.length)       m.fieldList       = c.fieldList;
+  }
+  return m;
+}
+
+function _setLoad(msg, pct, detail) {
+  const ov = document.getElementById('loadingOverlay');
+  if (ov) {
+    ov.style.display = 'flex';
+    document.getElementById('loadStatus').textContent = msg;
+    document.getElementById('loadBar').style.width    = pct + '%';
+    if (detail !== undefined)
+      document.getElementById('loadDetail').textContent = detail;
+  }
+}
+
+(async function _boot() {
+  'use strict';
+  _setLoad('Loading manifest…', 5);
+
+  try {
+    await _loadScript('openalex_manifest.js');
+  } catch(e) {
+    document.getElementById('loadingOverlay').style.display = 'none';
+    document.getElementById('noDataOverlay').style.display  = 'flex';
     return;
   }
 
-  const DATA      = OPENALEX_DATA;
+  if (!window.OPENALEX_MANIFEST) {
+    document.getElementById('loadingOverlay').style.display = 'none';
+    document.getElementById('noDataOverlay').style.display  = 'flex';
+    return;
+  }
+
+  const manifest = window.OPENALEX_MANIFEST;
+  const files    = manifest.chunks || [];
+  window._OA     = [];   // chunk accumulator (reset before loading)
+
+  _setLoad('Loading data chunks…', 10,
+    `${files.length} chunk file(s) · ${(manifest.totalPapers||0).toLocaleString()} papers`
+  );
+
+  // Load all chunks (parallel) with progress tracking
+  let loaded = 0;
+  await Promise.all(files.map(async (fname, i) => {
+    await _loadScript(fname);
+    loaded++;
+    const pct = 10 + Math.round(loaded / files.length * 80);
+    _setLoad('Loading data chunks…', pct, `${loaded} / ${files.length} chunks loaded`);
+  }));
+
+  _setLoad('Merging…', 92);
+  await new Promise(r => setTimeout(r, 30));   // yield to browser for repaint
+
+  const DATA = _mergeChunks(window._OA || []);
+
+  if (!DATA.years || !Object.keys(DATA.years).length) {
+    _setLoad('No year data found', 100);
+    setTimeout(() => {
+      document.getElementById('loadingOverlay').style.display = 'none';
+      document.getElementById('noDataOverlay').style.display  = 'flex';
+    }, 1000);
+    return;
+  }
+
+  _setLoad('Initialising…', 98);
+  await new Promise(r => setTimeout(r, 30));
+  document.getElementById('loadingOverlay').style.display = 'none';
   const allYears  = Object.keys(DATA.years || {}).sort();
   if (!allYears.length) {
     document.getElementById('noDataOverlay').style.display = 'flex';
@@ -1128,7 +1222,7 @@ body::before {
   initScopePanel();
   initSlider();
 
-})();
+})();   // end async _boot
 </script>
 </body>
 </html>
