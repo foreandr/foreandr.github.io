@@ -1,6 +1,6 @@
 {
-  "last_scanned": "2026-04-28 20:00:13",
-  "total_arbs": 21,
+  "last_scanned": "2026-04-29 20:00:06",
+  "total_arbs": 22,
   "min_net": 0.0,
   "scan_history": [
     {
@@ -154,6 +154,14 @@
       "api_requests": 13,
       "new_arbs": 0,
       "total_arbs": 21
+    },
+    {
+      "scanned_at": "2026-04-29 20:00:06",
+      "scan_seconds": 3.6,
+      "n_events": 262,
+      "api_requests": 13,
+      "new_arbs": 1,
+      "total_arbs": 22
     }
   ],
   "arbs": [
@@ -853,6 +861,37 @@
           "book_key": "leovegas",
           "book_type": "soft",
           "odds": 16.0,
+          "can_ban": true
+        }
+      }
+    },
+    {
+      "event": "Tai Tuivasa vs Louie Sutherland",
+      "home": "Tai Tuivasa",
+      "away": "Louie Sutherland",
+      "sport": "MMA",
+      "sport_key": "mma_mixed_martial_arts",
+      "commence": "2026-05-02",
+      "days_until": 2.4583,
+      "net_pct": 0.00595,
+      "apr": 1.4128,
+      "has_safe_leg": false,
+      "all_safe": false,
+      "n_outcomes": 2,
+      "found_at": "2026-04-29 20:00:06",
+      "legs": {
+        "Louie Sutherland": {
+          "book": "DraftKings",
+          "book_key": "draftkings",
+          "book_type": "soft",
+          "odds": 2.8,
+          "can_ban": true
+        },
+        "Tai Tuivasa": {
+          "book": "Betway",
+          "book_key": "betway",
+          "book_type": "soft",
+          "odds": 1.57,
           "can_ban": true
         }
       }

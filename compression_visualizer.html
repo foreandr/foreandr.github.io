@@ -123,6 +123,7 @@ textarea:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 2px #3355ee
 <body>
 
 <header>
+  <a href="index.html" style="color:#aaccff;text-decoration:none;font-size:15px;padding:4px 10px;border:1px solid #4455aa;border-radius:5px;white-space:nowrap;" onmouseover="this.style.background='#1a2255'" onmouseout="this.style.background=''">&larr; Back</a>
   <h1>&#9632; Bit Compression Visualizer</h1>
   <span class="badge" id="badge">READY</span>
   <div class="hdr-right">
@@ -160,7 +161,12 @@ textarea:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 2px #3355ee
     <div class="btn-row" id="algo-btns">
       <button class="btn on" onclick="setAlgo('deflate',this)">DEFLATE</button>
       <button class="btn" onclick="setAlgo('bz2',this)">BZ2</button>
-      <button class="btn" onclick="setAlgo('both',this)">Both</button>
+      <button class="btn" onclick="setAlgo('rle',this)">RLE</button>
+      <button class="btn" onclick="setAlgo('lzw',this)">LZW</button>
+      <button class="btn" onclick="setAlgo('delta',this)">Delta</button>
+      <button class="btn" onclick="setAlgo('shannon',this)">Shannon-Fano</button>
+      <button class="btn" onclick="setAlgo('huffman',this)">Huffman</button>
+      <button class="btn" onclick="setAlgo('all',this)">All ↗</button>
     </div>
   </div>
 
@@ -243,12 +249,12 @@ textarea:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 2px #3355ee
 
   <div class="rcard">
     <h3>Legend</h3>
-    <div class="legend-item"><div class="ldot" style="background:#001840;border-color:#44aaff"></div><span>Scanning (current byte)</span></div>
-    <div class="legend-item"><div class="ldot" style="background:#000f18;border-color:#1a3350"></div><span>Search window</span></div>
-    <div class="legend-item"><div class="ldot" style="background:#002018;border-color:#229955"></div><span>Match source (history)</span></div>
-    <div class="legend-item"><div class="ldot" style="background:#003f28;border-color:#44ffaa"></div><span>Match current (saving!)</span></div>
-    <div class="legend-item"><div class="ldot" style="background:#1e0f00;border-color:#cc7722"></div><span>Literal (no match)</span></div>
-    <div class="legend-item"><div class="ldot" style="background:#140020;border-color:#9933ff"></div><span>Output being written</span></div>
+    <div class="legend-item"><div class="ldot" style="background:#0077ff;border-color:#0055cc"></div><span style="color:#003388">Scanning (current byte)</span></div>
+    <div class="legend-item"><div class="ldot" style="background:#ddeeff;border-color:#88aadd"></div><span style="color:#224477">Search window</span></div>
+    <div class="legend-item"><div class="ldot" style="background:#ccffdd;border-color:#44aa66"></div><span style="color:#115522">Match source (history)</span></div>
+    <div class="legend-item"><div class="ldot" style="background:#00bb55;border-color:#009944"></div><span style="color:#004422">Match current (saving!)</span></div>
+    <div class="legend-item"><div class="ldot" style="background:#ff8800;border-color:#dd6600"></div><span style="color:#663300">Literal (no match)</span></div>
+    <div class="legend-item"><div class="ldot" style="background:#8833ee;border-color:#6622bb"></div><span style="color:#330077">Output being written</span></div>
   </div>
 </div>
 
@@ -427,9 +433,15 @@ function addLog(frame) {
 }
 
 function renderPhases() {
-  const phaseOrder = S.algo === 'deflate' ? ['LZ77','Huffman']
-    : S.algo === 'bz2'     ? ['RLE1','BWT','MTF','RLE2','Huffman']
-    : ['LZ77','Huffman','RLE1','BWT','MTF','RLE2','Huffman(BZ2)'];
+  const phaseOrder =
+    S.algo==='deflate' ? ['LZ77','Huffman'] :
+    S.algo==='bz2'     ? ['RLE1','BWT','MTF','RLE2','Huffman'] :
+    S.algo==='rle'     ? ['RLE'] :
+    S.algo==='lzw'     ? ['LZW'] :
+    S.algo==='delta'   ? ['Delta','Delta+Huffman'] :
+    S.algo==='shannon' ? ['Shannon-Fano'] :
+    S.algo==='huffman' ? ['Huffman'] :
+    /* all */            ['LZ77','Huffman','RLE1','BWT','MTF','RLE2','RLE','LZW','Delta','Delta+Huffman','Shannon-Fano'];
 
   const done = new Set(S.frames.slice(0, S.fi).map(f => f.phase));
   const cur = S.fi < S.frames.length ? S.frames[S.fi].phase : null;
@@ -736,6 +748,199 @@ function buildBZ2(bytes, frames, suffix='') {
 }
 
 /* ══════════════════════════════════════════
+   RLE — Run-Length Encoding
+══════════════════════════════════════════ */
+function buildRLE(bytes, frames) {
+  frames.push({phase:'RLE',type:'phase',lbl:'Starting RLE (Run-Length Encoding)…',
+    det:'Consecutive identical bytes → (count, byte) pair. Great for images with large uniform regions.',
+    ih:{},ob:'',p:0});
+  let ob='', i=0, runs=0, singles=0;
+  while (i < bytes.length) {
+    const b=bytes[i]; let run=1;
+    while (i+run<bytes.length && bytes[i+run]===b && run<255) run++;
+    const hl={};
+    for (let r=0;r<run;r++) for (let bit=0;bit<8;bit++) if((i+r)*8+bit<S.bitSize) hl[(i+r)*8+bit]=run>1?'mcur':'lit';
+    ob += run.toString(2).padStart(8,'0') + b.toString(2).padStart(8,'0');
+    if (run>1) runs++; else singles++;
+    frames.push({phase:'RLE',type:run>1?'match':'lit',
+      lbl:run>1?`RUN: "${safeC(b)}"×${run} → 16 bits (count+val). Saved ${run*8-16}b`:`SINGLE: "${safeC(b)}" → 16 bits. +8b overhead`,
+      det:run>1?`Bytes[${i}‥${i+run-1}] replaced by 2-byte pair. Original: ${run*8}b → 16b.`:`No run at byte[${i}]. RLE always emits 2 bytes even for singles — overhead on random data.`,
+      ih:hl, ob, p:i/bytes.length});
+    i+=run;
+  }
+  frames.push({phase:'RLE',type:'info',
+    lbl:`RLE done. ${ob.length} bits (${(ob.length/S.bitSize*100).toFixed(1)}%). ${runs} runs, ${singles} singles.`,
+    det:`RLE expands random data. It only wins when runs are long (saves ${runs*1} × overhead).`,
+    ih:{},ob,p:1,final:true});
+  return ob;
+}
+
+/* ══════════════════════════════════════════
+   LZW — Lempel-Ziv-Welch
+══════════════════════════════════════════ */
+function buildLZW(bytes, frames) {
+  frames.push({phase:'LZW',type:'phase',lbl:'Starting LZW (Lempel-Ziv-Welch)…',
+    det:'Build a phrase dictionary on-the-fly. Emit codes instead of bytes. Used in GIF and TIFF.',
+    ih:{},ob:'',p:0});
+  const dict=new Map();
+  for (let i=0;i<256;i++) dict.set(String.fromCharCode(i),i);
+  let nextCode=256, codeBits=9, ob='';
+  frames.push({phase:'LZW',type:'info',lbl:`Dictionary: 256 entries. Code width starts at ${codeBits} bits.`,
+    det:`Every single byte pre-loaded. Will expand codes as dictionary grows past ${1<<codeBits} entries.`,
+    ih:{},ob,p:0.05});
+  let phrase=String.fromCharCode(bytes[0]), phraseStart=0;
+  for (let i=1;i<bytes.length;i++) {
+    const c=String.fromCharCode(bytes[i]), ext=phrase+c;
+    const hl={};
+    for (let p=0;p<phrase.length;p++) for (let b=0;b<8;b++) if((phraseStart+p)*8+b<S.bitSize) hl[(phraseStart+p)*8+b]='msrc';
+    for (let b=0;b<8;b++) if(i*8+b<S.bitSize) hl[i*8+b]='scan';
+    if (dict.has(ext)) {
+      phrase=ext;
+      if (i<20 || i===bytes.length-1) frames.push({phase:'LZW',type:'info',
+        lbl:`Extend phrase → "${[...ext].map(c=>safeC(c.charCodeAt(0))).join('')}" (code ${dict.get(ext)})`,
+        det:`Still in dictionary. Keep extending. Dict size: ${dict.size}.`,
+        ih:hl,ob,p:i/bytes.length});
+    } else {
+      const code=dict.get(phrase);
+      ob+=code.toString(2).padStart(codeBits,'0');
+      frames.push({phase:'LZW',type:'match',
+        lbl:`Emit code ${code} (${codeBits}b) for "${[...phrase].map(c=>safeC(c.charCodeAt(0))).join('')}". Add "${[...ext].map(c=>safeC(c.charCodeAt(0))).join('')}"→${nextCode}.`,
+        det:`Dictionary grows to ${dict.size+1} entries.${nextCode+1>=(1<<codeBits)?' Code width expanding to '+(codeBits+1)+' bits!':''}`,
+        ih:hl,ob,p:i/bytes.length});
+      dict.set(ext,nextCode++);
+      if (nextCode>=(1<<codeBits)) codeBits++;
+      phrase=c; phraseStart=i;
+    }
+  }
+  if (phrase) { const code=dict.get(phrase); ob+=code.toString(2).padStart(codeBits,'0'); }
+  frames.push({phase:'LZW',type:'info',
+    lbl:`LZW done. ${ob.length} bits (${(ob.length/S.bitSize*100).toFixed(1)}%). Dict grew to ${dict.size} entries.`,
+    det:`Variable-width codes started at 9 bits. Longer phrases = bigger dictionary = better compression.`,
+    ih:{},ob,p:1,final:true});
+  return ob;
+}
+
+/* ══════════════════════════════════════════
+   DELTA ENCODING + HUFFMAN
+══════════════════════════════════════════ */
+function buildDelta(bytes, frames) {
+  frames.push({phase:'Delta',type:'phase',lbl:'Starting Delta Encoding + Huffman…',
+    det:'Encode byte differences instead of values. Differences cluster near 0 → shorter Huffman codes.',
+    ih:{},ob:'',p:0});
+  const deltas=[bytes[0]];
+  let ob=bytes[0].toString(2).padStart(8,'0');
+  const hl0={}; for(let b=0;b<8;b++) hl0[b]='scan';
+  frames.push({phase:'Delta',type:'info',lbl:`Anchor: byte[0] = ${bytes[0]} ("${safeC(bytes[0])}") emitted as-is.`,
+    det:`All subsequent bytes become deltas relative to their predecessor.`,ih:hl0,ob,p:0});
+  for (let i=1;i<bytes.length;i++) {
+    const d=(bytes[i]-bytes[i-1]+256)%256;
+    deltas.push(d);
+    ob+=d.toString(2).padStart(8,'0');
+    const hl={};
+    for (let b=0;b<8;b++){if((i-1)*8+b<S.bitSize)hl[(i-1)*8+b]='msrc';if(i*8+b<S.bitSize)hl[i*8+b]='scan';}
+    if (i<=10) frames.push({phase:'Delta',type:d<32?'match':'lit',
+      lbl:`Δ[${i}] = ${bytes[i]} − ${bytes[i-1]} = ${d} ${d<32?'✓ small':'✗ large'}`,
+      det:`"${safeC(bytes[i])}"(${bytes[i]}) − "${safeC(bytes[i-1])}"(${bytes[i-1]}) = ${d}. ${d<32?'Near zero, compresses well.':'Far from zero.'}`,
+      ih:hl,ob,p:i/bytes.length});
+  }
+  const smallPct=Math.round(deltas.filter(d=>d<32).length/deltas.length*100);
+  frames.push({phase:'Delta',type:'info',lbl:`${smallPct}% of deltas < 32. Now Huffman-encoding the delta stream…`,
+    det:`Clustering near 0 means Huffman can assign very short codes to the most common small values.`,
+    ih:{},ob,p:0.7});
+  const freq={};
+  for (const d of deltas) freq[d]=(freq[d]||0)+1;
+  const codes=buildHuffman(freq);
+  const hob=deltas.map(d=>codes[d]||'0').join('');
+  frames.push({phase:'Delta+Huffman',type:'info',
+    lbl:`Delta+Huffman done. ${hob.length} bits (${(hob.length/S.bitSize*100).toFixed(1)}%)`,
+    det:`${Object.keys(freq).length} distinct delta values. Clustering saved extra bits vs raw Huffman.`,
+    ih:{},ob:hob,p:1,final:true});
+  return hob;
+}
+
+/* ══════════════════════════════════════════
+   SHANNON-FANO
+══════════════════════════════════════════ */
+function buildShannonFano(bytes, frames) {
+  frames.push({phase:'Shannon-Fano',type:'phase',lbl:'Starting Shannon-Fano coding…',
+    det:'1948 precursor to Huffman. Splits sorted symbols top-down into equal-weight groups. Slightly suboptimal.',
+    ih:{},ob:'',p:0});
+  const freq={};
+  for (const b of bytes) freq[b]=(freq[b]||0)+1;
+  const syms=Object.entries(freq).map(([s,f])=>({sym:+s,freq:f,code:''})).sort((a,b)=>b.freq-a.freq);
+  frames.push({phase:'Shannon-Fano',type:'info',
+    lbl:`${syms.length} distinct symbols. Top: ${syms.slice(0,3).map(s=>`"${safeC(s.sym)}"×${s.freq}`).join(', ')}`,
+    det:`Sorted descending by frequency. Now recursively splitting into two equal-weight halves.`,
+    ih:{},ob:'',p:0.1});
+  function divide(arr,prefix) {
+    if (arr.length===1){arr[0].code=prefix||'0';return;}
+    if (!arr.length) return;
+    const tot=arr.reduce((s,x)=>s+x.freq,0);
+    let half=0,best=Infinity,split=1;
+    for(let i=0;i<arr.length-1;i++){half+=arr[i].freq;const d=Math.abs(tot-2*half);if(d<best){best=d;split=i+1;}}
+    divide(arr.slice(0,split),prefix+'0');
+    divide(arr.slice(split),prefix+'1');
+  }
+  divide(syms,'');
+  const codeMap={};
+  for (const s of syms) codeMap[s.sym]=s.code;
+  const topCodes=syms.slice(0,4).map(s=>`"${safeC(s.sym)}"→${s.code}`).join('  ');
+  frames.push({phase:'Shannon-Fano',type:'info',lbl:`Tree built. ${topCodes}`,
+    det:`Top-down bisection complete. Each group assigned 0 (top half) or 1 (bottom half) recursively.`,
+    ih:{},ob:'',p:0.5});
+  let ob='';
+  for (let i=0;i<bytes.length;i++) {
+    const code=codeMap[bytes[i]]||'0';
+    ob+=code;
+    if (i<8){const hl={};for(let b=0;b<8;b++)if(i*8+b<S.bitSize)hl[i*8+b]='scan';
+      frames.push({phase:'Shannon-Fano',type:'info',
+        lbl:`"${safeC(bytes[i])}" (freq=${freq[bytes[i]]}) → "${code}" (${code.length}b)`,
+        det:`Running: ${ob.length} bits encoded.`,ih:hl,ob,p:i/bytes.length});}
+  }
+  frames.push({phase:'Shannon-Fano',type:'info',
+    lbl:`Shannon-Fano done. ${ob.length} bits (${(ob.length/S.bitSize*100).toFixed(1)}%)`,
+    det:`Compare to Huffman (optimal). Shannon-Fano is 0–5% less efficient due to top-down splitting.`,
+    ih:{},ob,p:1,final:true});
+  return ob;
+}
+
+/* ══════════════════════════════════════════
+   HUFFMAN ONLY
+══════════════════════════════════════════ */
+function buildHuffmanOnly(bytes, frames) {
+  frames.push({phase:'Huffman',type:'phase',lbl:'Pure Huffman coding (no LZ77)…',
+    det:'Count frequencies → build optimal prefix-free code tree → encode. Optimal entropy coder for single symbols.',
+    ih:{},ob:'',p:0});
+  const freq={};
+  for (const b of bytes) freq[b]=(freq[b]||0)+1;
+  const n=Object.keys(freq).length;
+  frames.push({phase:'Huffman',type:'info',lbl:`${n} distinct byte values. Building tree…`,
+    det:`Top 4: ${Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,4).map(([s,f])=>`"${safeC(+s)}"×${f}`).join(', ')}`,
+    ih:{},ob:'',p:0.2});
+  const codes=buildHuffman(freq);
+  const sorted=Object.entries(codes).sort((a,b)=>a[1].length-b[1].length);
+  frames.push({phase:'Huffman',type:'info',
+    lbl:`Codes: ${sorted.slice(0,4).map(([s,c])=>`"${safeC(+s)}"→${c}`).join('  ')}`,
+    det:`Shortest code: ${sorted[0][1].length}b. Longest: ${sorted[sorted.length-1][1].length}b. Frequent symbols get short codes.`,
+    ih:{},ob:'',p:0.4});
+  let ob='';
+  for (let i=0;i<bytes.length;i++) {
+    const code=codes[bytes[i]]||'0'; ob+=code;
+    if (i<10){const hl={};for(let b=0;b<8;b++)if(i*8+b<S.bitSize)hl[i*8+b]='scan';
+      frames.push({phase:'Huffman',type:'info',
+        lbl:`[${i}] "${safeC(bytes[i])}" → ${code} (${code.length}b, freq=${freq[bytes[i]]})`,
+        det:`Total so far: ${ob.length} bits.`,ih:hl,ob,p:i/bytes.length});}
+  }
+  const avg=(ob.length/bytes.length).toFixed(2);
+  const H=(-Object.values(freq).reduce((s,f)=>{const p=f/bytes.length;return s+p*Math.log2(p);},0)).toFixed(2);
+  frames.push({phase:'Huffman',type:'info',
+    lbl:`Done. ${ob.length} bits. Avg ${avg} bits/symbol. Shannon entropy = ${H} bits/sym.`,
+    det:`Huffman is provably optimal for symbol-by-symbol coding — you cannot beat ${H} bits/sym without context.`,
+    ih:{},ob,p:1,final:true});
+  return ob;
+}
+
+/* ══════════════════════════════════════════
    ANIMATION ENGINE
 ══════════════════════════════════════════ */
 function tick() {
@@ -786,9 +991,10 @@ function updateCompare() {
   rows.innerHTML = '';
   const orig = S.bitSize;
   // Add original
+  const COLORS = {deflate:'#3355ee',bz2:'#1a9955',rle:'#cc7700',lzw:'#bb2288',delta:'#0099aa',shannon:'#885500',huffman:'#aa3333'};
   const all = [{label:'Original', bits:orig, color:'#334466'}, ...keys.map(k=>({
     label:k.toUpperCase(), bits:S.results[k].bits,
-    color:k==='deflate'?'#4466ff':k==='bz2'?'#33cc77':'#ffaa33'
+    color:COLORS[k]||'#667788'
   }))];
   const max = Math.max(...all.map(a=>a.bits));
   for (const a of all) {
@@ -824,24 +1030,33 @@ function startCompression() {
   const bytes = S.inputBytes.slice();
   let finalOb = '';
 
-  if (S.algo==='deflate') {
-    finalOb = buildDEFLATE(bytes, S.frames);
-    if (!S.frames[S.frames.length-1]?.final) S.frames[S.frames.length-1].final=true;
-  } else if (S.algo==='bz2') {
-    finalOb = buildBZ2(bytes, S.frames);
-  } else {
-    // both
-    S.frames.push({phase:'DEFLATE',type:'phase',lbl:'═══ Running DEFLATE first… ═══',det:'',ih:{},ob:'',p:0});
-    finalOb = buildDEFLATE(bytes, S.frames);
-    S.results['deflate'] = {bits: finalOb.length, ms: Date.now()-S.t0};
-    S.frames.push({phase:'BZ2',type:'phase',lbl:'═══ Now running BZ2 for comparison… ═══',det:'',ih:{},ob:finalOb,p:0});
-    finalOb = buildBZ2(bytes, S.frames);
+  const algoMap = {
+    deflate: b => buildDEFLATE(b, S.frames),
+    bz2:     b => buildBZ2(b, S.frames),
+    rle:     b => buildRLE(b, S.frames),
+    lzw:     b => buildLZW(b, S.frames),
+    delta:   b => buildDelta(b, S.frames),
+    shannon: b => buildShannonFano(b, S.frames),
+    huffman: b => buildHuffmanOnly(b, S.frames),
+  };
+
+  if (S.algo === 'all') {
+    const order = ['deflate','bz2','rle','lzw','delta','shannon','huffman'];
+    for (const key of order) {
+      S.frames.push({phase:key.toUpperCase(),type:'phase',lbl:`═══ Running ${key.toUpperCase()}… ═══`,det:'',ih:{},ob:finalOb||'',p:0});
+      finalOb = algoMap[key](bytes);
+      S.results[key] = {bits: finalOb.length, ms: Date.now()-S.t0};
+      if (S.frames.length) S.frames[S.frames.length-1].final = false;
+    }
+    if (S.frames.length) S.frames[S.frames.length-1].final = true;
+  } else if (algoMap[S.algo]) {
+    finalOb = algoMap[S.algo](bytes);
+    if (!S.frames[S.frames.length-1]?.final) S.frames[S.frames.length-1].final = true;
   }
 
   $('ft').textContent = S.frames.length;
   renderPhases();
 
-  // Instant or no-viz: jump to end
   if (!S.vizOn || S.batch >= 9999) {
     S.fi = S.frames.length;
     finish();
@@ -857,9 +1072,6 @@ function stopCompression() {
   setBadge('STOPPED','var(--amber)');
 }
 
-/* ══════════════════════════════════════════
-   INIT
-══════════════════════════════════════════ */
 onSpeedChange();
 refresh();
 </script>
