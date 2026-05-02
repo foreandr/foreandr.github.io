@@ -1,1 +1,1 @@
-window.OPENALEX_MANIFEST={"chunks":["openalex_data_000.js","openalex_data_001.js","openalex_data_002.js"],"generatedAt":"2026-04-29 21:15:14","totalPapers":196543,"partial":true};
+window.OPENALEX_MANIFEST={"chunks":["openalex_data_000.js","openalex_data_001.js","openalex_data_002.js","openalex_data_003.js","openalex_data_004.js","openalex_data_005.js","openalex_data_006.js"],"generatedAt":"2026-05-02 15:01:30","totalPapers":2180793,"partial":true};

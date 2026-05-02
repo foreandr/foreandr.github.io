@@ -1,0 +1,2202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Video Essay Editor</title>
+<link rel="icon" type="image/x-icon" href="../../images.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a1017;
+  --bg2: #111b27;
+  --bg3: #182435;
+  --panel: rgba(17, 27, 39, 0.92);
+  --card: rgba(24, 36, 53, 0.9);
+  --border: rgba(148, 163, 184, 0.18);
+  --text: #e5edf8;
+  --muted: #90a4bd;
+  --soft: #ced9e7;
+  --accent: #ff6b35;
+  --accent2: #4cc9f0;
+  --good: #3ddc97;
+  --warn: #f7b538;
+  --danger: #ff5d73;
+  --shadow: 0 20px 40px rgba(0, 0, 0, 0.28);
+  --radius: 18px;
+  --mono: "IBM Plex Mono", monospace;
+  --sans: "Space Grotesk", sans-serif;
+  --display: "Fraunces", serif;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+body {
+  background:
+    radial-gradient(900px 500px at 8% -15%, rgba(255, 107, 53, 0.18), transparent 60%),
+    radial-gradient(1100px 550px at 100% -12%, rgba(76, 201, 240, 0.15), transparent 58%),
+    linear-gradient(180deg, #060b11 0%, #0a1017 100%);
+  color: var(--text);
+  font-family: var(--sans);
+}
+a { color: inherit; text-decoration: none; }
+button, input, select, textarea {
+  font: inherit;
+}
+button {
+  cursor: pointer;
+}
+.app {
+  max-width: 1780px;
+  margin: 0 auto;
+  padding: 20px;
+}
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 18px 20px;
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  background: rgba(10, 16, 23, 0.78);
+  backdrop-filter: blur(12px);
+  box-shadow: var(--shadow);
+  margin-bottom: 18px;
+}
+.brand-wrap {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.back-btn, .pill {
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 10px 14px;
+  transition: 0.18s ease;
+}
+.back-btn:hover, .pill:hover {
+  color: var(--text);
+  border-color: rgba(255, 255, 255, 0.24);
+  transform: translateY(-1px);
+}
+.title-wrap h1 {
+  font-family: var(--display);
+  font-size: clamp(1.8rem, 2.6vw, 2.7rem);
+  margin: 0;
+  line-height: 1;
+}
+.title-wrap p {
+  margin: 8px 0 0;
+  color: var(--muted);
+  max-width: 62ch;
+  font-size: 0.97rem;
+}
+.top-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+.btn {
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--soft);
+  padding: 11px 14px;
+  border-radius: 12px;
+  transition: 0.18s ease;
+}
+.btn:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255, 255, 255, 0.24);
+  color: var(--text);
+}
+.btn.primary {
+  background: linear-gradient(135deg, var(--accent), #ff8b5c);
+  color: #fff;
+  border-color: transparent;
+}
+.btn.secondary {
+  background: linear-gradient(135deg, rgba(76, 201, 240, 0.18), rgba(76, 201, 240, 0.06));
+  border-color: rgba(76, 201, 240, 0.25);
+}
+.btn.good {
+  background: linear-gradient(135deg, rgba(61, 220, 151, 0.2), rgba(61, 220, 151, 0.06));
+  border-color: rgba(61, 220, 151, 0.28);
+}
+.workspace {
+  display: grid;
+  grid-template-columns: 320px 1fr 340px;
+  gap: 18px;
+}
+.panel {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--panel);
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow);
+  min-height: 0;
+}
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--border);
+}
+.panel-head h2, .panel-head h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+.panel-body {
+  padding: 16px 18px 18px;
+}
+.left-col, .right-col {
+  display: grid;
+  gap: 18px;
+  align-content: start;
+}
+.stack {
+  display: grid;
+  gap: 14px;
+}
+.dropzone {
+  border: 1.5px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  padding: 18px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.015));
+}
+.dropzone strong {
+  display: block;
+  margin-bottom: 6px;
+}
+.dropzone p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+.small-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+.small-btn {
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.04);
+  color: var(--soft);
+  padding: 8px 10px;
+  border-radius: 10px;
+  font-size: 0.88rem;
+}
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.stat-card {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--card);
+  padding: 12px;
+}
+.stat-card .label {
+  color: var(--muted);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.stat-card .value {
+  margin-top: 7px;
+  font-size: 1.22rem;
+  font-weight: 700;
+}
+.asset-list, .project-list, .track-list {
+  display: grid;
+  gap: 10px;
+}
+.asset-card, .project-card, .clip-card, .recent-card {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--card);
+  padding: 12px;
+}
+.asset-card.active, .clip-card.active {
+  border-color: rgba(255, 107, 53, 0.85);
+  box-shadow: inset 0 0 0 1px rgba(255, 107, 53, 0.45);
+}
+.asset-top, .clip-top, .recent-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+.asset-name, .clip-name, .project-name {
+  font-weight: 600;
+  line-height: 1.25;
+}
+.meta, .hint, .recent-time {
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+.badge {
+  border-radius: 999px;
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  color: #fff;
+  background: rgba(255,255,255,0.12);
+  white-space: nowrap;
+}
+.badge.visual { background: rgba(255, 107, 53, 0.2); }
+.badge.audio { background: rgba(76, 201, 240, 0.2); }
+.badge.text { background: rgba(247, 181, 56, 0.2); }
+.preview-wrap {
+  display: grid;
+  gap: 16px;
+}
+.preview-stage {
+  border-bottom: 1px solid var(--border);
+  padding: 18px 18px 0;
+}
+.canvas-frame {
+  position: relative;
+  border-radius: 22px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background:
+    linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01)),
+    repeating-linear-gradient(45deg, rgba(255,255,255,0.03) 0 12px, rgba(255,255,255,0.01) 12px 24px);
+  aspect-ratio: 16 / 9;
+}
+canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.stage-overlay {
+  position: absolute;
+  left: 16px;
+  bottom: 16px;
+  right: 16px;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  pointer-events: none;
+}
+.overlay-chip {
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: rgba(6, 11, 17, 0.72);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: var(--soft);
+  font-size: 0.85rem;
+}
+.transport {
+  display: grid;
+  gap: 10px;
+  padding: 0 18px 18px;
+}
+.transport-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+.range {
+  width: 100%;
+}
+input[type="range"] {
+  width: 100%;
+  accent-color: var(--accent);
+}
+.timeline-pane {
+  padding: 0 18px 18px;
+  display: grid;
+  gap: 14px;
+}
+.timeline-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.timeline {
+  display: grid;
+  gap: 12px;
+}
+.track {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.02);
+  padding: 12px;
+}
+.track-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.track-strip {
+  position: relative;
+  min-height: 74px;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.015));
+  overflow: hidden;
+}
+.track-strip.visual {
+  display: flex;
+}
+.clip-block {
+  position: relative;
+  min-width: 68px;
+  border-right: 1px solid rgba(255,255,255,0.08);
+  padding: 10px 10px 8px;
+  overflow: hidden;
+  transition: 0.18s ease;
+}
+.clip-block.audio {
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.clip-block.active {
+  outline: 2px solid rgba(255, 107, 53, 0.9);
+  z-index: 2;
+}
+.clip-block.visual-clip { background: linear-gradient(135deg, rgba(255, 107, 53, 0.26), rgba(255, 107, 53, 0.1)); }
+.clip-block.voice-clip { background: linear-gradient(135deg, rgba(76, 201, 240, 0.28), rgba(76, 201, 240, 0.1)); }
+.clip-block.music-clip { background: linear-gradient(135deg, rgba(61, 220, 151, 0.24), rgba(61, 220, 151, 0.08)); }
+.clip-block .title {
+  font-size: 0.88rem;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.clip-block .sub {
+  margin-top: 6px;
+  font-size: 0.76rem;
+  color: var(--soft);
+  opacity: 0.9;
+}
+.playhead {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #fff;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 20px rgba(255,255,255,0.45);
+  z-index: 3;
+}
+.playhead::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -5px;
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  background: #fff;
+}
+.hint-box {
+  border: 1px solid rgba(76, 201, 240, 0.22);
+  background: linear-gradient(180deg, rgba(76, 201, 240, 0.08), rgba(76, 201, 240, 0.03));
+  border-radius: 14px;
+  padding: 12px;
+  color: var(--soft);
+  font-size: 0.9rem;
+}
+.inspector {
+  display: grid;
+  gap: 14px;
+}
+.field-grid {
+  display: grid;
+  gap: 12px;
+}
+.field-row {
+  display: grid;
+  gap: 6px;
+}
+.field-row label {
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+.field-row input[type="text"],
+.field-row input[type="number"],
+.field-row select,
+.field-row textarea,
+.field-row input[type="color"] {
+  width: 100%;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.045);
+  color: var(--text);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+.field-row textarea {
+  min-height: 92px;
+  resize: vertical;
+}
+.field-inline {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.03);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+.checkbox {
+  width: 18px;
+  height: 18px;
+}
+.actions-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.micro {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+.empty-state {
+  padding: 18px;
+  border: 1px dashed var(--border);
+  border-radius: 14px;
+  color: var(--muted);
+  text-align: center;
+}
+.mono { font-family: var(--mono); }
+.footer-note {
+  margin-top: 18px;
+  color: var(--muted);
+  text-align: center;
+  font-size: 0.88rem;
+}
+@media (max-width: 1320px) {
+  .workspace {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 760px) {
+  .app {
+    padding: 12px;
+  }
+  .topbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .field-inline, .stat-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="brand-wrap">
+      <a class="back-btn" href="../../index.html">Back Home</a>
+      <div class="title-wrap">
+        <h1>Video Essay Editor</h1>
+        <p>Simple browser-native editing for clips, quotes, voiceover, and background music. Projects autosave locally so you can reopen where you left off.</p>
+      </div>
+    </div>
+    <div class="top-actions">
+      <input id="visualInput" type="file" accept="video/*,image/*" multiple hidden>
+      <input id="voiceInput" type="file" accept="audio/*" multiple hidden>
+      <input id="musicInput" type="file" accept="audio/*" multiple hidden>
+      <button class="btn" id="addVisualBtn">Add Visuals</button>
+      <button class="btn" id="addVoiceBtn">Add Voiceover</button>
+      <button class="btn" id="addMusicBtn">Add Music</button>
+      <button class="btn secondary" id="addQuoteBtn">Add Quote Card</button>
+      <button class="btn secondary" id="newProjectBtn">New Project</button>
+      <button class="btn good" id="exportBtn">Export Video</button>
+    </div>
+  </div>
+
+  <div class="workspace">
+    <div class="left-col">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Project</h2>
+          <span class="badge visual" id="saveStatus">Saved</span>
+        </div>
+        <div class="panel-body stack">
+          <div class="field-row">
+            <label for="projectName">Project name</label>
+            <input id="projectName" type="text" value="Untitled video essay">
+          </div>
+          <div class="dropzone" id="dropzone">
+            <strong>Drop media anywhere in this box</strong>
+            <p>Videos and images go into the visual sequence. Audio files can be moved onto voiceover or music later if needed.</p>
+            <div class="small-actions">
+              <button class="small-btn" id="dropAddVisual">Import visuals</button>
+              <button class="small-btn" id="dropAddVoice">Import voice</button>
+              <button class="small-btn" id="dropAddMusic">Import music</button>
+            </div>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-card">
+              <div class="label">Visual runtime</div>
+              <div class="value" id="runtimeStat">0:00</div>
+            </div>
+            <div class="stat-card">
+              <div class="label">Assets</div>
+              <div class="value" id="assetsStat">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="label">Voice clips</div>
+              <div class="value" id="voiceStat">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="label">Music clips</div>
+              <div class="value" id="musicStat">0</div>
+            </div>
+          </div>
+          <div class="hint-box">
+            Use split plus per-clip volume/fades to do the “turn it down here, turn it up there” workflow without making the editor huge.
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h3>Recent Projects</h3>
+          <button class="small-btn" id="refreshProjectsBtn">Refresh</button>
+        </div>
+        <div class="panel-body">
+          <div class="project-list" id="recentProjects"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h3>Library</h3>
+          <span class="micro">Cached in your browser</span>
+        </div>
+        <div class="panel-body">
+          <div class="asset-list" id="assetList"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel preview-wrap">
+      <div class="preview-stage">
+        <div class="canvas-frame">
+          <canvas id="previewCanvas" width="1280" height="720"></canvas>
+          <div class="stage-overlay">
+            <div class="overlay-chip" id="nowPlayingLabel">No clip selected</div>
+            <div class="overlay-chip mono" id="timecodeLabel">0:00 / 0:00</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="transport">
+        <div class="transport-row">
+          <button class="btn" id="rewindBtn">To Start</button>
+          <button class="btn primary" id="playBtn">Play</button>
+          <button class="btn" id="pauseBtn">Pause</button>
+          <button class="btn" id="stepBackBtn">-1s</button>
+          <button class="btn" id="stepFwdBtn">+1s</button>
+          <button class="pill mono" id="transportInfo">Idle</button>
+        </div>
+        <input class="range" id="scrubber" type="range" min="0" max="0" step="0.01" value="0">
+      </div>
+
+      <div class="timeline-pane">
+        <div class="timeline-header">
+          <h3>Timeline</h3>
+          <span class="micro">Visuals run in sequence. Voiceover and music sit on their own timed tracks.</span>
+        </div>
+        <div class="timeline">
+          <div class="track">
+            <div class="track-label">
+              <strong>Visual sequence</strong>
+              <span class="micro">Transitions apply at clip starts</span>
+            </div>
+            <div class="track-strip visual" id="visualTrackStrip"></div>
+          </div>
+
+          <div class="track">
+            <div class="track-label">
+              <strong>Voiceover</strong>
+              <span class="micro">Starts at explicit timeline times</span>
+            </div>
+            <div class="track-strip" id="voiceTrackStrip"></div>
+          </div>
+
+          <div class="track">
+            <div class="track-label">
+              <strong>Background music</strong>
+              <span class="micro">Optional ducking under voiceover</span>
+            </div>
+            <div class="track-strip" id="musicTrackStrip"></div>
+          </div>
+        </div>
+
+        <div class="panel" style="background: rgba(255,255,255,0.02); box-shadow:none;">
+          <div class="panel-head">
+            <h3>Selected Clip</h3>
+            <span class="micro" id="selectedLabel">Nothing selected</span>
+          </div>
+          <div class="panel-body">
+            <div class="track-list" id="selectedClipActions"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="right-col">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Inspector</h2>
+          <span class="micro">Edits autosave</span>
+        </div>
+        <div class="panel-body">
+          <div class="inspector" id="inspector"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h3>Export + Recovery</h3>
+        </div>
+        <div class="panel-body stack">
+          <div class="field-grid">
+            <div class="field-inline">
+              <div class="field-row">
+                <label for="exportWidth">Width</label>
+                <input id="exportWidth" type="number" min="320" step="2" value="1280">
+              </div>
+              <div class="field-row">
+                <label for="exportHeight">Height</label>
+                <input id="exportHeight" type="number" min="240" step="2" value="720">
+              </div>
+            </div>
+            <div class="field-inline">
+              <div class="field-row">
+                <label for="exportFps">FPS</label>
+                <input id="exportFps" type="number" min="12" max="60" step="1" value="30">
+              </div>
+              <div class="field-row">
+                <label for="backgroundColor">Canvas background</label>
+                <input id="backgroundColor" type="color" value="#0a1017">
+              </div>
+            </div>
+          </div>
+          <div class="toggle-row">
+            <div>
+              <strong>Duck music under voiceover</strong>
+              <div class="micro">Helps narration stay clear</div>
+            </div>
+            <input class="checkbox" id="duckingToggle" type="checkbox" checked>
+          </div>
+          <div class="field-row">
+            <label for="duckAmount">Music multiplier during voiceover</label>
+            <input id="duckAmount" type="range" min="0.05" max="1" step="0.05" value="0.35">
+          </div>
+          <div class="hint-box" id="exportStatus">
+            Exports run in real time inside the browser using a canvas stream plus audio mixing. Keep this tab open while rendering.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-note">Everything stays local to this browser. Assets and projects are cached with IndexedDB so you can come back after a reload or accidental close.</div>
+</div>
+
+<script>
+const DB_NAME = 'videoEssayEditorDB';
+const DB_VERSION = 1;
+const PROJECT_STORE = 'projects';
+const ASSET_STORE = 'assets';
+const META_KEY = 've:lastProjectId';
+const DEFAULT_TRANSITIONS = [
+  'cut', 'fade', 'dissolve', 'crossfade', 'dip-black',
+  'wipe-left', 'wipe-right', 'wipe-up', 'wipe-down',
+  'slide-left', 'slide-right', 'slide-up', 'slide-down',
+  'zoom-in', 'zoom-out', 'blur', 'iris', 'flip'
+];
+
+const dom = {
+  visualInput: document.getElementById('visualInput'),
+  voiceInput: document.getElementById('voiceInput'),
+  musicInput: document.getElementById('musicInput'),
+  addVisualBtn: document.getElementById('addVisualBtn'),
+  addVoiceBtn: document.getElementById('addVoiceBtn'),
+  addMusicBtn: document.getElementById('addMusicBtn'),
+  addQuoteBtn: document.getElementById('addQuoteBtn'),
+  newProjectBtn: document.getElementById('newProjectBtn'),
+  exportBtn: document.getElementById('exportBtn'),
+  projectName: document.getElementById('projectName'),
+  saveStatus: document.getElementById('saveStatus'),
+  assetList: document.getElementById('assetList'),
+  recentProjects: document.getElementById('recentProjects'),
+  refreshProjectsBtn: document.getElementById('refreshProjectsBtn'),
+  runtimeStat: document.getElementById('runtimeStat'),
+  assetsStat: document.getElementById('assetsStat'),
+  voiceStat: document.getElementById('voiceStat'),
+  musicStat: document.getElementById('musicStat'),
+  previewCanvas: document.getElementById('previewCanvas'),
+  scrubber: document.getElementById('scrubber'),
+  playBtn: document.getElementById('playBtn'),
+  pauseBtn: document.getElementById('pauseBtn'),
+  rewindBtn: document.getElementById('rewindBtn'),
+  stepBackBtn: document.getElementById('stepBackBtn'),
+  stepFwdBtn: document.getElementById('stepFwdBtn'),
+  nowPlayingLabel: document.getElementById('nowPlayingLabel'),
+  timecodeLabel: document.getElementById('timecodeLabel'),
+  transportInfo: document.getElementById('transportInfo'),
+  visualTrackStrip: document.getElementById('visualTrackStrip'),
+  voiceTrackStrip: document.getElementById('voiceTrackStrip'),
+  musicTrackStrip: document.getElementById('musicTrackStrip'),
+  inspector: document.getElementById('inspector'),
+  selectedClipActions: document.getElementById('selectedClipActions'),
+  selectedLabel: document.getElementById('selectedLabel'),
+  dropzone: document.getElementById('dropzone'),
+  dropAddVisual: document.getElementById('dropAddVisual'),
+  dropAddVoice: document.getElementById('dropAddVoice'),
+  dropAddMusic: document.getElementById('dropAddMusic'),
+  exportWidth: document.getElementById('exportWidth'),
+  exportHeight: document.getElementById('exportHeight'),
+  exportFps: document.getElementById('exportFps'),
+  backgroundColor: document.getElementById('backgroundColor'),
+  duckingToggle: document.getElementById('duckingToggle'),
+  duckAmount: document.getElementById('duckAmount'),
+  exportStatus: document.getElementById('exportStatus')
+};
+
+const ctx = dom.previewCanvas.getContext('2d');
+let dbPromise = null;
+let autosaveTimer = null;
+let rafId = null;
+let selected = null;
+let blobUrlCache = new Map();
+let previewMedia = new Map();
+let previewStartWall = 0;
+let previewStartTime = 0;
+let isPlaying = false;
+
+const state = {
+  project: null,
+  currentTime: 0
+};
+
+function uid(prefix = 'id') {
+  return `${prefix}_${Math.random().toString(36).slice(2, 10)}_${Date.now().toString(36)}`;
+}
+
+function fmtTime(seconds) {
+  const s = Math.max(0, Math.floor(seconds || 0));
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const rem = s % 60;
+  return h > 0 ? `${h}:${String(m).padStart(2, '0')}:${String(rem).padStart(2, '0')}` : `${m}:${String(rem).padStart(2, '0')}`;
+}
+
+function clone(obj) {
+  return JSON.parse(JSON.stringify(obj));
+}
+
+function getDefaultProject() {
+  return {
+    id: uid('project'),
+    name: 'Untitled video essay',
+    updatedAt: Date.now(),
+    settings: {
+      width: 1280,
+      height: 720,
+      fps: 30,
+      bgColor: '#0a1017',
+      duckMusic: true,
+      duckAmount: 0.35
+    },
+    assets: {},
+    visuals: [],
+    voices: [],
+    music: []
+  };
+}
+
+function updateSaveStatus(text, kind = 'visual') {
+  dom.saveStatus.textContent = text;
+  dom.saveStatus.className = `badge ${kind}`;
+}
+
+function setDirty() {
+  if (!state.project) return;
+  state.project.updatedAt = Date.now();
+  updateSaveStatus('Saving...', 'audio');
+  clearTimeout(autosaveTimer);
+  autosaveTimer = setTimeout(() => saveCurrentProject(), 900);
+}
+
+function openDB() {
+  if (dbPromise) return dbPromise;
+  dbPromise = new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onupgradeneeded = () => {
+      const db = req.result;
+      if (!db.objectStoreNames.contains(PROJECT_STORE)) {
+        db.createObjectStore(PROJECT_STORE, { keyPath: 'id' });
+      }
+      if (!db.objectStoreNames.contains(ASSET_STORE)) {
+        db.createObjectStore(ASSET_STORE, { keyPath: 'id' });
+      }
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+  return dbPromise;
+}
+
+async function idbPut(storeName, value) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(storeName, 'readwrite');
+    tx.objectStore(storeName).put(value);
+    tx.oncomplete = () => resolve(true);
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+async function idbGet(storeName, key) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(storeName, 'readonly');
+    const req = tx.objectStore(storeName).get(key);
+    req.onsuccess = () => resolve(req.result || null);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function idbGetAll(storeName) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(storeName, 'readonly');
+    const req = tx.objectStore(storeName).getAll();
+    req.onsuccess = () => resolve(req.result || []);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function getBlobUrl(assetId) {
+  if (blobUrlCache.has(assetId)) return blobUrlCache.get(assetId);
+  const record = await idbGet(ASSET_STORE, assetId);
+  if (!record || !record.blob) return null;
+  const url = URL.createObjectURL(record.blob);
+  blobUrlCache.set(assetId, url);
+  return url;
+}
+
+function extractProjectSnapshot(project) {
+  return clone(project);
+}
+
+async function saveCurrentProject() {
+  if (!state.project) return;
+  await idbPut(PROJECT_STORE, extractProjectSnapshot(state.project));
+  localStorage.setItem(META_KEY, state.project.id);
+  updateSaveStatus('Saved', 'good');
+  await renderRecentProjects();
+}
+
+async function createNewProject() {
+  stopPlayback();
+  state.project = getDefaultProject();
+  state.currentTime = 0;
+  selected = null;
+  dom.projectName.value = state.project.name;
+  applyProjectSettingsToUI();
+  await saveCurrentProject();
+  renderAll();
+}
+
+async function loadProject(projectId) {
+  stopPlayback();
+  const project = await idbGet(PROJECT_STORE, projectId);
+  if (!project) return false;
+  state.project = project;
+  state.currentTime = 0;
+  selected = null;
+  dom.projectName.value = project.name || 'Untitled video essay';
+  applyProjectSettingsToUI();
+  localStorage.setItem(META_KEY, project.id);
+  renderAll();
+  return true;
+}
+
+function applyProjectSettingsToUI() {
+  const s = state.project.settings;
+  dom.exportWidth.value = s.width;
+  dom.exportHeight.value = s.height;
+  dom.exportFps.value = s.fps;
+  dom.backgroundColor.value = s.bgColor;
+  dom.duckingToggle.checked = !!s.duckMusic;
+  dom.duckAmount.value = s.duckAmount;
+  dom.previewCanvas.width = s.width;
+  dom.previewCanvas.height = s.height;
+}
+
+function syncSettingsFromUI() {
+  if (!state.project) return;
+  const s = state.project.settings;
+  s.width = Math.max(320, Number(dom.exportWidth.value) || 1280);
+  s.height = Math.max(240, Number(dom.exportHeight.value) || 720);
+  s.fps = Math.max(12, Math.min(60, Number(dom.exportFps.value) || 30));
+  s.bgColor = dom.backgroundColor.value || '#0a1017';
+  s.duckMusic = dom.duckingToggle.checked;
+  s.duckAmount = Number(dom.duckAmount.value) || 0.35;
+  dom.previewCanvas.width = s.width;
+  dom.previewCanvas.height = s.height;
+}
+
+async function readVideoMetadata(file) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const video = document.createElement('video');
+    video.preload = 'metadata';
+    video.src = url;
+    video.onloadedmetadata = () => {
+      const meta = {
+        duration: Number.isFinite(video.duration) ? video.duration : 5,
+        width: video.videoWidth || 1280,
+        height: video.videoHeight || 720
+      };
+      URL.revokeObjectURL(url);
+      resolve(meta);
+    };
+    video.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error(`Could not read video metadata for ${file.name}`));
+    };
+  });
+}
+
+async function readAudioMetadata(file) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const audio = document.createElement('audio');
+    audio.preload = 'metadata';
+    audio.src = url;
+    audio.onloadedmetadata = () => {
+      const meta = { duration: Number.isFinite(audio.duration) ? audio.duration : 10 };
+      URL.revokeObjectURL(url);
+      resolve(meta);
+    };
+    audio.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error(`Could not read audio metadata for ${file.name}`));
+    };
+  });
+}
+
+async function readImageMetadata(file) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      const meta = { width: img.naturalWidth || 1280, height: img.naturalHeight || 720, duration: 5 };
+      URL.revokeObjectURL(url);
+      resolve(meta);
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error(`Could not read image metadata for ${file.name}`));
+    };
+    img.src = url;
+  });
+}
+
+async function addAsset(file, kindHint = null) {
+  const id = uid('asset');
+  const kind = kindHint || (file.type.startsWith('video/') ? 'video' : file.type.startsWith('image/') ? 'image' : 'audio');
+  let meta = { duration: 5, width: 1280, height: 720 };
+  if (kind === 'video') meta = await readVideoMetadata(file);
+  if (kind === 'image') meta = await readImageMetadata(file);
+  if (kind === 'audio') meta = await readAudioMetadata(file);
+  await idbPut(ASSET_STORE, { id, blob: file, name: file.name, type: file.type, kind });
+  state.project.assets[id] = {
+    id,
+    name: file.name,
+    type: file.type,
+    kind,
+    duration: meta.duration || 5,
+    width: meta.width || null,
+    height: meta.height || null
+  };
+  return state.project.assets[id];
+}
+
+function getVisualClipStart(index) {
+  let t = 0;
+  for (let i = 0; i < index; i += 1) {
+    t += state.project.visuals[i].duration;
+  }
+  return t;
+}
+
+function getClipStart(track, clipId) {
+  if (track === 'visuals') {
+    const idx = state.project.visuals.findIndex(c => c.id === clipId);
+    return idx === -1 ? 0 : getVisualClipStart(idx);
+  }
+  const list = state.project[track];
+  const clip = list.find(c => c.id === clipId);
+  return clip ? clip.start : 0;
+}
+
+function totalVisualDuration() {
+  return state.project.visuals.reduce((sum, clip) => sum + Number(clip.duration || 0), 0);
+}
+
+function totalProjectDuration() {
+  const visuals = totalVisualDuration();
+  const voices = state.project.voices.reduce((m, clip) => Math.max(m, clip.start + clip.duration), 0);
+  const music = state.project.music.reduce((m, clip) => Math.max(m, clip.start + clip.duration), 0);
+  return Math.max(visuals, voices, music, 0.1);
+}
+
+function clipDisplayName(clip) {
+  if (clip.type === 'text') return clip.title || 'Quote card';
+  const asset = state.project.assets[clip.assetId];
+  return asset ? asset.name : 'Missing asset';
+}
+
+function addVisualClip(asset, insertAtEnd = true) {
+  const clip = {
+    id: uid('clip'),
+    assetId: asset.id,
+    type: asset.kind,
+    title: asset.name,
+    duration: Math.max(0.1, asset.duration || 5),
+    trimStart: 0,
+    trimEnd: asset.duration || 5,
+    fit: 'cover',
+    muted: false,
+    volume: 1,
+    fadeIn: 0,
+    fadeOut: 0,
+    transition: state.project.visuals.length === 0 ? 'cut' : 'fade',
+    transitionDuration: state.project.visuals.length === 0 ? 0 : 0.4
+  };
+  if (insertAtEnd) state.project.visuals.push(clip);
+  setDirty();
+  renderAll();
+}
+
+function addAudioClip(asset, track) {
+  const list = state.project[track];
+  let start = state.currentTime;
+  if (list.length > 0) {
+    const lastEnd = list.reduce((m, clip) => Math.max(m, clip.start + clip.duration), 0);
+    start = Math.max(start, lastEnd);
+  }
+  list.push({
+    id: uid('clip'),
+    assetId: asset.id,
+    type: 'audio',
+    title: asset.name,
+    start,
+    duration: Math.max(0.1, asset.duration || 10),
+    trimStart: 0,
+    trimEnd: asset.duration || 10,
+    volume: track === 'music' ? 0.55 : 1,
+    fadeIn: track === 'music' ? 0.5 : 0,
+    fadeOut: track === 'music' ? 0.5 : 0
+  });
+  setDirty();
+  renderAll();
+}
+
+function addQuoteCard() {
+  state.project.visuals.push({
+    id: uid('clip'),
+    type: 'text',
+    title: 'Quote card',
+    text: '“Add your quote here.”',
+    subtitle: 'Source or note',
+    align: 'center',
+    duration: 4,
+    transition: state.project.visuals.length === 0 ? 'cut' : 'fade',
+    transitionDuration: state.project.visuals.length === 0 ? 0 : 0.35,
+    bgColor: '#111827',
+    textColor: '#f8fafc',
+    accentColor: '#ff6b35'
+  });
+  setDirty();
+  renderAll();
+}
+
+async function importVisualFiles(files) {
+  for (const file of files) {
+    const asset = await addAsset(file, file.type.startsWith('image/') ? 'image' : 'video');
+    addVisualClip(asset);
+  }
+}
+
+async function importAudioFiles(files, track) {
+  for (const file of files) {
+    const asset = await addAsset(file, 'audio');
+    addAudioClip(asset, track);
+  }
+}
+
+function selectClip(track, clipId) {
+  selected = { track, clipId };
+  renderAll();
+}
+
+function getSelectedClip() {
+  if (!selected || !state.project) return null;
+  const list = state.project[selected.track];
+  const clip = list.find(c => c.id === selected.clipId);
+  if (!clip) return null;
+  return { clip, track: selected.track, list };
+}
+
+function getVisualAtTime(time) {
+  let start = 0;
+  for (let i = 0; i < state.project.visuals.length; i += 1) {
+    const clip = state.project.visuals[i];
+    const end = start + clip.duration;
+    if (time >= start && time < end) {
+      return { clip, index: i, start, end, localTime: time - start };
+    }
+    start = end;
+  }
+  if (state.project.visuals.length === 0) return null;
+  const lastIndex = state.project.visuals.length - 1;
+  const lastStart = totalVisualDuration() - state.project.visuals[lastIndex].duration;
+  const last = state.project.visuals[lastIndex];
+  if (time >= totalVisualDuration()) {
+    return { clip: last, index: lastIndex, start: lastStart, end: totalVisualDuration(), localTime: Math.max(0, last.duration - 0.001) };
+  }
+  return null;
+}
+
+function getAudioClipsAtTime(track, time) {
+  return state.project[track].filter(clip => time >= clip.start && time < clip.start + clip.duration);
+}
+
+function fitRect(sw, sh, dw, dh, fit = 'cover') {
+  const sr = sw / sh;
+  const dr = dw / dh;
+  let width;
+  let height;
+  if (fit === 'contain' ? sr > dr : sr < dr) {
+    width = dw;
+    height = dw / sr;
+  } else {
+    height = dh;
+    width = dh * sr;
+  }
+  return {
+    x: (dw - width) / 2,
+    y: (dh - height) / 2,
+    width,
+    height
+  };
+}
+
+function clearCanvas(context, width, height, color) {
+  context.save();
+  context.globalAlpha = 1;
+  context.filter = 'none';
+  context.setTransform(1, 0, 0, 1, 0, 0);
+  context.fillStyle = color;
+  context.fillRect(0, 0, width, height);
+  context.restore();
+}
+
+async function ensurePreviewMedia(clip, trackStart, currentTime) {
+  if (!clip || clip.type === 'text' || clip.type === 'image') return null;
+  let item = previewMedia.get(clip.id);
+  if (!item) {
+    const url = await getBlobUrl(clip.assetId);
+    if (!url) return null;
+    const el = document.createElement('video');
+    el.src = url;
+    el.preload = 'auto';
+    el.crossOrigin = 'anonymous';
+    el.muted = true;
+    el.playsInline = true;
+    el.loop = false;
+    el.style.display = 'none';
+    document.body.appendChild(el);
+    item = { element: el, started: false, kind: 'video', clipId: clip.id };
+    previewMedia.set(clip.id, item);
+  }
+  const local = clip.trimStart + Math.max(0, currentTime - trackStart);
+  if (Number.isFinite(local) && Math.abs((item.element.currentTime || 0) - local) > 0.18) {
+    try { item.element.currentTime = Math.min(clip.trimEnd, local); } catch (err) {}
+  }
+  if (isPlaying && item.element.paused) {
+    try { await item.element.play(); } catch (err) {}
+  }
+  if (!isPlaying && !item.element.paused) {
+    item.element.pause();
+  }
+  return item.element;
+}
+
+async function ensurePreviewImage(clip) {
+  if (clip.type !== 'image') return null;
+  let item = previewMedia.get(clip.id);
+  if (!item) {
+    const url = await getBlobUrl(clip.assetId);
+    if (!url) return null;
+    const img = new Image();
+    img.src = url;
+    item = { element: img, kind: 'image', clipId: clip.id };
+    previewMedia.set(clip.id, item);
+  }
+  return item.element;
+}
+
+function renderTextClip(context, clip, width, height, alpha = 1) {
+  context.save();
+  context.globalAlpha = alpha;
+  context.fillStyle = clip.bgColor || '#111827';
+  context.fillRect(0, 0, width, height);
+  context.strokeStyle = clip.accentColor || '#ff6b35';
+  context.lineWidth = 4;
+  context.strokeRect(width * 0.12, height * 0.18, width * 0.76, height * 0.64);
+  context.fillStyle = clip.textColor || '#f8fafc';
+  context.textAlign = clip.align || 'center';
+  context.textBaseline = 'middle';
+  context.font = `700 ${Math.round(width * 0.038)}px "Fraunces", serif`;
+  wrapText(context, clip.text || '', width * 0.5, height * 0.42, width * 0.58, Math.round(width * 0.05));
+  context.font = `500 ${Math.round(width * 0.018)}px "Space Grotesk", sans-serif`;
+  context.fillStyle = 'rgba(248,250,252,0.78)';
+  context.fillText(clip.subtitle || '', width * 0.5, height * 0.72);
+  context.restore();
+}
+
+function wrapText(context, text, x, y, maxWidth, lineHeight) {
+  const words = String(text || '').split(/\s+/);
+  const lines = [];
+  let line = '';
+  for (const word of words) {
+    const test = line ? `${line} ${word}` : word;
+    if (context.measureText(test).width > maxWidth && line) {
+      lines.push(line);
+      line = word;
+    } else {
+      line = test;
+    }
+  }
+  if (line) lines.push(line);
+  const offset = ((lines.length - 1) * lineHeight) / 2;
+  lines.forEach((ln, idx) => context.fillText(ln, x, y - offset + idx * lineHeight));
+}
+
+function transitionProgress(clipInfo, time) {
+  const clip = clipInfo.clip;
+  if (!clip || !clip.transitionDuration || clip.transition === 'cut' || clipInfo.index === 0) return 1;
+  const elapsed = time - clipInfo.start;
+  if (elapsed <= 0) return 0;
+  if (elapsed >= clip.transitionDuration) return 1;
+  return elapsed / clip.transitionDuration;
+}
+
+async function drawVisualClip(context, clip, localTime, alpha = 1, transform = null, filter = 'none') {
+  const width = context.canvas.width;
+  const height = context.canvas.height;
+  context.save();
+  context.globalAlpha = alpha;
+  context.filter = filter;
+  if (transform) {
+    context.translate(transform.x || 0, transform.y || 0);
+    context.scale(transform.scaleX || 1, transform.scaleY || 1);
+  }
+  if (clip.type === 'text') {
+    renderTextClip(context, clip, width, height, alpha);
+    context.restore();
+    return;
+  }
+  if (clip.type === 'image') {
+    const img = await ensurePreviewImage(clip);
+    if (img && img.complete) {
+      const box = fitRect(img.naturalWidth || width, img.naturalHeight || height, width, height, clip.fit || 'cover');
+      context.drawImage(img, box.x, box.y, box.width, box.height);
+    }
+    context.restore();
+    return;
+  }
+  const clipStart = getClipStart('visuals', clip.id);
+  const video = await ensurePreviewMedia(clip, clipStart, clipStart + localTime);
+  if (video && video.readyState >= 2) {
+    const box = fitRect(video.videoWidth || width, video.videoHeight || height, width, height, clip.fit || 'cover');
+    context.drawImage(video, box.x, box.y, box.width, box.height);
+  }
+  context.restore();
+}
+
+async function renderFrameAt(time, context = ctx) {
+  if (!state.project) return;
+  syncSettingsFromUI();
+  const width = context.canvas.width;
+  const height = context.canvas.height;
+  clearCanvas(context, width, height, state.project.settings.bgColor);
+  const current = getVisualAtTime(time);
+  if (!current) {
+    context.save();
+    context.fillStyle = 'rgba(255,255,255,0.55)';
+    context.font = `600 ${Math.round(width * 0.028)}px "Space Grotesk", sans-serif`;
+    context.textAlign = 'center';
+    context.fillText('Import visuals or add a quote card to begin.', width / 2, height / 2);
+    context.restore();
+    dom.nowPlayingLabel.textContent = 'No visual clip';
+    dom.timecodeLabel.textContent = `${fmtTime(time)} / ${fmtTime(totalProjectDuration())}`;
+    return;
+  }
+
+  const progress = transitionProgress(current, time);
+  const prev = current.index > 0 ? state.project.visuals[current.index - 1] : null;
+  if (prev && progress < 1 && current.clip.transition !== 'cut') {
+    const prevLocal = Math.max(0, prev.duration - (current.clip.transitionDuration - (time - current.start)));
+    await drawTransitionFrame(context, prev, current.clip, prevLocal, current.localTime, progress, current.clip.transition);
+  } else {
+    await drawVisualClip(context, current.clip, current.localTime, 1, null, 'none');
+  }
+
+  dom.nowPlayingLabel.textContent = clipDisplayName(current.clip);
+  dom.timecodeLabel.textContent = `${fmtTime(time)} / ${fmtTime(totalProjectDuration())}`;
+}
+
+async function drawTransitionFrame(context, prevClip, nextClip, prevLocalTime, nextLocalTime, progress, type) {
+  const width = context.canvas.width;
+  const height = context.canvas.height;
+  const eased = Math.min(1, Math.max(0, progress));
+  if (type === 'fade' || type === 'dissolve' || type === 'crossfade') {
+    await drawVisualClip(context, prevClip, prevLocalTime, 1 - eased);
+    await drawVisualClip(context, nextClip, nextLocalTime, eased);
+    return;
+  }
+  if (type === 'dip-black') {
+    const blackAlpha = eased < 0.5 ? eased * 2 : (1 - eased) * 2;
+    await drawVisualClip(context, eased < 0.5 ? prevClip : nextClip, eased < 0.5 ? prevLocalTime : nextLocalTime, 1);
+    context.save();
+    context.globalAlpha = blackAlpha;
+    context.fillStyle = '#000';
+    context.fillRect(0, 0, width, height);
+    context.restore();
+    return;
+  }
+  if (type === 'blur') {
+    await drawVisualClip(context, prevClip, prevLocalTime, 1 - eased * 0.2, null, `blur(${Math.round(eased * 18)}px)`);
+    await drawVisualClip(context, nextClip, nextLocalTime, eased, null, `blur(${Math.round((1 - eased) * 18)}px)`);
+    return;
+  }
+  if (type === 'zoom-in') {
+    await drawVisualClip(context, prevClip, prevLocalTime, 1 - eased);
+    await drawVisualClip(context, nextClip, nextLocalTime, eased, { scaleX: 0.92 + eased * 0.08, scaleY: 0.92 + eased * 0.08, x: width * 0.04 * (1 - eased), y: height * 0.04 * (1 - eased) });
+    return;
+  }
+  if (type === 'zoom-out') {
+    await drawVisualClip(context, prevClip, prevLocalTime, 1 - eased, { scaleX: 1 + eased * 0.08, scaleY: 1 + eased * 0.08, x: -width * 0.04 * eased, y: -height * 0.04 * eased });
+    await drawVisualClip(context, nextClip, nextLocalTime, eased);
+    return;
+  }
+  if (type === 'flip') {
+    await drawVisualClip(context, prevClip, prevLocalTime, 1 - eased, { scaleX: Math.max(0.01, 1 - eased), scaleY: 1, x: width * eased * 0.5, y: 0 });
+    await drawVisualClip(context, nextClip, nextLocalTime, eased, { scaleX: Math.max(0.01, eased), scaleY: 1, x: width * (1 - eased) * 0.5, y: 0 });
+    return;
+  }
+  if (type === 'iris') {
+    await drawVisualClip(context, prevClip, prevLocalTime, 1);
+    context.save();
+    context.beginPath();
+    context.arc(width / 2, height / 2, Math.max(width, height) * eased, 0, Math.PI * 2);
+    context.clip();
+    await drawVisualClip(context, nextClip, nextLocalTime, 1);
+    context.restore();
+    return;
+  }
+  if (type.startsWith('wipe-')) {
+    await drawVisualClip(context, prevClip, prevLocalTime, 1);
+    context.save();
+    context.beginPath();
+    if (type === 'wipe-left') context.rect(width * (1 - eased), 0, width * eased, height);
+    if (type === 'wipe-right') context.rect(0, 0, width * eased, height);
+    if (type === 'wipe-up') context.rect(0, height * (1 - eased), width, height * eased);
+    if (type === 'wipe-down') context.rect(0, 0, width, height * eased);
+    context.clip();
+    await drawVisualClip(context, nextClip, nextLocalTime, 1);
+    context.restore();
+    return;
+  }
+  if (type.startsWith('slide-')) {
+    const dir = type.replace('slide-', '');
+    const prevTransform = { x: 0, y: 0, scaleX: 1, scaleY: 1 };
+    const nextTransform = { x: 0, y: 0, scaleX: 1, scaleY: 1 };
+    if (dir === 'left') { prevTransform.x = -width * eased; nextTransform.x = width * (1 - eased); }
+    if (dir === 'right') { prevTransform.x = width * eased; nextTransform.x = -width * (1 - eased); }
+    if (dir === 'up') { prevTransform.y = -height * eased; nextTransform.y = height * (1 - eased); }
+    if (dir === 'down') { prevTransform.y = height * eased; nextTransform.y = -height * (1 - eased); }
+    await drawVisualClip(context, prevClip, prevLocalTime, 1, prevTransform);
+    await drawVisualClip(context, nextClip, nextLocalTime, 1, nextTransform);
+    return;
+  }
+  await drawVisualClip(context, prevClip, prevLocalTime, 1 - eased);
+  await drawVisualClip(context, nextClip, nextLocalTime, eased);
+}
+
+function getAudioSourcesForTime(time) {
+  const sources = [];
+  state.project.voices.forEach(clip => {
+    if (time >= clip.start && time < clip.start + clip.duration) sources.push({ clip, track: 'voices', kind: 'audio' });
+  });
+  state.project.music.forEach(clip => {
+    if (time >= clip.start && time < clip.start + clip.duration) sources.push({ clip, track: 'music', kind: 'audio' });
+  });
+  const current = getVisualAtTime(time);
+  if (current && current.clip.type === 'video' && !current.clip.muted) {
+    sources.push({ clip: current.clip, track: 'visuals', kind: 'video-audio', start: current.start });
+  }
+  const prev = current && current.index > 0 && transitionProgress(current, time) < 1 ? state.project.visuals[current.index - 1] : null;
+  if (prev && prev.type === 'video' && !prev.muted) {
+    sources.push({ clip: prev, track: 'visuals', kind: 'video-audio', start: getVisualClipStart(current.index - 1) });
+  }
+  return sources;
+}
+
+async function syncPreviewAudio(time) {
+  const wanted = new Set();
+  const voicesActive = getAudioClipsAtTime('voices', time).length > 0;
+  const sources = getAudioSourcesForTime(time);
+  for (const source of sources) {
+    const clip = source.clip;
+    const key = `${source.track}:${clip.id}`;
+    wanted.add(key);
+    let item = previewMedia.get(key);
+    if (!item) {
+      const url = await getBlobUrl(clip.assetId);
+      if (!url) continue;
+      const el = document.createElement(source.track === 'visuals' ? 'video' : 'audio');
+      el.src = url;
+      el.preload = 'auto';
+      el.crossOrigin = 'anonymous';
+      el.playsInline = true;
+      el.loop = false;
+      el.style.display = 'none';
+      if (source.track === 'visuals') el.muted = false;
+      document.body.appendChild(el);
+      item = { element: el, key, clipId: clip.id, track: source.track };
+      previewMedia.set(key, item);
+    }
+    const clipStart = source.track === 'visuals' ? source.start : clip.start;
+    const local = clip.trimStart + Math.max(0, time - clipStart);
+    if (Number.isFinite(local) && Math.abs((item.element.currentTime || 0) - local) > 0.35) {
+      try { item.element.currentTime = Math.min(clip.trimEnd, local); } catch (err) {}
+    }
+    const baseVolume = Number(clip.volume ?? 1);
+    const fade = computeFadeMultiplier(clip, clipStart, time);
+    const duck = source.track === 'music' && state.project.settings.duckMusic && voicesActive ? Number(state.project.settings.duckAmount || 0.35) : 1;
+    item.element.volume = Math.max(0, Math.min(1, baseVolume * fade * duck));
+    if (item.element.paused) {
+      try { await item.element.play(); } catch (err) {}
+    }
+  }
+
+  for (const [key, item] of previewMedia.entries()) {
+    if (!key.includes(':')) continue;
+    if (!wanted.has(key)) {
+      item.element.pause();
+      item.element.remove();
+      previewMedia.delete(key);
+    }
+  }
+}
+
+function computeFadeMultiplier(clip, clipStart, time) {
+  const local = Math.max(0, time - clipStart);
+  let mult = 1;
+  if (clip.fadeIn > 0 && local < clip.fadeIn) mult *= local / clip.fadeIn;
+  const timeLeft = clip.duration - local;
+  if (clip.fadeOut > 0 && timeLeft < clip.fadeOut) mult *= Math.max(0, timeLeft / clip.fadeOut);
+  return Math.max(0, Math.min(1, mult));
+}
+
+function stopPlayback() {
+  isPlaying = false;
+  cancelAnimationFrame(rafId);
+  rafId = null;
+  previewMedia.forEach(item => {
+    if (item.element && typeof item.element.pause === 'function') item.element.pause();
+    if (item.key || item.track) item.element.remove();
+  });
+  for (const [key, item] of [...previewMedia.entries()]) {
+    if (key.includes(':')) previewMedia.delete(key);
+  }
+  dom.transportInfo.textContent = 'Idle';
+  dom.playBtn.textContent = 'Play';
+}
+
+async function play() {
+  if (!state.project) return;
+  stopPlayback();
+  if (state.currentTime >= totalProjectDuration()) state.currentTime = 0;
+  isPlaying = true;
+  previewStartWall = performance.now();
+  previewStartTime = state.currentTime;
+  dom.transportInfo.textContent = 'Playing';
+  dom.playBtn.textContent = 'Playing...';
+  const tick = async () => {
+    if (!isPlaying) return;
+    const elapsed = (performance.now() - previewStartWall) / 1000;
+    state.currentTime = Math.min(totalProjectDuration(), previewStartTime + elapsed);
+    dom.scrubber.value = String(state.currentTime);
+    await syncPreviewAudio(state.currentTime);
+    await renderFrameAt(state.currentTime);
+    renderTimelinePlayheads();
+    if (state.currentTime >= totalProjectDuration()) {
+      stopPlayback();
+      return;
+    }
+    rafId = requestAnimationFrame(() => { tick(); });
+  };
+  tick();
+}
+
+async function seekTo(time) {
+  state.currentTime = Math.max(0, Math.min(totalProjectDuration(), time));
+  dom.scrubber.value = String(state.currentTime);
+  if (isPlaying) {
+    await play();
+  } else {
+    await renderFrameAt(state.currentTime);
+    renderTimelinePlayheads();
+  }
+}
+
+function reorderVisual(clipId, dir) {
+  const list = state.project.visuals;
+  const idx = list.findIndex(c => c.id === clipId);
+  const next = idx + dir;
+  if (idx < 0 || next < 0 || next >= list.length) return;
+  [list[idx], list[next]] = [list[next], list[idx]];
+  setDirty();
+  renderAll();
+}
+
+function splitClip(track, clipId) {
+  const list = state.project[track];
+  const idx = list.findIndex(c => c.id === clipId);
+  if (idx === -1) return;
+  const clip = list[idx];
+  const clipStart = track === 'visuals' ? getVisualClipStart(idx) : clip.start;
+  const splitAt = Math.min(clip.duration - 0.1, Math.max(0.1, state.currentTime - clipStart));
+  if (!(splitAt > 0 && splitAt < clip.duration)) return;
+  const newClip = clone(clip);
+  newClip.id = uid('clip');
+  newClip.duration = clip.duration - splitAt;
+  if (clip.assetId) {
+    newClip.trimStart = (clip.trimStart || 0) + splitAt;
+    newClip.trimEnd = clip.trimEnd;
+    clip.trimEnd = (clip.trimStart || 0) + splitAt;
+  }
+  if (track !== 'visuals') newClip.start = clip.start + splitAt;
+  clip.duration = splitAt;
+  list.splice(idx + 1, 0, newClip);
+  setDirty();
+  renderAll();
+}
+
+function deleteClip(track, clipId) {
+  const list = state.project[track];
+  const idx = list.findIndex(c => c.id === clipId);
+  if (idx === -1) return;
+  list.splice(idx, 1);
+  if (selected && selected.clipId === clipId && selected.track === track) selected = null;
+  setDirty();
+  renderAll();
+}
+
+function duplicateClip(track, clipId) {
+  const list = state.project[track];
+  const idx = list.findIndex(c => c.id === clipId);
+  if (idx === -1) return;
+  const copy = clone(list[idx]);
+  copy.id = uid('clip');
+  if (track !== 'visuals') copy.start += 0.25;
+  list.splice(idx + 1, 0, copy);
+  setDirty();
+  renderAll();
+}
+
+function nudgeAudio(clipId, track, delta) {
+  const clip = state.project[track].find(c => c.id === clipId);
+  if (!clip) return;
+  clip.start = Math.max(0, Number((clip.start + delta).toFixed(2)));
+  setDirty();
+  renderAll();
+}
+
+function updateClipField(track, clipId, field, value) {
+  const clip = state.project[track].find(c => c.id === clipId);
+  if (!clip) return;
+  clip[field] = value;
+  if (field === 'trimStart' || field === 'trimEnd') {
+    clip.duration = Math.max(0.1, Number(clip.trimEnd) - Number(clip.trimStart));
+  }
+  setDirty();
+  renderAll();
+}
+
+function renderStats() {
+  dom.runtimeStat.textContent = fmtTime(totalVisualDuration());
+  dom.assetsStat.textContent = Object.keys(state.project.assets).length;
+  dom.voiceStat.textContent = state.project.voices.length;
+  dom.musicStat.textContent = state.project.music.length;
+  dom.scrubber.max = String(totalProjectDuration());
+}
+
+function renderAssets() {
+  const entries = Object.values(state.project.assets);
+  if (!entries.length) {
+    dom.assetList.innerHTML = '<div class="empty-state">No assets yet. Import media to start building.</div>';
+    return;
+  }
+  dom.assetList.innerHTML = entries.map(asset => `
+    <div class="asset-card">
+      <div class="asset-top">
+        <div>
+          <div class="asset-name">${escapeHtml(asset.name)}</div>
+          <div class="meta">${asset.kind} · ${fmtTime(asset.duration || 0)}</div>
+        </div>
+        <span class="badge ${asset.kind === 'audio' ? 'audio' : asset.kind === 'image' ? 'text' : 'visual'}">${asset.kind}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function renderRecentProjects() {
+  const projects = await idbGetAll(PROJECT_STORE);
+  projects.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+  if (!projects.length) {
+    dom.recentProjects.innerHTML = '<div class="empty-state">No cached projects yet.</div>';
+    return;
+  }
+  dom.recentProjects.innerHTML = projects.slice(0, 8).map(project => `
+    <div class="recent-card">
+      <div class="recent-top">
+        <div>
+          <div class="project-name">${escapeHtml(project.name || 'Untitled video essay')}</div>
+          <div class="recent-time">${new Date(project.updatedAt || Date.now()).toLocaleString()}</div>
+        </div>
+        <button class="small-btn" data-load-project="${project.id}">Open</button>
+      </div>
+      <div class="meta">${project.visuals.length} visuals · ${project.voices.length} voice · ${project.music.length} music</div>
+    </div>
+  `).join('');
+  dom.recentProjects.querySelectorAll('[data-load-project]').forEach(btn => {
+    btn.addEventListener('click', () => loadProject(btn.dataset.loadProject));
+  });
+}
+
+function renderTimelinePlayheads() {
+  const total = totalProjectDuration();
+  document.querySelectorAll('.playhead').forEach(node => node.remove());
+  [dom.visualTrackStrip, dom.voiceTrackStrip, dom.musicTrackStrip].forEach(strip => {
+    const head = document.createElement('div');
+    head.className = 'playhead';
+    head.style.left = `${(state.currentTime / total) * 100}%`;
+    strip.appendChild(head);
+  });
+}
+
+function renderTimeline() {
+  const total = totalProjectDuration();
+  if (!state.project.visuals.length) {
+    dom.visualTrackStrip.innerHTML = '<div class="empty-state" style="margin:10px;">Visual clips appear here in sequence.</div>';
+  } else {
+    dom.visualTrackStrip.innerHTML = state.project.visuals.map((clip, idx) => {
+      const width = Math.max(6, (clip.duration / total) * 100);
+      const active = selected && selected.track === 'visuals' && selected.clipId === clip.id ? 'active' : '';
+      return `
+        <div class="clip-block visual-clip ${active}" data-track="visuals" data-id="${clip.id}" style="width:${width}%;">
+          <div class="title">${escapeHtml(clipDisplayName(clip))}</div>
+          <div class="sub">${fmtTime(clip.duration)} · ${escapeHtml(clip.transition || 'cut')}</div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  renderAudioTrack(dom.voiceTrackStrip, state.project.voices, 'voices', 'voice-clip', total);
+  renderAudioTrack(dom.musicTrackStrip, state.project.music, 'music', 'music-clip', total);
+
+  document.querySelectorAll('[data-track][data-id]').forEach(node => {
+    node.addEventListener('click', () => selectClip(node.dataset.track, node.dataset.id));
+  });
+  renderTimelinePlayheads();
+}
+
+function renderAudioTrack(strip, clips, track, className, total) {
+  if (!clips.length) {
+    strip.innerHTML = '<div class="empty-state" style="margin:10px;">No clips on this track yet.</div>';
+    return;
+  }
+  strip.innerHTML = clips.map(clip => {
+    const left = (clip.start / total) * 100;
+    const width = Math.max(5, (clip.duration / total) * 100);
+    const active = selected && selected.track === track && selected.clipId === clip.id ? 'active' : '';
+    return `
+      <div class="clip-block audio ${className} ${active}" data-track="${track}" data-id="${clip.id}" style="left:${left}%; width:${width}%;">
+        <div class="title">${escapeHtml(clipDisplayName(clip))}</div>
+        <div class="sub">${fmtTime(clip.start)} → ${fmtTime(clip.start + clip.duration)}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderSelectedClipActions() {
+  const info = getSelectedClip();
+  if (!info) {
+    dom.selectedLabel.textContent = 'Nothing selected';
+    dom.selectedClipActions.innerHTML = '<div class="empty-state">Click a clip in the timeline to trim, split, move, fade, or change transitions.</div>';
+    return;
+  }
+  const { clip, track } = info;
+  dom.selectedLabel.textContent = `${track.replace('visuals', 'visual')} clip`;
+  const buttons = [];
+  buttons.push(`<button class="small-btn" data-action="split">Split at playhead</button>`);
+  buttons.push(`<button class="small-btn" data-action="duplicate">Duplicate</button>`);
+  buttons.push(`<button class="small-btn" data-action="delete">Delete</button>`);
+  if (track === 'visuals') {
+    buttons.push(`<button class="small-btn" data-action="left">Move left</button>`);
+    buttons.push(`<button class="small-btn" data-action="right">Move right</button>`);
+  } else {
+    buttons.push(`<button class="small-btn" data-action="back">Start -0.5s</button>`);
+    buttons.push(`<button class="small-btn" data-action="forward">Start +0.5s</button>`);
+  }
+  dom.selectedClipActions.innerHTML = `
+    <div class="clip-card active">
+      <div class="clip-top">
+        <div>
+          <div class="clip-name">${escapeHtml(clipDisplayName(clip))}</div>
+          <div class="meta">${track} · ${fmtTime(track === 'visuals' ? getClipStart(track, clip.id) : clip.start)} start</div>
+        </div>
+      </div>
+      <div class="actions-row" style="margin-top:10px;">${buttons.join('')}</div>
+    </div>
+  `;
+  dom.selectedClipActions.querySelectorAll('[data-action]').forEach(btn => {
+    const action = btn.dataset.action;
+    btn.addEventListener('click', () => {
+      if (action === 'split') splitClip(track, clip.id);
+      if (action === 'duplicate') duplicateClip(track, clip.id);
+      if (action === 'delete') deleteClip(track, clip.id);
+      if (action === 'left') reorderVisual(clip.id, -1);
+      if (action === 'right') reorderVisual(clip.id, 1);
+      if (action === 'back') nudgeAudio(clip.id, track, -0.5);
+      if (action === 'forward') nudgeAudio(clip.id, track, 0.5);
+    });
+  });
+}
+
+function renderInspector() {
+  const info = getSelectedClip();
+  if (!info) {
+    dom.inspector.innerHTML = `
+      <div class="empty-state">
+        Select a clip to edit it. This inspector handles trim, fades, levels, transitions, text cards, and start positions.
+      </div>
+    `;
+    return;
+  }
+  const { clip, track } = info;
+  const asset = clip.assetId ? state.project.assets[clip.assetId] : null;
+  const isVisual = track === 'visuals';
+  const isText = clip.type === 'text';
+  const startValue = isVisual ? getClipStart(track, clip.id) : clip.start;
+  const transitionOptions = DEFAULT_TRANSITIONS.map(name => `<option value="${name}" ${clip.transition === name ? 'selected' : ''}>${name}</option>`).join('');
+  dom.inspector.innerHTML = `
+    <div class="field-grid">
+      <div class="field-row">
+        <label>Name</label>
+        <input type="text" id="clipTitleField" value="${escapeAttr(clip.title || clipDisplayName(clip))}">
+      </div>
+      ${!isVisual ? `
+        <div class="field-row">
+          <label>Timeline start</label>
+          <input type="number" step="0.1" min="0" id="clipStartField" value="${Number(startValue).toFixed(2)}">
+        </div>` : `
+        <div class="field-row">
+          <label>Timeline start</label>
+          <input type="number" step="0.1" min="0" value="${Number(startValue).toFixed(2)}" disabled>
+        </div>
+      `}
+
+      <div class="field-inline">
+        <div class="field-row">
+          <label>Trim start</label>
+          <input type="number" step="0.1" min="0" max="${asset ? asset.duration : clip.duration}" id="trimStartField" value="${Number(clip.trimStart || 0).toFixed(2)}">
+        </div>
+        <div class="field-row">
+          <label>Trim end</label>
+          <input type="number" step="0.1" min="0.1" max="${asset ? asset.duration : clip.duration}" id="trimEndField" value="${Number(clip.trimEnd || clip.duration).toFixed(2)}">
+        </div>
+      </div>
+
+      <div class="field-inline">
+        <div class="field-row">
+          <label>Volume</label>
+          <input type="range" min="0" max="2" step="0.05" id="volumeField" value="${Number(clip.volume ?? 1)}">
+        </div>
+        <div class="field-row">
+          <label>Current duration</label>
+          <input type="number" step="0.1" min="0.1" id="durationField" value="${Number(clip.duration).toFixed(2)}">
+        </div>
+      </div>
+
+      <div class="field-inline">
+        <div class="field-row">
+          <label>Fade in</label>
+          <input type="number" step="0.1" min="0" id="fadeInField" value="${Number(clip.fadeIn || 0).toFixed(2)}">
+        </div>
+        <div class="field-row">
+          <label>Fade out</label>
+          <input type="number" step="0.1" min="0" id="fadeOutField" value="${Number(clip.fadeOut || 0).toFixed(2)}">
+        </div>
+      </div>
+
+      ${isVisual ? `
+        <div class="field-inline">
+          <div class="field-row">
+            <label>Transition</label>
+            <select id="transitionField">${transitionOptions}</select>
+          </div>
+          <div class="field-row">
+            <label>Transition duration</label>
+            <input type="number" step="0.05" min="0" max="3" id="transitionDurationField" value="${Number(clip.transitionDuration || 0).toFixed(2)}">
+          </div>
+        </div>
+      ` : ''}
+
+      ${isVisual && !isText ? `
+        <div class="field-inline">
+          <div class="field-row">
+            <label>Fit</label>
+            <select id="fitField">
+              <option value="cover" ${clip.fit === 'cover' ? 'selected' : ''}>cover</option>
+              <option value="contain" ${clip.fit === 'contain' ? 'selected' : ''}>contain</option>
+            </select>
+          </div>
+          <div class="toggle-row">
+            <div>
+              <strong>Mute source audio</strong>
+              <div class="micro">Only matters for video clips</div>
+            </div>
+            <input class="checkbox" type="checkbox" id="mutedField" ${clip.muted ? 'checked' : ''}>
+          </div>
+        </div>
+      ` : ''}
+
+      ${isText ? `
+        <div class="field-row">
+          <label>Main quote / text</label>
+          <textarea id="textField">${escapeHtml(clip.text || '')}</textarea>
+        </div>
+        <div class="field-row">
+          <label>Subtitle / source</label>
+          <input type="text" id="subtitleField" value="${escapeAttr(clip.subtitle || '')}">
+        </div>
+        <div class="field-inline">
+          <div class="field-row">
+            <label>Background</label>
+            <input type="color" id="bgColorField" value="${clip.bgColor || '#111827'}">
+          </div>
+          <div class="field-row">
+            <label>Text color</label>
+            <input type="color" id="textColorField" value="${clip.textColor || '#f8fafc'}">
+          </div>
+        </div>
+        <div class="field-row">
+          <label>Accent border color</label>
+          <input type="color" id="accentColorField" value="${clip.accentColor || '#ff6b35'}">
+        </div>
+      ` : ''}
+    </div>
+  `;
+
+  const wire = (id, field, parser = v => v) => {
+    const input = document.getElementById(id);
+    if (!input) return;
+    input.addEventListener('input', () => updateClipField(track, clip.id, field, parser(input.value)));
+    input.addEventListener('change', () => updateClipField(track, clip.id, field, parser(input.value)));
+  };
+
+  wire('clipTitleField', 'title', v => v);
+  wire('trimStartField', 'trimStart', v => Number(v));
+  wire('trimEndField', 'trimEnd', v => Number(v));
+  wire('volumeField', 'volume', v => Number(v));
+  wire('durationField', 'duration', v => Math.max(0.1, Number(v)));
+  wire('fadeInField', 'fadeIn', v => Number(v));
+  wire('fadeOutField', 'fadeOut', v => Number(v));
+  wire('transitionField', 'transition', v => v);
+  wire('transitionDurationField', 'transitionDuration', v => Number(v));
+  wire('fitField', 'fit', v => v);
+  wire('textField', 'text', v => v);
+  wire('subtitleField', 'subtitle', v => v);
+  wire('bgColorField', 'bgColor', v => v);
+  wire('textColorField', 'textColor', v => v);
+  wire('accentColorField', 'accentColor', v => v);
+  const mutedInput = document.getElementById('mutedField');
+  if (mutedInput) mutedInput.addEventListener('change', () => updateClipField(track, clip.id, 'muted', mutedInput.checked));
+  const startInput = document.getElementById('clipStartField');
+  if (startInput) startInput.addEventListener('input', () => updateClipField(track, clip.id, 'start', Math.max(0, Number(startInput.value))));
+}
+
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+}
+
+function escapeAttr(value) {
+  return escapeHtml(value).replaceAll('\n', '&#10;');
+}
+
+function renderAll() {
+  if (!state.project) return;
+  renderStats();
+  renderAssets();
+  renderTimeline();
+  renderInspector();
+  renderSelectedClipActions();
+  renderFrameAt(state.currentTime);
+}
+
+async function bootstrap() {
+  await openDB();
+  const lastProjectId = localStorage.getItem(META_KEY);
+  if (lastProjectId) {
+    const ok = await loadProject(lastProjectId);
+    if (!ok) await createNewProject();
+  } else {
+    const existing = await idbGetAll(PROJECT_STORE);
+    if (existing.length) {
+      existing.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+      await loadProject(existing[0].id);
+    } else {
+      await createNewProject();
+    }
+  }
+  await renderRecentProjects();
+  bindEvents();
+}
+
+function bindEvents() {
+  dom.addVisualBtn.addEventListener('click', () => dom.visualInput.click());
+  dom.addVoiceBtn.addEventListener('click', () => dom.voiceInput.click());
+  dom.addMusicBtn.addEventListener('click', () => dom.musicInput.click());
+  dom.dropAddVisual.addEventListener('click', () => dom.visualInput.click());
+  dom.dropAddVoice.addEventListener('click', () => dom.voiceInput.click());
+  dom.dropAddMusic.addEventListener('click', () => dom.musicInput.click());
+
+  dom.visualInput.addEventListener('change', async e => {
+    if (e.target.files?.length) await importVisualFiles([...e.target.files]);
+    e.target.value = '';
+  });
+  dom.voiceInput.addEventListener('change', async e => {
+    if (e.target.files?.length) await importAudioFiles([...e.target.files], 'voices');
+    e.target.value = '';
+  });
+  dom.musicInput.addEventListener('change', async e => {
+    if (e.target.files?.length) await importAudioFiles([...e.target.files], 'music');
+    e.target.value = '';
+  });
+
+  dom.addQuoteBtn.addEventListener('click', addQuoteCard);
+  dom.newProjectBtn.addEventListener('click', async () => {
+    if (confirm('Start a new local project? Your current one is already cached and can be reopened from Recent Projects.')) {
+      await createNewProject();
+    }
+  });
+  dom.refreshProjectsBtn.addEventListener('click', renderRecentProjects);
+
+  dom.projectName.addEventListener('input', () => {
+    state.project.name = dom.projectName.value.trim() || 'Untitled video essay';
+    setDirty();
+  });
+
+  [dom.exportWidth, dom.exportHeight, dom.exportFps, dom.backgroundColor, dom.duckingToggle, dom.duckAmount].forEach(el => {
+    el.addEventListener('input', () => {
+      syncSettingsFromUI();
+      setDirty();
+      renderFrameAt(state.currentTime);
+    });
+  });
+
+  dom.playBtn.addEventListener('click', play);
+  dom.pauseBtn.addEventListener('click', () => {
+    stopPlayback();
+    renderFrameAt(state.currentTime);
+  });
+  dom.rewindBtn.addEventListener('click', () => seekTo(0));
+  dom.stepBackBtn.addEventListener('click', () => seekTo(state.currentTime - 1));
+  dom.stepFwdBtn.addEventListener('click', () => seekTo(state.currentTime + 1));
+  dom.scrubber.addEventListener('input', () => seekTo(Number(dom.scrubber.value)));
+  dom.exportBtn.addEventListener('click', exportProject);
+
+  ['dragenter', 'dragover'].forEach(type => {
+    dom.dropzone.addEventListener(type, e => {
+      e.preventDefault();
+      dom.dropzone.style.borderColor = 'rgba(255, 107, 53, 0.65)';
+    });
+  });
+  ['dragleave', 'drop'].forEach(type => {
+    dom.dropzone.addEventListener(type, e => {
+      e.preventDefault();
+      dom.dropzone.style.borderColor = 'rgba(255,255,255,0.2)';
+    });
+  });
+  dom.dropzone.addEventListener('drop', async e => {
+    const files = [...e.dataTransfer.files];
+    const visuals = files.filter(f => f.type.startsWith('video/') || f.type.startsWith('image/'));
+    const audio = files.filter(f => f.type.startsWith('audio/'));
+    if (visuals.length) await importVisualFiles(visuals);
+    if (audio.length) await importAudioFiles(audio, 'music');
+  });
+}
+
+async function buildExportElements(audioContext, destination, totalDuration) {
+  const registry = [];
+  const allAudioish = [
+    ...state.project.voices.map(clip => ({ clip, track: 'voices', start: clip.start })),
+    ...state.project.music.map(clip => ({ clip, track: 'music', start: clip.start })),
+    ...state.project.visuals
+      .map((clip, idx) => ({ clip, track: 'visuals', start: getVisualClipStart(idx) }))
+      .filter(item => item.clip.type === 'video' && !item.clip.muted)
+  ];
+
+  for (const item of allAudioish) {
+    const url = await getBlobUrl(item.clip.assetId);
+    if (!url) continue;
+    const el = document.createElement(item.track === 'visuals' ? 'video' : 'audio');
+    el.src = url;
+    el.preload = 'auto';
+    el.crossOrigin = 'anonymous';
+    el.playsInline = true;
+    el.loop = false;
+    el.style.display = 'none';
+    document.body.appendChild(el);
+    const source = audioContext.createMediaElementSource(el);
+    const gain = audioContext.createGain();
+    source.connect(gain).connect(destination);
+    registry.push({ ...item, el, gain, source });
+  }
+  return registry;
+}
+
+async function exportProject() {
+  if (!state.project || totalProjectDuration() <= 0.1) return;
+  stopPlayback();
+  syncSettingsFromUI();
+  await saveCurrentProject();
+
+  const width = state.project.settings.width;
+  const height = state.project.settings.height;
+  const fps = state.project.settings.fps;
+  const total = totalProjectDuration();
+  const exportCanvas = document.createElement('canvas');
+  exportCanvas.width = width;
+  exportCanvas.height = height;
+  const exportCtx = exportCanvas.getContext('2d');
+  const stream = exportCanvas.captureStream(fps);
+  const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  const destination = audioContext.createMediaStreamDestination();
+  const audioNodes = await buildExportElements(audioContext, destination, total);
+  destination.stream.getAudioTracks().forEach(track => stream.addTrack(track));
+
+  const chunks = [];
+  const recorder = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp9,opus' });
+  recorder.ondataavailable = e => {
+    if (e.data?.size) chunks.push(e.data);
+  };
+
+  dom.exportStatus.textContent = 'Rendering export... keep this tab open until the download begins.';
+  recorder.start(1000);
+  const startedAt = performance.now();
+
+  const drive = async () => {
+    const time = Math.min(total, (performance.now() - startedAt) / 1000);
+    clearCanvas(exportCtx, width, height, state.project.settings.bgColor);
+    await renderFrameAt(time, exportCtx);
+    const voicesActive = getAudioClipsAtTime('voices', time).length > 0;
+    for (const node of audioNodes) {
+      const clip = node.clip;
+      const active = time >= node.start && time < node.start + clip.duration;
+      if (!active) {
+        node.gain.gain.value = 0;
+        continue;
+      }
+      const local = clip.trimStart + Math.max(0, time - node.start);
+      if (Math.abs((node.el.currentTime || 0) - local) > 0.3) {
+        try { node.el.currentTime = Math.min(clip.trimEnd, local); } catch (err) {}
+      }
+      if (node.el.paused) {
+        try { await node.el.play(); } catch (err) {}
+      }
+      const fade = computeFadeMultiplier(clip, node.start, time);
+      const duck = node.track === 'music' && state.project.settings.duckMusic && voicesActive ? Number(state.project.settings.duckAmount || 0.35) : 1;
+      node.gain.gain.value = Math.max(0, Math.min(2, Number(clip.volume ?? 1) * fade * duck));
+    }
+
+    if (time >= total) {
+      recorder.stop();
+      return;
+    }
+    requestAnimationFrame(drive);
+  };
+
+  recorder.onstop = async () => {
+    audioNodes.forEach(node => {
+      node.el.pause();
+      node.el.remove();
+      node.source.disconnect();
+      node.gain.disconnect();
+    });
+    await audioContext.close();
+    const blob = new Blob(chunks, { type: 'video/webm' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${(state.project.name || 'video-essay').replace(/[^\w\-]+/g, '_') || 'video_essay'}.webm`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    dom.exportStatus.textContent = 'Export finished. The download should have started.';
+  };
+
+  drive();
+}
+
+bootstrap();
+</script>
+</body>
+</html>

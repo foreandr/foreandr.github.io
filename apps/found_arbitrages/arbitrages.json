@@ -1,6 +1,6 @@
 {
-  "last_scanned": "2026-04-29 20:00:06",
-  "total_arbs": 22,
+  "last_scanned": "2026-05-01 20:00:10",
+  "total_arbs": 23,
   "min_net": 0.0,
   "scan_history": [
     {
@@ -162,6 +162,22 @@
       "api_requests": 13,
       "new_arbs": 1,
       "total_arbs": 22
+    },
+    {
+      "scanned_at": "2026-04-30 20:00:08",
+      "scan_seconds": 4.54,
+      "n_events": 295,
+      "api_requests": 13,
+      "new_arbs": 1,
+      "total_arbs": 23
+    },
+    {
+      "scanned_at": "2026-05-01 20:00:10",
+      "scan_seconds": 5.52,
+      "n_events": 318,
+      "api_requests": 13,
+      "new_arbs": 0,
+      "total_arbs": 23
     }
   ],
   "arbs": [
@@ -892,6 +908,37 @@
           "book_key": "betway",
           "book_type": "soft",
           "odds": 1.57,
+          "can_ban": true
+        }
+      }
+    },
+    {
+      "event": "Tim Elliott vs Stephen Erceg",
+      "home": "Tim Elliott",
+      "away": "Stephen Erceg",
+      "sport": "MMA",
+      "sport_key": "mma_mixed_martial_arts",
+      "commence": "2026-05-03",
+      "days_until": 2.0312,
+      "net_pct": 0.015401,
+      "apr": 14.5885,
+      "has_safe_leg": false,
+      "all_safe": false,
+      "n_outcomes": 2,
+      "found_at": "2026-04-30 20:00:08",
+      "legs": {
+        "Stephen Erceg": {
+          "book": "DraftKings",
+          "book_key": "draftkings",
+          "book_type": "soft",
+          "odds": 1.51,
+          "can_ban": true
+        },
+        "Tim Elliott": {
+          "book": "Betway",
+          "book_key": "betway",
+          "book_type": "soft",
+          "odds": 3.1,
           "can_ban": true
         }
       }

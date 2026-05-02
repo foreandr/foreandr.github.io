@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Job Functionality</title>
+  <link rel="icon" type="image/x-icon" href="../../images.ico">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+  <script src="data/summary.js"></script>
+  <script src="data/by_day.js"></script>
+  <script src="data/titles.js"></script>
+  <script src="data/apps.js"></script>
+  <script src="data/manifest.js"></script>
+  <style>
+    :root {
+      --bg: #0b1119;
+      --panel: #121a27;
+      --panel-2: #182236;
+      --border: #273857;
+      --text: #e7edf7;
+      --muted: #7a94b0;
+      --green: #22c55e;
+      --blue: #3b82f6;
+      --red: #ef4444;
+      --shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
+      --mono: "JetBrains Mono", monospace;
+      --sans: "Space Grotesk", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      color: var(--text);
+      font-family: var(--sans);
+      background:
+        radial-gradient(900px 400px at 10% -10%, rgba(34, 197, 94, 0.15), transparent 60%),
+        radial-gradient(900px 400px at 90% -10%, rgba(59, 130, 246, 0.13), transparent 60%),
+        var(--bg);
+    }
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      padding: 14px 26px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(11, 17, 25, 0.94);
+      backdrop-filter: blur(12px);
+    }
+    .header-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+    .back {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      text-decoration: none;
+      font: 11px var(--mono);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+    .back:hover { color: var(--text); border-color: var(--muted); }
+    .title {
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+    .meta {
+      margin-left: auto;
+      color: var(--muted);
+      font: 12px var(--mono);
+    }
+    .shell {
+      max-width: 1280px;
+      margin: 24px auto 72px;
+      padding: 0 26px;
+    }
+    .controls,
+    .range-bar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+    .tab-btn,
+    .range-btn,
+    .chip {
+      cursor: pointer;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--muted);
+      padding: 8px 16px;
+      font: 11px var(--mono);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .tab-btn.active,
+    .range-btn.active {
+      color: #07100c;
+      background: var(--green);
+      border-color: var(--green);
+      font-weight: 700;
+    }
+    .chip.off {
+      opacity: 0.3;
+    }
+    .tab-panel[hidden] {
+      display: none;
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .card,
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+    }
+    .card {
+      padding: 16px 18px;
+    }
+    .label {
+      margin-bottom: 6px;
+      color: var(--muted);
+      font: 11px var(--mono);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    .value {
+      font: 700 1.75rem var(--mono);
+      line-height: 1.1;
+    }
+    .sub {
+      margin-top: 5px;
+      color: var(--muted);
+      font: 11px var(--mono);
+    }
+    .chips {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .panel {
+      padding: 18px 20px;
+    }
+    .panel-title {
+      margin-bottom: 14px;
+      color: var(--muted);
+      font: 11px var(--mono);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    .chart-wrap {
+      position: relative;
+      height: 260px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+    th, td {
+      padding: 8px 10px;
+      border-bottom: 1px solid rgba(39, 56, 87, 0.38);
+      text-align: left;
+    }
+    th {
+      color: var(--muted);
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    tr:hover td {
+      background: var(--panel-2);
+    }
+    .count-badge {
+      display: inline-block;
+      padding: 2px 7px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--panel-2);
+      color: var(--muted);
+      font-size: 11px;
+    }
+    .bar {
+      height: 6px;
+      border-radius: 999px;
+      background: var(--green);
+    }
+    .app-list {
+      display: grid;
+      gap: 8px;
+    }
+    .app-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--panel-2);
+    }
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .app-main {
+      min-width: 0;
+      flex: 1;
+    }
+    .app-title {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .app-meta {
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+    .app-date {
+      color: var(--muted);
+      font: 11px var(--mono);
+      white-space: nowrap;
+    }
+    @media (max-width: 860px) {
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+      .meta {
+        margin-left: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <a class="back" href="../../index.html">&larr; Back</a>
+      <div class="title">Job Functionality</div>
+      <div class="meta" id="hdrMeta">Loading...</div>
+    </div>
+  </header>
+
+  <div class="shell">
+    <div class="controls">
+      <button class="tab-btn active" data-tab="jobs">Jobs Found</button>
+      <button class="tab-btn" data-tab="apps">Applications</button>
+    </div>
+
+    <div class="range-bar">
+      <button class="range-btn" data-days="1">Today</button>
+      <button class="range-btn" data-days="3">3 Days</button>
+      <button class="range-btn" data-days="7">7 Days</button>
+      <button class="range-btn" data-days="30">30 Days</button>
+      <button class="range-btn" data-days="90">3 Months</button>
+      <button class="range-btn active" data-days="180">6 Months</button>
+      <button class="range-btn" data-days="0">All Time</button>
+    </div>
+
+    <section id="tab-jobs" class="tab-panel">
+      <div class="stats" id="jobsStats"></div>
+      <div class="chips" id="sourceChips"></div>
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-title">Jobs by Source</div>
+          <div class="chart-wrap"><canvas id="jobsBySourceChart"></canvas></div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">Daily Timeline</div>
+          <div class="chart-wrap"><canvas id="jobsTimelineChart"></canvas></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-title">Top Titles Across Visible Sources</div>
+        <table>
+          <thead>
+            <tr><th>#</th><th>Title</th><th>Count</th><th style="width:220px">Share</th></tr>
+          </thead>
+          <tbody id="titlesBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="tab-apps" class="tab-panel" hidden>
+      <div class="stats" id="appsStats"></div>
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-title">Applied by Source</div>
+          <div class="chart-wrap"><canvas id="appsSourceChart"></canvas></div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">Daily Applications</div>
+          <div class="chart-wrap"><canvas id="appsTimelineChart"></canvas></div>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-title">Recent Applications</div>
+          <div class="app-list" id="recentApplied"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">Failed by Reason</div>
+          <table>
+            <thead><tr><th>Reason</th><th>Count</th></tr></thead>
+            <tbody id="failedReasons"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const COLORS = {
+      "_canadian_jobbank": "#3b82f6",
+      "_charityvillage_jobs": "#ec4899",
+      "_craigslist_jobs": "#a855f7",
+      "_goodwork_jobs": "#f59e0b",
+      "_indeed_jobs": "#ef4444",
+      "_jobspider_jobs": "#f97316",
+      "_saskjobs": "#22c55e",
+      "_workbc_jobs": "#06b6d4"
+    };
+
+    let activeDays = 180;
+    let activeTab = "jobs";
+    let chipsBuilt = false;
+    const hiddenSources = new Set();
+
+    const fmt = n => n == null ? "-" : Number(n).toLocaleString();
+
+    function destroyChart(id) {
+      const chart = Chart.getChart(id);
+      if (chart) chart.destroy();
+    }
+
+    function getStartDate(days) {
+      if (!days) return null;
+      const d = new Date();
+      d.setDate(d.getDate() - days + 1);
+      return d.toISOString().slice(0, 10);
+    }
+
+    function sumInRange(map, source, start) {
+      if (!map[source]) return 0;
+      return Object.entries(map[source])
+        .filter(([date]) => !start || date >= start)
+        .reduce((sum, [, count]) => sum + count, 0);
+    }
+
+    function srcColor(value) {
+      const map = {
+        canadian_jobbank: "#3b82f6",
+        charityvillage: "#ec4899",
+        craigslist: "#a855f7",
+        goodwork: "#f59e0b",
+        workbc: "#06b6d4",
+        jobspider: "#f97316",
+        saskjobs: "#22c55e",
+        indeed: "#ef4444"
+      };
+      const lower = String(value || "").toLowerCase();
+      for (const [key, color] of Object.entries(map)) {
+        if (lower.includes(key)) return color;
+      }
+      return "#64748b";
+    }
+
+    function renderJobs() {
+      const summary = window.JOBS_SUMMARY || { sources: {}, total_all: 0 };
+      const byDay = window.JOBS_BY_DAY || {};
+      const titles = window.JOBS_TITLES || {};
+      const sources = Object.keys(summary.sources || {});
+      const start = getStartDate(activeDays);
+
+      if (!chipsBuilt) {
+        const chips = document.getElementById("sourceChips");
+        sources.forEach(source => {
+          const btn = document.createElement("button");
+          btn.className = "chip";
+          btn.dataset.source = source;
+          btn.textContent = summary.sources[source]?.label || source;
+          btn.style.borderColor = COLORS[source] || "#64748b";
+          btn.style.color = COLORS[source] || "#e7edf7";
+          btn.addEventListener("click", () => {
+            if (hiddenSources.has(source)) hiddenSources.delete(source);
+            else hiddenSources.add(source);
+            btn.classList.toggle("off");
+            render();
+          });
+          chips.appendChild(btn);
+        });
+        chipsBuilt = true;
+      }
+
+      const visible = sources.filter(source => !hiddenSources.has(source));
+      const totals = {};
+      let grandTotal = 0;
+      sources.forEach(source => {
+        totals[source] = sumInRange(byDay, source, start);
+        grandTotal += totals[source];
+      });
+
+      const allDates = [...new Set(
+        visible.flatMap(source => Object.keys(byDay[source] || {}).filter(date => !start || date >= start))
+      )].sort();
+
+      const peakDay = allDates.reduce((best, date) => {
+        const count = visible.reduce((sum, source) => sum + (byDay[source]?.[date] || 0), 0);
+        return count > (best.count || 0) ? { date, count } : best;
+      }, {});
+
+      const topSource = [...sources].sort((a, b) => (totals[b] || 0) - (totals[a] || 0))[0];
+      const avgPerDay = allDates.length ? Math.round(grandTotal / allDates.length) : 0;
+
+      document.getElementById("jobsStats").innerHTML = `
+        <div class="card"><div class="label">Total in Range</div><div class="value" style="color:var(--green)">${fmt(grandTotal)}</div><div class="sub">${activeDays ? `last ${activeDays} days` : "all time"}</div></div>
+        <div class="card"><div class="label">Average per Day</div><div class="value">${fmt(avgPerDay)}</div><div class="sub">across ${fmt(allDates.length)} active days</div></div>
+        <div class="card"><div class="label">Peak Day</div><div class="value" style="font-size:1rem">${peakDay.date || "-"}</div><div class="sub">${fmt(peakDay.count)} jobs</div></div>
+        <div class="card"><div class="label">Top Source</div><div class="value" style="font-size:1rem;color:${COLORS[topSource] || "#e7edf7"}">${summary.sources[topSource]?.label || "-"}</div><div class="sub">${fmt(totals[topSource])} jobs</div></div>
+      `;
+
+      destroyChart("jobsBySourceChart");
+      new Chart(document.getElementById("jobsBySourceChart"), {
+        type: "bar",
+        data: {
+          labels: visible.map(source => summary.sources[source]?.label || source),
+          datasets: [{
+            data: visible.map(source => totals[source] || 0),
+            backgroundColor: visible.map(source => COLORS[source] || "#64748b"),
+            borderRadius: 6,
+            borderSkipped: false
+          }]
+        },
+        options: {
+          indexAxis: "y",
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { ticks: { color: "#7a94b0" }, grid: { color: "rgba(39,56,87,0.4)" } },
+            y: { ticks: { color: "#7a94b0" }, grid: { display: false } }
+          }
+        }
+      });
+
+      const timelineDates = allDates.slice(-60);
+      destroyChart("jobsTimelineChart");
+      new Chart(document.getElementById("jobsTimelineChart"), {
+        type: "line",
+        data: {
+          labels: timelineDates,
+          datasets: visible.map(source => ({
+            label: summary.sources[source]?.label || source,
+            data: timelineDates.map(date => byDay[source]?.[date] || 0),
+            borderColor: COLORS[source] || "#64748b",
+            backgroundColor: `${COLORS[source] || "#64748b"}22`,
+            fill: false,
+            tension: 0.35,
+            pointRadius: 0,
+            borderWidth: 2
+          }))
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: "index", intersect: false },
+          plugins: { legend: { position: "bottom", labels: { color: "#7a94b0", boxWidth: 10, padding: 10 } } },
+          scales: {
+            x: { ticks: { color: "#7a94b0", maxTicksLimit: 8 }, grid: { color: "rgba(39,56,87,0.4)" } },
+            y: { ticks: { color: "#7a94b0" }, grid: { color: "rgba(39,56,87,0.4)" } }
+          }
+        }
+      });
+
+      const merged = {};
+      visible.forEach(source => {
+        (titles[source] || []).forEach(({ title, count }) => {
+          merged[title] = (merged[title] || 0) + count;
+        });
+      });
+      const sorted = Object.entries(merged).sort((a, b) => b[1] - a[1]).slice(0, 30);
+      const max = sorted[0]?.[1] || 1;
+      document.getElementById("titlesBody").innerHTML = sorted.map(([title, count], i) => `
+        <tr>
+          <td style="color:var(--muted);width:36px">${i + 1}</td>
+          <td>${title}</td>
+          <td><span class="count-badge">${fmt(count)}</span></td>
+          <td><div class="bar" style="width:${Math.round((count / max) * 200)}px"></div></td>
+        </tr>
+      `).join("");
+    }
+
+    function renderApps() {
+      const data = window.APPS_DATA || { applied: [], failed: [] };
+      const start = getStartDate(activeDays);
+      const applied = data.applied.filter(item => !start || item.date >= start);
+      const failed = data.failed.filter(item => !start || item.date >= start);
+      const bySource = {};
+      applied.forEach(item => { bySource[item.source] = (bySource[item.source] || 0) + 1; });
+      const topSource = Object.entries(bySource).sort((a, b) => b[1] - a[1])[0];
+      const totalAttempts = applied.length + failed.length;
+      const successRate = totalAttempts ? ((applied.length / totalAttempts) * 100).toFixed(1) : "0.0";
+
+      document.getElementById("appsStats").innerHTML = `
+        <div class="card"><div class="label">Applied</div><div class="value" style="color:var(--green)">${fmt(applied.length)}</div><div class="sub">successful submissions</div></div>
+        <div class="card"><div class="label">Failed</div><div class="value" style="color:var(--red)">${fmt(failed.length)}</div><div class="sub">failed submissions</div></div>
+        <div class="card"><div class="label">Success Rate</div><div class="value">${successRate}%</div><div class="sub">${fmt(totalAttempts)} total attempts</div></div>
+        <div class="card"><div class="label">Top Source</div><div class="value" style="font-size:1rem;color:${srcColor(topSource?.[0] || "")}">${topSource?.[0] || "-"}</div><div class="sub">${topSource ? `${fmt(topSource[1])} applied` : ""}</div></div>
+      `;
+
+      const entries = Object.entries(bySource).sort((a, b) => b[1] - a[1]);
+      destroyChart("appsSourceChart");
+      new Chart(document.getElementById("appsSourceChart"), {
+        type: "bar",
+        data: {
+          labels: entries.map(([source]) => source),
+          datasets: [{
+            data: entries.map(([, count]) => count),
+            backgroundColor: entries.map(([source]) => srcColor(source)),
+            borderRadius: 6,
+            borderSkipped: false
+          }]
+        },
+        options: {
+          indexAxis: "y",
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { ticks: { color: "#7a94b0" }, grid: { color: "rgba(39,56,87,0.4)" } },
+            y: { ticks: { color: "#7a94b0" }, grid: { display: false } }
+          }
+        }
+      });
+
+      const appliedByDay = {};
+      const failedByDay = {};
+      applied.forEach(item => { if (item.date) appliedByDay[item.date] = (appliedByDay[item.date] || 0) + 1; });
+      failed.forEach(item => { if (item.date) failedByDay[item.date] = (failedByDay[item.date] || 0) + 1; });
+      const dates = [...new Set([...Object.keys(appliedByDay), ...Object.keys(failedByDay)])].sort();
+
+      destroyChart("appsTimelineChart");
+      new Chart(document.getElementById("appsTimelineChart"), {
+        type: "line",
+        data: {
+          labels: dates,
+          datasets: [
+            { label: "Applied", data: dates.map(date => appliedByDay[date] || 0), borderColor: "#22c55e", backgroundColor: "#22c55e22", fill: true, tension: 0.3, pointRadius: 0, borderWidth: 2 },
+            { label: "Failed", data: dates.map(date => failedByDay[date] || 0), borderColor: "#ef4444", backgroundColor: "#ef444422", fill: true, tension: 0.3, pointRadius: 0, borderWidth: 2 }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: "index", intersect: false },
+          plugins: { legend: { position: "bottom", labels: { color: "#7a94b0", boxWidth: 10, padding: 10 } } },
+          scales: {
+            x: { ticks: { color: "#7a94b0", maxTicksLimit: 8 }, grid: { color: "rgba(39,56,87,0.4)" } },
+            y: { ticks: { color: "#7a94b0" }, grid: { color: "rgba(39,56,87,0.4)" } }
+          }
+        }
+      });
+
+      const recent = [...applied].sort((a, b) => (b.datetime || "").localeCompare(a.datetime || "")).slice(0, 12);
+      document.getElementById("recentApplied").innerHTML = recent.map(item => `
+        <div class="app-item">
+          <div class="dot" style="background:${srcColor(item.source)}"></div>
+          <div class="app-main">
+            <div class="app-title">${item.title || "Untitled"}</div>
+            <div class="app-meta">${item.company || ""} · ${item.source || ""}</div>
+          </div>
+          <div class="app-date">${item.date || ""}</div>
+        </div>
+      `).join("");
+
+      const reasons = {};
+      failed.forEach(item => {
+        const reason = item.reason || "unknown";
+        reasons[reason] = (reasons[reason] || 0) + 1;
+      });
+      const sortedReasons = Object.entries(reasons).sort((a, b) => b[1] - a[1]).slice(0, 12);
+      document.getElementById("failedReasons").innerHTML = sortedReasons.map(([reason, count]) => `
+        <tr><td>${reason}</td><td><span class="count-badge">${fmt(count)}</span></td></tr>
+      `).join("");
+    }
+
+    function render() {
+      if (activeTab === "jobs") renderJobs();
+      else renderApps();
+    }
+
+    document.querySelectorAll(".tab-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".tab-btn").forEach(node => node.classList.remove("active"));
+        btn.classList.add("active");
+        activeTab = btn.dataset.tab;
+        document.querySelectorAll(".tab-panel").forEach(panel => { panel.hidden = true; });
+        document.getElementById(`tab-${activeTab}`).hidden = false;
+        render();
+      });
+    });
+
+    document.querySelectorAll(".range-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".range-btn").forEach(node => node.classList.remove("active"));
+        btn.classList.add("active");
+        activeDays = Number(btn.dataset.days);
+        render();
+      });
+    });
+
+    Chart.defaults.color = "#7a94b0";
+    Chart.defaults.borderColor = "rgba(39,56,87,0.5)";
+    Chart.defaults.font.family = "'JetBrains Mono', monospace";
+    Chart.defaults.font.size = 11;
+
+    const summary = window.JOBS_SUMMARY || {};
+    const manifest = window.DATA_MANIFEST || {};
+    document.getElementById("hdrMeta").textContent =
+      `${fmt(summary.total_all)} jobs · ${fmt(manifest.total_applied)} applied · ${(summary.generated_at || "").slice(0, 10)}`;
+
+    render();
+  </script>
+</body>
+</html>
