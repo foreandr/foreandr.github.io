@@ -1,6 +1,6 @@
 {
-  "last_scanned": "2026-05-01 20:00:10",
-  "total_arbs": 23,
+  "last_scanned": "2026-05-02 20:00:22",
+  "total_arbs": 24,
   "min_net": 0.0,
   "scan_history": [
     {
@@ -178,6 +178,14 @@
       "api_requests": 13,
       "new_arbs": 0,
       "total_arbs": 23
+    },
+    {
+      "scanned_at": "2026-05-02 20:00:22",
+      "scan_seconds": 8.8,
+      "n_events": 245,
+      "api_requests": 13,
+      "new_arbs": 1,
+      "total_arbs": 24
     }
   ],
   "arbs": [
@@ -939,6 +947,44 @@
           "book_key": "betway",
           "book_type": "soft",
           "odds": 3.1,
+          "can_ban": true
+        }
+      }
+    },
+    {
+      "event": "New England Revolution vs Philadelphia Union",
+      "home": "New England Revolution",
+      "away": "Philadelphia Union",
+      "sport": "MLS",
+      "sport_key": "soccer_usa_mls",
+      "commence": "2026-05-09",
+      "days_until": 6.9789,
+      "net_pct": 0.017632,
+      "apr": 1.4946,
+      "has_safe_leg": true,
+      "all_safe": false,
+      "n_outcomes": 3,
+      "found_at": "2026-05-02 20:00:22",
+      "legs": {
+        "New England Revolution": {
+          "book": "Pinnacle",
+          "book_key": "pinnacle",
+          "book_type": "sharp",
+          "odds": 3.09,
+          "can_ban": false
+        },
+        "Philadelphia Union": {
+          "book": "LeoVegas",
+          "book_key": "leovegas",
+          "book_type": "soft",
+          "odds": 2.65,
+          "can_ban": true
+        },
+        "Draw": {
+          "book": "LeoVegas",
+          "book_key": "leovegas",
+          "book_type": "soft",
+          "odds": 3.55,
           "can_ban": true
         }
       }
