@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3D Muscle Workout Planner</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #080c12; color: #e8e8e8; font-family: 'Segoe UI', system-ui, sans-serif; overflow: hidden; height: 100vh; }
+#app { display: flex; height: 100vh; }
+#viewer { flex: 1; position: relative; }
+#three-canvas { display: block; width: 100%; height: 100%; }
+#hover-label {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  background: rgba(0,0,0,0.75); color: #ff6b35; padding: 6px 14px;
+  border-radius: 20px; font-size: 13px; font-weight: 600; pointer-events: none;
+  display: none; border: 1px solid rgba(255,107,53,0.4); letter-spacing: 0.5px;
+}
+#hint {
+  position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%);
+  color: rgba(255,255,255,0.35); font-size: 12px; pointer-events: none;
+  text-align: center; line-height: 1.8;
+}
+#view-btns {
+  position: absolute; top: 18px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 8px;
+}
+.view-btn {
+  background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.7); padding: 6px 16px; border-radius: 20px;
+  cursor: pointer; font-size: 12px; font-weight: 600; letter-spacing: 0.5px;
+  transition: all 0.2s;
+}
+.view-btn:hover, .view-btn.active { background: rgba(255,107,53,0.2); border-color: #ff6b35; color: #ff6b35; }
+#panel {
+  width: 380px; background: #0d1117; border-left: 1px solid rgba(255,255,255,0.08);
+  display: flex; flex-direction: column; overflow: hidden;
+}
+#panel-header {
+  padding: 20px 22px 16px; border-bottom: 1px solid rgba(255,255,255,0.07);
+  flex-shrink: 0;
+}
+#panel-header h1 { font-size: 17px; font-weight: 700; color: #fff; margin-bottom: 2px; }
+#panel-header p { font-size: 12px; color: rgba(255,255,255,0.4); }
+#muscle-info { flex: 1; overflow-y: auto; padding: 20px 22px; }
+#muscle-info::-webkit-scrollbar { width: 4px; }
+#muscle-info::-webkit-scrollbar-track { background: transparent; }
+#muscle-info::-webkit-scrollbar-thumb { background: rgba(255,107,53,0.3); border-radius: 2px; }
+#empty-state {
+  height: 100%; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; text-align: center; padding: 40px 20px;
+}
+#empty-state .icon { font-size: 48px; margin-bottom: 16px; opacity: 0.4; }
+#empty-state h3 { font-size: 15px; color: rgba(255,255,255,0.5); margin-bottom: 8px; }
+#empty-state p { font-size: 13px; color: rgba(255,255,255,0.28); line-height: 1.6; }
+.muscle-name { font-size: 20px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+.muscle-group-tag {
+  display: inline-block; background: rgba(255,107,53,0.15); color: #ff6b35;
+  padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600;
+  letter-spacing: 0.5px; margin-bottom: 16px; border: 1px solid rgba(255,107,53,0.3);
+}
+.section-title {
+  font-size: 11px; font-weight: 700; letter-spacing: 1.2px; color: rgba(255,255,255,0.35);
+  text-transform: uppercase; margin: 20px 0 10px;
+}
+.exercise-card {
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 10px; padding: 13px 15px; margin-bottom: 8px; cursor: pointer;
+  transition: all 0.2s;
+}
+.exercise-card:hover { background: rgba(255,107,53,0.08); border-color: rgba(255,107,53,0.3); }
+.exercise-card.expanded { border-color: rgba(255,107,53,0.4); background: rgba(255,107,53,0.07); }
+.ex-name { font-size: 14px; font-weight: 600; color: #e8e8e8; margin-bottom: 4px; }
+.ex-rec { font-size: 12px; color: #ff6b35; font-weight: 600; }
+.ex-meta { display: flex; gap: 8px; margin-top: 6px; flex-wrap: wrap; }
+.ex-tag {
+  font-size: 10px; padding: 2px 8px; border-radius: 8px;
+  font-weight: 600; letter-spacing: 0.3px;
+}
+.ex-tag.equipment { background: rgba(100,160,255,0.15); color: #6fa0ff; border: 1px solid rgba(100,160,255,0.2); }
+.ex-tag.difficulty-beginner { background: rgba(100,220,120,0.15); color: #64dc78; border: 1px solid rgba(100,220,120,0.2); }
+.ex-tag.difficulty-intermediate { background: rgba(255,180,50,0.15); color: #ffb432; border: 1px solid rgba(255,180,50,0.2); }
+.ex-tag.difficulty-advanced { background: rgba(255,80,80,0.15); color: #ff5050; border: 1px solid rgba(255,80,80,0.2); }
+.ex-tip { font-size: 12px; color: rgba(255,255,255,0.55); margin-top: 8px; line-height: 1.5; display: none; }
+.exercise-card.expanded .ex-tip { display: block; }
+.ex-arrow { float: right; color: rgba(255,255,255,0.3); font-size: 12px; margin-top: 2px; }
+.exercise-card.expanded .ex-arrow { color: #ff6b35; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="viewer">
+    <canvas id="three-canvas"></canvas>
+    <div id="hover-label"></div>
+    <div id="view-btns">
+      <button class="view-btn active" onclick="setView('front')">FRONT</button>
+      <button class="view-btn" onclick="setView('back')">BACK</button>
+      <button class="view-btn" onclick="setView('side')">SIDE</button>
+    </div>
+    <div id="hint">Drag to rotate &nbsp;·&nbsp; Scroll to zoom &nbsp;·&nbsp; Click a muscle to explore exercises</div>
+  </div>
+  <div id="panel">
+    <div id="panel-header">
+      <h1>💪 Workout Planner</h1>
+      <p>Select any muscle on the body to view exercises</p>
+    </div>
+    <div id="muscle-info">
+      <div id="empty-state">
+        <div class="icon">🫀</div>
+        <h3>No muscle selected</h3>
+        <p>Click on any muscle on the 3D body to see targeted exercises, tips, and recommendations.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// ═══════════════════════════════════════════════════════
+// EXERCISE DATABASE
+// ═══════════════════════════════════════════════════════
+const EXERCISES = {
+  pec_upper: [
+    { name:'Incline Barbell Bench Press', rec:'4×6-10 reps', equipment:'Barbell', difficulty:'intermediate', tip:'Set bench 30-45°. Bar touches just below clavicle. Flare elbows 45°.' },
+    { name:'Incline Dumbbell Press', rec:'3×10-12 reps', equipment:'Dumbbells', difficulty:'beginner', tip:'Greater range of motion than barbell version. Pause at bottom for stretch.' },
+    { name:'High-to-Low Cable Fly', rec:'3×12-15 reps', equipment:'Cable', difficulty:'beginner', tip:'Set pulleys above shoulder height. Squeeze hard at the crossover point.' },
+    { name:'Incline Dumbbell Fly', rec:'3×12 reps', equipment:'Dumbbells', difficulty:'intermediate', tip:'Keep a slight bend in elbows. Feel deep stretch at the bottom.' },
+    { name:'Guillotine Press', rec:'3×8-10 reps', equipment:'Barbell', difficulty:'advanced', tip:'Lower bar toward throat for maximum upper pec stretch. Use caution and spotter.' },
+    { name:'Landmine Press', rec:'3×10 reps/side', equipment:'Barbell', difficulty:'beginner', tip:'Natural arc of the movement closely follows upper chest fiber direction.' },
+    { name:'Incline Smith Machine Press', rec:'4×10-12 reps', equipment:'Machine', difficulty:'beginner', tip:'Great for beginners. Fixed path removes stabilizer requirement.' },
+  ],
+  pec_mid: [
+    { name:'Flat Barbell Bench Press', rec:'4×6-10 reps', equipment:'Barbell', difficulty:'intermediate', tip:'Touch bar to mid-chest. Leg drive into floor. Full arch optional.' },
+    { name:'Flat Dumbbell Press', rec:'3×10-12 reps', equipment:'Dumbbells', difficulty:'beginner', tip:'Allows deeper stretch than barbell. Elbows slightly below shoulder plane.' },
+    { name:'Pec Deck (Fly Machine)', rec:'3×12-15 reps', equipment:'Machine', difficulty:'beginner', tip:'Keep chest tall, shoulders pulled back. Full squeeze at contraction.' },
+    { name:'Dumbbell Fly', rec:'3×12 reps', equipment:'Dumbbells', difficulty:'intermediate', tip:'Think "hugging a tree." Control the negative. No barbell presses prior.' },
+    { name:'Mid Cable Crossover', rec:'3×12-15 reps', equipment:'Cable', difficulty:'beginner', tip:'Cables parallel to floor for mid-chest emphasis.' },
+    { name:'Push-up', rec:'3×15-20 reps', equipment:'Bodyweight', difficulty:'beginner', tip:'Hands shoulder-width. Lower chest to floor. Squeeze at top.' },
+    { name:'Dips (chest variation)', rec:'3×10-15 reps', equipment:'Bodyweight', difficulty:'intermediate', tip:'Lean forward ~30°. Wide grip. Feel stretch in lower-to-mid chest.' },
+  ],
+  pec_lower: [
+    { name:'Decline Barbell Bench Press', rec:'4×8-10 reps', equipment:'Barbell', difficulty:'intermediate', tip:'Decline 15-30°. Lower bar to lower chest. Strong base from foot pad.' },
+    { name:'Decline Dumbbell Press', rec:'3×10-12 reps', equipment:'Dumbbells', difficulty:'intermediate', tip:'More stable than barbell. Add a twist at top for extra contraction.' },
+    { name:'Low-to-High Cable Fly', rec:'3×12-15 reps', equipment:'Cable', difficulty:'beginner', tip:'Set cables at floor level. Sweep upward. Peak contraction above chest.' },
+    { name:'Dips', rec:'3×10-15 reps', equipment:'Bodyweight', difficulty:'intermediate', tip:'Lean forward. This targets lower pec more than tricep-focused upright dips.' },
+    { name:'Decline Push-up', rec:'3×15 reps', equipment:'Bodyweight', difficulty:'beginner', tip:'Feet elevated on a bench. Bodyweight dip into decline press pattern.' },
+    { name:'Decline Smith Machine Press', rec:'3×10 reps', equipment:'Machine', difficulty:'beginner', tip:'Fixed path is safe when training alone. Great finisher after free weights.' },
+  ],
+  delt_front: [
+    { name:'Dumbbell Front Raise', rec:'3×12-15 reps', equipment:'Dumbbells', difficulty:'beginner', tip:'Raise to eye level. Slight internal rotation at top. Control the descent.' },
+    { name:'Barbell Overhead Press', rec:'4×6-8 reps', equipment:'Barbell', difficulty:'intermediate', tip:'Bar starts at collar bone. Press overhead until arms fully extended.' },
+    { name:'Arnold Press', rec:'3×10-12 reps', equipment:'Dumbbells', difficulty:'intermediate', tip:'Rotate palms from facing you to forward as you press up. 180° rotation.' },
+    { name:'Cable Front Raise', rec:'3×12-15 reps', equipment:'Cable', difficulty:'beginner', tip:'Cable keeps tension at bottom (unlike dumbbells). Single-arm version works well.' },
+    { name:'Plate Front Raise', rec:'3×15 reps', equipment:'Weight plate', difficulty:'beginner', tip:'Hold plate at 3 and 9 o\'clock. Adds variety and grip training.' },
+    { name:'Landmine Press', rec:'3×10 reps/side', equipment:'Barbell', difficulty:'beginner', tip:'Pressing arc closely matches anterior delt fiber direction.' },
+    { name:'Pike Push-up', rec:'3×12 reps', equipment:'Bodyweight', difficulty:'beginner', tip:'Hips high, head toward floor. More front-delt focused than regular push-up.' },
+  ],
+  delt_side: [
+    { name:'Dumbbell Lateral Raise', rec:'4×12-15 reps', equipment:'Dumbbells', difficulty:'beginner', tip:'Slight forward lean. Raise to shoulder height. Pinky higher than thumb at top.' },
+    { name:'Cable Lateral Raise', rec:'3×12-15 reps', equipment:'Cable', difficulty:'beginner', tip:'Cable across body for constant tension. Allows better bottom-range loading.' },
+    { name:'Machine Lateral Raise', rec:'3×15 reps', equipment:'Machine', difficulty:'beginner', tip:'Pad contacts just above elbow. Chest-supported version removes cheating.' },
+    { name:'Upright Row', rec:'3×10-12 reps', equipment:'Barbell', difficulty:'intermediate', tip:'Wide grip (shoulder-width). Pull elbows high. Stop at chin level.' },
+    { name:'Leaning Away Cable Raise', rec:'3×12 reps/side', equipment:'Cable', difficulty:'intermediate', tip:'Hold cable column for counter-lean. Creates longer lever = more tension.' },
+    { name:'Partial Lateral Raise', rec:'3×20 reps', equipment:'Dumbbells', difficulty:'beginner', tip:'High-rep partials (bottom half of ROM) create tremendous medial delt pump.' },
+  ],
+  delt_rear: [
+    { name:'Bent-over Dumbbell Lateral Raise', rec:'4×12-15 reps', equipment:'Dumbbells', difficulty:'beginner', tip:'Torso parallel to floor. Arms wide. Lead with elbows, not hands.' },
+    { name:'Face Pull', rec:'4×15-20 reps', equipment:'Cable', difficulty:'beginner', tip:'Rope at forehead height. Pull to face, hands by ears. External rotate at end.' },
+    { name:'Rear Delt Fly Machine', rec:'3×15 reps', equipment:'Machine', difficulty:'beginner', tip:'Chest against pad. Wide arc. Feel squeeze between shoulder blades.' },
+    { name:'Reverse Pec Deck', rec:'3×15 reps', equipment:'Machine', difficulty:'beginner', tip:'Same machine as pec deck — face the pad instead. Arms wide.' },
+    { name:'Band Pull-Apart', rec:'3×20 reps', equipment:'Resistance Band', difficulty:'beginner', tip:'Hold band at shoulder height. Pull apart until it touches chest. High volume.' },
+    { name:'Prone Y Raise', rec:'3×15 reps', equipment:'Dumbbells', difficulty:'beginner', tip:'Lie face-down on incline bench. Form a Y with arms. Targets rear delt + lower trap.' },
+    { name:'Meadows Row', rec:'3×10 reps/side', equipment:'Barbell', difficulty:'advanced', tip:'Landmine-style single-arm row. High elbow position heavily recruits rear delt.' },
+  ],
+  bicep_long: [
+    { name:'Incline Dumbbell Curl', rec:'3×10-12 reps', equipment:'Dumbbells', difficulty:'intermediate', tip:'Bench at 45-60°. Arm behind body stretches long head maximally. No swinging.' },
+    { name:'Hammer Curl', rec:'3×12 reps', equipment:'Dumbbells', difficulty:'beginner', tip:'Neutral grip. Targets long head and brachialis. Great for arm thickness.' },
+    { name:'Wide-Grip EZ Bar Curl', rec:'4×8-10 reps', equipment:'EZ Bar', difficulty:'beginner', tip:'Wide grip externally rotates, emphasizing long head. Full ROM.' },
+    { name:'Cable Curl (arms back)', rec:'3×12 reps', equipment:'Cable', difficulty:'beginner', tip:'Pull cable behind you slightly. Stretches long head under load.' },
+    { name:'Drag Curl', rec:'3×12 reps', equipment:'Barbell', difficulty:'intermediate', tip:'Bar drags up torso as elbows travel back. Maximum long head peak contraction.' },
+    { name:'Concentration Curl (extended)', rec:'3×12 reps', equipment:'Dumbbells', difficulty:'intermediate', tip:'Arm extended straight down off knee. Longer ROM emphasizes long head.' },
+  ],
+  bicep_short: [
+    { name:'Preacher Curl', rec:'4×10-12 reps', equipment:'Barbell/EZ Bar', difficulty:'beginner', tip:'Arm fully supported. No momentum. Full extension at bottom without hyperextending.' },
+    { name:'Concentration Curl', rec:'3×12 reps', equipment:'Dumbbells', difficulty:'beginner', tip:'Elbow on inner thigh. Supinate wrist at top. Full peak contraction squeeze.' },
+    { name:'Close-Grip Barbell Curl', rec:'3×10-12 reps', equipment:'Barbell', difficulty:'beginner', tip:'Hands 6-8" apart. Internally rotates and emphasizes short head.' },
+    { name:'Spider Curl', rec:'3×12 reps', equipment:'Dumbbells', difficulty:'intermediate', tip:'Chest on incline bench, face down. Arms hang straight. Peak contraction at top.' },
+    { name:'Cable Curl (straight bar)', rec:'3×15 reps', equipment:'Cable', difficulty:'beginner', tip:'Constant tension. Short head is most active when arm is at 90° or beyond.' },
+    { name:'Scott Curl (machine)', rec:'3×12 reps', equipment:'Machine', difficulty:'beginner', tip:'Machine version of preacher curl. Easy to overload safely and progressively.' },
+  ],
+  tricep_long: [
+    { name:'Overhead Tricep Extension', rec:'3×10-12 reps', equipment:'Dumbbell/Cable', difficulty:'beginner', tip:'Arms by ears at all times. Full stretch at bottom. Long head is stretched when arm is overhead.' },
+    { name:'French Press (Skull Crusher overhead)', rec:'3×10-12 reps', equipment:'EZ Bar', difficulty:'intermediate', tip:'Arms vertical. Lower bar behind head, not to forehead. Bigger stretch.' },
+    { name:'Dips (tricep focus)', rec:'3×10-15 reps', equipment:'Bodyweight', difficulty:'intermediate', tip:'Upright torso, elbows in close. Most effective compound for long head mass.' },
+    { name:'Cable Overhead Extension', rec:'3×12-15 reps', equipment:'Cable', difficulty:'beginner', tip:'Rope attachment. Face away from cable. Arms fully overhead. Constant tension.' },
+    { name:'Close-Grip Bench Press', rec:'4×6-8 reps', equipment:'Barbell', difficulty:'intermediate', tip:'Grip 12-14" apart. Long head works with full ROM through the press.' },
+    { name:'JM Press', rec:'3×8-10 reps', equipment:'Barbell', difficulty:'advanced', tip:'Hybrid between skull crusher and close-grip press. Massive overload on triceps.' },
+  ],
+  tricep_lateral: [
+    { name:'Tricep Pushdown (straight bar)', rec:'4×12-15 reps', equipment:'Cable', difficulty:'beginner', tip:'Elbows pinned to sides. Full extension at bottom. Squeeze hard. Don\'t let elbows flare.' },
+    { name:'Diamond Push-up', rec:'3×12-15 reps', equipment:'Bodyweight', difficulty:'intermediate', tip:'Hands form a diamond shape. Elbows track back, not out. Tough but effective.' },
+    { name:'Close-Grip Bench Press', rec:'4×6-8 reps', equipment:'Barbell', difficulty:'intermediate', tip:'Lateral head most active in bottom range. Use full range of motion.' },
+    { name:'Rope Pushdown', rec:'3×15 reps', equipment:'Cable', difficulty:'beginner', tip:'Spread rope at bottom. The supination at end helps activate lateral head.' },
+    { name:'Single-Arm Pushdown', rec:'3×12 reps/side', equipment:'Cable', difficulty:'beginner', tip:'Identify side-to-side imbalances. Full focus on each arm.' },
+    { name:'Kickback', rec:'3×15 reps', equipment:'Dumbbells', difficulty:'beginner', tip:'Torso parallel to floor. Extend arm straight back. Lateral head peaks when arm is fully extended.' },
+  ],
+  tricep_medial: [
+    { name:'Reverse Grip Pushdown', rec:'3×15 reps', equipment:'Cable', difficulty:'beginner', tip:'Underhand grip activates medial head more than overhand. Elbows stay at sides.' },
+    { name:'Skull Crusher (to forehead)', rec:'4×10-12 reps', equipment:'EZ Bar', difficulty:'intermediate', tip:'Lower bar to forehead level. Medial head active throughout entire ROM.' },
+    { name:'Tricep Dips (bench)', rec:'3×15 reps', equipment:'Bodyweight', difficulty:'beginner', tip:'Hands on bench behind you. Focus on full extension. Medial head stabilizes throughout.' },
+    { name:'Two-Hand Overhead Dumbbell Extension', rec:'3×12 reps', equipment:'Dumbbell', difficulty:'beginner', tip:'Hold single heavy dumbbell overhead. Medial + long head both targeted.' },
+    { name:'Cable Overhead Rope Extension', rec:'3×12 reps', equipment:'Cable', difficulty:'beginner', tip:'Constant tension keeps medial head working through entire range.' },
+  ],
+  forearm_flex: [
+    { name:'Wrist Curl', rec:'3×15-20 reps', equipment:'Barbell', difficulty:'beginner', tip:'Forearms resting on bench. Curl wrists up as far as possible. Slow negative.' },
+    { name:'Dumbbell Wrist Curl', rec:'3×15-20 reps', equipment:'Dumbbells', difficulty:'beginner', tip:'One arm at a time. Forearm on thigh or bench edge.' },
+    { name:'Behind-the-Back Barbell Wrist Curl', rec:'3×15 reps', equipment:'Barbell', difficulty:'intermediate', tip:'Unique stretch position. Allows heavier load and greater ROM.' },
+    { name:'Reverse Curl', rec:'3×12-15 reps', equipment:'Barbell', difficulty:'beginner', tip:'Overhand grip curls. Builds brachioradialis as well as extensor compartment.' },
+    { name:'Zottman Curl', rec:'3×12 reps', equipment:'Dumbbells', difficulty:'beginner', tip:'Curl up with supinated grip, rotate to pronated on the way down. Full forearm training.' },
+    { name:'Farmer\'s Carry', rec:'3×40m', equipment:'Dumbbells/Kettlebells', difficulty:'beginner', tip:'Simply walk with heavy weights. Forearm endurance and grip strength builder.' },
+  ],
+  forearm_ext: [
+    { name:'Reverse Wrist Curl', rec:'3×15-20 reps', equipment:'Barbell', difficulty:'beginner', tip:'Overhand grip on bar. Curl wrists upward. Targets extensor compartment.' },
+    { name:'Reverse Curl', rec:'3×12-15 reps', equipment:'Barbell', difficulty:'beginner', tip:'Pronated grip bicep curl. Heavy extensor activation through the movement.' },
+    { name:'Plate Pinch', rec:'3×30 sec holds', equipment:'Weight plates', difficulty:'beginner', tip:'Pinch two 10-lb plates together. Brutal finisher for grip + extensor strength.' },
+    { name:'Dead Hang', rec:'3×max duration', equipment:'Pull-up Bar', difficulty:'beginner', tip:'Simply hang from bar. Decompresses spine and builds grip endurance.' },
+    { name:'Towel Pull-up', rec:'3×6-8 reps', equipment:'Towel/Pull-up Bar', difficulty:'advanced', tip:'Drape towel over bar, grip both ends. Extreme grip and extensor challenge.' },
+  ],
+  trap_upper: [
+    { name:'Barbell Shrug', rec:'4×10-15 reps', equipment:'Barbell', difficulty:'beginner', tip:'Lift shoulders toward ears. Hold peak contraction 1 sec. Don\'t roll the shoulders.' },
+    { name:'Dumbbell Shrug', rec:'3×12-15 reps', equipment:'Dumbbells', difficulty:'beginner', tip:'Greater range of motion than barbell. Arms can hang freely.' },
+    { name:'Upright Row', rec:'3×10-12 reps', equipment:'Barbell', difficulty:'intermediate', tip:'Wide grip (shoulder-width). Pull elbows to ear height. Pulls upper trap strongly.' },
+    { name:'Face Pull (upper)', rec:'3×15-20 reps', equipment:'Cable', difficulty:'beginner', tip:'Rope at forehead height. Upper traps assist the pull and final rotation.' },
+    { name:'Behind-the-Neck Barbell Shrug', rec:'3×12 reps', equipment:'Barbell', difficulty:'advanced', tip:'Bar rests on upper back. Unique angle of trap activation.' },
+    { name:'Farmer\'s Carry', rec:'3×40m', equipment:'Dumbbells', difficulty:'beginner', tip:'Static upper trap activation throughout entire carry. Also builds grip.' },
+  ],
+  trap_mid: [
+    { name:'Seated Cable Row', rec:'4×10-12 reps', equipment:'Cable', difficulty:'beginner', tip:'Pull elbows straight back. Squeeze shoulder blades together at end. Chest tall.' },
+    { name:'Bent-over Barbell Row', rec:'4×6-10 reps', equipment:'Barbell', difficulty:'intermediate', tip:'Torso 45-60° from horizontal. Elbows at 45° to torso. Pull to lower chest.' },
+    { name:'Face Pull', rec:'4×15-20 reps', equipment:'Cable', difficulty:'beginner', tip:'Rope at eye level. Mid traps fire to retract scapula during the pull.' },
+    { name:'Chest-Supported Row', rec:'3×12 reps', equipment:'Dumbbells', difficulty:'beginner', tip:'Incline bench support removes spinal loading. Pure middle back focus.' },
+    { name:'T-Bar Row', rec:'4×8-10 reps', equipment:'Barbell', difficulty:'intermediate', tip:'Close grip emphasizes middle back. Wide grip brings in lats.' },
+    { name:'Band Pull-Apart', rec:'3×20 reps', equipment:'Resistance Band', difficulty:'beginner', tip:'Hold band at shoulder height. Retract scapula hard at end. High volume tolerated.' },
+  ],
+  trap_lower: [
+    { name:'Straight-Arm Pulldown', rec:'3×15 reps', equipment:'Cable', difficulty:'beginner', tip:'Arms stay straight. Pull bar to thighs. Lower traps depress scapula at end.' },
+    { name:'Prone Y Raise', rec:'3×12-15 reps', equipment:'Dumbbells', difficulty:'beginner', tip:'Face down on incline bench. Arms form Y. Thumbs up. Lower traps dominate.' },
+    { name:'Pull-up (wide grip)', rec:'3×8-12 reps', equipment:'Pull-up Bar', difficulty:'intermediate', tip:'Lower traps contract at top of pull. Think "pull shoulder blades into back pockets."' },
+    { name:'Lat Pulldown', rec:'4×10-12 reps', equipment:'Cable', difficulty:'beginner', tip:'Wide grip. Lower to upper chest. Lower traps active in final scapular depression.' },
+    { name:'Scapular Pull-up', rec:'3×10 reps', equipment:'Pull-up Bar', difficulty:'intermediate', tip:'Hang from bar. Depress shoulders without bending elbows. Pure lower trap activation.' },
+  ],
+  lat: [
+    { name:'Pull-up / Chin-up', rec:'4×6-12 reps', equipment:'Pull-up Bar', difficulty:'intermediate', tip:'Full hang to chin over bar. Wide grip targets lats; underhand chin-up adds bicep.' },
+    { name:'Lat Pulldown', rec:'4×10-12 reps', equipment:'Cable', difficulty:'beginner', tip:'Wide grip. Drive elbows toward hips, not just down. Chest stays tall.' },
+    { name:'Single-Arm Dumbbell Row', rec:'4×10-12 reps/side', equipment:'Dumbbells', difficulty:'beginner', tip:'Elbow drives back and past hip. Stretch at bottom for full ROM.' },
+    { name:'Bent-over Barbell Row', rec:'4×6-10 reps', equipment:'Barbell', difficulty:'intermediate', tip:'Lower back neutral. Pull bar to navel for lat emphasis; upper abs for upper back.' },
+    { name:'Seated Cable Row (wide grip)', rec:'3×10-12 reps', equipment:'Cable', difficulty:'beginner', tip:'Wide attachment. Arms remain wider — better lat isolation than close grip.' },
+    { name:'Straight-Arm Pulldown', rec:'3×15 reps', equipment:'Cable', difficulty:'beginner', tip:'Arms straight throughout. Pure lat isolation. Great pump exercise.' },
+    { name:'Dumbbell Pullover', rec:'3×12 reps', equipment:'Dumbbell', difficulty:'beginner', tip:'Lie across bench. Lower dumbbell over head. Feel enormous lat stretch.' },
+    { name:'Meadows Row', rec:'3×10 reps/side', equipment:'Barbell', difficulty:'advanced', tip:'Landmine-style one-arm row. Phenomenal lat and teres major activation.' },
+  ],
+  rhomboid: [
+    { name:'Face Pull', rec:'4×15-20 reps', equipment:'Cable', difficulty:'beginner', tip:'Rope at eye level. Pull to face. Rhomboids retract scapula throughout.' },
+    { name:'Bent-over Dumbbell Row', rec:'3×12 reps', equipment:'Dumbbells', difficulty:'beginner', tip:'Elbows flare slightly at 45°. Focus on pulling shoulder blades together.' },
+    { name:'Seated Cable Row (narrow grip)', rec:'3×12 reps', equipment:'Cable', difficulty:'beginner', tip:'Narrow V-grip. Elbows tight to body. Squeeze scapulae together at end.' },
+    { name:'Band Pull-Apart', rec:'3×20 reps', equipment:'Resistance Band', difficulty:'beginner', tip:'Rhomboids fire heavily to retract scapula. Perfect warm-up or finisher.' },
+    { name:'Inverted Row', rec:'3×12-15 reps', equipment:'Barbell (low)', difficulty:'beginner', tip:'Body under bar. Pull chest to bar. Hold squeeze 1 sec. Rhomboids are prime movers.' },
+    { name:'Chest-Supported T-Bar Row', rec:'3×12 reps', equipment:'Machine', difficulty:'beginner', tip:'Supported torso reduces back fatigue. Full focus on scapular retraction.' },
+  ],
+  erector: [
+    { name:'Deadlift', rec:'4×4-6 reps', equipment:'Barbell', difficulty:'advanced', tip:'Neutral spine throughout. Erectors must isometrically hold position under full load.' },
+    { name:'Romanian Deadlift', rec:'4×8-10 reps', equipment:'Barbell', difficulty:'intermediate', tip:'Push hips back. Feel hamstring stretch. Erectors contract to keep back neutral.' },
+    { name:'Hyperextension (45°)', rec:'3×12-15 reps', equipment:'GHD Machine', difficulty:'beginner', tip:'Hip crease at edge of pad. Lower until erectors stretch; rise to parallel only.' },
+    { name:'Good Morning', rec:'3×10-12 reps', equipment:'Barbell', difficulty:'advanced', tip:'Bar on upper back. Hinge at hips. Extremely effective but easy to overload badly.' },
+    { name:'Bird Dog', rec:'3×10 reps/side', equipment:'Bodyweight', difficulty:'beginner', tip:'On all fours. Extend opposite arm+leg. Hold 2 sec. Erectors stabilize throughout.' },
+    { name:'Back Extension Machine', rec:'3×15 reps', equipment:'Machine', difficulty:'beginner', tip:'Machine version of hyperextension. Easy to load progressively.' },
+    { name:'Superman Hold', rec:'3×30 sec', equipment:'Bodyweight', difficulty:'beginner', tip:'Prone on floor. Lift arms and legs simultaneously. Isometric erector contraction.' },
+  ],
+  abs_upper: [
+    { name:'Cable Crunch', rec:'4×15-20 reps', equipment:'Cable', difficulty:'beginner', tip:'Kneel at cable. Pull elbows toward knees. Flex spine, don\'t just pull with arms.' },
+    { name:'Crunch (weighted)', rec:'3×15-20 reps', equipment:'Weight plate', difficulty:'beginner', tip:'Hold plate on chest. Short range, constant tension. Focus on spinal flexion.' },
+    { name:'Decline Sit-up', rec:'3×15-20 reps', equipment:'Bench', difficulty:'beginner', tip:'Arms crossed on chest or at temples. Don\'t pull the neck. Full ROM.' },
+    { name:'Ab Wheel Rollout', rec:'3×10-15 reps', equipment:'Ab Wheel', difficulty:'advanced', tip:'Upper abs brace as you roll out. Hips stay in line. Start with partial rollouts.' },
+    { name:'Toes-to-Bar (top range)', rec:'3×8-10 reps', equipment:'Pull-up Bar', difficulty:'advanced', tip:'Hanging from bar. Lift toes to bar. Upper abs flex spine at the top.' },
+    { name:'V-Up', rec:'3×15 reps', equipment:'Bodyweight', difficulty:'intermediate', tip:'Lie flat. Simultaneously raise legs and torso to form a V. Peak upper ab contraction.' },
+  ],
+  abs_lower: [
+    { name:'Hanging Leg Raise', rec:'4×12-15 reps', equipment:'Pull-up Bar', difficulty:'intermediate', tip:'Hang freely. Raise legs to 90° (or higher). Posterior pelvic tilt at top is key.' },
+    { name:'Reverse Crunch', rec:'3×15 reps', equipment:'Bodyweight', difficulty:'beginner', tip:'On your back. Bring knees to chest by tilting pelvis, not just lifting hips.' },
+    { name:'Ab Wheel Rollout', rec:'3×10-15 reps', equipment:'Ab Wheel', difficulty:'advanced', tip:'Lower abs fire to prevent lumbar extension as you roll out. Key stabilizer.' },
+    { name:'Dragon Flag', rec:'3×6-10 reps', equipment:'Bench', difficulty:'advanced', tip:'Grip bench overhead. Raise body like a flag, lower under control. Elite level.' },
+    { name:'Leg Raise (flat bench)', rec:'3×15 reps', equipment:'Bench', difficulty:'beginner', tip:'Hold bench behind head. Lower legs toward floor without touching. No momentum.' },
+    { name:'Flutter Kicks', rec:'3×30 sec', equipment:'Bodyweight', difficulty:'beginner', tip:'Legs 6" off floor. Alternate kicking up and down. Burns lower abs.' },
+  ],
+  oblique: [
+    { name:'Russian Twist', rec:'3×20 reps (10/side)', equipment:'Weight plate', difficulty:'beginner', tip:'Feet off floor for extra challenge. Rotate fully each side. Add weight progressively.' },
+    { name:'Woodchopper (high to low)', rec:'3×12 reps/side', equipment:'Cable', difficulty:'beginner', tip:'Cable at shoulder height. Chop diagonally to opposite knee. Rotate from core, not arms.' },
+    { name:'Side Plank', rec:'3×30-60 sec/side', equipment:'Bodyweight', difficulty:'beginner', tip:'Hips stacked. Body straight. Obliques fire isometrically. Add hip dips for dynamic version.' },
+    { name:'Oblique Crunch', rec:'3×15 reps/side', equipment:'Bodyweight', difficulty:'beginner', tip:'Lie on side. Crunch laterally, not forward. Feel the lateral fold at end.' },
+    { name:'Pallof Press', rec:'3×12 reps/side', equipment:'Cable', difficulty:'beginner', tip:'Stand sideways to cable. Press and hold. Anti-rotation trains obliques isometrically.' },
+    { name:'Landmine 180', rec:'3×10 reps/side', equipment:'Barbell', difficulty:'intermediate', tip:'Rotate loaded barbell in arc from one side to other. Explosive oblique power.' },
+    { name:'Copenhagen Plank', rec:'3×20-30 sec/side', equipment:'Bench', difficulty:'advanced', tip:'Side plank with top foot on bench. Incredibly hard oblique + adductor combination.' },
+  ],
+  glute_max: [
+    { name:'Barbell Hip Thrust', rec:'4×8-12 reps', equipment:'Barbell', difficulty:'intermediate', tip:'Upper back on bench. Drive hips up. Posterior pelvic tilt at top. Glutes fire maximally.' },
+    { name:'Romanian Deadlift', rec:'4×8-10 reps', equipment:'Barbell', difficulty:'intermediate', tip:'Hip hinge pattern. Glute max is the prime mover on the return from hip flexion.' },
+    { name:'Bulgarian Split Squat', rec:'3×10 reps/side', equipment:'Dumbbells', difficulty:'intermediate', tip:'Rear foot elevated. Deep front-leg squat. Glute max powerfully extends hip.' },
+    { name:'Glute Bridge', rec:'3×15-20 reps', equipment:'Bodyweight', difficulty:'beginner', tip:'On the floor. Drive through heels. Squeeze hard at top. Great for beginners.' },
+    { name:'Cable Kickback', rec:'3×15 reps/side', equipment:'Cable', difficulty:'beginner', tip:'Ankle strap. Kick leg straight back. Squeeze glute at top. Control the return.' },
+    { name:'Back Squat', rec:'4×6-8 reps', equipment:'Barbell', difficulty:'advanced', tip:'Wider stance increases glute activation. Break parallel for full glute stretch.' },
+    { name:'Sumo Deadlift', rec:'4×6-8 reps', equipment:'Barbell', difficulty:'intermediate', tip:'Wide stance, toes out. More glute and inner thigh than conventional. Back more upright.' },
+  ],
+  glute_med: [
+    { name:'Side-Lying Hip Abduction', rec:'3×15-20 reps/side', equipment:'Bodyweight/Band', difficulty:'beginner', tip:'Lie on side. Lift top leg straight up. Add ankle weight or band for progression.' },
+    { name:'Lateral Band Walk', rec:'3×15 steps/side', equipment:'Resistance Band', difficulty:'beginner', tip:'Band around ankles or knees. Wide steps. Maintain quarter-squat position.' },
+    { name:'Clamshell', rec:'3×20 reps/side', equipment:'Resistance Band', difficulty:'beginner', tip:'Lie on side, knees bent 90°. Open knees like a clamshell. Band above knees.' },
+    { name:'Single-Leg Squat (pistol)', rec:'3×6-8 reps/side', equipment:'Bodyweight', difficulty:'advanced', tip:'Glute med must fire to stabilize pelvis on single-leg movements.' },
+    { name:'Hip Abduction Machine', rec:'3×15-20 reps', equipment:'Machine', difficulty:'beginner', tip:'Sit tall. Push pads apart with knees. Feel outer glute activation throughout.' },
+    { name:'Cable Hip Abduction', rec:'3×15 reps/side', equipment:'Cable', difficulty:'beginner', tip:'Ankle strap. Stand sideways to cable. Lift leg away. Glute med is prime mover.' },
+  ],
+  glute_min: [
+    { name:'Fire Hydrant', rec:'3×20 reps/side', equipment:'Bodyweight', difficulty:'beginner', tip:'On all fours. Lift bent knee to side. Glute minimus raises the leg outward.' },
+    { name:'Mini-band Squat Walk', rec:'3×15 steps/side', equipment:'Mini-band', difficulty:'beginner', tip:'Band just above knees. Squat position. Step to side. Glute min resists band.' },
+    { name:'Side-Lying Hip Abduction (cable)', rec:'3×15 reps/side', equipment:'Cable', difficulty:'beginner', tip:'Cable emphasizes glute min along with med. Maintain consistent tension.' },
+    { name:'Single-Leg Glute Bridge', rec:'3×15 reps/side', equipment:'Bodyweight', difficulty:'beginner', tip:'Stabilization demands place high stress on smaller glute muscles.' },
+    { name:'Hip Abduction Machine (partial ROM)', rec:'3×20 reps', equipment:'Machine', difficulty:'beginner', tip:'Use lighter weight, emphasize inner range where glute min is most active.' },
+  ],
+  quad_rectus: [
+    { name:'Leg Extension', rec:'4×12-15 reps', equipment:'Machine', difficulty:'beginner', tip:'Full extension at top isolates rectus femoris. Toes slightly turned out.' },
+    { name:'Squat (close stance)', rec:'4×8-10 reps', equipment:'Barbell', difficulty:'intermediate', tip:'Narrower stance, more upright torso = more quad dominant.' },
+    { name:'Hack Squat', rec:'3×10-12 reps', equipment:'Machine', difficulty:'intermediate', tip:'Feet low on platform for more quad focus. Very similar to front squat mechanics.' },
+    { name:'Lunges', rec:'3×12 reps/side', equipment:'Dumbbells', difficulty:'beginner', tip:'Step forward. Lower back knee to floor. Rectus femoris stretches and contracts.' },
+    { name:'Bulgarian Split Squat', rec:'3×10 reps/side', equipment:'Dumbbells', difficulty:'intermediate', tip:'Rear foot elevated. Deep front-leg squat. More quad stretch than regular squat.' },
+    { name:'Sissy Squat', rec:'3×12-15 reps', equipment:'Bodyweight', difficulty:'advanced', tip:'Lean back as knees travel forward. Extreme rectus femoris isolation exercise.' },
+  ],
+  quad_vastus_lat: [
+    { name:'Wide Stance Squat', rec:'4×8-10 reps', equipment:'Barbell', difficulty:'intermediate', tip:'Wider than shoulder-width. Toes out. Outer quad and adductors emphasized.' },
+    { name:'Leg Press (narrow foot placement)', rec:'4×10-12 reps', equipment:'Machine', difficulty:'beginner', tip:'Feet close together on platform shifts load to outer (lateral) quad.' },
+    { name:'Lateral Lunge', rec:'3×12 reps/side', equipment:'Dumbbells', difficulty:'beginner', tip:'Step wide to side. Bend only the stepping leg. Outer quad on that leg fires heavily.' },
+    { name:'Leg Extension (toes slightly in)', rec:'3×15 reps', equipment:'Machine', difficulty:'beginner', tip:'Slight internal rotation can shift tension to vastus lateralis.' },
+    { name:'Smith Machine Squat (wide)', rec:'3×10 reps', equipment:'Machine', difficulty:'beginner', tip:'Feet in front of bar. Wide stance. Great for outer quad focus safely.' },
+  ],
+  quad_vastus_med: [
+    { name:'Close-Stance Leg Press', rec:'4×10-12 reps', equipment:'Machine', difficulty:'beginner', tip:'Feet together, heels high. Final extension emphasizes VMO (teardrop muscle).' },
+    { name:'Terminal Knee Extension (TKE)', rec:'3×15-20 reps', equipment:'Resistance Band', difficulty:'beginner', tip:'Standing with band behind knee. Extend knee fully. Pure VMO training.' },
+    { name:'Step-Up', rec:'3×12 reps/side', equipment:'Dumbbells', difficulty:'beginner', tip:'Step up onto box. VMO must control the knee during step and lower.' },
+    { name:'Close-Stance Squat (heels elevated)', rec:'4×10 reps', equipment:'Barbell', difficulty:'intermediate', tip:'Heels on plates or wedge. Knees travel more forward = more VMO activation.' },
+    { name:'Wall Sit', rec:'3×45 sec', equipment:'Bodyweight', difficulty:'beginner', tip:'Isometric VMO contraction. Gradually increase hold time for endurance.' },
+  ],
+  hamstring: [
+    { name:'Romanian Deadlift', rec:'4×8-10 reps', equipment:'Barbell', difficulty:'intermediate', tip:'Push hips back, feel deep hamstring stretch. Return by driving hips forward.' },
+    { name:'Lying Leg Curl', rec:'4×12-15 reps', equipment:'Machine', difficulty:'beginner', tip:'Toes pointed down activates more biceps femoris. Slow eccentric is key.' },
+    { name:'Seated Leg Curl', rec:'3×12 reps', equipment:'Machine', difficulty:'beginner', tip:'Seated version may emphasize semitendinosus and semimembranosus more.' },
+    { name:'Nordic Hamstring Curl', rec:'3×5-8 reps', equipment:'Partner/Machine', difficulty:'advanced', tip:'Lower body toward floor slowly. Eccentric only. Phenomenal injury prevention.' },
+    { name:'Stiff-Leg Deadlift', rec:'3×10-12 reps', equipment:'Barbell', difficulty:'intermediate', tip:'Minimal knee bend. Pure hip hinge. More stretch than Romanian version.' },
+    { name:'Good Morning', rec:'3×10-12 reps', equipment:'Barbell', difficulty:'advanced', tip:'Bar on back. Hinge forward. Hamstrings under load throughout full arc.' },
+    { name:'Single-Leg Deadlift', rec:'3×10 reps/side', equipment:'Dumbbell', difficulty:'intermediate', tip:'Extreme balance demand. Hamstrings of standing leg work hard with hip flexion.' },
+  ],
+  adductor: [
+    { name:'Sumo Squat', rec:'4×10-12 reps', equipment:'Dumbbell', difficulty:'beginner', tip:'Wide stance, toes 45° out. Adductors are stretched and contracted in each rep.' },
+    { name:'Hip Adduction Machine', rec:'3×15-20 reps', equipment:'Machine', difficulty:'beginner', tip:'Bring legs together against resistance. Full ROM for best results.' },
+    { name:'Cable Hip Adduction', rec:'3×15 reps/side', equipment:'Cable', difficulty:'beginner', tip:'Ankle strap. Stand sideways, lift leg across body. Adductor is prime mover.' },
+    { name:'Cossack Squat', rec:'3×8 reps/side', equipment:'Bodyweight', difficulty:'intermediate', tip:'Wide lunge, shift all weight to one side while other leg extends. Extreme adductor stretch.' },
+    { name:'Copenhagen Adductor Exercise', rec:'3×10 reps/side', equipment:'Bench', difficulty:'advanced', tip:'Top foot on bench, bottom leg lifts to meet it. Incredible adductor strength.' },
+    { name:'Lateral Squat', rec:'3×10 reps/side', equipment:'Dumbbells', difficulty:'intermediate', tip:'Squat to one side while other leg extends. Adductors of bent leg work hard.' },
+  ],
+  abductor: [
+    { name:'Hip Abduction Machine', rec:'3×15-20 reps', equipment:'Machine', difficulty:'beginner', tip:'Push pads apart with knees. Don\'t lean; sit tall and isolate the movement.' },
+    { name:'Lateral Band Walk', rec:'3×15 steps/side', equipment:'Mini-band', difficulty:'beginner', tip:'Band around ankles. Small controlled steps. Feel burn in outer hip.' },
+    { name:'Side-Lying Leg Raise', rec:'3×20 reps/side', equipment:'Bodyweight', difficulty:'beginner', tip:'Lie on side, raise top leg straight up. Add ankle weight as you progress.' },
+    { name:'Cable Hip Abduction', rec:'3×15 reps/side', equipment:'Cable', difficulty:'beginner', tip:'Ankle strap. Stand sideways. Lift leg away from cable. TFL + glute med activated.' },
+    { name:'Standing Hip Abduction (band)', rec:'3×15 reps/side', equipment:'Band', difficulty:'beginner', tip:'Band on one ankle fixed to post. Stand tall. Kick leg out to side.' },
+    { name:'Skater Squat', rec:'3×8 reps/side', equipment:'Bodyweight', difficulty:'intermediate', tip:'Single-leg squat with trailing leg behind. Abductors stabilize throughout.' },
+  ],
+  calf_gastroc: [
+    { name:'Standing Calf Raise', rec:'4×15-20 reps', equipment:'Machine', difficulty:'beginner', tip:'Straight knees target gastrocnemius. Full ROM: deep stretch to full rise. Slow.' },
+    { name:'Donkey Calf Raise', rec:'4×15-20 reps', equipment:'Bodyweight/Machine', difficulty:'intermediate', tip:'Torso parallel to floor. Very long gastrocnemius stretch. Excellent ROM.' },
+    { name:'Jump Rope', rec:'3×3 min', equipment:'Jump Rope', difficulty:'beginner', tip:'High rep gastrocnemius endurance training. Plyometric element builds power too.' },
+    { name:'Box Jump', rec:'4×6-8 reps', equipment:'Box', difficulty:'intermediate', tip:'Explosive plantar flexion at takeoff. Gastroc power-development exercise.' },
+    { name:'Leg Press Calf Raise', rec:'4×20 reps', equipment:'Leg Press Machine', difficulty:'beginner', tip:'Feet at bottom of platform. Full plantar flexion against load. Safe and effective.' },
+    { name:'Single-Leg Calf Raise', rec:'3×12-15 reps/side', equipment:'Bodyweight', difficulty:'beginner', tip:'Identifies left/right imbalances. Harder than bilateral. No weight needed to start.' },
+  ],
+  calf_soleus: [
+    { name:'Seated Calf Raise', rec:'4×20-25 reps', equipment:'Machine', difficulty:'beginner', tip:'Bent knees isolate soleus. Heavier weight, more reps. Full ROM essential.' },
+    { name:'Leg Press Calf Raise (bent knee)', rec:'4×20 reps', equipment:'Leg Press Machine', difficulty:'beginner', tip:'On leg press with knees bent — soleus becomes dominant, not gastrocnemius.' },
+    { name:'Seated DB Calf Raise', rec:'3×20 reps', equipment:'Dumbbells', difficulty:'beginner', tip:'Dumbbell on knee, seated. Same mechanics as machine but more accessible.' },
+    { name:'Slow Eccentric Calf Raise', rec:'3×10 reps', equipment:'Bodyweight', difficulty:'intermediate', tip:'3 seconds down, pause at bottom, normal up. Deep soleus training.' },
+    { name:'Incline Treadmill Walk', rec:'20-30 min', equipment:'Treadmill', difficulty:'beginner', tip:'Steady-state incline walking loads soleus for extended periods. Endurance.' },
+  ],
+  neck: [
+    { name:'Neck Harness (flexion/extension)', rec:'3×15 reps', equipment:'Neck Harness', difficulty:'intermediate', tip:'Forward and backward movement. Light weight to start. Very sensitive area.' },
+    { name:'Manual Resistance Neck', rec:'3×10 reps/direction', equipment:'Hands', difficulty:'beginner', tip:'Push head against hand resistance. 4 directions: front, back, left, right.' },
+    { name:'Shrug (with forward lean)', rec:'3×15 reps', equipment:'Dumbbells', difficulty:'beginner', tip:'Slight forward lean emphasizes sternocleidomastoid along with upper trap.' },
+    { name:'Wrestler\'s Bridge', rec:'3×30 sec', equipment:'Bodyweight', difficulty:'advanced', tip:'Isometric hold on head. Extreme stress — only for advanced athletes.' },
+  ],
+};
+
+// ═══════════════════════════════════════════════════════
+// MUSCLE DEFINITIONS (id, name, group, geometry, position, exercises)
+// ═══════════════════════════════════════════════════════
+const MUSCLE_DEFS = [
+  // ── NECK ──
+  { id:'neck_l', name:'Sternocleidomastoid (Left)', group:'Neck', color:0xb03a2e, pos:[-0.065, 1.21, 0.06], rot:[0.3, 0, -0.3], scale:[0.05, 0.13, 0.05], exKey:'neck' },
+  { id:'neck_r', name:'Sternocleidomastoid (Right)', group:'Neck', color:0xb03a2e, pos:[0.065, 1.21, 0.06], rot:[0.3, 0, 0.3], scale:[0.05, 0.13, 0.05], exKey:'neck' },
+
+  // ── CHEST ──
+  { id:'pec_upper_l', name:'Upper Pectoralis (Left)', group:'Chest', color:0xc0392b, pos:[-0.19, 0.72, 0.18], rot:[0, 0, 0.15], scale:[0.21, 0.10, 0.09], exKey:'pec_upper' },
+  { id:'pec_upper_r', name:'Upper Pectoralis (Right)', group:'Chest', color:0xc0392b, pos:[0.19, 0.72, 0.18], rot:[0, 0, -0.15], scale:[0.21, 0.10, 0.09], exKey:'pec_upper' },
+  { id:'pec_mid_l', name:'Middle Pectoralis (Left)', group:'Chest', color:0xcb4335, pos:[-0.20, 0.58, 0.19], rot:[0.05, 0, 0.08], scale:[0.22, 0.10, 0.09], exKey:'pec_mid' },
+  { id:'pec_mid_r', name:'Middle Pectoralis (Right)', group:'Chest', color:0xcb4335, pos:[0.20, 0.58, 0.19], rot:[0.05, 0, -0.08], scale:[0.22, 0.10, 0.09], exKey:'pec_mid' },
+  { id:'pec_lower_l', name:'Lower Pectoralis (Left)', group:'Chest', color:0xd14535, pos:[-0.18, 0.46, 0.17], rot:[0.1, 0, 0.05], scale:[0.19, 0.09, 0.08], exKey:'pec_lower' },
+  { id:'pec_lower_r', name:'Lower Pectoralis (Right)', group:'Chest', color:0xd14535, pos:[0.18, 0.46, 0.17], rot:[0.1, 0, -0.05], scale:[0.19, 0.09, 0.08], exKey:'pec_lower' },
+
+  // ── SHOULDERS ──
+  { id:'delt_front_l', name:'Anterior Deltoid (Left)', group:'Shoulders', color:0xe67e22, pos:[-0.47, 0.82, 0.12], rot:[0, 0.2, 0], scale:[0.13, 0.14, 0.10], exKey:'delt_front' },
+  { id:'delt_front_r', name:'Anterior Deltoid (Right)', group:'Shoulders', color:0xe67e22, pos:[0.47, 0.82, 0.12], rot:[0, -0.2, 0], scale:[0.13, 0.14, 0.10], exKey:'delt_front' },
+  { id:'delt_side_l', name:'Lateral Deltoid (Left)', group:'Shoulders', color:0xd35400, pos:[-0.55, 0.82, 0.0], rot:[0, 0, 0], scale:[0.11, 0.14, 0.11], exKey:'delt_side' },
+  { id:'delt_side_r', name:'Lateral Deltoid (Right)', group:'Shoulders', color:0xd35400, pos:[0.55, 0.82, 0.0], rot:[0, 0, 0], scale:[0.11, 0.14, 0.11], exKey:'delt_side' },
+  { id:'delt_rear_l', name:'Posterior Deltoid (Left)', group:'Shoulders', color:0xca6f1e, pos:[-0.47, 0.82, -0.13], rot:[0, -0.2, 0], scale:[0.13, 0.13, 0.10], exKey:'delt_rear' },
+  { id:'delt_rear_r', name:'Posterior Deltoid (Right)', group:'Shoulders', color:0xca6f1e, pos:[0.47, 0.82, -0.13], rot:[0, 0.2, 0], scale:[0.13, 0.13, 0.10], exKey:'delt_rear' },
+
+  // ── BICEPS ──
+  { id:'bicep_long_l', name:'Bicep Long Head (Left)', group:'Arms', color:0x8e44ad, pos:[-0.60, 0.58, 0.08], rot:[0.05, 0, 0], scale:[0.09, 0.17, 0.08], exKey:'bicep_long' },
+  { id:'bicep_long_r', name:'Bicep Long Head (Right)', group:'Arms', color:0x8e44ad, pos:[0.60, 0.58, 0.08], rot:[0.05, 0, 0], scale:[0.09, 0.17, 0.08], exKey:'bicep_long' },
+  { id:'bicep_short_l', name:'Bicep Short Head (Left)', group:'Arms', color:0x9b59b6, pos:[-0.56, 0.55, 0.07], rot:[0.05, 0, 0], scale:[0.08, 0.15, 0.08], exKey:'bicep_short' },
+  { id:'bicep_short_r', name:'Bicep Short Head (Right)', group:'Arms', color:0x9b59b6, pos:[0.56, 0.55, 0.07], rot:[0.05, 0, 0], scale:[0.08, 0.15, 0.08], exKey:'bicep_short' },
+
+  // ── TRICEPS ──
+  { id:'tricep_long_l', name:'Tricep Long Head (Left)', group:'Arms', color:0x1a5276, pos:[-0.61, 0.60, -0.09], rot:[-0.1, 0, 0], scale:[0.09, 0.20, 0.08], exKey:'tricep_long' },
+  { id:'tricep_long_r', name:'Tricep Long Head (Right)', group:'Arms', color:0x1a5276, pos:[0.61, 0.60, -0.09], rot:[-0.1, 0, 0], scale:[0.09, 0.20, 0.08], exKey:'tricep_long' },
+  { id:'tricep_lat_l', name:'Tricep Lateral Head (Left)', group:'Arms', color:0x1f618d, pos:[-0.65, 0.65, -0.04], rot:[-0.05, 0.1, 0], scale:[0.08, 0.17, 0.07], exKey:'tricep_lateral' },
+  { id:'tricep_lat_r', name:'Tricep Lateral Head (Right)', group:'Arms', color:0x1f618d, pos:[0.65, 0.65, -0.04], rot:[-0.05, -0.1, 0], scale:[0.08, 0.17, 0.07], exKey:'tricep_lateral' },
+  { id:'tricep_med_l', name:'Tricep Medial Head (Left)', group:'Arms', color:0x2980b9, pos:[-0.61, 0.50, -0.07], rot:[-0.1, 0, 0], scale:[0.07, 0.14, 0.06], exKey:'tricep_medial' },
+  { id:'tricep_med_r', name:'Tricep Medial Head (Right)', group:'Arms', color:0x2980b9, pos:[0.61, 0.50, -0.07], rot:[-0.1, 0, 0], scale:[0.07, 0.14, 0.06], exKey:'tricep_medial' },
+
+  // ── FOREARMS ──
+  { id:'forearm_flex_l', name:'Forearm Flexors (Left)', group:'Arms', color:0x117a65, pos:[-0.64, 0.22, 0.06], rot:[0.1, 0, 0], scale:[0.08, 0.19, 0.07], exKey:'forearm_flex' },
+  { id:'forearm_flex_r', name:'Forearm Flexors (Right)', group:'Arms', color:0x117a65, pos:[0.64, 0.22, 0.06], rot:[0.1, 0, 0], scale:[0.08, 0.19, 0.07], exKey:'forearm_flex' },
+  { id:'forearm_ext_l', name:'Forearm Extensors (Left)', group:'Arms', color:0x148f77, pos:[-0.65, 0.22, -0.06], rot:[0.1, 0, 0], scale:[0.07, 0.18, 0.06], exKey:'forearm_ext' },
+  { id:'forearm_ext_r', name:'Forearm Extensors (Right)', group:'Arms', color:0x148f77, pos:[0.65, 0.22, -0.06], rot:[0.1, 0, 0], scale:[0.07, 0.18, 0.06], exKey:'forearm_ext' },
+
+  // ── BACK ──
+  { id:'trap_upper', name:'Upper Trapezius', group:'Back', color:0x1e8bc3, pos:[0, 0.90, -0.14], rot:[0, 0, 0], scale:[0.30, 0.12, 0.07], exKey:'trap_upper' },
+  { id:'trap_mid_l', name:'Middle Trapezius (Left)', group:'Back', color:0x2471a3, pos:[-0.18, 0.72, -0.15], rot:[0, 0, 0.1], scale:[0.20, 0.10, 0.06], exKey:'trap_mid' },
+  { id:'trap_mid_r', name:'Middle Trapezius (Right)', group:'Back', color:0x2471a3, pos:[0.18, 0.72, -0.15], rot:[0, 0, -0.1], scale:[0.20, 0.10, 0.06], exKey:'trap_mid' },
+  { id:'trap_lower_l', name:'Lower Trapezius (Left)', group:'Back', color:0x2e86c1, pos:[-0.17, 0.55, -0.15], rot:[0, 0, 0.15], scale:[0.18, 0.10, 0.06], exKey:'trap_lower' },
+  { id:'trap_lower_r', name:'Lower Trapezius (Right)', group:'Back', color:0x2e86c1, pos:[0.17, 0.55, -0.15], rot:[0, 0, -0.15], scale:[0.18, 0.10, 0.06], exKey:'trap_lower' },
+  { id:'lat_l', name:'Latissimus Dorsi (Left)', group:'Back', color:0x154360, pos:[-0.27, 0.45, -0.15], rot:[0.1, 0, 0.2], scale:[0.20, 0.30, 0.08], exKey:'lat' },
+  { id:'lat_r', name:'Latissimus Dorsi (Right)', group:'Back', color:0x154360, pos:[0.27, 0.45, -0.15], rot:[0.1, 0, -0.2], scale:[0.20, 0.30, 0.08], exKey:'lat' },
+  { id:'rhomboid_l', name:'Rhomboids (Left)', group:'Back', color:0x1a5276, pos:[-0.12, 0.72, -0.14], rot:[0, 0, 0.05], scale:[0.13, 0.11, 0.06], exKey:'rhomboid' },
+  { id:'rhomboid_r', name:'Rhomboids (Right)', group:'Back', color:0x1a5276, pos:[0.12, 0.72, -0.14], rot:[0, 0, -0.05], scale:[0.13, 0.11, 0.06], exKey:'rhomboid' },
+  { id:'erector_l', name:'Erector Spinae (Left)', group:'Back', color:0x6e2f0e, pos:[-0.08, 0.30, -0.14], rot:[0, 0, 0], scale:[0.08, 0.35, 0.06], exKey:'erector' },
+  { id:'erector_r', name:'Erector Spinae (Right)', group:'Back', color:0x6e2f0e, pos:[0.08, 0.30, -0.14], rot:[0, 0, 0], scale:[0.08, 0.35, 0.06], exKey:'erector' },
+
+  // ── CORE ──
+  { id:'abs_upper', name:'Upper Abs (Rectus Abdominis)', group:'Core', color:0xe74c3c, pos:[0, 0.34, 0.17], rot:[0.05, 0, 0], scale:[0.15, 0.13, 0.06], exKey:'abs_upper' },
+  { id:'abs_lower', name:'Lower Abs (Rectus Abdominis)', group:'Core', color:0xe74c3c, pos:[0, 0.17, 0.16], rot:[0.05, 0, 0], scale:[0.14, 0.12, 0.06], exKey:'abs_lower' },
+  { id:'oblique_l', name:'Obliques (Left)', group:'Core', color:0xd44000, pos:[-0.22, 0.25, 0.12], rot:[0, 0, 0.15], scale:[0.11, 0.22, 0.06], exKey:'oblique' },
+  { id:'oblique_r', name:'Obliques (Right)', group:'Core', color:0xd44000, pos:[0.22, 0.25, 0.12], rot:[0, 0, -0.15], scale:[0.11, 0.22, 0.06], exKey:'oblique' },
+
+  // ── GLUTES ──
+  { id:'glute_max_l', name:'Gluteus Maximus (Left)', group:'Glutes', color:0x7d6608, pos:[-0.17, -0.22, -0.18], rot:[-0.1, 0, 0.05], scale:[0.19, 0.18, 0.14], exKey:'glute_max' },
+  { id:'glute_max_r', name:'Gluteus Maximus (Right)', group:'Glutes', color:0x7d6608, pos:[0.17, -0.22, -0.18], rot:[-0.1, 0, -0.05], scale:[0.19, 0.18, 0.14], exKey:'glute_max' },
+  { id:'glute_med_l', name:'Gluteus Medius (Left)', group:'Glutes', color:0x9a7d0a, pos:[-0.25, -0.06, -0.13], rot:[-0.1, 0, 0.1], scale:[0.14, 0.13, 0.10], exKey:'glute_med' },
+  { id:'glute_med_r', name:'Gluteus Medius (Right)', group:'Glutes', color:0x9a7d0a, pos:[0.25, -0.06, -0.13], rot:[-0.1, 0, -0.1], scale:[0.14, 0.13, 0.10], exKey:'glute_med' },
+  { id:'glute_min_l', name:'Gluteus Minimus (Left)', group:'Glutes', color:0xb7950b, pos:[-0.23, -0.10, -0.10], rot:[-0.1, 0, 0.15], scale:[0.10, 0.10, 0.08], exKey:'glute_min' },
+  { id:'glute_min_r', name:'Gluteus Minimus (Right)', group:'Glutes', color:0xb7950b, pos:[0.23, -0.10, -0.10], rot:[-0.1, 0, -0.15], scale:[0.10, 0.10, 0.08], exKey:'glute_min' },
+
+  // ── QUADS ──
+  { id:'quad_rect_l', name:'Rectus Femoris (Left)', group:'Legs', color:0xae1212, pos:[-0.15, -0.68, 0.18], rot:[0.1, 0, 0.05], scale:[0.11, 0.28, 0.10], exKey:'quad_rectus' },
+  { id:'quad_rect_r', name:'Rectus Femoris (Right)', group:'Legs', color:0xae1212, pos:[0.15, -0.68, 0.18], rot:[0.1, 0, -0.05], scale:[0.11, 0.28, 0.10], exKey:'quad_rectus' },
+  { id:'quad_vlat_l', name:'Vastus Lateralis (Left)', group:'Legs', color:0xc01313, pos:[-0.23, -0.75, 0.12], rot:[0.1, 0, 0.1], scale:[0.12, 0.30, 0.10], exKey:'quad_vastus_lat' },
+  { id:'quad_vlat_r', name:'Vastus Lateralis (Right)', group:'Legs', color:0xc01313, pos:[0.23, -0.75, 0.12], rot:[0.1, 0, -0.1], scale:[0.12, 0.30, 0.10], exKey:'quad_vastus_lat' },
+  { id:'quad_vmed_l', name:'Vastus Medialis (Left)', group:'Legs', color:0xd01515, pos:[-0.10, -0.88, 0.17], rot:[0.15, 0, -0.1], scale:[0.11, 0.22, 0.10], exKey:'quad_vastus_med' },
+  { id:'quad_vmed_r', name:'Vastus Medialis (Right)', group:'Legs', color:0xd01515, pos:[0.10, -0.88, 0.17], rot:[0.15, 0, 0.1], scale:[0.11, 0.22, 0.10], exKey:'quad_vastus_med' },
+
+  // ── HAMSTRINGS ──
+  { id:'ham_l', name:'Hamstrings (Left)', group:'Legs', color:0x5b2333, pos:[-0.14, -0.80, -0.17], rot:[-0.05, 0, 0], scale:[0.14, 0.32, 0.11], exKey:'hamstring' },
+  { id:'ham_r', name:'Hamstrings (Right)', group:'Legs', color:0x5b2333, pos:[0.14, -0.80, -0.17], rot:[-0.05, 0, 0], scale:[0.14, 0.32, 0.11], exKey:'hamstring' },
+
+  // ── ADDUCTORS / ABDUCTORS ──
+  { id:'adductor_l', name:'Adductors (Left)', group:'Legs', color:0x633974, pos:[-0.07, -0.82, 0.06], rot:[0, 0, 0.15], scale:[0.09, 0.30, 0.09], exKey:'adductor' },
+  { id:'adductor_r', name:'Adductors (Right)', group:'Legs', color:0x633974, pos:[0.07, -0.82, 0.06], rot:[0, 0, -0.15], scale:[0.09, 0.30, 0.09], exKey:'adductor' },
+  { id:'abductor_l', name:'Hip Abductors / TFL (Left)', group:'Legs', color:0x76448a, pos:[-0.30, -0.55, 0.06], rot:[0, 0, 0.1], scale:[0.10, 0.22, 0.09], exKey:'abductor' },
+  { id:'abductor_r', name:'Hip Abductors / TFL (Right)', group:'Legs', color:0x76448a, pos:[0.30, -0.55, 0.06], rot:[0, 0, -0.1], scale:[0.10, 0.22, 0.09], exKey:'abductor' },
+
+  // ── CALVES ──
+  { id:'calf_gastroc_l', name:'Gastrocnemius (Left)', group:'Legs', color:0x1a5276, pos:[-0.12, -1.42, 0.12], rot:[-0.05, 0, 0], scale:[0.11, 0.22, 0.10], exKey:'calf_gastroc' },
+  { id:'calf_gastroc_r', name:'Gastrocnemius (Right)', group:'Legs', color:0x1a5276, pos:[0.12, -1.42, 0.12], rot:[-0.05, 0, 0], scale:[0.11, 0.22, 0.10], exKey:'calf_gastroc' },
+  { id:'calf_soleus_l', name:'Soleus (Left)', group:'Legs', color:0x2471a3, pos:[-0.11, -1.52, 0.07], rot:[-0.05, 0, 0], scale:[0.10, 0.20, 0.09], exKey:'calf_soleus' },
+  { id:'calf_soleus_r', name:'Soleus (Right)', group:'Legs', color:0x2471a3, pos:[0.11, -1.52, 0.07], rot:[-0.05, 0, 0], scale:[0.10, 0.20, 0.09], exKey:'calf_soleus' },
+];
+
+// ═══════════════════════════════════════════════════════
+// THREE.JS SETUP
+// ═══════════════════════════════════════════════════════
+const canvas = document.getElementById('three-canvas');
+const container = document.getElementById('viewer');
+const W = () => container.clientWidth;
+const H = () => container.clientHeight;
+
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.setSize(W(), H());
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x080c12);
+scene.fog = new THREE.FogExp2(0x080c12, 0.18);
+
+const camera = new THREE.PerspectiveCamera(45, W() / H(), 0.05, 50);
+camera.position.set(0, 0.3, 3.8);
+
+// ─── LIGHTING ───
+const ambient = new THREE.AmbientLight(0x1a0a0a, 0.8);
+scene.add(ambient);
+
+const keyLight = new THREE.DirectionalLight(0xffddc0, 1.4);
+keyLight.position.set(-2, 4, 3);
+keyLight.castShadow = true;
+scene.add(keyLight);
+
+const fillLight = new THREE.DirectionalLight(0xa0c4ff, 0.5);
+fillLight.position.set(3, 1, 2);
+scene.add(fillLight);
+
+const rimLight = new THREE.DirectionalLight(0xff8060, 0.6);
+rimLight.position.set(0, -2, -4);
+scene.add(rimLight);
+
+const topLight = new THREE.DirectionalLight(0xffffff, 0.3);
+topLight.position.set(0, 5, 0);
+scene.add(topLight);
+
+// ─── BODY GROUP ───
+const bodyGroup = new THREE.Group();
+scene.add(bodyGroup);
+
+// ─── SKELETON (base body structure) ───
+function addSkeleton() {
+  const skMat = new THREE.MeshPhongMaterial({ color: 0x1a1a2e, specular: 0x111133, shininess: 10, transparent: true, opacity: 0.85 });
+  const parts = [
+    // Head
+    { geo: new THREE.SphereGeometry(0.13, 16, 12), pos: [0, 1.44, 0] },
+    // Neck
+    { geo: new THREE.CylinderGeometry(0.055, 0.065, 0.15, 12), pos: [0, 1.24, 0] },
+    // Upper torso
+    { geo: new THREE.CylinderGeometry(0.28, 0.22, 0.45, 16), pos: [0, 0.85, 0] },
+    // Lower torso / abs
+    { geo: new THREE.CylinderGeometry(0.22, 0.20, 0.38, 16), pos: [0, 0.40, 0] },
+    // Pelvis
+    { geo: new THREE.CylinderGeometry(0.22, 0.20, 0.25, 16), pos: [0, 0.06, 0] },
+    // Upper arm L
+    { geo: new THREE.CylinderGeometry(0.075, 0.065, 0.42, 10), pos: [-0.60, 0.64, 0], rot: [0, 0, 0.06] },
+    { geo: new THREE.CylinderGeometry(0.075, 0.065, 0.42, 10), pos: [0.60, 0.64, 0], rot: [0, 0, -0.06] },
+    // Lower arm L/R
+    { geo: new THREE.CylinderGeometry(0.060, 0.045, 0.40, 10), pos: [-0.64, 0.20, 0] },
+    { geo: new THREE.CylinderGeometry(0.060, 0.045, 0.40, 10), pos: [0.64, 0.20, 0] },
+    // Hand L/R
+    { geo: new THREE.SphereGeometry(0.045, 8, 6), pos: [-0.64, -0.04, 0] },
+    { geo: new THREE.SphereGeometry(0.045, 8, 6), pos: [0.64, -0.04, 0] },
+    // Upper leg L/R
+    { geo: new THREE.CylinderGeometry(0.140, 0.115, 0.72, 12), pos: [-0.15, -0.72, 0] },
+    { geo: new THREE.CylinderGeometry(0.140, 0.115, 0.72, 12), pos: [0.15, -0.72, 0] },
+    // Lower leg L/R
+    { geo: new THREE.CylinderGeometry(0.090, 0.065, 0.62, 12), pos: [-0.13, -1.42, 0] },
+    { geo: new THREE.CylinderGeometry(0.090, 0.065, 0.62, 12), pos: [0.13, -1.42, 0] },
+    // Foot L/R
+    { geo: new THREE.BoxGeometry(0.10, 0.05, 0.18), pos: [-0.13, -1.80, 0.05] },
+    { geo: new THREE.BoxGeometry(0.10, 0.05, 0.18), pos: [0.13, -1.80, 0.05] },
+  ];
+  parts.forEach(p => {
+    const mesh = new THREE.Mesh(p.geo, skMat);
+    mesh.position.set(...p.pos);
+    if (p.rot) mesh.rotation.set(...p.rot);
+    bodyGroup.add(mesh);
+  });
+}
+addSkeleton();
+
+// ─── MUSCLE MESHES ───
+const muscleMeshes = [];
+const defaultMat = (color) => new THREE.MeshPhongMaterial({
+  color: color,
+  specular: new THREE.Color(0.4, 0.2, 0.2),
+  shininess: 55,
+  emissive: new THREE.Color(color).multiplyScalar(0.08),
+});
+const hoverMat = (color) => new THREE.MeshPhongMaterial({
+  color: new THREE.Color(color).lerp(new THREE.Color(0xffffff), 0.3),
+  specular: new THREE.Color(1, 0.8, 0.6),
+  shininess: 80,
+  emissive: new THREE.Color(color).multiplyScalar(0.25),
+});
+const selectedMat = new THREE.MeshPhongMaterial({
+  color: 0xffaa00,
+  specular: new THREE.Color(1, 0.9, 0.5),
+  shininess: 100,
+  emissive: new THREE.Color(0x553300),
+});
+
+const geo = new THREE.SphereGeometry(1, 24, 18);
+
+MUSCLE_DEFS.forEach(def => {
+  const mat = defaultMat(def.color);
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.position.set(...def.pos);
+  if (def.rot) mesh.rotation.set(...def.rot);
+  mesh.scale.set(...def.scale);
+  mesh.userData = { ...def, defaultColor: def.color };
+  bodyGroup.add(mesh);
+  muscleMeshes.push(mesh);
+});
+
+// ─── RAYCASTING ───
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+let hoveredMesh = null;
+let selectedMesh = null;
+const hoverLabel = document.getElementById('hover-label');
+
+function getMouseNDC(e) {
+  const rect = canvas.getBoundingClientRect();
+  return new THREE.Vector2(
+    ((e.clientX - rect.left) / rect.width) * 2 - 1,
+    -((e.clientY - rect.top) / rect.height) * 2 + 1
+  );
+}
+
+canvas.addEventListener('mousemove', (e) => {
+  if (isDragging) return;
+  const ndc = getMouseNDC(e);
+  raycaster.setFromCamera(ndc, camera);
+  const hits = raycaster.intersectObjects(muscleMeshes);
+  if (hoveredMesh && hoveredMesh !== selectedMesh) {
+    hoveredMesh.material = defaultMat(hoveredMesh.userData.defaultColor);
+  }
+  if (hits.length > 0) {
+    const h = hits[0].object;
+    if (h !== selectedMesh) h.material = hoverMat(h.userData.defaultColor);
+    hoveredMesh = h;
+    hoverLabel.style.display = 'block';
+    hoverLabel.textContent = h.userData.name;
+    canvas.style.cursor = 'pointer';
+  } else {
+    hoveredMesh = null;
+    hoverLabel.style.display = 'none';
+    canvas.style.cursor = 'default';
+  }
+});
+
+canvas.addEventListener('click', (e) => {
+  if (wasDragging) { wasDragging = false; return; }
+  const ndc = getMouseNDC(e);
+  raycaster.setFromCamera(ndc, camera);
+  const hits = raycaster.intersectObjects(muscleMeshes);
+  if (selectedMesh) {
+    selectedMesh.material = defaultMat(selectedMesh.userData.defaultColor);
+    selectedMesh = null;
+  }
+  if (hits.length > 0) {
+    selectedMesh = hits[0].object;
+    selectedMesh.material = selectedMat;
+    showMuscleInfo(selectedMesh.userData);
+  } else {
+    showEmptyState();
+  }
+});
+
+// ─── ORBIT CONTROLS (manual) ───
+let isDragging = false, wasDragging = false;
+let prevMouse = { x: 0, y: 0 };
+let rotX = 0, rotY = 0;
+let targetRotX = 0, targetRotY = 0;
+let zoom = 3.8, targetZoom = 3.8;
+
+canvas.addEventListener('mousedown', (e) => {
+  isDragging = true;
+  wasDragging = false;
+  prevMouse = { x: e.clientX, y: e.clientY };
+});
+window.addEventListener('mouseup', () => { isDragging = false; });
+window.addEventListener('mousemove', (e) => {
+  if (!isDragging) return;
+  const dx = e.clientX - prevMouse.x;
+  const dy = e.clientY - prevMouse.y;
+  if (Math.abs(dx) > 2 || Math.abs(dy) > 2) wasDragging = true;
+  targetRotY += dx * 0.008;
+  targetRotX += dy * 0.008;
+  targetRotX = Math.max(-1.2, Math.min(1.2, targetRotX));
+  prevMouse = { x: e.clientX, y: e.clientY };
+});
+canvas.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  targetZoom += e.deltaY * 0.004;
+  targetZoom = Math.max(1.2, Math.min(6.0, targetZoom));
+}, { passive: false });
+
+// Touch support
+let lastTouch = null;
+canvas.addEventListener('touchstart', (e) => {
+  isDragging = true;
+  wasDragging = false;
+  lastTouch = e.touches[0];
+});
+canvas.addEventListener('touchend', () => { isDragging = false; });
+canvas.addEventListener('touchmove', (e) => {
+  if (!isDragging || !lastTouch) return;
+  e.preventDefault();
+  const t = e.touches[0];
+  const dx = t.clientX - lastTouch.clientX;
+  const dy = t.clientY - lastTouch.clientY;
+  wasDragging = true;
+  targetRotY += dx * 0.01;
+  targetRotX += dy * 0.01;
+  targetRotX = Math.max(-1.2, Math.min(1.2, targetRotX));
+  lastTouch = t;
+}, { passive: false });
+
+// View presets
+function setView(v) {
+  document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  if (v === 'front') { targetRotY = 0; targetRotX = 0; }
+  else if (v === 'back') { targetRotY = Math.PI; targetRotX = 0; }
+  else if (v === 'side') { targetRotY = Math.PI / 2; targetRotX = 0; }
+}
+
+// ─── UI ───
+function showEmptyState() {
+  document.getElementById('muscle-info').innerHTML = `
+    <div id="empty-state">
+      <div class="icon">🫀</div>
+      <h3>No muscle selected</h3>
+      <p>Click on any muscle on the 3D body to see targeted exercises, tips, and recommendations.</p>
+    </div>`;
+}
+
+function showMuscleInfo(data) {
+  const exercises = EXERCISES[data.exKey] || [];
+  const exHTML = exercises.map((ex, i) => `
+    <div class="exercise-card" onclick="toggleEx(this)">
+      <span class="ex-arrow">▼</span>
+      <div class="ex-name">${ex.name}</div>
+      <div class="ex-rec">${ex.rec}</div>
+      <div class="ex-meta">
+        <span class="ex-tag equipment">${ex.equipment}</span>
+        <span class="ex-tag difficulty-${ex.difficulty}">${ex.difficulty}</span>
+      </div>
+      <div class="ex-tip">${ex.tip}</div>
+    </div>
+  `).join('');
+
+  document.getElementById('muscle-info').innerHTML = `
+    <div class="muscle-name">${data.name}</div>
+    <span class="muscle-group-tag">${data.group}</span>
+    <div class="section-title">Exercises (${exercises.length})</div>
+    ${exHTML}
+  `;
+}
+
+function toggleEx(el) {
+  el.classList.toggle('expanded');
+}
+
+// ─── ANIMATION ───
+const clock = new THREE.Clock();
+function animate() {
+  requestAnimationFrame(animate);
+  const dt = clock.getDelta();
+
+  rotX += (targetRotX - rotX) * 0.12;
+  rotY += (targetRotY - rotY) * 0.12;
+  zoom += (targetZoom - zoom) * 0.10;
+
+  bodyGroup.rotation.x = rotX;
+  bodyGroup.rotation.y = rotY;
+  camera.position.z = zoom;
+
+  // Gentle breathing bob
+  const t = clock.getElapsedTime();
+  bodyGroup.position.y = Math.sin(t * 0.7) * 0.008;
+
+  renderer.render(scene, camera);
+}
+animate();
+
+// ─── RESIZE ───
+window.addEventListener('resize', () => {
+  renderer.setSize(W(), H());
+  camera.aspect = W() / H();
+  camera.updateProjectionMatrix();
+});
+</script>
+</body>
+</html>
