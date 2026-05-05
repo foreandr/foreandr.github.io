@@ -1,6 +1,6 @@
 {
-  "last_scanned": "2026-05-02 20:00:22",
-  "total_arbs": 24,
+  "last_scanned": "2026-05-04 20:00:08",
+  "total_arbs": 25,
   "min_net": 0.0,
   "scan_history": [
     {
@@ -186,6 +186,22 @@
       "api_requests": 13,
       "new_arbs": 1,
       "total_arbs": 24
+    },
+    {
+      "scanned_at": "2026-05-03 20:00:10",
+      "scan_seconds": 5.07,
+      "n_events": 236,
+      "api_requests": 13,
+      "new_arbs": 1,
+      "total_arbs": 25
+    },
+    {
+      "scanned_at": "2026-05-04 20:00:08",
+      "scan_seconds": 3.99,
+      "n_events": 250,
+      "api_requests": 13,
+      "new_arbs": 0,
+      "total_arbs": 25
     }
   ],
   "arbs": [
@@ -985,6 +1001,44 @@
           "book_key": "leovegas",
           "book_type": "soft",
           "odds": 3.55,
+          "can_ban": true
+        }
+      }
+    },
+    {
+      "event": "Atl\u00e9tico Madrid vs Celta Vigo",
+      "home": "Atl\u00e9tico Madrid",
+      "away": "Celta Vigo",
+      "sport": "LALIGA",
+      "sport_key": "soccer_spain_la_liga",
+      "commence": "2026-05-09",
+      "days_until": 5.6874,
+      "net_pct": 0.001647,
+      "apr": 0.1114,
+      "has_safe_leg": true,
+      "all_safe": false,
+      "n_outcomes": 3,
+      "found_at": "2026-05-03 20:00:10",
+      "legs": {
+        "Atl\u00e9tico Madrid": {
+          "book": "DraftKings",
+          "book_key": "draftkings",
+          "book_type": "soft",
+          "odds": 2.15,
+          "can_ban": true
+        },
+        "Celta Vigo": {
+          "book": "Pinnacle",
+          "book_key": "pinnacle",
+          "book_type": "sharp",
+          "odds": 4.04,
+          "can_ban": false
+        },
+        "Draw": {
+          "book": "BetMGM",
+          "book_key": "betmgm",
+          "book_type": "soft",
+          "odds": 3.5,
           "can_ban": true
         }
       }
