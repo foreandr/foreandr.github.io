@@ -1,5 +1,5 @@
 {
-  "last_scanned": "2026-05-04 20:00:08",
+  "last_scanned": "2026-05-06 20:00:12",
   "total_arbs": 25,
   "min_net": 0.0,
   "scan_history": [
@@ -199,6 +199,22 @@
       "scanned_at": "2026-05-04 20:00:08",
       "scan_seconds": 3.99,
       "n_events": 250,
+      "api_requests": 13,
+      "new_arbs": 0,
+      "total_arbs": 25
+    },
+    {
+      "scanned_at": "2026-05-05 20:00:13",
+      "scan_seconds": 7.0,
+      "n_events": 252,
+      "api_requests": 13,
+      "new_arbs": 0,
+      "total_arbs": 25
+    },
+    {
+      "scanned_at": "2026-05-06 20:00:12",
+      "scan_seconds": 6.06,
+      "n_events": 248,
       "api_requests": 13,
       "new_arbs": 0,
       "total_arbs": 25
