@@ -1,6 +1,6 @@
 {
-  "last_scanned": "2026-05-06 20:00:12",
-  "total_arbs": 25,
+  "last_scanned": "2026-05-07 20:00:07",
+  "total_arbs": 26,
   "min_net": 0.0,
   "scan_history": [
     {
@@ -218,6 +218,14 @@
       "api_requests": 13,
       "new_arbs": 0,
       "total_arbs": 25
+    },
+    {
+      "scanned_at": "2026-05-07 20:00:07",
+      "scan_seconds": 4.07,
+      "n_events": 268,
+      "api_requests": 14,
+      "new_arbs": 1,
+      "total_arbs": 26
     }
   ],
   "arbs": [
@@ -1055,6 +1063,44 @@
           "book_key": "betmgm",
           "book_type": "soft",
           "odds": 3.5,
+          "can_ban": true
+        }
+      }
+    },
+    {
+      "event": "Oviedo vs Alav\u00e9s",
+      "home": "Oviedo",
+      "away": "Alav\u00e9s",
+      "sport": "LALIGA",
+      "sport_key": "soccer_spain_la_liga",
+      "commence": "2026-05-17",
+      "days_until": 9.7082,
+      "net_pct": 0.001227,
+      "apr": 0.0472,
+      "has_safe_leg": false,
+      "all_safe": false,
+      "n_outcomes": 3,
+      "found_at": "2026-05-07 20:00:07",
+      "legs": {
+        "Alav\u00e9s": {
+          "book": "DraftKings",
+          "book_key": "draftkings",
+          "book_type": "soft",
+          "odds": 2.55,
+          "can_ban": true
+        },
+        "Oviedo": {
+          "book": "FanDuel",
+          "book_key": "fanduel",
+          "book_type": "soft",
+          "odds": 3.2,
+          "can_ban": true
+        },
+        "Draw": {
+          "book": "DraftKings",
+          "book_key": "draftkings",
+          "book_type": "soft",
+          "odds": 3.4,
           "can_ban": true
         }
       }

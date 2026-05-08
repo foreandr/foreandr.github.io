@@ -1,0 +1,3848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Andre</title>
+  <link rel="icon" type="image/x-icon" href="../images.ico">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@400;600;700&display=swap');
+    :root {
+      --bg-primary: #fafafa;
+      --bg-card: #ffffff;
+      --text-primary: #0f172a;
+      --text-secondary: #64748b;
+      --text-muted: #94a3b8;
+      --border: #e2e8f0;
+      --hover-bg: #f8fafc;
+      --accent: #6366f1;
+      --accent-hover: #4f46e5;
+      --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+      --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+      --font-primary: "Space Grotesk", "Archivo", "Segoe UI", sans-serif;
+      --font-display: "Fraunces", "Georgia", serif;
+      --card-radius: 16px;
+      --card-padding: 32px;
+      --grid-min: 340px;
+      --nav-height: 70px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      margin: 0;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: var(--font-primary);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      transition: background 0.6s ease, color 0.6s ease;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(1200px 500px at 10% -10%, rgba(99, 102, 241, 0.12), transparent 60%),
+        radial-gradient(900px 400px at 90% -20%, rgba(14, 165, 233, 0.12), transparent 60%);
+      pointer-events: none;
+      z-index: -1;
+      transition: opacity 0.6s ease, background 0.6s ease;
+    }
+    /* Navigation */
+    .site-nav {
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: saturate(180%) blur(20px);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      transition: background 0.6s ease, border-color 0.6s ease;
+    }
+    .nav-wrap {
+      max-width: 1800px;
+      margin: 0 auto;
+      padding: 0 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: var(--nav-height);
+    }
+    .nav-brand {
+      font-weight: 700;
+      font-size: 1.5rem;
+      font-family: var(--font-display);
+      color: var(--text-primary);
+      text-decoration: none;
+      letter-spacing: -0.03em;
+    }
+    .nav-links {
+      list-style: none;
+      display: flex;
+      gap: 4px;
+    }
+    .nav-links li a {
+      color: var(--text-primary);
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.9375rem;
+      padding: 10px 18px;
+      border-radius: 10px;
+      transition: all 0.2s ease;
+      display: inline-block;
+    }
+    .nav-links li a:hover {
+      background: var(--hover-bg);
+      color: var(--accent);
+    }
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .ui-toggle {
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text-primary);
+      border-radius: 999px;
+      padding: 10px 16px;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: var(--shadow-sm);
+    }
+    .ui-toggle:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      transform: translateY(-1px);
+    }
+    .ui-menu {
+      position: absolute;
+      top: calc(var(--nav-height) - 4px);
+      right: 48px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: var(--shadow-lg);
+      padding: 10px;
+      display: grid;
+      gap: 6px;
+      min-width: 220px;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(-8px);
+      transition: all 0.2s ease;
+      z-index: 20;
+    }
+    .ui-menu button {
+      background: transparent;
+      border: 1px solid transparent;
+      padding: 10px 12px;
+      text-align: left;
+      border-radius: 10px;
+      cursor: pointer;
+      color: var(--text-primary);
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+    .ui-menu button span {
+      display: block;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+    .ui-menu button:hover {
+      background: var(--hover-bg);
+      border-color: var(--border);
+    }
+    .ui-menu button.active {
+      border-color: var(--accent);
+      background: var(--hover-bg);
+    }
+    .ui-menu.open {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(8px);
+    }
+    /* Nav search */
+    .nav-search-wrap {
+      flex: 1; max-width: 420px; margin: 0 20px;
+      position: relative; display: flex; align-items: center;
+    }
+    .nav-search-icon {
+      position: absolute; left: 13px; color: var(--text-muted); pointer-events: none; flex-shrink: 0;
+    }
+    .nav-search-input {
+      width: 100%; background: var(--hover-bg); border: 1px solid var(--border);
+      border-radius: 999px; padding: 9px 36px 9px 38px;
+      font-size: 0.9rem; font-family: var(--font-primary); color: var(--text-primary);
+      outline: none; transition: border-color .15s, box-shadow .15s;
+      -webkit-appearance: none;
+    }
+    .nav-search-input::placeholder { color: var(--text-muted); }
+    .nav-search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99,102,241,.12); }
+    .nav-search-clear {
+      position: absolute; right: 11px; background: none; border: none;
+      color: var(--text-muted); font-size: 1.2rem; cursor: pointer; line-height: 1;
+      display: none; padding: 2px 4px; border-radius: 4px;
+    }
+    .nav-search-clear:hover { color: var(--text-primary); }
+    .nav-search-clear.visible { display: block; }
+    .search-no-results {
+      display: none; padding: 60px 20px; text-align: center;
+      color: var(--text-muted); font-size: 1rem;
+    }
+    .search-no-results.visible { display: block; }
+    @media (max-width: 768px) {
+      .nav-search-wrap { max-width: 100%; margin: 0 10px; }
+    }
+    /* Nav action buttons */
+    .nav-btn {
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text-primary);
+      border-radius: 999px;
+      padding: 10px 18px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      letter-spacing: 0.01em;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: var(--shadow-sm);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .nav-btn:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-1px); }
+    .nav-btn.donate { border-color: rgba(251,191,36,.5); color: #92400e; background: rgba(251,191,36,.08); }
+    .nav-btn.donate:hover { background: rgba(251,191,36,.15); border-color: #fbbf24; color: #78350f; transform: translateY(-1px); }
+    .nav-btn.hire { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .nav-btn.hire:hover { background: var(--accent-hover); border-color: var(--accent-hover); transform: translateY(-1px); }
+    /* Donate modal */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,.55);
+      backdrop-filter: blur(6px); z-index: 100;
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px; opacity: 0; pointer-events: none; transition: opacity .2s;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: auto; }
+    .modal-box {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 20px; box-shadow: var(--shadow-xl);
+      padding: 32px 28px; max-width: 480px; width: 100%;
+      transform: translateY(12px); transition: transform .25s ease;
+    }
+    .modal-overlay.open .modal-box { transform: translateY(0); }
+    .modal-box h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: 6px; color: var(--text-primary); }
+    .modal-box .modal-sub { font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 24px; line-height: 1.6; }
+    .donate-row { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+    .donate-item { border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; display: flex; gap: 12px; align-items: center; }
+    .donate-icon { font-size: 1.5rem; flex-shrink: 0; width: 32px; text-align: center; }
+    .donate-info { flex: 1; min-width: 0; }
+    .donate-name { font-size: 0.85rem; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
+    .donate-addr { font-family: "IBM Plex Mono", monospace; font-size: 0.7rem; color: var(--text-secondary); word-break: break-all; }
+    .donate-copy { background: var(--hover-bg); border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; font-size: 0.75rem; font-weight: 600; cursor: pointer; color: var(--text-secondary); white-space: nowrap; flex-shrink: 0; transition: all .15s; }
+    .donate-copy:hover { border-color: var(--accent); color: var(--accent); }
+    .donate-copy.ok { border-color: #22c55e; color: #16a34a; background: rgba(34,197,94,.08); }
+    .paypal-btn { width: 100%; background: #0070ba; color: #fff; border: none; border-radius: 12px; padding: 13px; font-size: 0.95rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; margin-top: 4px; transition: background .15s; }
+    .paypal-btn:hover { background: #005ea6; }
+    .modal-close { position: absolute; top: 16px; right: 20px; background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--text-muted); line-height: 1; }
+    .modal-close:hover { color: var(--text-primary); }
+    /* Contact modal */
+    .contact-row { display: flex; flex-direction: column; gap: 12px; }
+    .contact-field { display: flex; flex-direction: column; gap: 6px; }
+    .contact-field label { font-size: 0.82rem; font-weight: 600; color: var(--text-secondary); }
+    .contact-field input, .contact-field textarea {
+      background: var(--hover-bg); border: 1px solid var(--border); border-radius: 10px;
+      padding: 11px 14px; font-size: 0.9rem; color: var(--text-primary); font-family: var(--font-primary);
+      resize: none; outline: none; transition: border-color .15s;
+    }
+    .contact-field input:focus, .contact-field textarea:focus { border-color: var(--accent); }
+    .contact-submit { background: var(--accent); color: #fff; border: none; border-radius: 12px; padding: 13px; font-size: 0.95rem; font-weight: 700; cursor: pointer; width: 100%; margin-top: 4px; transition: background .15s; }
+    .contact-submit:hover { background: var(--accent-hover); }
+    .contact-email-card {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--hover-bg);
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .contact-email-copy { margin-left: auto; }
+    .contact-kicker {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+    .contact-email {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.95rem;
+      color: var(--text-primary);
+      word-break: break-word;
+    }
+    /* Main Content */
+    #app {
+      max-width: 1800px;
+      margin: 0 auto;
+      padding: 64px 48px 80px;
+    }
+    /* Header */
+    .header {
+      margin-bottom: 72px;
+      max-width: 720px;
+    }
+    .header p {
+      color: var(--text-secondary);
+      font-size: 1.25rem;
+      line-height: 1.7;
+      font-weight: 400;
+    }
+    /* Category Sections */
+    .category-section {
+      margin-bottom: 80px;
+    }
+    .category-section:last-child {
+      margin-bottom: 0;
+    }
+    .category-header {
+      margin-bottom: 32px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .category-header h2 {
+      font-size: 1.875rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+      white-space: nowrap;
+    }
+    .category-header .divider {
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+    /* Cards Grid */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(var(--grid-min), 1fr));
+      gap: 28px;
+    }
+    .card {
+      display: block;
+      background: var(--bg-card);
+      border-radius: var(--card-radius);
+      border: 1px solid var(--border);
+      text-decoration: none;
+      color: inherit;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      position: relative;
+    }
+    .card:hover {
+      transform: translateY(-6px);
+      box-shadow: var(--shadow-xl);
+      border-color: var(--accent);
+    }
+    .card-content {
+      padding: var(--card-padding);
+      min-width: 0;
+      overflow: hidden;
+    }
+    .card-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--accent), #8b5cf6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow-md);
+      transition: all 0.4s ease;
+    }
+    .card-title {
+      font-size: 1.375rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+      line-height: 1.3;
+      max-width: 100%;
+      min-width: 0;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+      hyphens: auto;
+    }
+    .card-desc {
+      color: var(--text-secondary);
+      font-size: 0.9375rem;
+      line-height: 1.65;
+      font-weight: 400;
+      max-width: 100%;
+      min-width: 0;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+      hyphens: auto;
+    }
+    .category-section[data-section="mathematics"] a[href="wavefunctions/index.html"],
+    .category-section[data-section="mathematics"] a[href="gauge_theory/index.html"],
+    .category-section[data-section="mathematics"] a[href="path_integral_phase_space/index.html"],
+    .category-section[data-section="mathematics"] a[href="materials_lab/index.html"],
+    .category-section[data-section="mathematics"] a[href="topcap_rotation/index.html"],
+    .category-section[data-section="dashboards"] a[href="parlay_arbitrage/index.html"],
+    .category-section[data-section="dashboards"] a[href="found_arbitrages/index.html"],
+    .category-section[data-section="finance-duplicate"] {
+      display: none !important;
+    }
+    .card-tag {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--accent);
+      margin-bottom: 12px;
+      opacity: 0.8;
+    }
+    /* Footer */
+    .foot {
+      margin-top: 48px;
+      padding-top: 40px;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.875rem;
+    }
+    .theme-sweep {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(120deg, rgba(15, 23, 42, 0.94), rgba(99, 102, 241, 0.9), rgba(244, 114, 182, 0.85));
+      transform: translateX(-120%);
+      animation: sweep 0.8s ease forwards;
+      z-index: 999;
+      pointer-events: none;
+      mix-blend-mode: screen;
+    }
+    @keyframes sweep {
+      0% { transform: translateX(-120%) skewX(-10deg); }
+      60% { transform: translateX(0%) skewX(-10deg); }
+      100% { transform: translateX(140%) skewX(-10deg); }
+    }
+    /* Responsive */
+    @media (max-width: 1200px) {
+      .cards-grid {
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      }
+    }
+    @media (max-width: 768px) {
+      .header p { font-size: 1.125rem; }
+      .cards-grid { grid-template-columns: 1fr; gap: 20px; }
+      .featured-grid .featured-hero { grid-column: auto; }
+      #app { padding: 48px 20px 80px; }
+      .nav-wrap { padding: 0 20px; height: 64px; flex-wrap: wrap; gap: 8px; }
+      .ui-menu { right: 20px; top: 60px; }
+      .category-section { margin-bottom: 60px; }
+      .category-header h2 { font-size: 1.5rem; }
+      .card-content { padding: 24px; }
+      .contact-email-card {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .contact-email-copy {
+        margin-left: 0;
+        width: 100%;
+      }
+    }
+    html { scroll-behavior: smooth; }
+    ::selection { background: var(--accent); color: white; }
+
+    /* ── Tab bar ── */
+    .tab-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 56px;
+    }
+    .tab-btn {
+      font-family: var(--font-primary);
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      padding: 8px 18px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: var(--shadow-sm);
+    }
+    .tab-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--hover-bg);
+    }
+    .tab-btn.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+      box-shadow: var(--shadow-md);
+    }
+    .tab-btn[disabled] {
+      opacity: 0.45;
+      cursor: not-allowed;
+      border-color: var(--border);
+      color: var(--text-muted);
+      background: var(--bg-card);
+      box-shadow: none;
+      pointer-events: none;
+    }
+    .category-section { transition: none; }
+
+    /* Count badge next to section headers */
+    .cat-count {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.72rem;
+      font-weight: 700;
+      line-height: 1;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: var(--hover-bg);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      margin-left: 10px;
+      vertical-align: middle;
+      letter-spacing: 0.01em;
+    }
+
+    /* Featured section star badge */
+    .featured-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #f59e0b;
+      background: rgba(245,158,11,0.1);
+      border: 1px solid rgba(245,158,11,0.3);
+      padding: 2px 8px;
+      border-radius: 999px;
+    }
+    .card-featured-star {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      font-size: 14px;
+      opacity: 0.7;
+    }
+    .featured-grid .featured-hero {
+      grid-column: span 1;
+    }
+    .featured-grid .featured-hero .card-content {
+      padding: calc(var(--card-padding) + 2px);
+    }
+    .featured-grid .featured-hero .card-icon {
+      width: 60px;
+      height: 60px;
+      font-size: 30px;
+      margin-bottom: 24px;
+    }
+    .featured-grid .featured-hero .card-title {
+      font-size: 1.5rem;
+    }
+    .featured-grid .featured-hero .card-desc {
+      font-size: 0.95rem;
+      max-width: 34ch;
+    }
+
+    /* Theme: Studio (default) */
+    body[data-theme="studio"] {
+      --bg-primary: #f7f7fb;
+      --bg-card: #ffffff;
+      --text-primary: #0f172a;
+      --text-secondary: #5b6b7e;
+      --text-muted: #8a97a6;
+      --border: #e2e8f0;
+      --hover-bg: #f1f5f9;
+      --accent: #4f46e5;
+      --accent-hover: #4338ca;
+      --font-primary: "Space Grotesk", "Archivo", "Segoe UI", sans-serif;
+      --font-display: "Fraunces", "Georgia", serif;
+    }
+    body[data-theme="studio"] .card-icon {
+      border-radius: 14px;
+    }
+
+    /* Theme: Atlas */
+    body[data-theme="atlas"] {
+      --bg-primary: #f6f1e8;
+      --bg-card: #fffaf2;
+      --text-primary: #1b1b1b;
+      --text-secondary: #4b4b4b;
+      --text-muted: #7b7b7b;
+      --border: #e2d6c6;
+      --hover-bg: #f1e6d7;
+      --accent: #c2410c;
+      --accent-hover: #9a3412;
+      --font-primary: "Archivo", "Space Grotesk", sans-serif;
+      --font-display: "Fraunces", "Georgia", serif;
+      --card-radius: 10px;
+      --card-padding: 26px;
+      --grid-min: 380px;
+    }
+    body[data-theme="atlas"]::before {
+      background:
+        radial-gradient(1000px 500px at 10% -10%, rgba(194, 65, 12, 0.15), transparent 60%),
+        radial-gradient(900px 400px at 90% -20%, rgba(15, 118, 110, 0.12), transparent 60%);
+    }
+    body[data-theme="atlas"] .card-content {
+      display: grid;
+      grid-template-columns: 72px minmax(0, 1fr);
+      column-gap: 20px;
+      align-items: start;
+    }
+    body[data-theme="atlas"] .card-icon {
+      margin-bottom: 0;
+      grid-column: 1;
+      grid-row: 1 / span 3;
+      border-radius: 50%;
+      background: conic-gradient(from 120deg, var(--accent), #f97316, #0f766e);
+    }
+    body[data-theme="atlas"] .card-tag,
+    body[data-theme="atlas"] .card-title,
+    body[data-theme="atlas"] .card-desc {
+      grid-column: 2;
+    }
+    body[data-theme="atlas"] .card-tag {
+      margin-top: 2px;
+    }
+    body[data-theme="atlas"] .card-title {
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+    }
+
+    /* Theme: Brutal */
+    body[data-theme="brutal"] {
+      --bg-primary: #fdfdf2;
+      --bg-card: #ffffff;
+      --text-primary: #111827;
+      --text-secondary: #1f2937;
+      --text-muted: #4b5563;
+      --border: #0f172a;
+      --hover-bg: #fef08a;
+      --accent: #0f172a;
+      --accent-hover: #000000;
+      --font-primary: "IBM Plex Mono", "Space Grotesk", monospace;
+      --font-display: "IBM Plex Mono", monospace;
+      --card-radius: 0px;
+      --card-padding: 28px;
+      --grid-min: 320px;
+      --shadow-sm: none;
+      --shadow-md: none;
+      --shadow-lg: none;
+      --shadow-xl: none;
+    }
+    body[data-theme="brutal"]::before {
+      background:
+        linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px),
+        linear-gradient(180deg, rgba(0,0,0,0.05) 1px, transparent 1px);
+      background-size: 36px 36px;
+    }
+    body[data-theme="brutal"] .card {
+      border-width: 2px;
+    }
+    body[data-theme="brutal"] .card:hover {
+      transform: translateY(-3px) translateX(3px);
+      background: #fef08a;
+    }
+    body[data-theme="brutal"] .card-icon {
+      border-radius: 0;
+      background: #111827;
+      color: #fef08a;
+    }
+
+    /* Theme: Noir */
+    body[data-theme="noir"] {
+      --bg-primary: #0b0f14;
+      --bg-card: #0f172a;
+      --text-primary: #f8fafc;
+      --text-secondary: #cbd5f5;
+      --text-muted: #94a3b8;
+      --border: #1e293b;
+      --hover-bg: #1e293b;
+      --accent: #22d3ee;
+      --accent-hover: #06b6d4;
+      --font-primary: "Space Grotesk", "Archivo", sans-serif;
+      --font-display: "Fraunces", "Georgia", serif;
+      --card-radius: 20px;
+      --card-padding: 30px;
+      --grid-min: 360px;
+    }
+    body[data-theme="noir"]::before {
+      background:
+        radial-gradient(900px 400px at 20% -20%, rgba(34, 211, 238, 0.15), transparent 60%),
+        radial-gradient(800px 400px at 80% -10%, rgba(99, 102, 241, 0.12), transparent 60%);
+    }
+    body[data-theme="noir"] .site-nav {
+      background: rgba(9, 12, 18, 0.8);
+    }
+    body[data-theme="noir"] .card {
+      border-color: rgba(148, 163, 184, 0.25);
+    }
+    body[data-theme="noir"] .card-icon {
+      background: linear-gradient(135deg, rgba(34, 211, 238, 0.9), rgba(99, 102, 241, 0.9));
+      box-shadow: 0 0 20px rgba(34, 211, 238, 0.4);
+    }
+
+    /* Theme: Kinetic */
+    body[data-theme="kinetic"] {
+      --bg-primary: #f0f7ff;
+      --bg-card: #ffffff;
+      --text-primary: #0b1320;
+      --text-secondary: #334155;
+      --text-muted: #64748b;
+      --border: #c7d2fe;
+      --hover-bg: #eef2ff;
+      --accent: #ef4444;
+      --accent-hover: #dc2626;
+      --font-primary: "Space Grotesk", "Archivo", sans-serif;
+      --font-display: "Space Grotesk", "Archivo", sans-serif;
+      --card-radius: 22px;
+      --card-padding: 30px;
+      --grid-min: 320px;
+    }
+    body[data-theme="kinetic"]::before {
+      background:
+        linear-gradient(120deg, rgba(239, 68, 68, 0.12), transparent 40%),
+        linear-gradient(300deg, rgba(59, 130, 246, 0.18), transparent 50%);
+    }
+    body[data-theme="kinetic"] .cards-grid {
+      gap: 24px 20px;
+    }
+    body[data-theme="kinetic"] .card {
+      transform: rotate(-0.6deg);
+      border-width: 2px;
+    }
+    body[data-theme="kinetic"] .card:nth-child(even) {
+      transform: rotate(0.6deg);
+    }
+    body[data-theme="kinetic"] .card:hover {
+      transform: translateY(-8px) rotate(0deg);
+      border-color: var(--accent);
+    }
+    body[data-theme="kinetic"] .card-icon {
+      border-radius: 18px;
+      background: linear-gradient(135deg, #ef4444, #3b82f6);
+    }
+    body[data-theme="kinetic"] .card-title {
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      font-size: 1.1rem;
+    }
+
+    /* ─── Recommended page layout ────────────────────────────── */
+    .rec-page {
+      display: flex;
+      flex-direction: column;
+      gap: 3.5rem;
+    }
+    .rec-group { }
+    .rec-group-header {
+      display: flex;
+      align-items: center;
+      gap: .65rem;
+      margin-bottom: 1.25rem;
+    }
+    .rec-group-icon {
+      font-size: 1.3rem;
+      line-height: 1;
+    }
+    .rec-group-header h3 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      white-space: nowrap;
+      margin: 0;
+    }
+    .rec-group-line {
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+    /* hide placeholder cards once real cards exist in the same grid */
+    .cards-grid:has(.card:not(.rec-placeholder)) .rec-placeholder { display: none; }
+
+    /* ─── Papers ──────────────────────────────────────────────── */
+    .paper-card .card-content { display:flex; flex-direction:column; gap:.45rem; }
+    .paper-meta { display:flex; align-items:center; gap:.5rem; }
+    .paper-year {
+      font-size:.75rem; font-weight:700; letter-spacing:.04em;
+      color:var(--accent); background:color-mix(in srgb,var(--accent) 15%,transparent);
+      padding:.1em .45em; border-radius:4px;
+    }
+    .paper-venue {
+      font-size:.78rem; color:var(--text-secondary); font-style:italic;
+    }
+    .paper-authors {
+      font-size:.82rem; color:var(--text-secondary); line-height:1.35;
+    }
+    .paper-link {
+      display:inline-flex; align-items:center; gap:.3em;
+      margin-top:.3rem; font-size:.82rem; font-weight:600;
+      color:var(--accent); text-decoration:none;
+      border:1px solid color-mix(in srgb,var(--accent) 40%,transparent);
+      padding:.25em .65em; border-radius:5px;
+      transition: background .15s, color .15s;
+      width:fit-content;
+    }
+    .paper-link:hover { background:var(--accent); color:#fff; }
+    .paper-card code {
+      font-family:monospace; font-size:.8em;
+      background:rgba(255,255,255,.07); padding:.1em .3em; border-radius:3px;
+    }
+
+    /* ─── Videos ──────────────────────────────────────────────── */
+    .video-grid { grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); }
+    .video-card { overflow:hidden; padding:0; }
+    .video-thumb {
+      position:relative; width:100%; padding-top:56.25%; /* 16:9 */
+      background:#000; border-radius: var(--card-radius) var(--card-radius) 0 0;
+      overflow:hidden;
+    }
+    .video-thumb iframe {
+      position:absolute; inset:0; width:100%; height:100%; border:none;
+    }
+    .video-card .card-content {
+      padding:.85rem 1.1rem 1.1rem;
+    }
+
+    /* ─── Movies ──────────────────────────────────────────────── */
+    .movie-grid {
+      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    }
+    .movie-card {
+      overflow: hidden;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .movie-poster {
+      width: 100%;
+      aspect-ratio: 2 / 3;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .movie-poster img { width:100%; height:100%; object-fit:cover; display:block; }
+    /* Text-only poster fallback */
+    .movie-poster--text {
+      width: 100%;
+      aspect-ratio: 2 / 3;
+      background: linear-gradient(160deg,
+        color-mix(in srgb, var(--movie-color,#0b1622) 70%, #3a4a5a 30%) 0%,
+        var(--movie-color,#0b1622) 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: .55rem;
+      padding: 1.2rem;
+      flex-shrink: 0;
+    }
+    .movie-poster-title {
+      font-size: clamp(.8rem, 3.5cqw, 1.45rem);
+      font-weight: 900;
+      letter-spacing: .1em;
+      color: #fff;
+      text-align: center;
+      text-shadow: 0 2px 16px rgba(0,0,0,.7);
+      line-height: 1.25;
+      word-break: break-word;
+      hyphens: auto;
+      max-width: 90%;
+    }
+    .movie-poster--text { container-type: inline-size; }
+    .movie-poster-year-badge {
+      font-size: .7rem;
+      font-weight: 700;
+      letter-spacing: .1em;
+      color: rgba(255,255,255,.5);
+      border: 1px solid rgba(255,255,255,.18);
+      padding: .18em .6em;
+      border-radius: 4px;
+    }
+    /* Info strip below poster */
+    .movie-info {
+      padding: .75rem 1rem .9rem;
+      display: flex;
+      flex-direction: column;
+      gap: .22rem;
+      flex: 1;
+    }
+    .movie-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1.25;
+      letter-spacing: -.01em;
+    }
+    .movie-year {
+      font-size: .78rem;
+      color: var(--text-secondary);
+      line-height: 1.3;
+    }
+    .movie-source {
+      margin-top: .3rem;
+      display: inline-flex;
+      align-items: center;
+      gap: .3em;
+      font-size: .72rem;
+      font-weight: 600;
+      letter-spacing: .04em;
+      color: var(--accent);
+      opacity: .8;
+    }
+    /* Kill atlas theme grid inside movie/video/book/paper cards */
+    body[data-theme="atlas"] .movie-card .card-content,
+    body[data-theme="atlas"] .video-card .card-content,
+    body[data-theme="atlas"] .book-card .card-content,
+    body[data-theme="atlas"] .paper-card .card-content {
+      display: flex;
+      flex-direction: column;
+      grid-template-columns: unset;
+      column-gap: unset;
+    }
+    /* Reset atlas's oversized display font in these cards */
+    body[data-theme="atlas"] .video-card .card-title,
+    body[data-theme="atlas"] .paper-card .card-title {
+      font-family: var(--font-primary);
+      font-size: 1rem;
+    }
+
+    /* ─── Games ──────────────────────────────────────────────── */
+    .game-grid {
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    }
+    .game-card {
+      overflow: hidden;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .game-cover {
+      width: 100%;
+      aspect-ratio: 2 / 3;
+      overflow: hidden;
+      flex-shrink: 0;
+      background: #0d1117;
+    }
+    .game-cover img { width:100%; height:100%; object-fit:cover; display:block; }
+    .game-info {
+      padding: .7rem .9rem .85rem;
+      display: flex;
+      flex-direction: column;
+      gap: .2rem;
+      flex: 1;
+    }
+    .game-title {
+      font-size: .95rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1.25;
+      letter-spacing: -.01em;
+    }
+    .game-meta {
+      font-size: .76rem;
+      color: var(--text-secondary);
+    }
+    .game-source {
+      margin-top: .3rem;
+      font-size: .72rem;
+      font-weight: 600;
+      color: var(--accent);
+      opacity: .8;
+    }
+    body[data-theme="atlas"] .game-card .card-content {
+      display: flex;
+      flex-direction: column;
+      grid-template-columns: unset;
+    }
+    /* Text cover fallback for non-Steam games */
+    .game-cover--text {
+      width: 100%;
+      aspect-ratio: 2 / 3;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: .35rem;
+      padding: 1rem;
+      background: linear-gradient(160deg,
+        color-mix(in srgb, var(--game-color,#1a1a2e) 70%, #fff 30%) 0%,
+        var(--game-color,#1a1a2e) 100%);
+      flex-shrink: 0;
+      container-type: inline-size;
+    }
+    .game-cover-title {
+      font-size: clamp(.75rem, 5cqw, 1.2rem);
+      font-weight: 900;
+      letter-spacing: .12em;
+      color: #fff;
+      text-align: center;
+      text-shadow: 0 2px 10px rgba(0,0,0,.6);
+    }
+    .game-cover-sub {
+      font-size: clamp(.6rem, 3.5cqw, .85rem);
+      font-weight: 600;
+      color: rgba(255,255,255,.8);
+      text-align: center;
+      line-height: 1.2;
+    }
+    .game-cover-year {
+      font-size: .65rem;
+      color: rgba(255,255,255,.45);
+      border: 1px solid rgba(255,255,255,.2);
+      padding: .1em .45em;
+      border-radius: 3px;
+      letter-spacing: .06em;
+      margin-top: .2rem;
+    }
+    /* ─── Marketplaces ─────────────────────────────────────────── */
+    .market-grid {
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    }
+    .market-card {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 1rem;
+      padding: 1.1rem 1.2rem;
+    }
+    .market-logo {
+      width: 52px;
+      height: 52px;
+      border-radius: 12px;
+      background: var(--mkt-color, var(--accent));
+      color: #fff;
+      font-size: 1.6rem;
+      font-weight: 900;
+      font-style: italic;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(0,0,0,.2);
+    }
+    .market-info { display: flex; flex-direction: column; gap: .2rem; min-width: 0; }
+    .market-name { font-size: 1rem; font-weight: 700; color: var(--text-primary); }
+    .market-desc { font-size: .82rem; color: var(--text-secondary); line-height: 1.4; }
+    body[data-theme="atlas"] .market-card { display: flex; grid-template-columns: unset; }
+
+    /* ─── Books ──────────────────────────────────────────────── */
+    .book-grid {
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    }
+    .book-card {
+      overflow: hidden;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .book-band {
+      height: 10px;
+      width: 100%;
+      background: var(--spine-color, var(--accent));
+      flex-shrink: 0;
+    }
+    .book-card .card-content {
+      padding: .9rem 1.1rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: .25rem;
+      min-width: 0;
+      overflow: hidden;
+    }
+    .book-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1.3;
+      letter-spacing: -.01em;
+      white-space: normal;
+      word-break: break-word;
+    }
+    .book-author {
+      font-size: .82rem;
+      color: var(--text-secondary);
+      line-height: 1.35;
+    }
+    .book-desc {
+      font-size: .88rem;
+      color: var(--text-secondary);
+      line-height: 1.55;
+      margin-top: .15rem;
+    }
+    .book-link {
+      margin-top: .4rem;
+      font-size: .75rem;
+      font-weight: 600;
+      color: var(--accent);
+      opacity: .75;
+      text-decoration: none;
+    }
+
+    /* Disabled / coming-soon card */
+    .card.is-disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+    .card.is-disabled::after {
+      content: "Coming soon";
+      position: absolute;
+      bottom: 14px;
+      right: 16px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      background: var(--hover-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 2px 8px;
+    }
+
+  </style>
+</head>
+<body data-theme="studio">
+  <nav class="site-nav">
+    <div class="nav-wrap">
+      <a href="../index.html" class="nav-brand">Andre</a>
+      <div style="display:flex;align-items:center;gap:8px;background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.25);border-radius:8px;padding:6px 14px;line-height:1.2;flex-shrink:0;">
+        <span id="appCount" style="font-size:1.35rem;font-weight:800;color:var(--accent);font-family:var(--font-primary);letter-spacing:-0.03em;"></span>
+        <span style="font-size:0.72rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.08em;line-height:1.3;">total<br>apps</span>
+      </div>
+      <div class="nav-search-wrap">
+        <svg class="nav-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="search" id="globalSearch" class="nav-search-input" placeholder="Search apps…" autocomplete="off" spellcheck="false">
+        <button class="nav-search-clear" id="searchClear" aria-label="Clear search">×</button>
+      </div>
+      <div class="nav-actions">
+        <button class="nav-btn hire" id="hireBtn">Hire Me</button>
+        <button class="nav-btn donate" id="donateBtn">⚡ Donate</button>
+        <button class="ui-toggle" id="uiToggle" type="button" aria-expanded="false" aria-controls="uiMenu">Change UI</button>
+      </div>
+    </div>
+    <div class="ui-menu" id="uiMenu" role="menu" aria-label="Interface Themes">
+      <button type="button" data-theme="studio">Studio<span>Clean, modern grid</span></button>
+      <button type="button" data-theme="atlas">Atlas<span>Editorial, warm, map-like</span></button>
+      <button type="button" data-theme="brutal">Brutal<span>Monospace, high-contrast</span></button>
+      <button type="button" data-theme="noir">Noir<span>Dark, neon, cinematic</span></button>
+      <button type="button" data-theme="kinetic">Kinetic<span>Angled, playful, bold</span></button>
+    </div>
+  </nav>
+  <div id="app">
+
+    
+
+    <!-- ── Tab bar ── -->
+    <div class="tab-bar" id="tab-bar">
+      <button class="tab-btn active" data-tab="featured">⭐ Featured</button>
+      <button class="tab-btn" data-tab="recommended" disabled aria-disabled="true" title="Unavailable">✦ Recommendations</button>
+      <button class="tab-btn" data-tab="all">All</button>
+      <button class="tab-btn" data-tab="world-data">World Data</button>
+      <button class="tab-btn" data-tab="ai-ml">AI / ML</button>
+      <button class="tab-btn" data-tab="dashboards">Dashboards</button>
+      <button class="tab-btn" data-tab="finance">Finance</button>
+      <button class="tab-btn" data-tab="graph-networks">Graph Networks</button>
+      <button class="tab-btn" data-tab="mathematics">Mathematics</button>
+      <button class="tab-btn" data-tab="physics">Physics</button>
+      <button class="tab-btn" data-tab="simulations">Simulations</button>
+      <button class="tab-btn" data-tab="office">Office</button>
+      <button class="tab-btn" data-tab="games">Games</button>
+      <button class="tab-btn" data-tab="bobs-tools">Bob's Tools</button>
+    </div>
+
+    <!-- Featured Section -->
+    <section class="category-section" data-section="featured">
+      <div class="category-header">
+        <h2>Featured <span class="cat-count">7</span></h2>
+        <div class="divider"></div>
+        <span class="featured-badge">★ Hand-picked</span>
+      </div>
+      <div class="cards-grid featured-grid">
+
+        <a href="game_of_life/index.html" class="card">
+          <div class="card-content">
+            <span class="card-featured-star">⭐</span>
+            <div class="card-icon">🧬</div>
+            <div class="card-tag">Simulations</div>
+            <div class="card-title">Game of Life 2D</div>
+            <div class="card-desc">Conway's Game of Life with 20+ patterns, custom B/S rules, zoom/pan, and drag-to-place structures.</div>
+          </div>
+        </a>
+
+        <a href="wavefunctions/index.html" class="card featured-hero">
+          <div class="card-content">
+            <span class="card-featured-star">⭐</span>
+            <div class="card-icon">&#x1F52C;</div>
+            <div class="card-tag">Physics</div>
+            <div class="card-title">Wavefunctions</div>
+            <div class="card-desc">Click any element on a full interactive periodic table to explore its electron quantum mechanics:Schrödinger equation, hydrogen-like wavefunctions, Slater Z_eff energies, and a live 3D orbital dot-cloud you can rotate.</div>
+          </div>
+        </a>
+
+        <a href="natural_resources/index.html" class="card">
+          <div class="card-content">
+            <span class="card-featured-star">⭐</span>
+            <div class="card-icon">⛏️</div>
+            <div class="card-tag">World Data</div>
+            <div class="card-title">Natural Resources: Equirectangular Projection</div>
+            <div class="card-desc">Choropleth flat map of global natural resource reserves - oil, gas, coal, uranium, metals, minerals, and renewables by country over time.</div>
+          </div>
+        </a>
+
+        <a href="audiobook/index.html" class="card">
+          <div class="card-content">
+            <span class="card-featured-star">⭐</span>
+            <div class="card-icon">&#128214;</div>
+            <div class="card-tag">AI / Machine Learning</div>
+            <div class="card-title">Audiobook Studio</div>
+            <div class="card-desc">Drop a PDF, OCR it locally, then stream Kokoro am_onyx audio in buffered chunks for smooth playback.</div>
+          </div>
+        </a>
+
+        <a href="blockchain_tracker/index.html" class="card">
+          <div class="card-content">
+            <span class="card-featured-star">⭐</span>
+            <div class="card-icon">₿</div>
+            <div class="card-tag">Graph Networks</div>
+            <div class="card-title">Bitcoin 2009-2011 Network Timelapse</div>
+            <div class="card-desc">Animated timelapse of every transaction in the first years of Bitcoin. (I have more data but it crashes the browser lol)</div>
+          </div>
+        </a>
+
+        <a href="drone_show_studio/index.html" class="card">
+          <div class="card-content">
+            <span class="card-featured-star">⭐</span>
+            <div class="card-icon">&#x1F681;</div>
+            <div class="card-tag">3D Simulation</div>
+            <div class="card-title">Drone Show Studio</div>
+            <div class="card-desc">Real-time 3D drone formation planner. Design multi-scene light shows with wind physics, collision validation, and JSON import/export.</div>
+          </div>
+        </a>
+
+        <a href="function_builder/index.html" class="card">
+          <div class="card-content">
+            <span class="card-featured-star">⭐</span>
+            <div class="card-icon">∿</div>
+            <div class="card-tag">Mathematics</div>
+            <div class="card-title">Function Builder: Wave Composer</div>
+            <div class="card-desc">Build composite waveforms from sin, cos, sawtooth, square and more. A dot sweeps the curve in real time:pitch tracks its Y position so you literally hear the shape of the function. LaTeX formula updates live as you add terms.</div>
+          </div>
+        </a>
+
+      </div>
+    </section>
+
+    <!-- World Data Section -->
+    <section class="category-section" data-section="world-data">
+      <div class="category-header">
+        <h2>World Data</h2>
+        <div class="divider"></div>
+      </div>
+      <div class="cards-grid">
+        <a href="earth_data/earth.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">🌍</div>
+            <div class="card-tag">World Data</div>
+            <div class="card-title">Economic Data on Spherical Earth</div>
+            <div class="card-desc">Global datasets from the IMF, World Bank, WHO, and others - visualized and explorable on an interactive globe.</div>
+          </div>
+        </a>
+
+        <a href="natural_resources/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">⛏️</div>
+            <div class="card-tag">World Data</div>
+            <div class="card-title">Natural Resources: Equirectangular Projection</div>
+            <div class="card-desc">Choropleth flat map of global natural resource reserves - oil, gas, coal, uranium, metals, minerals, and renewables by country over time.</div>
+          </div>
+        </a>
+
+      </div>
+    </section>
+
+<!-- AI / Machine Learning Section -->
+    <section class="category-section" data-section="ai-ml">
+      <div class="category-header">
+        <h2>AI / Machine Learning</h2>
+        <div class="divider"></div>
+      </div>
+      <div class="cards-grid">
+        <a href="local_llm/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">🧠</div>
+            <div class="card-tag">AI / Machine Learning</div>
+            <div class="card-title">Browser-Native LLM</div>
+            <div class="card-desc">A private, client-side chatbot running Transformers.js. No API, no server, 100% local inference via WASM.</div>
+          </div>
+        </a>
+
+        <a href="onyx_tts/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">&#127908;</div>
+            <div class="card-tag">AI / Machine Learning</div>
+            <div class="card-title">Onyx Text-to-Speech</div>
+            <div class="card-desc">Fully local TTS using Kokoro ONNX and the am_onyx voice - no server, no API key, runs in-browser.</div>
+          </div>
+        </a>
+
+        <a href="audiobook/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">&#128214;</div>
+            <div class="card-tag">AI / Machine Learning</div>
+            <div class="card-title">Audiobook Studio</div>
+            <div class="card-desc">Drop a PDF, OCR it locally, then stream Kokoro am_onyx audio in buffered chunks for smooth playback.</div>
+          </div>
+        </a>
+
+        <a href="image_classifier/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">🖼️</div>
+            <div class="card-tag">AI / Machine Learning</div>
+            <div class="card-title">Image Classifier</div>
+            <div class="card-desc">Client-side image classification running entirely in the browser - drop an image and get instant predictions via a pre-trained neural net.</div>
+          </div>
+        </a>
+
+        <a href="mnist_draw/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">✏️</div>
+            <div class="card-tag">AI / Machine Learning</div>
+            <div class="card-title">MNIST Digit Classifier</div>
+            <div class="card-desc">Draw a digit on the canvas and watch a browser-native neural network classify it in real time using a model trained on MNIST.</div>
+          </div>
+        </a>
+
+        <a href="ocr/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">🔍</div>
+            <div class="card-tag">AI / Machine Learning</div>
+            <div class="card-title">OCR - Browser Text Extraction</div>
+            <div class="card-desc">Upload or paste an image and extract text entirely client-side using Tesseract.js - no server, no uploads, fully private.</div>
+          </div>
+        </a>
+
+        <a href="sentiment_analysis/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">💬</div>
+            <div class="card-tag">AI / Machine Learning</div>
+            <div class="card-title">Sentiment Analyzer</div>
+            <div class="card-desc">Real-time positive/negative/neutral sentiment scoring on any text, running locally via a Transformers.js pipeline.</div>
+          </div>
+        </a>
+
+        <a href="speech_to_text/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">🎙️</div>
+            <div class="card-tag">AI / Machine Learning</div>
+            <div class="card-title">Speech to Text</div>
+            <div class="card-desc">Browser-native speech recognition - record audio and transcribe it locally without any backend or API calls.</div>
+          </div>
+        </a>
+
+        <a href="plant_id/index.html" class="card">
+          <div class="card-content">
+            <span class="card-featured-star">⭐</span>
+            <div class="card-icon">🌿</div>
+            <div class="card-tag">AI / Machine Learning</div>
+            <div class="card-title">Plant ID:Foliage Classifier</div>
+            <div class="card-desc">Point your phone camera at any plant, leaf, flower, or bark and get an instant AI identification with species info and Wikipedia description. Powered by PlantNet.</div>
+          </div>
+        </a>
+
+        <a href="bird_id/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">🐦</div>
+            <div class="card-tag">AI / Machine Learning</div>
+            <div class="card-title">Bird ID:Avian Classifier</div>
+            <div class="card-desc">Photograph any bird and get an instant identification with species info, habitat notes, and Wikipedia summary. Runs fully in-browser using TensorFlow.js:no API key needed.</div>
+          </div>
+        </a>
+
+        <a href="bug_id/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">🐛</div>
+            <div class="card-tag">AI / Machine Learning</div>
+            <div class="card-title">Bug ID:Insect Classifier</div>
+            <div class="card-desc">Snap a photo of any insect, spider, or creepy-crawly for instant AI identification. Powered by MobileNet running entirely in your browser:no server, no API key.</div>
+          </div>
+        </a>
+
+        <a href="fish_id/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">🐟</div>
+            <div class="card-tag">AI / Machine Learning</div>
+            <div class="card-title">Fish ID:Aquatic Classifier</div>
+            <div class="card-desc">Identify fish, sharks, rays, and other aquatic animals from a photo. On-device TensorFlow.js classification with iNaturalist species data and Wikipedia descriptions.</div>
+          </div>
+        </a>
+
+        <a href="food_id/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">🍎</div>
+            <div class="card-tag">AI / Machine Learning</div>
+            <div class="card-title">Food ID:Dish &amp; Ingredient Classifier</div>
+            <div class="card-desc">Point at any dish, fruit, vegetable, or snack for instant identification. MobileNet runs directly in your browser:completely offline after first load, no API required.</div>
+          </div>
+        </a>
+
+        <a href="rock_id/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">🪨</div>
+            <div class="card-tag">AI / Machine Learning</div>
+            <div class="card-title">Rock &amp; Mineral ID</div>
+            <div class="card-desc">Identify rocks and minerals by answering questions about color, luster, hardness, crystal structure, and special properties. Uses a scored decision tree with 20+ mineral profiles.</div>
+          </div>
+        </a>
+
+        <a href="mushroom_id/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">🍄</div>
+            <div class="card-tag">AI / Machine Learning</div>
+            <div class="card-title">Mushroom ID</div>
+            <div class="card-desc">Educational mushroom identification by cap shape, color, gill type, habitat, and special features. Includes edibility ratings and prominent safety warnings. Never eat based solely on this tool.</div>
+          </div>
+        </a>
+
+        <a href="pill_id/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">💊</div>
+            <div class="card-tag">AI / Machine Learning</div>
+            <div class="card-title">Pill ID</div>
+            <div class="card-desc">Look up pills by imprint code, color, and shape using the NIH RxImage government database. No API key needed. For informational purposes:always consult a pharmacist.</div>
+          </div>
+        </a>
+
+        <a href="star_id/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">✨</div>
+            <div class="card-tag">AI / Machine Learning</div>
+            <div class="card-title">Star ID:Night Sky Identifier</div>
+            <div class="card-desc">Point your phone at the night sky and identify stars in real time using your device's compass and tilt sensor. Catalog of 40+ brightest stars. Pure JavaScript:no internet needed after load.</div>
+          </div>
+        </a>
+
+
+      </div>
+    </section>
+
+<!-- Dashboards Section -->
+    <section class="category-section" data-section="dashboards">
+      <div class="category-header">
+        <h2>Dashboards</h2>
+        <div class="divider"></div>
+      </div>
+      <div class="cards-grid">
+        <a href="job_functionality/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">&#128202;</div>
+            <div class="card-tag">Dashboards</div>
+            <div class="card-title">Job Functionality</div>
+            <div class="card-desc">Track jobs scraped across all sources by time range, compare source totals and top titles, and review application success and failure data in the same dashboard.</div>
+          </div>
+        </a>
+
+        <a href="arxiv/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">📑</div>
+            <div class="card-tag">Dashboards</div>
+            <div class="card-title">ArXiv Zeitgeist</div>
+            <div class="card-desc">Explore what researchers are studying on arxiv.</div>
+          </div>
+        </a>
+
+        <a href="openalex_pipeline/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">🔭</div>
+            <div class="card-tag">Dashboards</div>
+            <div class="card-title">OpenAlex Zeitgeist</div>
+            <div class="card-desc">Explore title term rankings across the OpenAlex corpus, drill into fields and journals:or fetch live data filtered by any date range.</div>
+          </div>
+        </a>
+
+        <a href="holy_books_analysis/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">📜</div>
+            <div class="card-tag">Dashboards</div>
+            <div class="card-title">Sacred Texts Analysis</div>
+            <div class="card-desc">Deep linguistic comparison of the Gospels, Quran & Tanakh - word frequency, sentiment, similarity, and more.</div>
+          </div>
+        </a>
+
+      
+        <a href="finance_sentiment/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">📊</div>
+            <div class="card-tag">Dashboards</div>
+            <div class="card-title">Reddit Financial Sentiment</div>
+            <div class="card-desc">Reddit sentiment analysis on a number of financial assets.</div>
+          </div>
+        </a>
+
+        <a href="github_tracker/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">⚡</div>
+            <div class="card-tag">Dashboards</div>
+            <div class="card-title">GitHub Tracker</div>
+            <div class="card-desc">Live contribution heatmap, commit stats, repo list and activity feed for foreandr pulled from the GitHub API.</div>
+          </div>
+        </a>
+
+
+
+
+        <a href="network_state_dashboards/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">🌐</div>
+            <div class="card-tag">Dashboards</div>
+            <div class="card-title">Network School</div>
+            <div class="card-desc">Dashboards for network-school metrics and signal.</div>
+          </div>
+        </a>
+        <a href="youtube_channel/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">🏁</div>
+            <div class="card-tag">Dashboards</div>
+            <div class="card-title">Bar Chart Races</div>
+            <div class="card-desc">Dynamic animated visualizations showing data trends and rankings evolving over time.</div>
+          </div>
+        </a>
+
+        <a href="sanctions/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">⚖️</div>
+            <div class="card-tag">Dashboards</div>
+            <div class="card-title">Global Sanctions Tracker</div>
+            <div class="card-desc">International sanctions; Monitor entities, ships, and individuals across UN, US (OFAC), EU, and UK watchlists.</div>
+          </div>
+        </a>
+
+
+      </div>
+    </section>
+
+    <!-- Audio Section -->
+    <section class="category-section" data-section="audio">
+      <div class="category-header">
+        <h2>Audio &amp; Music</h2>
+        <div class="divider"></div>
+      </div>
+      <div class="cards-grid">
+
+        <a href="soundcloud/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">🎧</div>
+            <div class="card-tag">Audio</div>
+            <div class="card-title">SoundCloud Player</div>
+            <div class="card-desc">All of Dré Foreman's SoundCloud tracks in one dark-themed player app. Browse and listen to original beats and productions directly in the browser.</div>
+          </div>
+        </a>
+
+        <a href="hitster/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">🎵</div>
+            <div class="card-tag">Audio</div>
+            <div class="card-title">Hitster</div>
+            <div class="card-desc">Multiplayer music timeline game. Listen to a random song on YouTube and place it in the correct spot on your chronological timeline. Steal cards from other players using chips. First to 10 wins!</div>
+          </div>
+        </a>
+
+        <a href="morse_code/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">📡</div>
+            <div class="card-tag">Audio</div>
+            <div class="card-title">Morse Code</div>
+            <div class="card-desc">Encode text to Morse with audio beeps and visual lamp flashes. Decode Morse input back to text. Physical tap-key mode using mouse or spacebar. Adjustable speed (5–40 WPM) and tone frequency.</div>
+          </div>
+        </a>
+
+      </div>
+    </section>
+
+    <!-- Finance Section (hidden duplicate) -->
+    <section class="category-section" data-section="finance-duplicate" hidden>
+      <div class="category-header">
+        <h2>Finance</h2>
+        <div class="divider"></div>
+      </div>
+      <div class="cards-grid">
+        <a href="topcap_rotation/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">📈</div>
+            <div class="card-tag">Finance</div>
+            <div class="card-title">S&amp;P 500 Market-Cap Rotation</div>
+            <div class="card-desc">25-year real-data backtest of holding the top market-cap stocks and watching your portfolio evolve as rankings change.</div>
+          </div>
+        </a>
+
+        <a href="parlay_arbitrage/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">🎲</div>
+            <div class="card-tag">Finance</div>
+            <div class="card-title">Parlay Arbitrage Lab</div>
+            <div class="card-desc">Interactive dashboard that teaches parlay arbitrage math, compounding ROI, and 2ⁿ outcome coverage.</div>
+          </div>
+        </a>
+
+        <a href="found_arbitrages/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">📡</div>
+            <div class="card-tag">Finance</div>
+            <div class="card-title">Live Arb Feed</div>
+            <div class="card-desc">Running log of real CEX sports arbitrage opportunities scanned daily across Pinnacle, DraftKings, FanDuel and more.</div>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- Finance Section -->
+    <section class="category-section" data-section="finance">
+      <div class="category-header">
+        <h2>Finance</h2>
+        <div class="divider"></div>
+      </div>
+      <div class="cards-grid">
+        <a href="topcap_rotation/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">📈</div>
+            <div class="card-tag">Finance</div>
+            <div class="card-title">S&amp;P 500 Market-Cap Rotation</div>
+            <div class="card-desc">25-year real-data backtest of holding the top market-cap stocks and watching your portfolio evolve as rankings change.</div>
+          </div>
+        </a>
+
+        <a href="crypto_rotation/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">₿</div>
+            <div class="card-tag">Finance</div>
+            <div class="card-title">Crypto Market Cap Rotation</div>
+            <div class="card-desc">DCA backtest for any combination of cryptocurrencies since 2010. Hold market-cap weighted, equal-weighted, or top-N coins. See how your portfolio would have grown month by month.</div>
+          </div>
+        </a>
+
+        <a href="parlay_arbitrage/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">🎲</div>
+            <div class="card-tag">Finance</div>
+            <div class="card-title">Parlay Arbitrage Lab</div>
+            <div class="card-desc">Interactive dashboard that teaches parlay arbitrage math, compounding ROI, and 2ⁿ outcome coverage.</div>
+          </div>
+        </a>
+
+        <a href="found_arbitrages/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">📡</div>
+            <div class="card-tag">Finance</div>
+            <div class="card-title">Live Arb Feed</div>
+            <div class="card-desc">Running log of real CEX sports arbitrage opportunities scanned daily across Pinnacle, DraftKings, FanDuel and more.</div>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- Graph Networks Section -->
+    <section class="category-section" data-section="graph-networks">
+      <div class="category-header">
+        <h2>Graph Networks</h2>
+        <div class="divider"></div>
+      </div>
+      <div class="cards-grid">
+        <a href="blockchain_tracker/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">₿</div>
+            <div class="card-tag">Graph Networks</div>
+            <div class="card-title">Bitcoin 2009-2011 Network Timelapse</div>
+            <div class="card-desc">Animated timelapse of every transaction in the first years Bitcoin. (I have more data but it crashes the browser lol)</div>
+          </div>
+        </a>
+
+        <a href="social_graph/social_graph.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">🕸️</div>
+            <div class="card-tag">Graph Networks</div>
+            <div class="card-title">Social Graph Explorer</div>
+            <div class="card-desc">Interactive network graphs for exploring relationships and communities.</div>
+          </div>
+        </a>
+
+        <a href="pagerank_sim/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">📐</div>
+            <div class="card-tag">Graph Networks</div>
+            <div class="card-title">PageRank Simulator</div>
+            <div class="card-desc">10,000 synthetic interlinked pages across 8 topic clusters. Type a keyword, run PageRank-weighted search, and watch the network light up in vis.js. Run main.py to generate.</div>
+          </div>
+        </a>
+        
+        <a href="network_state_test/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">🧪</div>
+            <div class="card-tag">Graph Networks</div>
+            <div class="card-title">Network State School</div>
+            <div class="card-desc">Network School Test Part 2.</div>
+          </div>
+        </a>
+
+        <a href="graph_scraper_viz/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">🕸️</div>
+            <div class="card-tag">Graph Networks</div>
+            <div class="card-title">Graph HTML Scraper Visualizer</div>
+            <div class="card-desc">Visualizes how a graph-based scraper finds listing containers on any site - no XPath, no CSS selectors, just statistics on the DOM graph.</div>
+          </div>
+        </a>
+
+      </div>
+    </section>
+
+    <!-- Mathematics Section -->
+    <section class="category-section" data-section="mathematics">
+      <div class="category-header">
+        <h2>Mathematics</h2>
+        <div class="divider"></div>
+      </div>
+      <div class="cards-grid">
+
+        <a href="wavefunctions/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">&#x1F52C;</div>
+            <div class="card-tag">Physics</div>
+            <div class="card-title">Wavefunctions</div>
+            <div class="card-desc">Click any element on a full interactive periodic table to explore its electron quantum mechanics:Schrödinger equation, hydrogen-like wavefunctions, Slater Z_eff energies, and a live 3D orbital dot-cloud you can rotate.</div>
+          </div>
+        </a>
+
+        <a href="gauge_theory/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">⚛️</div>
+            <div class="card-tag">Mathematics</div>
+            <div class="card-title">Gauge Theory Visualizer</div>
+            <div class="card-desc">See why the photon exists. Choose a local gauge Ω(x), watch it scramble the electron field, and see the photon field A emerge automatically as the only way to restore consistency.</div>
+          </div>
+        </a>
+
+        <a href="path_integral_phase_space/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">&#x1F300;</div>
+            <div class="card-tag">Mathematics</div>
+            <div class="card-title">Path Integral Phase-Space</div>
+            <div class="card-desc">Sum-over-histories simulator showing interference, damping, and stationary phase in the Argand plane.</div>
+          </div>
+        </a>
+
+
+        <a href="collatz_cascade/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">&#x1F333;</div>
+            <div class="card-tag">Mathematics</div>
+            <div class="card-title">Collatz Conjecture Experiment Tool</div>
+            <div class="card-desc">Dynamic graph animation of Collatz trajectories cascading to 1, with overlay mode to compare how runs from different starting values diverge.</div>
+          </div>
+        </a>
+
+        <a href="collatz_cascade_2/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">&#x1F300;</div>
+            <div class="card-tag">Mathematics</div>
+            <div class="card-title">Collatz Cascade 2 - Generalized Dynamics</div>
+            <div class="card-desc">Extend Collatz to any modulus and any operation: linear maps, powers, roots, logs, exponentials, polynomial derivatives, integrals, rational functions. Arbitrary residue rules, full calculation overlay, and trajectory visualization.</div>
+          </div>
+        </a>
+
+        <a href="projective_cartesian/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">&#x1F4D0;</div>
+            <div class="card-tag">Mathematics</div>
+            <div class="card-title">Projective-Cartesian Mapper</div>
+            <div class="card-desc">Transform and visualize relationships between projective and Cartesian coordinates.</div>
+          </div>
+        </a>
+
+        <a href="special_functions/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">∑</div>
+            <div class="card-tag">Mathematics</div>
+            <div class="card-title">ODEs and Special Functions</div>
+            <div class="card-desc">Power Series ODE special function pattern generator.</div>
+          </div>
+        </a>
+
+        <a href="peano_compiler/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">⊢</div>
+            <div class="card-tag">Mathematics</div>
+            <div class="card-title">Peano Compiler</div>
+            <div class="card-desc">Compile arithmetic down through successor functions to first-order logic. Watch 2 + 2 = 4 reduce to Peano axioms with ∀-elimination and substitution of equals.</div>
+          </div>
+        </a>
+
+        <a href="math_tree/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">🔢</div>
+            <div class="card-tag">Mathematics</div>
+            <div class="card-title">Math Dependency Tree</div>
+            <div class="card-desc">Interactive atlas of mathematical structures with lineage tracing across foundations, algebra, topology, and geometry.</div>
+          </div>
+        </a>
+
+        <div class="card" style="pointer-events:none;opacity:0.4;cursor:not-allowed;">
+          <div class="card-content">
+            <div class="card-icon">∑</div>
+            <div class="card-tag">Mathematics</div>
+            <div class="card-title">Math Equation Editor <span style="font-size:0.7rem;font-weight:500;color:var(--text-muted);margin-left:6px;">[coming soon]</span></div>
+            <div class="card-desc">Build and render mathematical equations with a visual symbol palette: integrals, derivatives, Greek letters, matrices, set notation, and more. Exports LaTeX.</div>
+          </div>
+        </div>
+
+        <a href="linear_transformations/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">⟨ ⟩</div>
+            <div class="card-tag">Mathematics</div>
+            <div class="card-title">Linear Transformations</div>
+            <div class="card-desc">Visualize basis changes and linear maps in ℝ². Detect curvature via parallel transport and matrix commutators.</div>
+          </div>
+        </a>
+
+
+        <a href="prime_compositions/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">🔢</div>
+            <div class="card-tag">Mathematics</div>
+            <div class="card-title">Prime Compositions</div>
+            <div class="card-desc">Every number written as what it actually is - sums of equal parts. A number is prime if and only if it can't be written this way.</div>
+          </div>
+        </a>
+
+        <a href="materials_lab/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">⚗️</div>
+            <div class="card-tag">Mathematics</div>
+            <div class="card-title">Materials Lab:Mix Elements, Make Materials</div>
+            <div class="card-desc">Slide between any two elements and watch hardness, resistivity, melting point, and density computed from quantum mixing laws:Nordheim, VRH, Fleischer solid-solution hardening. Theory curves vs real alloy data.</div>
+          </div>
+        </a>
+
+        <a href="sorting_algorithms/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">🎛️</div>
+            <div class="card-tag">Mathematics</div>
+            <div class="card-title">Sorting Algorithms Lab</div>
+            <div class="card-desc">Multi-algorithm sorting visualizer with sound, side-by-side comparisons, and chaos modes.</div>
+          </div>
+        </a>
+
+        <a href="topcap_rotation/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">📈</div>
+            <div class="card-tag">Markets / Simulation</div>
+            <div class="card-title">S&amp;P 500 Market-Cap Rotation</div>
+            <div class="card-desc">25-year real-data backtest of holding the top market-cap stocks and watching your portfolio evolve as rankings change.</div>
+          </div>
+        </a>
+
+        <a href="omnibus_time/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">&#x23F3;</div>
+            <div class="card-tag">Mathematics</div>
+            <div class="card-title">Comparing Calendars</div>
+            <div class="card-desc">Deep-time calendar synchronization matrix across Gregorian, Hijri, Enochic, Maya, Egyptian, Hebrew, Chinese, and more.</div>
+          </div>
+        </a>
+
+        <a href="function_builder/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">∿</div>
+            <div class="card-tag">Mathematics</div>
+            <div class="card-title">Function Builder: Wave Composer</div>
+            <div class="card-desc">Stack sin, cos, sawtooth, square, triangle, sinc, gaussian, and more into composite waveforms. Tune amplitude, frequency, and phase per term. 18 presets including Fourier approximations, pipe organ, golden ratio φ, Shark Fin, heartbeat, and more. Pitch tracks the dot.</div>
+          </div>
+        </a>
+
+        <a href="k_lab/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">𝒦</div>
+            <div class="card-tag">Mathematics</div>
+            <div class="card-title">K-LAB:Algorithmic Information Workbench</div>
+            <div class="card-desc">Interactive probe for Kolmogorov Complexity, Chaitin's Ω, Solomonoff Induction, and the 50 foundational papers of AIT. Compress strings to bound K(x), compute NCD between any two objects, run a 20,736-TM Omega Monte Carlo, visualize entropy as a bitmap, and explore the full canonical library.</div>
+          </div>
+        </a>
+
+        <a href="compression_visualizer.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">⬛</div>
+            <div class="card-tag">Mathematics</div>
+            <div class="card-title">Bit Compression Visualizer</div>
+            <div class="card-desc">Watch DEFLATE and BZ2 operate on your bits in real time. Custom implementations of LZ77, Huffman coding, BWT, MTF, RLE — no built-ins. Every back-reference, window search, and symbol transform is animated on a 256/512/1024-bit grid with speed control and live compression ratios.</div>
+          </div>
+        </a>
+
+      </div>
+    </section>
+
+    <!-- Physics Section -->
+    <section class="category-section" data-section="physics">
+      <div class="category-header">
+        <h2>Physics</h2>
+        <div class="divider"></div>
+      </div>
+      <div class="cards-grid">
+        <a href="wavefunctions/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">&#x1F52C;</div>
+            <div class="card-tag">Physics</div>
+            <div class="card-title">Wavefunctions</div>
+            <div class="card-desc">Click any element on a full interactive periodic table to explore its electron quantum mechanics:Schrödinger equation, hydrogen-like wavefunctions, Slater Z_eff energies, and a live 3D orbital dot-cloud you can rotate.</div>
+          </div>
+        </a>
+
+        <a href="gauge_theory/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">⚛️</div>
+            <div class="card-tag">Physics</div>
+            <div class="card-title">Gauge Theory Visualizer</div>
+            <div class="card-desc">See why the photon exists. Choose a local gauge Ω(x), watch it scramble the electron field, and see the photon field A emerge automatically as the only way to restore consistency.</div>
+          </div>
+        </a>
+
+        <a href="path_integral_phase_space/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">&#x1F300;</div>
+            <div class="card-tag">Physics</div>
+            <div class="card-title">Path Integral Phase-Space</div>
+            <div class="card-desc">Sum-over-histories simulator showing interference, damping, and stationary phase in the Argand plane.</div>
+          </div>
+        </a>
+
+
+        <a href="materials_lab/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">⚗️</div>
+            <div class="card-tag">Physics</div>
+            <div class="card-title">Materials Lab:Mix Elements, Make Materials</div>
+            <div class="card-desc">Slide between any two elements and watch hardness, resistivity, melting point, and density computed from quantum mixing laws:Nordheim, VRH, Fleischer solid-solution hardening. Theory curves vs real alloy data.</div>
+          </div>
+        </a>
+
+      </div>
+    </section>
+
+    <!-- Simulations Section -->
+    <section class="category-section" data-section="simulations">
+      <div class="category-header">
+        <h2>Simulations</h2>
+        <div class="divider"></div>
+      </div>
+      <div class="cards-grid">
+        <a href="traffic_sim/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">🚗</div>
+            <div class="card-tag">Simulations</div>
+            <div class="card-title">Traffic Simulator</div>
+            <div class="card-desc">Large-scale city traffic simulation with highways, ramps, a denser downtown grid, signalized intersections, and a cleaned-up roundabout. Add cars, trigger incidents, and watch congestion form and dissolve in real time.</div>
+          </div>
+        </a>
+
+        <a href="network_stack_sim/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">🌐</div>
+            <div class="card-tag">Simulations</div>
+            <div class="card-title">Network Stack Simulator</div>
+            <div class="card-desc">Animate a full TCP/IP + TLS stack from keypress to encrypted packet. Watch packets descend through all 7 OSI layers, cross a router, and ascend on the other side. Pause mid-flight to inspect every header field. Scenarios: TCP handshake, TLS 1.3, HTTPS, ARP, multi-host.</div>
+          </div>
+        </a>
+
+        <a href="crypto_sim/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">🔐</div>
+            <div class="card-tag">Simulations</div>
+            <div class="card-title">Cryptography Simulator</div>
+            <div class="card-desc">Visual simulation of Alice, Bob, and a Man-in-the-Middle exchanging encrypted messages. Click any node to inspect exactly what each party knows. Covers symmetric, asymmetric, and hybrid encryption.</div>
+          </div>
+        </a>
+
+        <a href="rf_channel_sim/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">&#x1F4E1;</div>
+            <div class="card-tag">Simulations</div>
+            <div class="card-title">RF Channel Lab</div>
+            <div class="card-desc">Two antennas share one 2-D medium with different carrier tones. Watch waves interfere in space while coherent detection pulls each BPSK bit stream back apart—then crowd the carriers to see cross-talk.</div>
+          </div>
+        </a>
+
+        <a href="drone_show_studio/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">&#x1F681;</div>
+            <div class="card-tag">Simulations</div>
+            <div class="card-title">Drone Show Studio</div>
+            <div class="card-desc">Real-time 3D drone formation planner. Design multi-scene light shows with wind physics, collision validation, and JSON import/export.</div>
+          </div>
+        </a>
+
+        <a href="game_of_life_1d/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">📏</div>
+            <div class="card-tag">Simulations</div>
+            <div class="card-title">Game of Life 1D</div>
+            <div class="card-desc">Wolfram's Elementary Cellular Automata:all 256 rules. Rule 30 famously produces randomness from a single cell and powers Mathematica's random number generator. Zoom, pan, draw your own initial conditions.</div>
+          </div>
+        </a>
+
+
+        <a href="game_of_life/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">🧬</div>
+            <div class="card-tag">Simulations</div>
+            <div class="card-title">Game of Life 2D</div>
+            <div class="card-desc">Conway's Game of Life with 20+ patterns, custom B/S rules, zoom/pan, and drag-to-place structures.</div>
+          </div>
+        </a>
+
+
+        <a href="game_of_life_3d/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">🧊</div>
+            <div class="card-tag">Simulations</div>
+            <div class="card-title">Game of Life 3D</div>
+            <div class="card-desc">Conway's Game of Life extended into three dimensions. Rotate, zoom, and watch 3D cellular automata evolve with configurable birth/survival rules.</div>
+          </div>
+        </a>
+
+        <a href="game_of_life_squared/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">🎨</div>
+            <div class="card-tag">Simulations</div>
+            <div class="card-title">Game of Life²</div>
+            <div class="card-desc">Conway's Game of Life with genetic color lineage. Born cells inherit the blended RGB of their live neighbors:watch colors evolve, mix, and compete as patterns propagate across the grid.</div>
+          </div>
+        </a>
+
+        <a href="spaceorbits/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">&#x1F680;</div>
+            <div class="card-tag">Astronomy</div>
+            <div class="card-title">Space Orbits Explorer</div>
+            <div class="card-desc">Ephemeris-driven orbital visualization and exploration of trajectories.</div>
+          </div>
+        </a>
+
+      </div>
+    </section>
+
+    <!-- Games Section -->
+    <section class="category-section" data-section="games">
+      <div class="category-header">
+        <h2>Games</h2>
+        <div class="divider"></div>
+      </div>
+      <div class="cards-grid">
+        <a href="solved_games/" class="card" style="border-style: dashed;">
+          <div class="card-content">
+            <div class="card-icon">🎮</div>
+            <div class="card-tag">Often Solved Games</div>
+            <div class="card-title">Game Theory Lab →</div>
+            <div class="card-desc">Browse all 11 games - Tic-Tac-Toe, Connect Four, Othello, Checkers, Mastermind, Lights Out, Minesweeper, Nim, 2048, Rummikub, and Blokus.</div>
+          </div>
+        </a>
+
+        <a href="path_connect/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">&#x1F9E9;</div>
+            <div class="card-tag">Mathematics</div>
+            <div class="card-title">Path Connect Lab (2D + Cube)</div>
+            <div class="card-desc">Flow-style path puzzle on a square grid or rotatable cube surface, with bounded solver checks and live graph metadata.</div>
+          </div>
+        </a>
+
+        <a href="solved_games/tictactoe.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">⭕</div>
+            <div class="card-tag">Solved Games</div>
+            <div class="card-title">Tic-Tac-Toe</div>
+            <div class="card-desc">Minimax + Alpha-Beta pruning. The AI plays perfectly - the best you can do is draw. Includes full decision tree analytics.</div>
+          </div>
+        </a>
+        <a href="solved_games/connect4.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">🔴</div>
+            <div class="card-tag">Solved Games</div>
+            <div class="card-title">Connect Four</div>
+            <div class="card-desc">Strongly solved - first player wins with perfect play. Minimax + Alpha-Beta with window scoring and center-column preference.</div>
+          </div>
+        </a>
+        <a href="solved_games/othello.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">⚫</div>
+            <div class="card-tag">Solved Games</div>
+            <div class="card-title">Othello / Reversi</div>
+            <div class="card-desc">Minimax + Alpha-Beta with positional weights, mobility scoring, and corner-capture bonuses. Canvas rendered 8×8 board.</div>
+          </div>
+        </a>
+        <a href="solved_games/checkers.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">🔵</div>
+            <div class="card-tag">Solved Games</div>
+            <div class="card-title">Checkers</div>
+            <div class="card-desc">Alpha-Beta Minimax with mandatory captures, multi-jump chains, king promotion, and heuristic evaluation on an 8×8 canvas board.</div>
+          </div>
+        </a>
+        <a href="solved_games/mastermind.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">🎯</div>
+            <div class="card-tag">Solved Games</div>
+            <div class="card-title">Mastermind</div>
+            <div class="card-desc">Knuth's algorithm guarantees cracking any 4-peg 6-color code in ≤5 guesses using minimax over remaining possibilities.</div>
+          </div>
+        </a>
+        <a href="solved_games/lightsout.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">💡</div>
+            <div class="card-tag">Solved Games</div>
+            <div class="card-title">Lights Out</div>
+            <div class="card-desc">Gaussian elimination over GF(2) finds the exact minimum presses to solve any board. Supports 3×3 through 6×6 grid sizes.</div>
+          </div>
+        </a>
+        <a href="solved_games/minesweeper.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">💣</div>
+            <div class="card-tag">Solved Games</div>
+            <div class="card-title">Minesweeper</div>
+            <div class="card-desc">Constraint propagation + subset analysis solver deduces safe cells and mines logically, with probabilistic fallback when stuck.</div>
+          </div>
+        </a>
+        <a href="solved_games/nim.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">🥢</div>
+            <div class="card-tag">Solved Games</div>
+            <div class="card-title">Nim</div>
+            <div class="card-desc">Sprague-Grundy theorem in action - the AI computes Nim-sum (XOR) of heaps and always moves to a P-position.</div>
+          </div>
+        </a>
+        <a href="solved_games/2048.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">🔢</div>
+            <div class="card-tag">Solved Games</div>
+            <div class="card-title">2048</div>
+            <div class="card-desc">Expectimax AI with Snake heuristic reliably reaches 2048+ by scoring tile arrangement, smoothness, monotonicity, and empty cells.</div>
+          </div>
+        </a>
+        <a href="solved_games/rummikub.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">🀱</div>
+            <div class="card-tag">Solved Games</div>
+            <div class="card-title">Rummikub</div>
+            <div class="card-desc">Tile-rummy simulation with an optimal greedy set-cover solver using dynamic programming. Supports 1–4 players.</div>
+          </div>
+        </a>
+        <a href="solved_games/blokus.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">🟦</div>
+            <div class="card-tag">Solved Games</div>
+            <div class="card-title">Blokus</div>
+            <div class="card-desc">4-player territory control with all 21 pieces and 8 transforms. AI uses greedy corner-expansion heuristics with lookahead and blocking.</div>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- Bob's Tools Section -->
+    <section class="category-section" data-section="bobs-tools">
+      <div class="category-header">
+        <h2>Services</h2>
+        <div class="divider"></div>
+      </div>
+      <div class="cards-grid">
+        <a href="landloard_calculator/landlord_optimization.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">🏠</div>
+            <div class="card-tag">Services</div>
+            <div class="card-title">Bob's Landlord Optimization</div>
+            <div class="card-desc">Calculate costs, expenses, and projections for property management and real estate investments.</div>
+          </div>
+        </a>
+        <a href="lot_recorder/lot_tracker.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">📹</div>
+            <div class="card-tag">Services</div>
+            <div class="card-title">Bob's Lot Tracker</div>
+            <div class="card-desc">Video archive captured at the lot - documenting events and activity over time.</div>
+          </div>
+        </a>
+
+
+      <div class="card is-disabled">
+        <div class="card-content">
+          <div class="card-icon">🛡️</div>
+          <div class="card-tag">Services</div>
+          <div class="card-title">The Anti-Crawl (unfinished)</div>
+          <div class="card-desc">A way to protect against general crawlers and AI crawlers. DOM obfuscation, XPath poisoning, headless bot detection, clipboard fingerprinting.</div>
+        </div>
+      </div>
+
+
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════════════
+         RECOMMENDED:Papers · Videos · Movies · Books
+    ═══════════════════════════════════════════════════════════════ -->
+    <section class="category-section" data-section="recommended">
+      <div class="rec-page">
+
+        <!-- ── TALKS & LECTURES ──────────────────────────────── -->
+        <div class="rec-group" id="rec-talks">
+          <div class="rec-group-header">
+            <span class="rec-group-icon">🎙</span>
+            <h3>Talks &amp; Lectures</h3>
+            <div class="rec-group-line"></div>
+          </div>
+          <div class="cards-grid video-grid">
+
+            <div class="card video-card">
+              <div class="video-thumb">
+                <iframe src="https://www.youtube.com/embed/aaV62ao8_d8" title="Peter Thiel" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
+              </div>
+            </div>
+
+            <div class="card video-card">
+              <div class="video-thumb">
+                <iframe src="https://www.youtube.com/embed/0hzCOsQJ8Sc" title="Chomsky:17th Century Thought" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
+              </div>
+            </div>
+
+            <div class="card video-card">
+              <div class="video-thumb">
+                <iframe src="https://www.youtube.com/embed/P1ww1IXRfTA" title="Feynman:It's Fun to Imagine" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ── PAPERS ─────────────────────────────────────────── -->
+        <div class="rec-group" id="rec-papers">
+          <div class="rec-group-header">
+            <span class="rec-group-icon">📄</span>
+            <h3>Papers</h3>
+            <div class="rec-group-line"></div>
+          </div>
+          <div class="cards-grid">
+
+            <!-- ── TEMPLATE (copy, remove comment markers, fill in) ──
+            <div class="card paper-card">
+              <div class="card-content">
+                <div class="paper-meta">
+                  <span class="paper-year">2024</span>
+                  <span class="paper-venue">Nature Physics</span>
+                </div>
+                <div class="card-title">Title of the Paper</div>
+                <div class="paper-authors">Author One, Author Two, Author Three</div>
+                <div class="card-desc">One or two sentence abstract / reason you saved it.</div>
+                <a class="paper-link" href="../papers/filename.pdf" target="_blank">📄 Open PDF</a>
+              </div>
+            </div>
+            ── END TEMPLATE ── -->
+
+            <div class="card paper-card rec-placeholder">
+              <div class="card-content">
+                <div class="paper-meta"><span class="paper-year">—</span><span class="paper-venue">Add your first paper</span></div>
+                <div class="card-title">No papers yet</div>
+                <div class="card-desc">Drop a PDF into <code>papers/</code> and copy the template above.</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ── PODCASTS ────────────────────────────────────────── -->
+        <div class="rec-group" id="rec-podcasts">
+          <div class="rec-group-header">
+            <span class="rec-group-icon">🎧</span>
+            <h3>Podcasts</h3>
+            <div class="rec-group-line"></div>
+          </div>
+          <div class="cards-grid video-grid">
+
+            <div class="card video-card">
+              <div class="video-thumb">
+                <iframe src="https://www.youtube.com/embed/gJHj4BtP9Go" title="Firas Zahabi:Talk on Truth (Joe Rogan)" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
+              </div>
+            </div>
+
+            <div class="card video-card">
+              <div class="video-thumb">
+                <iframe src="https://www.youtube.com/embed/c-0PDmGeMxg" title="Firas Zahabi:What is Truth?" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
+              </div>
+            </div>
+
+            <div class="card video-card">
+              <div class="video-thumb">
+                <iframe src="https://www.youtube.com/embed/P-2P3MSZrBM" title="Joscha Bach:Lex Fridman Podcast" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ── BOOKS ──────────────────────────────────────────── -->
+        <div class="rec-group" id="rec-books">
+          <div class="rec-group-header">
+            <span class="rec-group-icon">📚</span>
+            <h3>Books</h3>
+            <div class="rec-group-line"></div>
+          </div>
+          <div class="cards-grid book-grid">
+
+            <!-- ── TEMPLATE ──
+            <a class="card book-card" href="https://www.goodreads.com/book/show/ID" target="_blank">
+              <div class="book-band" style="--spine-color:#1a6b4a"></div>
+              <div class="card-content">
+                <div class="book-title">Book Title</div>
+                <div class="book-author">Author Name · Year</div>
+                <div class="book-desc">One or two sentences on why it matters.</div>
+                <span class="book-link">↗ Goodreads</span>
+              </div>
+            </a>
+            ── END TEMPLATE ── -->
+
+            <a class="card book-card" href="https://www.goodreads.com/book/show/18304.The_Anti_Christ" target="_blank">
+              <div class="book-band" style="--spine-color:#7a0c0c"></div>
+              <div class="card-content">
+                <div class="book-title">The Antichrist</div>
+                <div class="book-author">Friedrich Nietzsche · 1895</div>
+                <span class="book-link">↗ Goodreads</span>
+              </div>
+            </a>
+
+            <a class="card book-card" href="https://www.amazon.ca/Immanuel-Kant-Prolegomena-Metaphysics-Selections/dp/0521535352" target="_blank">
+              <div class="book-band" style="--spine-color:#1a3a6b"></div>
+              <div class="card-content">
+                <div class="book-title">Prolegomena to Any Future Metaphysics</div>
+                <div class="book-author">Immanuel Kant · 1783</div>
+                <span class="book-link">↗ Amazon</span>
+              </div>
+            </a>
+
+            <a class="card book-card" href="https://www.amazon.ca/Public-Opinion-Walter-Lippmann/dp/1604599545" target="_blank">
+              <div class="book-band" style="--spine-color:#2a4a1a"></div>
+              <div class="card-content">
+                <div class="book-title">Public Opinion</div>
+                <div class="book-author">Walter Lippmann · 1922</div>
+                <span class="book-link">↗ Amazon</span>
+              </div>
+            </a>
+
+            <a class="card book-card" href="https://www.goodreads.com/book/show/61140656-r-coltes-et-semailles" target="_blank">
+              <div class="book-band" style="--spine-color:#8b5e3c"></div>
+              <div class="card-content">
+                <div class="book-title">Harvests and Sowings</div>
+                <div class="book-author">Alexandre Grothendieck · 1985</div>
+                <div class="book-desc"></div>
+                <span class="book-link">↗ Goodreads</span>
+              </div>
+            </a>
+
+          </div>
+        </div>
+
+        <!-- ── MOVIES ─────────────────────────────────────────── -->
+        <div class="rec-group" id="rec-movies">
+          <div class="rec-group-header">
+            <span class="rec-group-icon">🎬</span>
+            <h3>Movies</h3>
+            <div class="rec-group-line"></div>
+          </div>
+          <div class="cards-grid movie-grid">
+
+            <!-- ── TEMPLATE ──
+            Option A:with real poster image:
+            <a class="card movie-card" href="https://www.imdb.com/title/ttXXXXXXX/" target="_blank">
+              <div class="movie-poster">
+                <img src="https://image.tmdb.org/t/p/w300/POSTER_PATH.jpg" alt="Film Title poster" loading="lazy">
+              </div>
+              <div class="movie-info">
+                <div class="movie-title">Film Title</div>
+                <div class="movie-year">2024 · Director Name</div>
+                <div class="movie-year" style="font-style:italic;opacity:.8">Tagline or one-liner.</div>
+                <span class="movie-source">↗ IMDB</span>
+              </div>
+            </a>
+
+            Option B:text poster (no image):
+            <a class="card movie-card" href="https://www.imdb.com/title/ttXXXXXXX/" target="_blank">
+              <div class="movie-poster--text" style="--movie-color:#1a1a2e">
+                <span class="movie-poster-title">TITLE</span>
+                <span class="movie-poster-year-badge">2024</span>
+              </div>
+              <div class="movie-info">
+                <div class="movie-title">Film Title</div>
+                <div class="movie-year">2024 · Director Name</div>
+                <div class="movie-year" style="font-style:italic;opacity:.8">Tagline or one-liner.</div>
+                <span class="movie-source">↗ IMDB</span>
+              </div>
+            </a>
+            ── END TEMPLATE ── -->
+
+            <a class="card movie-card" href="https://www.imdb.com/title/tt1723811/" target="_blank">
+              <div class="movie-poster"><img src="https://media.themoviedb.org/t/p/w300_and_h450_face/i3nXT6Cn4Jc4Ta2AJGnBH1Tu21A.jpg" alt="Shame poster" loading="lazy"></div>
+              <div class="movie-info">
+                <div class="movie-title">Shame</div>
+                <div class="movie-year">2011 · Steve McQueen</div>
+                <span class="movie-source">↗ IMDB</span>
+              </div>
+            </a>
+
+            <a class="card movie-card" href="https://www.imdb.com/title/tt1731141/" target="_blank">
+              <div class="movie-poster"><img src="https://media.themoviedb.org/t/p/w300_and_h450_face/lk9qVzvPHuL2vX9ixNut9n0KfYD.jpg" alt="Ender's Game poster" loading="lazy"></div>
+              <div class="movie-info">
+                <div class="movie-title">Ender's Game</div>
+                <div class="movie-year">2013 · Gavin Hood</div>
+                <span class="movie-source">↗ IMDB</span>
+              </div>
+            </a>
+
+            <a class="card movie-card" href="https://www.imdb.com/title/tt15398776/" target="_blank">
+              <div class="movie-poster"><img src="https://media.themoviedb.org/t/p/w300_and_h450_face/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg" alt="Oppenheimer poster" loading="lazy"></div>
+              <div class="movie-info">
+                <div class="movie-title">Oppenheimer</div>
+                <div class="movie-year">2023 · Christopher Nolan</div>
+                <span class="movie-source">↗ IMDB</span>
+              </div>
+            </a>
+
+            <a class="card movie-card" href="https://www.imdb.com/title/tt17526714/" target="_blank">
+              <div class="movie-poster"><img src="https://media.themoviedb.org/t/p/w300_and_h450_face/lqoMzCcZYEFK729d6qzt349fB4o.jpg" alt="The Substance poster" loading="lazy"></div>
+              <div class="movie-info">
+                <div class="movie-title">The Substance</div>
+                <div class="movie-year">2024 · Coralie Fargeat</div>
+                <span class="movie-source">↗ IMDB</span>
+              </div>
+            </a>
+
+            <a class="card movie-card" href="https://www.imdb.com/title/tt0418279/" target="_blank">
+              <div class="movie-poster"><img src="https://media.themoviedb.org/t/p/w300_and_h450_face/4N4sipl8T72tNE4earcctQa2Kw2.jpg" alt="Transformers poster" loading="lazy"></div>
+              <div class="movie-info">
+                <div class="movie-title">Transformers</div>
+                <div class="movie-year">2007 · Michael Bay</div>
+                <span class="movie-source">↗ IMDB</span>
+              </div>
+            </a>
+
+            <a class="card movie-card" href="https://www.imdb.com/title/tt2103267/" target="_blank">
+              <div class="movie-poster--text" style="--movie-color:#0e1a14">
+                <span class="movie-poster-title">ADORATION</span>
+                <span class="movie-poster-year-badge">2013</span>
+              </div>
+              <div class="movie-info">
+                <div class="movie-title">Adoration</div>
+                <div class="movie-year">2013</div>
+                <span class="movie-source">↗ IMDB</span>
+              </div>
+            </a>
+
+            <a class="card movie-card" href="https://www.imdb.com/title/tt0144084/" target="_blank">
+              <div class="movie-poster"><img src="https://media.themoviedb.org/t/p/w300_and_h450_face/9uGHEgsiUXjCNq8wdq4r49YL8A1.jpg" alt="American Psycho poster" loading="lazy"></div>
+              <div class="movie-info">
+                <div class="movie-title">American Psycho</div>
+                <div class="movie-year">2000 · Mary Harron</div>
+                <span class="movie-source">↗ IMDB</span>
+              </div>
+            </a>
+
+            <a class="card movie-card" href="https://www.imdb.com/title/tt4437216/" target="_blank">
+              <div class="movie-poster--text" style="--movie-color:#120a06">
+                <span class="movie-poster-title">GOAT</span>
+                <span class="movie-poster-year-badge">2016</span>
+              </div>
+              <div class="movie-info">
+                <div class="movie-title">Goat</div>
+                <div class="movie-year">2016 · Andrew Neel</div>
+                <span class="movie-source">↗ IMDB</span>
+              </div>
+            </a>
+
+            <a class="card movie-card" href="https://www.imdb.com/title/tt0097165/" target="_blank">
+              <div class="movie-poster"><img src="https://media.themoviedb.org/t/p/w300_and_h450_face/erzbMlcNHOdx24AXOcn2ZKA7R1q.jpg" alt="Dead Poets Society poster" loading="lazy"></div>
+              <div class="movie-info">
+                <div class="movie-title">Dead Poets Society</div>
+                <div class="movie-year">1989 · Peter Weir</div>
+                <span class="movie-source">↗ IMDB</span>
+              </div>
+            </a>
+
+            <a class="card movie-card" href="https://www.imdb.com/title/tt6710474/" target="_blank">
+              <div class="movie-poster"><img src="https://media.themoviedb.org/t/p/w300_and_h450_face/u68AjlvlutfEIcpmbYpKcdi09ut.jpg" alt="Everything Everywhere All at Once poster" loading="lazy"></div>
+              <div class="movie-info">
+                <div class="movie-title">Everything Everywhere All at Once</div>
+                <div class="movie-year">2022 · Daniels</div>
+                <span class="movie-source">↗ IMDB</span>
+              </div>
+            </a>
+
+            <a class="card movie-card" href="https://www.imdb.com/title/tt0343737/" target="_blank">
+              <div class="movie-poster--text" style="--movie-color:#070d1a">
+                <span class="movie-poster-title">THE GOOD SHEPHERD</span>
+                <span class="movie-poster-year-badge">2006</span>
+              </div>
+              <div class="movie-info">
+                <div class="movie-title">The Good Shepherd</div>
+                <div class="movie-year">2006 · Robert De Niro</div>
+                <span class="movie-source">↗ IMDB</span>
+              </div>
+            </a>
+
+            <a class="card movie-card" href="https://www.imdb.com/title/tt0138704/" target="_blank">
+              <div class="movie-poster--text" style="--movie-color:#040404">
+                <span class="movie-poster-title">π</span>
+                <span class="movie-poster-year-badge">1998</span>
+              </div>
+              <div class="movie-info">
+                <div class="movie-title">Pi</div>
+                <div class="movie-year">1998 · Darren Aronofsky</div>
+                <span class="movie-source">↗ IMDB</span>
+              </div>
+            </a>
+
+            <a class="card movie-card" href="https://www.imdb.com/title/tt1104001/" target="_blank">
+              <div class="movie-poster"><img src="https://media.themoviedb.org/t/p/w300_and_h450_face/8Nc6R8k7bG8frSiDJo0oLucF7dN.jpg" alt="TRON: Legacy poster" loading="lazy"></div>
+              <div class="movie-info">
+                <div class="movie-title">TRON: Legacy</div>
+                <div class="movie-year">2010 · Joseph Kosinski</div>
+                <span class="movie-source">↗ IMDB</span>
+              </div>
+            </a>
+
+            <a class="card movie-card" href="https://www.imdb.com/title/tt3118452/" target="_blank">
+              <div class="movie-poster--text" style="--movie-color:#0b1622">
+                <span class="movie-poster-title">CIRCLE</span>
+                <span class="movie-poster-year-badge">2015</span>
+              </div>
+              <div class="movie-info">
+                <div class="movie-title">Circle</div>
+                <div class="movie-year">2015 · Aaron Hann &amp; Mario Miscione</div>
+                <span class="movie-source">↗ IMDB</span>
+              </div>
+            </a>
+
+            <a class="card movie-card" href="https://www.imdb.com/title/tt0230600/" target="_blank">
+              <div class="movie-poster--text" style="--movie-color:#0c0c0e">
+                <span class="movie-poster-title">THE OTHERS</span>
+                <span class="movie-poster-year-badge">2001</span>
+              </div>
+              <div class="movie-info">
+                <div class="movie-title">The Others</div>
+                <div class="movie-year">2001 · Alejandro Amenábar</div>
+                <span class="movie-source">↗ IMDB</span>
+              </div>
+            </a>
+
+            <a class="card movie-card" href="https://www.imdb.com/title/tt1045658/" target="_blank">
+              <div class="movie-poster"><img src="https://media.themoviedb.org/t/p/w300_and_h450_face/fhHB1uvfFKKFbj6bTKE8xdtsjKi.jpg" alt="Silver Linings Playbook poster" loading="lazy"></div>
+              <div class="movie-info">
+                <div class="movie-title">Silver Linings Playbook</div>
+                <div class="movie-year">2012 · David O. Russell</div>
+                <span class="movie-source">↗ IMDB</span>
+              </div>
+            </a>
+
+            <a class="card movie-card" href="https://www.imdb.com/title/tt1563738/" target="_blank">
+              <div class="movie-poster--text" style="--movie-color:#1a0e0a">
+                <span class="movie-poster-title">ONE DAY</span>
+                <span class="movie-poster-year-badge">2011</span>
+              </div>
+              <div class="movie-info">
+                <div class="movie-title">One Day</div>
+                <div class="movie-year">2011 · Lone Scherfig</div>
+                <span class="movie-source">↗ IMDB</span>
+              </div>
+            </a>
+
+            <a class="card movie-card" href="https://www.imdb.com/title/tt1285016/" target="_blank">
+              <div class="movie-poster"><img src="https://media.themoviedb.org/t/p/w300_and_h450_face/n0ybibhJtQ5icDqTp8eRytcIHJx.jpg" alt="The Social Network poster" loading="lazy"></div>
+              <div class="movie-info">
+                <div class="movie-title">The Social Network</div>
+                <div class="movie-year">2010 · David Fincher</div>
+                <span class="movie-source">↗ IMDB</span>
+              </div>
+            </a>
+
+            <a class="card movie-card" href="https://www.imdb.com/title/tt2267998/" target="_blank">
+              <div class="movie-poster"><img src="https://media.themoviedb.org/t/p/w300_and_h450_face/ts996lKsxvjkO2yiYG0ht4qAicO.jpg" alt="Gone Girl poster" loading="lazy"></div>
+              <div class="movie-info">
+                <div class="movie-title">Gone Girl</div>
+                <div class="movie-year">2014 · David Fincher</div>
+                <span class="movie-source">↗ IMDB</span>
+              </div>
+            </a>
+
+            <a class="card movie-card" href="https://www.imdb.com/title/tt0119217/" target="_blank">
+              <div class="movie-poster"><img src="https://media.themoviedb.org/t/p/w300_and_h450_face/z2FnLKpFi1HPO7BEJxdkv6hpJSU.jpg" alt="Good Will Hunting poster" loading="lazy"></div>
+              <div class="movie-info">
+                <div class="movie-title">Good Will Hunting</div>
+                <div class="movie-year">1997 · Gus Van Sant</div>
+                <span class="movie-source">↗ IMDB</span>
+              </div>
+            </a>
+
+            <a class="card movie-card" href="https://www.imdb.com/title/tt0468569/" target="_blank">
+              <div class="movie-poster"><img src="https://media.themoviedb.org/t/p/w300_and_h450_face/qJ2tW6WMUDux911r6m7haRef0WH.jpg" alt="The Dark Knight poster" loading="lazy"></div>
+              <div class="movie-info">
+                <div class="movie-title">The Dark Knight</div>
+                <div class="movie-year">2008 · Christopher Nolan</div>
+                <span class="movie-source">↗ IMDB</span>
+              </div>
+            </a>
+
+          </div>
+        </div>
+
+        <!-- ── GAMES ──────────────────────────────────────────── -->
+        <div class="rec-group" id="rec-games">
+          <div class="rec-group-header">
+            <span class="rec-group-icon">🎮</span>
+            <h3>Games</h3>
+            <div class="rec-group-line"></div>
+          </div>
+          <div class="cards-grid game-grid">
+
+            <!-- ── TEMPLATE ──
+            <a class="card game-card" href="https://store.steampowered.com/app/APP_ID/" target="_blank">
+              <div class="game-cover">
+                <img src="https://cdn.cloudflare.steamstatic.com/steam/apps/APP_ID/library_600x900.jpg" alt="Game Title cover" loading="lazy">
+              </div>
+              <div class="game-info">
+                <div class="game-title">Game Title</div>
+                <div class="game-meta">Developer · Year</div>
+                <span class="game-source">↗ Steam</span>
+              </div>
+            </a>
+            ── END TEMPLATE ── -->
+
+            <a class="card game-card" href="https://store.steampowered.com/app/489830/" target="_blank">
+              <div class="game-cover">
+                <img src="https://cdn.cloudflare.steamstatic.com/steam/apps/489830/library_600x900.jpg" alt="The Elder Scrolls V: Skyrim cover" loading="lazy">
+              </div>
+              <div class="game-info">
+                <div class="game-title">The Elder Scrolls V: Skyrim</div>
+                <div class="game-meta">Bethesda · 2011</div>
+                <span class="game-source">↗ Steam</span>
+              </div>
+            </a>
+
+            <a class="card game-card" href="https://www.nintendo.com/us/store/products/paper-mario-the-thousand-year-door-switch/" target="_blank">
+              <div class="game-cover game-cover--text" style="--game-color:#d4220a">
+                <span class="game-cover-title">PAPER MARIO</span>
+                <span class="game-cover-sub">The Thousand-Year Door</span>
+                <span class="game-cover-year">2024 · Switch</span>
+              </div>
+              <div class="game-info">
+                <div class="game-title">Paper Mario: The Thousand-Year Door</div>
+                <div class="game-meta">Nintendo · 2004 / 2024</div>
+                <span class="game-source">↗ Nintendo</span>
+              </div>
+            </a>
+
+            <a class="card game-card" href="https://www.nintendo.com/us/store/products/the-legend-of-zelda-the-wind-waker-hd-wii-u/" target="_blank">
+              <div class="game-cover game-cover--text" style="--game-color:#1a6b4a">
+                <span class="game-cover-title">ZELDA</span>
+                <span class="game-cover-sub">The Wind Waker</span>
+                <span class="game-cover-year">2002 · GCN</span>
+              </div>
+              <div class="game-info">
+                <div class="game-title">The Legend of Zelda: The Wind Waker</div>
+                <div class="game-meta">Nintendo · 2002</div>
+                <span class="game-source">↗ Nintendo</span>
+              </div>
+            </a>
+
+            <a class="card game-card" href="https://store.steampowered.com/app/489520/Minion_Masters/" target="_blank">
+              <div class="game-cover">
+                <img src="https://cdn.cloudflare.steamstatic.com/steam/apps/489520/library_600x900.jpg" alt="Minion Masters cover" loading="lazy">
+              </div>
+              <div class="game-info">
+                <div class="game-title">Minion Masters</div>
+                <div class="game-meta">BetaDwarf · 2017</div>
+                <span class="game-source">↗ Steam</span>
+              </div>
+            </a>
+
+            <a class="card game-card" href="https://store.steampowered.com/app/1343400/RuneScape/" target="_blank">
+              <div class="game-cover">
+                <img src="https://cdn.cloudflare.steamstatic.com/steam/apps/1343400/library_600x900.jpg" alt="RuneScape cover" loading="lazy">
+              </div>
+              <div class="game-info">
+                <div class="game-title">RuneScape</div>
+                <div class="game-meta">Jagex · 2001</div>
+                <span class="game-source">↗ Steam</span>
+              </div>
+            </a>
+
+            <a class="card game-card" href="https://store.steampowered.com/app/289070/Sid_Meiers_Civilization_VI/" target="_blank">
+              <div class="game-cover">
+                <img src="https://cdn.cloudflare.steamstatic.com/steam/apps/289070/library_600x900.jpg" alt="Sid Meier's Civilization VI cover" loading="lazy">
+              </div>
+              <div class="game-info">
+                <div class="game-title">Sid Meier's Civilization VI</div>
+                <div class="game-meta">Firaxis · 2016</div>
+                <span class="game-source">↗ Steam</span>
+              </div>
+            </a>
+
+            <a class="card game-card" href="https://store.steampowered.com/app/518040/Volleyball_Unbound__Pro_Beach_Volleyball/" target="_blank">
+              <div class="game-cover">
+                <img src="https://cdn.cloudflare.steamstatic.com/steam/apps/518040/library_600x900.jpg" alt="Volleyball Unbound cover" loading="lazy">
+              </div>
+              <div class="game-info">
+                <div class="game-title">Volleyball Unbound</div>
+                <div class="game-meta">Pro Beach Volleyball · 2016</div>
+                <span class="game-source">↗ Steam</span>
+              </div>
+            </a>
+
+            <a class="card game-card" href="https://store.steampowered.com/app/3321460/Crimson_Desert/" target="_blank">
+              <div class="game-cover">
+                <img src="https://cdn.cloudflare.steamstatic.com/steam/apps/3321460/library_600x900.jpg" alt="Crimson Desert cover" loading="lazy">
+              </div>
+              <div class="game-info">
+                <div class="game-title">Crimson Desert</div>
+                <div class="game-meta">Pearl Abyss · 2026</div>
+                <span class="game-source">↗ Steam</span>
+              </div>
+            </a>
+
+            <a class="card game-card" href="https://store.steampowered.com/app/960090/Bloons_TD_6/" target="_blank">
+              <div class="game-cover">
+                <img src="https://cdn.cloudflare.steamstatic.com/steam/apps/960090/library_600x900.jpg" alt="Bloons TD 6 cover" loading="lazy">
+              </div>
+              <div class="game-info">
+                <div class="game-title">Bloons TD 6</div>
+                <div class="game-meta">Ninja Kiwi · 2018</div>
+                <span class="game-source">↗ Steam</span>
+              </div>
+            </a>
+
+            <a class="card game-card" href="https://store.steampowered.com/app/2426960/Summoners_War/" target="_blank">
+              <div class="game-cover">
+                <img src="https://cdn.cloudflare.steamstatic.com/steam/apps/2426960/library_600x900.jpg" alt="Summoners War cover" loading="lazy">
+              </div>
+              <div class="game-info">
+                <div class="game-title">Summoners War</div>
+                <div class="game-meta">Com2uS · 2024</div>
+                <span class="game-source">↗ Steam</span>
+              </div>
+            </a>
+
+            <a class="card game-card" href="https://www.leagueoflegends.com" target="_blank">
+              <div class="game-cover game-cover--text" style="--game-color:#0a1428">
+                <span class="game-cover-title">LEAGUE OF LEGENDS</span>
+                <span class="game-cover-year">2009 · PC</span>
+              </div>
+              <div class="game-info">
+                <div class="game-title">League of Legends</div>
+                <div class="game-meta">Riot Games · 2009</div>
+                <span class="game-source">↗ Riot</span>
+              </div>
+            </a>
+
+            <a class="card game-card" href="https://store.steampowered.com/app/10090/Call_of_Duty_World_at_War/" target="_blank">
+              <div class="game-cover">
+                <img src="https://cdn.cloudflare.steamstatic.com/steam/apps/10090/library_600x900.jpg" alt="Call of Duty: World at War cover" loading="lazy">
+              </div>
+              <div class="game-info">
+                <div class="game-title">Call of Duty: World at War</div>
+                <div class="game-meta">Treyarch · 2008</div>
+                <span class="game-source">↗ Steam</span>
+              </div>
+            </a>
+
+            <a class="card game-card" href="https://store.steampowered.com/app/10180/Call_of_Duty_Modern_Warfare_2/" target="_blank">
+              <div class="game-cover game-cover--text" style="--game-color:#0d0d0d">
+                <span class="game-cover-title">MODERN WARFARE 2</span>
+                <span class="game-cover-year">2009 · PC</span>
+              </div>
+              <div class="game-info">
+                <div class="game-title">Call of Duty: Modern Warfare 2</div>
+                <div class="game-meta">Infinity Ward · 2009</div>
+                <span class="game-source">↗ Steam</span>
+              </div>
+            </a>
+
+            <a class="card game-card" href="https://store.steampowered.com/app/202990/Call_of_Duty_Black_Ops_II/" target="_blank">
+              <div class="game-cover">
+                <img src="https://cdn.cloudflare.steamstatic.com/steam/apps/202990/library_600x900.jpg" alt="Call of Duty: Black Ops II cover" loading="lazy">
+              </div>
+              <div class="game-info">
+                <div class="game-title">Call of Duty: Black Ops II</div>
+                <div class="game-meta">Treyarch · 2012</div>
+                <span class="game-source">↗ Steam</span>
+              </div>
+            </a>
+
+            <a class="card game-card" href="https://store.steampowered.com/app/346930/NBA_2K16/" target="_blank">
+              <div class="game-cover">
+                <img src="https://cdn.cloudflare.steamstatic.com/steam/apps/346930/library_600x900.jpg" alt="NBA 2K16 cover" loading="lazy">
+              </div>
+              <div class="game-info">
+                <div class="game-title">NBA 2K16</div>
+                <div class="game-meta">2K Sports · 2015</div>
+                <span class="game-source">↗ Steam</span>
+              </div>
+            </a>
+
+            <a class="card game-card" href="https://www.xbox.com/en-US/games/store/nba-2k10/BPMD29J6HKPB" target="_blank">
+              <div class="game-cover game-cover--text" style="--game-color:#0a1a2e">
+                <span class="game-cover-title">NBA 2K10</span>
+                <span class="game-cover-year">2009 · Xbox 360</span>
+              </div>
+              <div class="game-info">
+                <div class="game-title">NBA 2K10</div>
+                <div class="game-meta">2K Sports · 2009</div>
+                <span class="game-source">↗ 2K</span>
+              </div>
+            </a>
+
+            <a class="card game-card" href="https://www.ea.com/games/nhl" target="_blank">
+              <div class="game-cover game-cover--text" style="--game-color:#041e42">
+                <span class="game-cover-title">NHL 09</span>
+                <span class="game-cover-year">2008 · PS3 / 360</span>
+              </div>
+              <div class="game-info">
+                <div class="game-title">NHL 09</div>
+                <div class="game-meta">EA Sports · 2008</div>
+                <span class="game-source">↗ EA</span>
+              </div>
+            </a>
+
+            <a class="card game-card" href="https://store.steampowered.com/app/6200/Fable_The_Lost_Chapters/" target="_blank">
+              <div class="game-cover">
+                <img src="https://cdn.cloudflare.steamstatic.com/steam/apps/6200/library_600x900.jpg" alt="Fable: The Lost Chapters cover" loading="lazy">
+              </div>
+              <div class="game-info">
+                <div class="game-title">Fable: The Lost Chapters</div>
+                <div class="game-meta">Lionhead Studios · 2004</div>
+                <span class="game-source">↗ Steam</span>
+              </div>
+            </a>
+
+            <a class="card game-card" href="https://www.xbox.com/en-US/games/fable-ii" target="_blank">
+              <div class="game-cover game-cover--text" style="--game-color:#1a2e0a">
+                <span class="game-cover-title">FABLE II</span>
+                <span class="game-cover-year">2008 · Xbox 360</span>
+              </div>
+              <div class="game-info">
+                <div class="game-title">Fable II</div>
+                <div class="game-meta">Lionhead Studios · 2008</div>
+                <span class="game-source">↗ Xbox</span>
+              </div>
+            </a>
+
+            <a class="card game-card" href="https://store.steampowered.com/app/105400/Fable_III/" target="_blank">
+              <div class="game-cover">
+                <img src="https://cdn.cloudflare.steamstatic.com/steam/apps/105400/library_600x900.jpg" alt="Fable III cover" loading="lazy">
+              </div>
+              <div class="game-info">
+                <div class="game-title">Fable III</div>
+                <div class="game-meta">Lionhead Studios · 2010</div>
+                <span class="game-source">↗ Steam</span>
+              </div>
+            </a>
+
+            <a class="card game-card" href="https://store.steampowered.com/app/22330/The_Elder_Scrolls_IV_Oblivion/" target="_blank">
+              <div class="game-cover">
+                <img src="https://cdn.cloudflare.steamstatic.com/steam/apps/22330/library_600x900.jpg" alt="Oblivion cover" loading="lazy">
+              </div>
+              <div class="game-info">
+                <div class="game-title">The Elder Scrolls IV: Oblivion</div>
+                <div class="game-meta">Bethesda · 2006</div>
+                <span class="game-source">↗ Steam</span>
+              </div>
+            </a>
+
+            <a class="card game-card" href="https://www.minecraft.net/" target="_blank">
+              <div class="game-cover game-cover--text" style="--game-color:#3d6b2d">
+                <span class="game-cover-title">MINECRAFT</span>
+                <span class="game-cover-year">2011 · PC / Console</span>
+              </div>
+              <div class="game-info">
+                <div class="game-title">Minecraft</div>
+                <div class="game-meta">Mojang · 2011</div>
+                <span class="game-source">↗ minecraft.net</span>
+              </div>
+            </a>
+
+            <a class="card game-card" href="https://store.steampowered.com/app/1086940/Baldurs_Gate_3/" target="_blank">
+              <div class="game-cover">
+                <img src="https://cdn.cloudflare.steamstatic.com/steam/apps/1086940/library_600x900.jpg" alt="Baldur's Gate 3 cover" loading="lazy">
+              </div>
+              <div class="game-info">
+                <div class="game-title">Baldur's Gate 3</div>
+                <div class="game-meta">Larian Studios · 2023</div>
+                <span class="game-source">↗ Steam</span>
+              </div>
+            </a>
+
+            <a class="card game-card" href="https://store.steampowered.com/app/1771300/Kingdom_Come_Deliverance_II/" target="_blank">
+              <div class="game-cover">
+                <img src="https://cdn.cloudflare.steamstatic.com/steam/apps/1771300/library_600x900.jpg" alt="Kingdom Come: Deliverance II cover" loading="lazy">
+              </div>
+              <div class="game-info">
+                <div class="game-title">Kingdom Come: Deliverance II</div>
+                <div class="game-meta">Warhorse Studios · 2025</div>
+                <span class="game-source">↗ Steam</span>
+              </div>
+            </a>
+
+            <a class="card game-card" href="https://store.steampowered.com/app/976730/Halo_The_Master_Chief_Collection/" target="_blank">
+              <div class="game-cover">
+                <img src="https://cdn.cloudflare.steamstatic.com/steam/apps/976730/library_600x900.jpg" alt="Halo: The Master Chief Collection cover" loading="lazy">
+              </div>
+              <div class="game-info">
+                <div class="game-title">Halo: Reach</div>
+                <div class="game-meta">Bungie · 2010</div>
+                <span class="game-source">↗ Steam (MCC)</span>
+              </div>
+            </a>
+
+            <a class="card game-card" href="https://store.steampowered.com/app/261550/Mount__Blade_II_Bannerlord/" target="_blank">
+              <div class="game-cover">
+                <img src="https://cdn.cloudflare.steamstatic.com/steam/apps/261550/library_600x900.jpg" alt="Mount & Blade II: Bannerlord cover" loading="lazy">
+              </div>
+              <div class="game-info">
+                <div class="game-title">Mount &amp; Blade II: Bannerlord</div>
+                <div class="game-meta">TaleWorlds · 2022</div>
+                <span class="game-source">↗ Steam</span>
+              </div>
+            </a>
+
+            <a class="card game-card" href="https://store.steampowered.com/app/12120/Grand_Theft_Auto_San_Andreas/" target="_blank">
+              <div class="game-cover">
+                <img src="https://cdn.cloudflare.steamstatic.com/steam/apps/12120/library_600x900.jpg" alt="GTA: San Andreas cover" loading="lazy">
+              </div>
+              <div class="game-info">
+                <div class="game-title">GTA: San Andreas</div>
+                <div class="game-meta">Rockstar · 2004</div>
+                <span class="game-source">↗ Steam</span>
+              </div>
+            </a>
+
+            <a class="card game-card" href="https://diablo3.blizzard.com/" target="_blank">
+              <div class="game-cover game-cover--text" style="--game-color:#1a0505">
+                <span class="game-cover-title">DIABLO III</span>
+                <span class="game-cover-year">2012 · PC / Console</span>
+              </div>
+              <div class="game-info">
+                <div class="game-title">Diablo III</div>
+                <div class="game-meta">Blizzard · 2012</div>
+                <span class="game-source">↗ Battle.net</span>
+              </div>
+            </a>
+
+            <a class="card game-card" href="https://www.nintendo.com/en-US/games/detail/super-smash-bros-melee-gcn/" target="_blank">
+              <div class="game-cover game-cover--text" style="--game-color:#9b0000">
+                <span class="game-cover-title">SMASH BROS MELEE</span>
+                <span class="game-cover-year">2001 · GameCube</span>
+              </div>
+              <div class="game-info">
+                <div class="game-title">Super Smash Bros. Melee</div>
+                <div class="game-meta">HAL Laboratory · 2001</div>
+                <span class="game-source">↗ Nintendo</span>
+              </div>
+            </a>
+
+            <a class="card game-card" href="https://www.nintendo.com/en-US/games/detail/super-smash-bros-brawl-wii/" target="_blank">
+              <div class="game-cover game-cover--text" style="--game-color:#1a2a4a">
+                <span class="game-cover-title">SMASH BROS BRAWL</span>
+                <span class="game-cover-year">2008 · Wii</span>
+              </div>
+              <div class="game-info">
+                <div class="game-title">Super Smash Bros. Brawl</div>
+                <div class="game-meta">HAL Laboratory · 2008</div>
+                <span class="game-source">↗ Nintendo</span>
+              </div>
+            </a>
+
+            <a class="card game-card" href="https://www.nintendo.com/en-US/games/detail/super-smash-bros-ultimate-switch/" target="_blank">
+              <div class="game-cover game-cover--text" style="--game-color:#0d0d0d">
+                <span class="game-cover-title">SMASH BROS ULTIMATE</span>
+                <span class="game-cover-year">2018 · Switch</span>
+              </div>
+              <div class="game-info">
+                <div class="game-title">Super Smash Bros. Ultimate</div>
+                <div class="game-meta">HAL Laboratory · 2018</div>
+                <span class="game-source">↗ Nintendo</span>
+              </div>
+            </a>
+
+            <a class="card game-card" href="https://store.steampowered.com/app/1259970/Tony_Hawks_Pro_Skater_1__2/" target="_blank">
+              <div class="game-cover">
+                <img src="https://cdn.cloudflare.steamstatic.com/steam/apps/1259970/library_600x900.jpg" alt="Tony Hawk's Pro Skater 1+2 cover" loading="lazy">
+              </div>
+              <div class="game-info">
+                <div class="game-title">Tony Hawk's Pro Skater 1+2</div>
+                <div class="game-meta">Vicarious Visions · 2020</div>
+                <span class="game-source">↗ Steam</span>
+              </div>
+            </a>
+
+            <a class="card game-card" href="https://en.wikipedia.org/wiki/WWE_SmackDown_vs._Raw" target="_blank">
+              <div class="game-cover game-cover--text" style="--game-color:#6b0000">
+                <span class="game-cover-title">SMACKDOWN VS RAW</span>
+                <span class="game-cover-year">2004 · PS2 / Xbox</span>
+              </div>
+              <div class="game-info">
+                <div class="game-title">SmackDown vs. Raw</div>
+                <div class="game-meta">Yuke's · 2004</div>
+                <span class="game-source">↗ Wiki</span>
+              </div>
+            </a>
+
+            <a class="card game-card" href="https://en.wikipedia.org/wiki/Guitar_Hero_III:_Legends_of_Rock" target="_blank">
+              <div class="game-cover game-cover--text" style="--game-color:#0d0d2e">
+                <span class="game-cover-title">GUITAR HERO 3</span>
+                <span class="game-cover-year">2007 · Multi</span>
+              </div>
+              <div class="game-info">
+                <div class="game-title">Guitar Hero III: Legends of Rock</div>
+                <div class="game-meta">Neversoft · 2007</div>
+                <span class="game-source">↗ Wiki</span>
+              </div>
+            </a>
+
+            <a class="card game-card" href="https://en.wikipedia.org/wiki/Guitar_Hero_World_Tour" target="_blank">
+              <div class="game-cover game-cover--text" style="--game-color:#1a0a2e">
+                <span class="game-cover-title">GUITAR HERO WORLD TOUR</span>
+                <span class="game-cover-year">2008 · Multi</span>
+              </div>
+              <div class="game-info">
+                <div class="game-title">Guitar Hero: World Tour</div>
+                <div class="game-meta">Neversoft · 2008</div>
+                <span class="game-source">↗ Wiki</span>
+              </div>
+            </a>
+
+            <a class="card game-card" href="https://overwatch.blizzard.com/" target="_blank">
+              <div class="game-cover game-cover--text" style="--game-color:#0c2340">
+                <span class="game-cover-title">OVERWATCH</span>
+                <span class="game-cover-year">2016 · PC / Console</span>
+              </div>
+              <div class="game-info">
+                <div class="game-title">Overwatch</div>
+                <div class="game-meta">Blizzard · 2016</div>
+                <span class="game-source">↗ Battle.net</span>
+              </div>
+            </a>
+
+            <a class="card game-card" href="https://en.wikipedia.org/wiki/Assassin%27s_Creed_(video_game)" target="_blank">
+              <div class="game-cover game-cover--text" style="--game-color:#100a00">
+                <span class="game-cover-title">ASSASSIN'S CREED</span>
+                <span class="game-cover-year">2007 · Multi</span>
+              </div>
+              <div class="game-info">
+                <div class="game-title">Assassin's Creed</div>
+                <div class="game-meta">Ubisoft · 2007</div>
+                <span class="game-source">↗ Wiki</span>
+              </div>
+            </a>
+
+            <a class="card game-card" href="https://en.wikipedia.org/wiki/Assassin%27s_Creed_II" target="_blank">
+              <div class="game-cover game-cover--text" style="--game-color:#1a1a08">
+                <span class="game-cover-title">ASSASSIN'S CREED II</span>
+                <span class="game-cover-year">2009 · Multi</span>
+              </div>
+              <div class="game-info">
+                <div class="game-title">Assassin's Creed II</div>
+                <div class="game-meta">Ubisoft · 2009</div>
+                <span class="game-source">↗ Wiki</span>
+              </div>
+            </a>
+
+            <a class="card game-card" href="https://en.wikipedia.org/wiki/Pok%C3%A9mon_Stadium" target="_blank">
+              <div class="game-cover game-cover--text" style="--game-color:#b30000">
+                <span class="game-cover-title">POKÉMON STADIUM</span>
+                <span class="game-cover-year">1999 · N64</span>
+              </div>
+              <div class="game-info">
+                <div class="game-title">Pokémon Stadium</div>
+                <div class="game-meta">Nintendo · 1999</div>
+                <span class="game-source">↗ Wiki</span>
+              </div>
+            </a>
+
+            <a class="card game-card" href="https://en.wikipedia.org/wiki/Pok%C3%A9mon_Stadium_2" target="_blank">
+              <div class="game-cover game-cover--text" style="--game-color:#1a1ab3">
+                <span class="game-cover-title">POKÉMON STADIUM 2</span>
+                <span class="game-cover-year">2000 · N64</span>
+              </div>
+              <div class="game-info">
+                <div class="game-title">Pokémon Stadium 2</div>
+                <div class="game-meta">Nintendo · 2000</div>
+                <span class="game-source">↗ Wiki</span>
+              </div>
+            </a>
+
+            <a class="card game-card" href="https://en.wikipedia.org/wiki/Yoshi%27s_Story" target="_blank">
+              <div class="game-cover game-cover--text" style="--game-color:#2d6b1a">
+                <span class="game-cover-title">YOSHI'S STORY</span>
+                <span class="game-cover-year">1997 · N64</span>
+              </div>
+              <div class="game-info">
+                <div class="game-title">Yoshi's Story</div>
+                <div class="game-meta">Nintendo · 1997</div>
+                <span class="game-source">↗ Wiki</span>
+              </div>
+            </a>
+
+            <a class="card game-card" href="https://en.wikipedia.org/wiki/Super_Mario_64" target="_blank">
+              <div class="game-cover game-cover--text" style="--game-color:#cc0000">
+                <span class="game-cover-title">SUPER MARIO 64</span>
+                <span class="game-cover-year">1996 · N64</span>
+              </div>
+              <div class="game-info">
+                <div class="game-title">Super Mario 64</div>
+                <div class="game-meta">Nintendo · 1996</div>
+                <span class="game-source">↗ Wiki</span>
+              </div>
+            </a>
+
+            <a class="card game-card" href="https://www.ea.com/games/ufc/ufc-5" target="_blank">
+              <div class="game-cover game-cover--text" style="--game-color:#0a0a0a">
+                <span class="game-cover-title">UFC 5</span>
+                <span class="game-cover-year">2023 · PS5 / XSX</span>
+              </div>
+              <div class="game-info">
+                <div class="game-title">EA Sports UFC 5</div>
+                <div class="game-meta">EA Vancouver · 2023</div>
+                <span class="game-source">↗ EA</span>
+              </div>
+            </a>
+
+            <a class="card game-card" href="https://en.wikipedia.org/wiki/Naruto:_Clash_of_Ninja_Revolution" target="_blank">
+              <div class="game-cover game-cover--text" style="--game-color:#8b3000">
+                <span class="game-cover-title">CLASH OF NINJA 4</span>
+                <span class="game-cover-year">2007 · Wii</span>
+              </div>
+              <div class="game-info">
+                <div class="game-title">Naruto: Clash of Ninja 4</div>
+                <div class="game-meta">Eighting · 2007</div>
+                <span class="game-source">↗ Wiki</span>
+              </div>
+            </a>
+
+            <a class="card game-card" href="https://store.steampowered.com/app/882100/NARUTO_SHIPPUDEN_Ultimate_Ninja_STORM_2/" target="_blank">
+              <div class="game-cover">
+                <img src="https://cdn.cloudflare.steamstatic.com/steam/apps/882100/library_600x900.jpg" alt="Naruto Storm 2 cover" loading="lazy">
+              </div>
+              <div class="game-info">
+                <div class="game-title">Naruto: Ultimate Ninja Storm 2</div>
+                <div class="game-meta">CyberConnect2 · 2010</div>
+                <span class="game-source">↗ Steam</span>
+              </div>
+            </a>
+
+            <a class="card game-card" href="https://en.wikipedia.org/wiki/GoldenEye_007_(1997_video_game)" target="_blank">
+              <div class="game-cover game-cover--text" style="--game-color:#1a1400">
+                <span class="game-cover-title">GOLDENEYE 007</span>
+                <span class="game-cover-year">1997 · N64</span>
+              </div>
+              <div class="game-info">
+                <div class="game-title">GoldenEye 007</div>
+                <div class="game-meta">Rare · 1997</div>
+                <span class="game-source">↗ Wiki</span>
+              </div>
+            </a>
+
+            <a class="card game-card" href="https://en.wikipedia.org/wiki/Conker%27s_Bad_Fur_Day" target="_blank">
+              <div class="game-cover game-cover--text" style="--game-color:#1e4a10">
+                <span class="game-cover-title">CONKER'S BAD FUR DAY</span>
+                <span class="game-cover-year">2001 · N64</span>
+              </div>
+              <div class="game-info">
+                <div class="game-title">Conker's Bad Fur Day</div>
+                <div class="game-meta">Rare · 2001</div>
+                <span class="game-source">↗ Wiki</span>
+              </div>
+            </a>
+
+            <a class="card game-card" href="https://en.wikipedia.org/wiki/Madden_NFL_2004" target="_blank">
+              <div class="game-cover game-cover--text" style="--game-color:#002147">
+                <span class="game-cover-title">MADDEN NFL 2004</span>
+                <span class="game-cover-year">2003 · Multi</span>
+              </div>
+              <div class="game-info">
+                <div class="game-title">Madden NFL 2004</div>
+                <div class="game-meta">EA Sports · 2003</div>
+                <span class="game-source">↗ Wiki</span>
+              </div>
+            </a>
+
+            <a class="card game-card" href="https://en.wikipedia.org/wiki/Mortal_Kombat_Trilogy" target="_blank">
+              <div class="game-cover game-cover--text" style="--game-color:#6b0000">
+                <span class="game-cover-title">MORTAL KOMBAT</span>
+                <span class="game-cover-year">1996 · N64</span>
+              </div>
+              <div class="game-info">
+                <div class="game-title">Mortal Kombat Trilogy</div>
+                <div class="game-meta">Midway · 1996</div>
+                <span class="game-source">↗ Wiki</span>
+              </div>
+            </a>
+
+            <a class="card game-card" href="https://en.wikipedia.org/wiki/Phantasy_Star_Online" target="_blank">
+              <div class="game-cover game-cover--text" style="--game-color:#001a4d">
+                <span class="game-cover-title">PHANTASY STAR ONLINE</span>
+                <span class="game-cover-year">2000 · Dreamcast</span>
+              </div>
+              <div class="game-info">
+                <div class="game-title">Phantasy Star Online</div>
+                <div class="game-meta">Sonic Team · 2000</div>
+                <span class="game-source">↗ Wiki</span>
+              </div>
+            </a>
+
+          </div>
+        </div>
+
+        <!-- ── EDITS / AMVs ──────────────────────────────────── -->
+        <div class="rec-group" id="rec-edits">
+          <div class="rec-group-header">
+            <span class="rec-group-icon">✂️</span>
+            <h3>Edits / AMVs</h3>
+            <div class="rec-group-line"></div>
+          </div>
+          <div class="cards-grid video-grid">
+
+            <div class="card video-card">
+              <div class="video-thumb">
+                <iframe src="https://www.youtube.com/embed/TKJqgvFu_B4" title="No Happy Endings" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
+              </div>
+            </div>
+
+            <div class="card video-card">
+              <div class="video-thumb">
+                <iframe src="https://www.tiktok.com/embed/v2/7532177950280568086" title="Muzan Edit" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy" style="width:100%;height:100%;min-height:420px;"></iframe>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Office Section -->
+    <section class="category-section" data-section="office">
+      <div class="category-header">
+        <h2>Office</h2>
+        <div class="divider"></div>
+      </div>
+      <div class="cards-grid">
+        <a href="images_to_pdf/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">🖼️</div>
+            <div class="card-tag">Office</div>
+            <div class="card-title">Images → PDF</div>
+            <div class="card-desc">Drag in a stack of images, drag to reorder them, pick a page size, and export a single PDF - everything runs in-browser, nothing uploaded.</div>
+          </div>
+        </a>
+
+        <a href="pdf_merger/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">📎</div>
+            <div class="card-tag">Office</div>
+            <div class="card-title">PDF Merger</div>
+            <div class="card-desc">Combine multiple PDF files into one. Drag to reorder, see page counts, merge - fully client-side with pdf-lib.</div>
+          </div>
+        </a>
+
+        <a href="pdf_splitter/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">✂️</div>
+            <div class="card-tag">Office</div>
+            <div class="card-title">PDF Splitter</div>
+            <div class="card-desc">Drop a PDF and extract specific pages visually. Click thumbnails to select, enter page ranges, download a new PDF with only what you need.</div>
+          </div>
+        </a>
+
+        <a href="pdf_editor/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">&#128221;</div>
+            <div class="card-tag">Office</div>
+            <div class="card-title">PDF Editor</div>
+            <div class="card-desc">Upload a PDF, add text, white out existing text, place signatures, insert checkboxes, and save the result as a brand new PDF.</div>
+          </div>
+        </a>
+
+        <a href="image_masking/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">✂️</div>
+            <div class="card-tag">Office</div>
+            <div class="card-title">Image Masking Editor</div>
+            <div class="card-desc">Upload any image and isolate subjects with three selection tools: Polygon Lasso (click to trace), Magic Wand (auto color-fill with adjustable tolerance), and Brush. Export as darkened mask, tight crop, or transparent PNG.</div>
+          </div>
+        </a>
+
+        <a href="image_compressor/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">🗜️</div>
+            <div class="card-tag">Office</div>
+            <div class="card-title">Image Compressor</div>
+            <div class="card-desc">Compress, resize, and convert images client-side. Adjust quality per image, change format (JPEG/PNG/WebP), download individually or as a ZIP.</div>
+          </div>
+        </a>
+        <a href="doc_converter/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">📄</div>
+            <div class="card-tag">Office</div>
+            <div class="card-title">Document Converter</div>
+            <div class="card-desc">Drop a DOCX, EPUB, Markdown, or plain-text file and get a clean preview. Export to PDF, HTML, or plain text - all client-side.</div>
+          </div>
+        </a>
+
+        <a href="markdown_editor/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">✍️</div>
+            <div class="card-tag">Office</div>
+            <div class="card-title">Markdown Editor</div>
+            <div class="card-desc">Split-screen live Markdown editor with syntax highlighting, toolbar shortcuts, and export to HTML, PDF, or .md file.</div>
+          </div>
+        </a>
+
+        <a href="invoice_gen/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">🧾</div>
+            <div class="card-tag">Office</div>
+            <div class="card-title">Invoice Generator</div>
+            <div class="card-desc">Fill in your business details, client info, and line items - get a professional invoice you can print or save as PDF. Auto-saved locally.</div>
+          </div>
+        </a>
+
+        <a href="text_to_pdf/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">📝</div>
+            <div class="card-tag">Office</div>
+            <div class="card-title">Text → PDF</div>
+            <div class="card-desc">Type or paste text, apply headings and lists, configure font, margins, colors, header/footer, then download as a formatted PDF.</div>
+          </div>
+        </a>
+
+        <a href="csv_viewer/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">📊</div>
+            <div class="card-tag">Office</div>
+            <div class="card-title">CSV Viewer</div>
+            <div class="card-desc">Drop a CSV or TSV and get a sortable, filterable, editable table. Export back as CSV, TSV, or JSON. Supports multiple delimiters.</div>
+          </div>
+        </a>
+
+        <a href="json_formatter/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">{ }</div>
+            <div class="card-tag">Office</div>
+            <div class="card-title">JSON Formatter</div>
+            <div class="card-desc">Format, minify, validate, and sort keys in JSON. Syntax-highlighted output with path explorer, size stats, and CSV→JSON converter.</div>
+          </div>
+        </a>
+
+        <a href="text_diff/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">⇄</div>
+            <div class="card-tag">Office</div>
+            <div class="card-title">Text Diff</div>
+            <div class="card-desc">Paste two versions of a text and see exactly what changed - line-by-line and character-by-character, in unified or split view.</div>
+          </div>
+        </a>
+
+        <a href="word_counter/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">🔠</div>
+            <div class="card-tag">Office</div>
+            <div class="card-title">Word Counter</div>
+            <div class="card-desc">Paste any text and instantly get words, characters, sentences, paragraphs, reading time, Flesch readability scores, and top word frequency.</div>
+          </div>
+        </a>
+
+        <a href="code_stats/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">📊</div>
+            <div class="card-tag">Developer</div>
+            <div class="card-title">Portfolio Stats</div>
+            <div class="card-desc">A breakdown of this portfolio:lines of code per app, per language, sortable table, donut chart, and top-10 list. Select the portfolio folder to scan it client-side using the File System API.</div>
+          </div>
+        </a>
+
+        <a href="hash_generator/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">#</div>
+            <div class="card-tag">Office</div>
+            <div class="card-title">Hash Generator</div>
+            <div class="card-desc">Compute MD5, SHA-1, SHA-256, SHA-384, and SHA-512 hashes for any text or file - live as you type, with verification comparison.</div>
+          </div>
+        </a>
+
+        <a href="base64_tool/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">⌗</div>
+            <div class="card-tag">Office</div>
+            <div class="card-title">Base64 Tool</div>
+            <div class="card-desc">Encode or decode text and files to/from Base64 and data URIs. Supports URL-safe encoding, auto-detection, and image preview.</div>
+          </div>
+        </a>
+
+        <a href="password_gen/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">🔐</div>
+            <div class="card-tag">Office</div>
+            <div class="card-title">Password Generator</div>
+            <div class="card-desc">Generate cryptographically random passwords with entropy analysis, bulk generation, passphrase mode, and a history of recent passwords.</div>
+          </div>
+        </a>
+
+        <a href="qr_generator/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">▦</div>
+            <div class="card-tag">Office</div>
+            <div class="card-title">QR Code Generator</div>
+            <div class="card-desc">Generate QR codes for URLs, WiFi credentials, vCards, and any text. Customize colors, size, and error correction - download as PNG or SVG.</div>
+          </div>
+        </a>
+
+        <a href="unit_converter/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">⚖️</div>
+            <div class="card-tag">Office</div>
+            <div class="card-title">Unit Converter</div>
+            <div class="card-desc">Convert between 100+ units across length, mass, temperature, area, volume, speed, data, energy, pressure, angle, and time.</div>
+          </div>
+        </a>
+
+        <a href="color_tools/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">🎨</div>
+            <div class="card-tag">Office</div>
+            <div class="card-title">Color Tools</div>
+            <div class="card-desc">Pick and convert colors (HEX/RGB/HSL/CMYK), generate palettes (complementary, triadic, analogous), extract colors from images, and build gradients.</div>
+          </div>
+        </a>
+
+        <a href="timezone_converter/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">🕐</div>
+            <div class="card-tag">Office</div>
+            <div class="card-title">Time Zone Converter</div>
+            <div class="card-desc">See a time across 15+ world zones simultaneously, add any IANA timezone, get live ticking updates, and detect DST transitions.</div>
+          </div>
+        </a>
+
+        <a href="pomodoro/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">🍅</div>
+            <div class="card-tag">Office</div>
+            <div class="card-title">Pomodoro Timer</div>
+            <div class="card-desc">Animated circular countdown with automatic Focus / Short Break / Long Break cycling, session tracking, task logging, and desktop notifications.</div>
+          </div>
+        </a>
+
+        <a href="zip_tool/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">📦</div>
+            <div class="card-tag">Office</div>
+            <div class="card-title">ZIP Archiver</div>
+            <div class="card-desc">Create ZIP archives by dragging files in, or drop an existing ZIP to browse and extract its contents - fully in-browser with JSZip.</div>
+          </div>
+        </a>
+
+        <a href="lorem_ipsum/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">¶</div>
+            <div class="card-tag">Office</div>
+            <div class="card-title">Lorem Ipsum Generator</div>
+            <div class="card-desc">Generate placeholder text by words, sentences, or paragraphs. Classical Lorem Ipsum, random Latin variants, or plain English filler text.</div>
+          </div>
+        </a>
+
+        <a href="screen_recorder/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">🎥</div>
+            <div class="card-tag">Office</div>
+            <div class="card-title">Screen Recorder</div>
+            <div class="card-desc">Record your screen (and optionally microphone) directly in the browser using the MediaRecorder API - no extensions, no installs, download as WebM.</div>
+          </div>
+        </a>
+
+
+        <a href="video_essay_editor/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">&#127910;</div>
+            <div class="card-tag">Office</div>
+            <div class="card-title">Video Essay Editor</div>
+            <div class="card-desc">A lightweight browser video editor for essay-style projects: splice clips and images, add quotes, voiceover, background music, transitions, autosave locally, and export a finished WebM.</div>
+          </div>
+        </a>
+
+        <a href="pdf_watermark/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">&#128394;</div>
+            <div class="card-tag">Office</div>
+            <div class="card-title">PDF Watermark</div>
+            <div class="card-desc">Stamp a text watermark across every page of a PDF.</div>
+          </div>
+        </a>
+
+
+
+        <a href="email_signature/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">&#9993;</div>
+            <div class="card-tag">Office</div>
+            <div class="card-title">Email Signature Builder</div>
+            <div class="card-desc">Generate a clean HTML signature and copy it into Gmail or Outlook.</div>
+          </div>
+        </a>
+
+        <a href="text_cleaner/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">&#129533;</div>
+            <div class="card-tag">Office</div>
+            <div class="card-title">Text Cleaner</div>
+            <div class="card-desc">Normalize spacing, remove junk lines, and clean pasted text.</div>
+          </div>
+        </a>
+
+        <a href="meeting_timer/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">&#9200;</div>
+            <div class="card-tag">Office</div>
+            <div class="card-title">Meeting Agenda Timer</div>
+            <div class="card-desc">Run timed agendas with notes and export meeting summaries.</div>
+          </div>
+        </a>
+
+
+        <a href="what_is_my_ip/index.html" class="card">
+          <div class="card-content">
+            <div class="card-icon">🌐</div>
+            <div class="card-tag">Office</div>
+            <div class="card-title">What Is My IP</div>
+            <div class="card-desc">Instantly see your public IP address, ISP, city, region, country, coordinates, and timezone. Pulls from the free ipapi.co database:no account or API key needed. Includes a live map embed.</div>
+          </div>
+        </a>
+
+
+</div>
+    </section>
+
+    <div class="foot">
+      <p>Andre · © 2026</p>
+    </div>
+  </div>
+
+  <!-- ── Donate modal ── -->
+  <div class="modal-overlay" id="donateModal">
+    <div class="modal-box" style="position:relative">
+      <button class="modal-close" id="closeDonateMod" aria-label="Close">×</button>
+      <h2>Support the work</h2>
+      <p class="modal-sub">All 80+ apps are free, no ads, no tracking. If something saved you time or made you smile, a donation keeps the lights on.</p>
+      <div class="donate-row">
+        <div class="donate-item">
+          <div class="donate-icon">₿</div>
+          <div class="donate-info">
+            <div class="donate-name">Bitcoin</div>
+            <div class="donate-addr">bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh</div>
+          </div>
+          <button class="donate-copy" data-coin="btc">Copy</button>
+        </div>
+        <div class="donate-item">
+          <div class="donate-icon">Ξ</div>
+          <div class="donate-info">
+            <div class="donate-name">Ethereum</div>
+            <div class="donate-addr">0x742d35Cc6634C0532925a3b844Bc454e4438f44e</div>
+          </div>
+          <button class="donate-copy" data-coin="eth">Copy</button>
+        </div>
+      </div>
+      <a class="paypal-btn" href="https://paypal.me/foreandr" target="_blank" rel="noopener">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.106zm14.146-14.42a3.35 3.35 0 0 0-.607-.541c-.013.076-.026.175-.041.254-.93 4.778-4.005 7.201-9.138 7.201h-2.19a.563.563 0 0 0-.556.479l-1.187 7.527h-.506l-.24 1.516a.56.56 0 0 0 .554.647h3.882c.46 0 .85-.334.922-.788.06-.26.76-4.852.816-5.09a.932.932 0 0 1 .923-.788h.58c3.76 0 6.705-1.528 7.565-5.946.36-1.847.174-3.388-.777-4.471z"/></svg>
+        Donate via PayPal
+      </a>
+    </div>
+  </div>
+
+  <!-- ── Hire / Contact modal ── -->
+  <div class="modal-overlay" id="hireModal">
+    <div class="modal-box" style="position:relative">
+      <button class="modal-close" id="closeHireMod" aria-label="Close">×</button>
+      <h2>Want something built?</h2>
+      <p class="modal-sub">Got an idea for an app, tool, or dashboard? Reach out by email and we can talk scope, timeline, and cost.</p>
+      <div class="contact-row">
+        <div class="contact-email-card">
+          <div>
+            <div class="contact-kicker">Email</div>
+            <div class="contact-email" id="hireEmail">foreandre@gmail.com</div>
+          </div>
+          <button type="button" class="donate-copy contact-email-copy" id="copyHireEmail">Copy</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const body = document.body;
+      const toggle = document.getElementById("uiToggle");
+      const menu = document.getElementById("uiMenu");
+      const buttons = Array.from(menu.querySelectorAll("button[data-theme]"));
+      const themeKey = "portfolio_theme";
+
+      function setActive(theme) {
+        buttons.forEach((btn) => {
+          btn.classList.toggle("active", btn.dataset.theme === theme);
+        });
+      }
+
+      function sweep() {
+        const overlay = document.createElement("div");
+        overlay.className = "theme-sweep";
+        document.body.appendChild(overlay);
+        overlay.addEventListener("animationend", () => overlay.remove(), { once: true });
+      }
+
+      function applyTheme(theme, animate = true) {
+        if (!theme) return;
+        if (animate) sweep();
+        body.setAttribute("data-theme", theme);
+        localStorage.setItem(themeKey, theme);
+        setActive(theme);
+      }
+
+      const stored = localStorage.getItem(themeKey);
+      if (stored) applyTheme(stored, false);
+      else setActive(body.getAttribute("data-theme"));
+
+      toggle.addEventListener("click", () => {
+        const isOpen = menu.classList.toggle("open");
+        toggle.setAttribute("aria-expanded", String(isOpen));
+      });
+
+      buttons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          applyTheme(btn.dataset.theme, true);
+          menu.classList.remove("open");
+          toggle.setAttribute("aria-expanded", "false");
+        });
+      });
+
+      document.addEventListener("click", (e) => {
+        if (!menu.contains(e.target) && e.target !== toggle) {
+          menu.classList.remove("open");
+          toggle.setAttribute("aria-expanded", "false");
+        }
+      });
+    })();
+
+    /* ── Tab bar logic ── */
+    (function () {
+      const tabBar   = document.getElementById('tab-bar');
+      const sections = Array.from(document.querySelectorAll('.category-section[data-section]'));
+      const tabBtns  = Array.from(tabBar.querySelectorAll('.tab-btn'));
+
+      /* Inject count badges into section headers */
+      sections.forEach(sec => {
+        const h2 = sec.querySelector('.category-header h2');
+        if (!h2) return;
+        /* Skip featured - count is hardcoded */
+        if (sec.dataset.section === 'featured') return;
+        const count = sec.querySelectorAll('.cards-grid .card').length;
+        /* Only add if not already present */
+        if (!h2.querySelector('.cat-count')) {
+          const badge = document.createElement('span');
+          badge.className = 'cat-count';
+          badge.textContent = count;
+          h2.appendChild(badge);
+        }
+      });
+
+      function showTab(tab) {
+        tabBtns.forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+        sections.forEach(sec => {
+          if (tab === 'all') {
+            /* All: show everything except featured */
+            sec.style.display = sec.dataset.section === 'featured' ? 'none' : '';
+          } else if (sec.dataset.section === tab) {
+            sec.style.display = '';
+          } else {
+            sec.style.display = 'none';
+          }
+        });
+        localStorage.setItem('portfolio_tab', tab);
+      }
+
+      /* Inject counts into tab buttons */
+      tabBtns.forEach(btn => {
+        const tab = btn.dataset.tab;
+        if (tab === 'all') return; /* "All" has no single section */
+        const sec = sections.find(s => s.dataset.section === tab);
+        if (!sec) return;
+        const count = sec.querySelectorAll('.cards-grid .card').length;
+        btn.innerHTML = btn.innerHTML + ` <span style="opacity:0.65;font-weight:500;font-size:0.78em">${count}</span>`;
+      });
+
+      tabBtns.forEach(btn => {
+        if (btn.disabled) return;
+        btn.addEventListener('click', () => showTab(btn.dataset.tab));
+      });
+
+      /* Always start on Featured - never restore last tab */
+      showTab('featured');
+
+      /* App counter:count unique top-level app directories from all card links */
+      (function() {
+        const seen = new Set();
+        document.querySelectorAll('.cards-grid a.card[href]').forEach(a => {
+          const parts = a.getAttribute('href').split('/');
+          if (parts[0]) seen.add(parts[0]);
+        });
+        document.getElementById('appCount').textContent = seen.size;
+      })();
+
+      /* ── Donate modal ── */
+      const DONATE_ADDRS = {
+        btc:  'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh',
+        eth:  '0x742d35Cc6634C0532925a3b844Bc454e4438f44e',
+      };
+      document.getElementById('donateBtn').addEventListener('click', () => {
+        document.getElementById('donateModal').classList.add('open');
+      });
+      document.getElementById('closeDonateMod').addEventListener('click', () => {
+        document.getElementById('donateModal').classList.remove('open');
+      });
+      document.getElementById('donateModal').addEventListener('click', e => {
+        if (e.target === document.getElementById('donateModal')) document.getElementById('donateModal').classList.remove('open');
+      });
+      document.querySelectorAll('.donate-copy').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const addr = DONATE_ADDRS[btn.dataset.coin];
+          navigator.clipboard.writeText(addr).then(() => {
+            btn.textContent = 'Copied!'; btn.classList.add('ok');
+            setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('ok'); }, 2000);
+          });
+        });
+      });
+
+      /* ── Hire / Contact modal ── */
+      document.getElementById('hireBtn').addEventListener('click', () => {
+        document.getElementById('hireModal').classList.add('open');
+      });
+      document.getElementById('closeHireMod').addEventListener('click', () => {
+        document.getElementById('hireModal').classList.remove('open');
+      });
+      document.getElementById('hireModal').addEventListener('click', e => {
+        if (e.target === document.getElementById('hireModal')) document.getElementById('hireModal').classList.remove('open');
+      });
+      document.getElementById('copyHireEmail').addEventListener('click', () => {
+        const btn = document.getElementById('copyHireEmail');
+        navigator.clipboard.writeText(document.getElementById('hireEmail').textContent.trim()).then(() => {
+          btn.textContent = 'Copied!';
+          btn.classList.add('ok');
+          setTimeout(() => {
+            btn.textContent = 'Copy';
+            btn.classList.remove('ok');
+          }, 2000);
+        });
+      });
+
+      /* ── Global search ── */
+      (function() {
+        const searchInput = document.getElementById('globalSearch');
+        const clearBtn    = document.getElementById('searchClear');
+        const allCards    = Array.from(document.querySelectorAll('.cards-grid .card'));
+
+        // Build a "no results" message node once
+        const noResults = document.createElement('div');
+        noResults.className = 'search-no-results';
+        noResults.textContent = 'No apps match your search.';
+        document.getElementById('app').appendChild(noResults);
+
+        function doSearch(raw) {
+          const q = raw.trim().toLowerCase();
+          clearBtn.classList.toggle('visible', q.length > 0);
+
+          if (!q) {
+            // Restore normal view
+            allCards.forEach(c => c.style.display = '');
+            document.querySelectorAll('.category-section').forEach(s => s.style.display = '');
+            document.querySelector('.tab-bar').style.display = '';
+            noResults.classList.remove('visible');
+            showTab('featured');
+            return;
+          }
+
+          // Switch to all-sections view (hide tab bar, show every section)
+          document.querySelector('.tab-bar').style.display = 'none';
+          document.querySelectorAll('.category-section').forEach(s => s.style.display = 'block');
+
+          let anyVisible = false;
+          allCards.forEach(card => {
+            const text = card.textContent.toLowerCase();
+            const show = text.includes(q);
+            card.style.display = show ? '' : 'none';
+            if (show) anyVisible = true;
+          });
+
+          // Hide sections that have zero visible cards after filtering
+          document.querySelectorAll('.category-section').forEach(sec => {
+            const visibleInSec = Array.from(sec.querySelectorAll('.cards-grid .card'))
+              .some(c => c.style.display !== 'none');
+            sec.style.display = visibleInSec ? 'block' : 'none';
+          });
+
+          noResults.classList.toggle('visible', !anyVisible);
+        }
+
+        searchInput.addEventListener('input', e => doSearch(e.target.value));
+        clearBtn.addEventListener('click', () => {
+          searchInput.value = '';
+          doSearch('');
+          searchInput.focus();
+        });
+        // Keyboard shortcut: / to focus search
+        document.addEventListener('keydown', e => {
+          if (e.key === '/' && document.activeElement !== searchInput &&
+              !['INPUT','TEXTAREA'].includes(document.activeElement.tagName)) {
+            e.preventDefault();
+            searchInput.focus();
+          }
+          if (e.key === 'Escape' && document.activeElement === searchInput) {
+            searchInput.value = '';
+            doSearch('');
+            searchInput.blur();
+          }
+        });
+      })();
+    })();
+  </script>
+</body>
+</html>
