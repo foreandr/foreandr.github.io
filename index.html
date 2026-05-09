@@ -7,13 +7,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Andre Foreman builds fast browser apps for analytics, simulations, math, AI, and document workflows.">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
-
     :root {
       --bg: #f4efe7;
       --bg-soft: #fbf8f3;
-      --panel: rgba(255, 255, 255, 0.74);
-      --panel-strong: rgba(255, 255, 255, 0.9);
+      --panel: rgba(255, 251, 245, 0.96);
+      --panel-strong: #fffdfa;
       --ink: #14231f;
       --muted: #5b6d67;
       --line: rgba(20, 35, 31, 0.12);
@@ -22,16 +20,16 @@
       --teal-deep: #095b54;
       --gold: #d6a64d;
       --rose: #b45d4e;
-      --shadow: 0 24px 60px rgba(36, 45, 43, 0.12);
-      --shadow-soft: 0 12px 28px rgba(36, 45, 43, 0.08);
+      --shadow: 0 16px 34px rgba(36, 45, 43, 0.08);
+      --shadow-soft: 0 8px 18px rgba(36, 45, 43, 0.06);
       --radius-xl: 32px;
       --radius-lg: 24px;
       --radius-md: 18px;
       --max: 1240px;
       --nav-height: 76px;
-      --font-body: "Manrope", "Segoe UI", sans-serif;
-      --font-display: "Instrument Serif", "Georgia", serif;
-      --font-mono: "IBM Plex Mono", "Consolas", monospace;
+      --font-body: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+      --font-display: Georgia, "Times New Roman", serif;
+      --font-mono: Consolas, "Liberation Mono", monospace;
     }
 
     * {
@@ -56,32 +54,6 @@
       overflow-x: hidden;
     }
 
-    body::before,
-    body::after {
-      content: "";
-      position: fixed;
-      inset: auto;
-      width: 42rem;
-      height: 42rem;
-      border-radius: 50%;
-      filter: blur(80px);
-      pointer-events: none;
-      opacity: 0.22;
-      z-index: -2;
-    }
-
-    body::before {
-      top: -12rem;
-      left: -10rem;
-      background: rgba(14, 124, 114, 0.36);
-    }
-
-    body::after {
-      right: -10rem;
-      top: 22rem;
-      background: rgba(180, 93, 78, 0.24);
-    }
-
     a {
       color: inherit;
       text-decoration: none;
@@ -97,13 +69,26 @@
       isolation: isolate;
     }
 
+    .page-shell::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto 0;
+      height: 38rem;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at 12% 10%, rgba(14, 124, 114, 0.18), transparent 28%),
+        radial-gradient(circle at 82% 12%, rgba(214, 166, 77, 0.14), transparent 24%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0));
+      z-index: -1;
+    }
+
     .site-nav {
       position: sticky;
       top: 0;
       z-index: 50;
-      backdrop-filter: blur(18px) saturate(160%);
-      background: rgba(247, 241, 232, 0.72);
+      background: rgba(247, 241, 232, 0.96);
       border-bottom: 1px solid rgba(20, 35, 31, 0.08);
+      box-shadow: 0 10px 24px rgba(36, 45, 43, 0.05);
     }
 
     .nav-inner {
@@ -151,13 +136,12 @@
       color: var(--muted);
       font-size: 0.94rem;
       font-weight: 700;
-      transition: color 0.22s ease, background 0.22s ease, transform 0.22s ease;
+      transition: color 0.18s ease, background 0.18s ease;
     }
 
     .nav-links a:hover {
       color: var(--ink);
       background: rgba(255, 255, 255, 0.74);
-      transform: translateY(-1px);
     }
 
     .nav-links .cta-link {
@@ -193,9 +177,8 @@
     .feature-card,
     .cta-panel {
       background: var(--panel);
-      border: 1px solid rgba(255, 255, 255, 0.55);
+      border: 1px solid rgba(20, 35, 31, 0.08);
       box-shadow: var(--shadow);
-      backdrop-filter: blur(22px);
     }
 
     .hero-copy {
@@ -203,6 +186,10 @@
       border-radius: var(--radius-xl);
       position: relative;
       overflow: hidden;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.52), rgba(255, 255, 255, 0) 24%),
+        linear-gradient(135deg, rgba(255, 251, 245, 0.98), rgba(249, 242, 233, 0.96));
+      animation: intro-rise 0.65s cubic-bezier(0.2, 0.8, 0.2, 1) both;
     }
 
     .hero-copy::after {
@@ -272,17 +259,13 @@
       border: 1px solid transparent;
       font-weight: 800;
       font-size: 0.95rem;
-      transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease, background 0.22s ease;
-    }
-
-    .button:hover {
-      transform: translateY(-2px);
+      transition: background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
     }
 
     .button-primary {
       background: linear-gradient(135deg, var(--teal), var(--teal-deep));
       color: #fff;
-      box-shadow: 0 16px 28px rgba(14, 124, 114, 0.22);
+      box-shadow: 0 10px 18px rgba(14, 124, 114, 0.16);
     }
 
     .button-secondary {
@@ -331,6 +314,21 @@
       grid-template-rows: auto auto 1fr;
       gap: 18px;
       overflow: hidden;
+      position: relative;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.44), rgba(255, 255, 255, 0) 22%),
+        linear-gradient(135deg, rgba(255, 250, 244, 0.98), rgba(247, 239, 231, 0.96));
+      animation: intro-rise 0.65s cubic-bezier(0.2, 0.8, 0.2, 1) 0.08s both;
+    }
+
+    .hero-panel::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(135deg, rgba(14, 124, 114, 0.08), transparent 32%),
+        linear-gradient(315deg, rgba(214, 166, 77, 0.08), transparent 28%);
     }
 
     .panel-head {
@@ -405,6 +403,11 @@
       border-radius: var(--radius-xl);
       padding: 28px;
       margin-top: 22px;
+      content-visibility: auto;
+      contain-intrinsic-size: 1px 760px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.46), rgba(255, 255, 255, 0) 20%),
+        linear-gradient(135deg, rgba(255, 252, 247, 0.98), rgba(247, 241, 232, 0.96));
     }
 
     .section-header {
@@ -445,7 +448,9 @@
     .stat-card {
       padding: 22px;
       border-radius: var(--radius-lg);
-      background: rgba(255, 255, 255, 0.66);
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.54), rgba(255, 255, 255, 0)),
+        rgba(255, 255, 255, 0.72);
       border: 1px solid rgba(20, 35, 31, 0.08);
       box-shadow: var(--shadow-soft);
       position: relative;
@@ -507,6 +512,9 @@
       border-radius: var(--radius-lg);
       position: relative;
       overflow: hidden;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.48), rgba(255, 255, 255, 0)),
+        rgba(255, 251, 245, 0.92);
     }
 
     .category-card::before {
@@ -566,6 +574,9 @@
     .story-card {
       padding: 26px;
       border-radius: var(--radius-lg);
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.44), rgba(255, 255, 255, 0)),
+        rgba(255, 251, 245, 0.92);
     }
 
     .story-step {
@@ -600,6 +611,12 @@
       display: flex;
       flex-direction: column;
       min-height: 100%;
+      transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 18px 36px rgba(36, 45, 43, 0.12);
     }
 
     .feature-card.hero-feature {
@@ -683,6 +700,9 @@
       padding: 22px 22px 24px;
       display: grid;
       gap: 12px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.56), rgba(255, 255, 255, 0)),
+        rgba(255, 251, 245, 0.96);
     }
 
     .feature-copy h3 {
@@ -702,6 +722,11 @@
       font-size: 0.92rem;
       font-weight: 800;
       color: var(--teal-deep);
+      transition: letter-spacing 0.18s ease, color 0.18s ease;
+    }
+
+    .feature-card:hover .feature-link {
+      letter-spacing: 0.02em;
     }
 
     .cta-panel {
@@ -712,6 +737,11 @@
       grid-template-columns: minmax(0, 1.1fr) auto;
       gap: 24px;
       align-items: center;
+      content-visibility: auto;
+      contain-intrinsic-size: 1px 320px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0)),
+        linear-gradient(135deg, rgba(255, 252, 247, 0.98), rgba(247, 241, 232, 0.95));
     }
 
     .cta-panel h2 {
@@ -735,15 +765,21 @@
     }
 
     .reveal {
-      opacity: 0;
-      transform: translateY(28px);
-      transition: opacity 0.7s ease, transform 0.7s ease;
-      transition-delay: var(--delay, 0ms);
+      opacity: 1;
+      transform: none;
+      transition: none;
     }
 
-    .reveal.is-visible {
-      opacity: 1;
-      transform: translateY(0);
+    @keyframes intro-rise {
+      from {
+        opacity: 0;
+        transform: translate3d(0, 18px, 0);
+      }
+
+      to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+      }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -754,13 +790,20 @@
       .reveal,
       .nav-links a,
       .button,
-      .feature-link {
+      .feature-link,
+      .feature-card,
+      .hero-copy,
+      .hero-panel {
         transition: none;
+        animation: none;
       }
 
-      .reveal {
-        opacity: 1;
-        transform: none;
+    }
+
+    @supports not (content-visibility: auto) {
+      .surface,
+      .cta-panel {
+        contain-intrinsic-size: auto;
       }
     }
 
@@ -1168,19 +1211,5 @@
     </main>
   </div>
 
-  <script>
-    (function() {
-      const reveals = document.querySelectorAll('.reveal');
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach((entry) => {
-          if (!entry.isIntersecting) return;
-          entry.target.classList.add('is-visible');
-          observer.unobserve(entry.target);
-        });
-      }, { threshold: 0.18 });
-
-      reveals.forEach((el) => observer.observe(el));
-    })();
-  </script>
 </body>
 </html>
