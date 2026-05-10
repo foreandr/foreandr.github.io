@@ -1,0 +1,9 @@
+{
+  "last_crawl_at": "2026-05-10T14:07:52.256181-04:00",
+  "generated_files": [
+    "ge_buy_limits.csv",
+    "ge_buy_limits_enriched.csv",
+    "ge_buy_limits_enriched_with_trade_volume.csv",
+    "ge_buy_limits_enriched_with_trade_volume.json"
+  ]
+}

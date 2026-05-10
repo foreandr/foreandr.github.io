@@ -1,0 +1,1030 @@
+	<!doctype html>
+	<!--[if lt IE 7]><html class="no-js lt-ie10 lt-ie9 lt-ie8 lt-ie7" lang="en"><![endif]-->
+	<!--[if (IE 7)&!(IEMobile)]><html class="no-js lt-ie10 lt-ie9 lt-ie8" lang="en"><![endif]-->
+	<!--[if (IE 8)&!(IEMobile)]><html class="no-js lt-ie10 lt-ie9" lang="en"><![endif]-->
+	<!--[if (IE 9)&!(IEMobile)]><html class="no-js lt-ie10" lang="en"><![endif]-->
+	<!--[if gt IE 9]><!--><!-- x --> <html class="no-js" lang="en"> <!--<![endif]-->
+	<head>
+		<title>Restore potion (4) - Grand Exchange - RuneScape</title>
+			<meta name="description" content="4 doses of restore potion."/>
+		<meta name="author" content="Jagex"/>
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<link rel="dns-prefetch" href="//www.google-analytics.com" />
+		<link rel="dns-prefetch" href="//ajax.googleapis.com" />
+		<link rel="dns-prefetch" href="//connect.facebook.net" />
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() {
+            dataLayer.push(arguments);
+        }
+        gtag("consent", "default", {
+            ad_storage: "denied",
+            analytics_storage: "denied",
+            functionality_storage: "denied",
+            personalization_storage: "denied",
+            ad_personalization: "denied",
+            ad_user_data: "denied",
+            security_storage: "granted",
+            wait_for_update: 1500,
+        });
+        gtag("set", "ads_data_redaction", true);
+        (function(){
+            function hasGroup(id) {
+                return typeof window.OnetrustActiveGroups === "string" &&
+                    window.OnetrustActiveGroups.indexOf(id) > -1;
+            }
+            function syncGCM(){
+                if (typeof window.gtag !== "function") return;
+                if (typeof window.OnetrustActiveGroups !== "string") return;
+                gtag("consent", "update", {
+                    ad_personalization:         hasGroup("C0004") ? "granted" : "denied",
+                    ad_storage:                 hasGroup("C0004") ? "granted" : "denied",
+                    ad_user_data:               hasGroup("C0004") ? "granted" : "denied",
+                    analytics_storage:          hasGroup("C0002") ? "granted" : "denied",
+                    functionality_storage:      hasGroup("C0003") ? "granted" : "denied",
+                    personalization_storage:    hasGroup("C0003") ? "granted" : "denied",
+                    security_storage:           "granted",
+                });
+                dataLayer.push({event: "cookie_consent_update", onetrust_groups: window.OnetrustActiveGroups});
+            }
+            window.addEventListener("OneTrustGroupsUpdated", syncGCM, false);
+            syncGCM();
+        })();
+    </script>
+    <script src='https://cdn-ukwest.onetrust.com/consent/019b25be-0577-738e-8af0-4b232af181c1/OtAutoBlock.js'></script>
+    <script>
+        !(function (w, d, s, u) {
+            w._athena = w._athena || {};
+            w._athena.queue = w._athena.queue || [];
+
+            function athena(component, method, callback, ...args) {
+                const call = { component, method, callback, args };
+
+                if (typeof w._athena.direct === "function") {
+                    w._athena.direct(call);
+                    return;
+                }
+
+                w._athena.queue.push(call);
+            }
+
+            w.athena = w.athena || athena;
+
+            var f = d.getElementsByTagName(s)[0];
+            var js = d.createElement(s);
+            js.src = u;
+            js.async = true;
+            js.setAttribute("data-consent-domain", "runescape.com");
+            js.setAttribute("data-environment", "production");
+            js.setAttribute("data-analytics-enabled", "false");
+            js.setAttribute("data-acquisition-product-id", "com.runescape");
+            js.setAttribute("data-acquisition-domain", "runescape.com");
+            
+            f.parentNode.insertBefore(js, f);
+        })(window, document, "script", 'https://athena.runescape.com/athena.0.latest.js');
+    </script>
+    	<script src='https://www.runescape.com/js/c/rs3/modernizr_3_0_0_min-169.js'></script>
+    	<link href="https://www.runescape.com/css/c/fonts-181.css" rel="stylesheet" type="text/css" media="all" />
+    	<link href="https://www.runescape.com/css/c/components-181.css" rel="stylesheet" />
+		<link href="https://www.runescape.com/css/c/pagesal-181.css" rel="stylesheet" />
+		<link href="https://www.runescape.com/css/c/pagesmz-181.css" rel="stylesheet" />
+        <meta name='format-detection' content='telephone=no' />
+        <meta name='theme-color' content='#1C2C34' />
+        <meta name='msapplication-navbutton-color' content='#1C2C34'>
+        <meta name='apple-mobile-web-app-capable' content='yes'>
+        <meta name='apple-mobile-web-app-status-bar-style' content='black-translucent'>
+        <link rel='apple-touch-icon' sizes='57x57' href='https://www.runescape.com/img/responsive/runescape/icons/runescape-57.png?1' />
+        <link rel='apple-touch-icon' sizes='60x60' href='https://www.runescape.com/img/responsive/runescape/icons/runescape-60.png?1' />
+        <link rel='apple-touch-icon' sizes='72x72' href='https://www.runescape.com/img/responsive/runescape/icons/runescape-72.png?1' />
+        <link rel='apple-touch-icon' sizes='76x76' href='https://www.runescape.com/img/responsive/runescape/icons/runescape-76.png?1' />
+        <link rel='apple-touch-icon' sizes='114x114' href='https://www.runescape.com/img/responsive/runescape/icons/runescape-114.png?1' />
+        <link rel='apple-touch-icon' sizes='120x120' href='https://www.runescape.com/img/responsive/runescape/icons/runescape-120.png?1' />
+        <link rel='apple-touch-icon' sizes='144x144' href='https://www.runescape.com/img/responsive/runescape/icons/runescape-144.png?1' />
+        <link rel='apple-touch-icon' sizes='152x152' href='https://www.runescape.com/img/responsive/runescape/icons/runescape-152.png?1' />
+        <link rel='apple-touch-icon' sizes='180x180' href='https://www.runescape.com/img/responsive/runescape/icons/runescape-180.png?1' />
+        <link rel='icon' type='image/png' sizes='192x192' href='https://www.runescape.com/img/responsive/runescape/icons/runescape-192.png?1' />
+        <link rel='icon' type='image/png' sizes='32x32' href='https://www.runescape.com/img/responsive/runescape/icons/runescape-32.png?1' />
+        <link rel='icon' type='image/png' sizes='96x96' href='https://www.runescape.com/img/responsive/runescape/icons/runescape-96.png?1' />
+        <link rel='icon' type='image/png' sizes='16x16' href='https://www.runescape.com/img/responsive/runescape/icons/runescape-16.png?1' />
+        <meta name='msapplication-TileColor' content='#ffffff' />
+        <meta name='msapplication-TileImage' content='https://www.runescape.com/img/responsive/runescape/icons/runescape-144.png?1' />
+			<meta property="og:title" content="Restore potion (4) - Grand Exchange - RuneScape" />
+			<meta property="og:site_name" content="RuneScape" />
+		<meta property="og:image" content="https://www.runescape.com/img/responsive/runescape/social-share-fb.jpg?1" />
+		<meta property="og:url" content="https://secure.runescape.com/m=itemdb_rs/Restore+potion+%284%29/viewitem?obj=2430" />
+			<meta property="og:description" content="4 doses of restore potion." />
+		<meta name='twitter:card' content='summary_large_image'/>
+		<meta name="twitter:domain" content="RuneScape.com">
+		<meta name="twitter:url" content="https://secure.runescape.com/m=itemdb_rs/Restore+potion+%284%29/viewitem?obj=2430">
+			<meta name="twitter:title" content="Restore potion (4) - Grand Exchange - RuneScape">
+			<meta name="twitter:description" content="4 doses of restore potion.">
+		<meta name="twitter:image:src" content="https://www.runescape.com/img/responsive/runescape/social-share.jpg?1">
+		<meta name="twitter:site" content="@RuneScape">
+		<meta name="google-site-verification" content="pUwl5KYHKSZ6tbbgsR2wYNv1kbVmsYral3iFmijHTWM" />
+		<meta name='apple-itunes-app' content='app-id=1332022656' />
+<link rel='canonical' href='https://secure.runescape.com/m=itemdb_rs/Restore+potion+%284%29/viewitem?obj=2430' />
+			<meta property="fb:app_id" content="174823375888281" />
+    <script type="speculationrules">
+        {
+            "prerender": [
+                {
+                    "where": {
+                        "and": [
+                            { "href_matches": "/*" },
+                            { "not": { "href_matches": "/logout" }}
+                        ]
+                    },
+                    "eagerness": "moderate"
+                },
+                {
+                    "where": {
+                        "and": [
+                            { "selector_matches": ".a-button" },
+                            { "not": { "selector_matches": ".a-button--style-hollow" }},
+                            { "not": { "href_matches": "/logout" }}
+                        ]
+                    }
+                }
+            ]
+        }
+    </script>
+    <style>
+        @view-transition {
+            navigation: auto;
+        }
+    </style>
+		<script>var bStyle = document.createElement('style'); bStyle.type = 'text/css'; bStyle.setAttribute('id', 'bConHide'); bStyle.appendChild(document.createTextNode('body { opacity: 0!important; filter: alpha(opacity=0)!important; background: none!important; }')); document.head.appendChild(bStyle);</script>
+	</head>
+	<body id="grandexchange" class="grandexchange en" itemscope itemtype="https://schema.org/WebPage">
+		<div class="stickyWrap">
+	<header class='c-responsive-header'>
+		<div class='c-responsive-header__grey-out' id='nav-grey-out'></div>
+		<div class='c-responsive-header__sub'>
+			<div class='c-responsive-header__sub-inner'>
+				<nav class='c-responsive-header__sub-nav'>
+					<span class='c-responsive-header__sub-option' id='player-count-wrapper'>
+						<span id='playerCount' class='c-responsive-header__player-count' data-test='header-sub-online-count'>0</span>
+						<span>Online</span>
+					</span>
+					<a class='c-responsive-header__sub-link' href='https://oldschool.runescape.com/' data-test='header-sub-oldschool'>Old School</a>
+					<a class='c-responsive-header__sub-link' href='https://rs.runescape.com/en-GB/membership' data-test='header-sub-subscribe'>Subscribe</a>
+					<a class='c-responsive-header__sub-link' href='https://account.jagex.com/en-GB/manage/profile' data-test='header-sub-account'>Account</a>
+					<a class='c-responsive-header__sub-link' href='https://support.runescape.com' target='_blank' data-test='header-sub-support'>Support</a>
+				</nav>
+			</div>
+		</div>
+		<div class='c-responsive-header__main'>
+			<div class='c-responsive-header__inner'>
+				<a class='c-responsive-header__logo' href='https://www.runescape.com/' data-test='header-main-logo'>
+					<img class='c-responsive-header__logo-image' src='https://www.runescape.com/img/responsive/common/logos/runescape.png?1' srcset='https://www.runescape.com/img/responsive/common/logos/runescape.png?1 1x, https://www.runescape.com/img/responsive/common/logos/runescape@2x.png?1 2x' title="RuneScape" alt="RuneScape logo" />
+				</a>
+				<nav class='c-responsive-header__nav' id='responsive-header-nav'>
+					<div class='c-responsive-header__group'>
+						<a class='c-responsive-header__top c-responsive-header__top--type-parent' data-js-responsive-header-top data-test='header-main-game-guide' href='https://www.runescape.com/game-info'>Game Guide</a>
+						<div class='c-responsive-header__children' data-js-responsive-header-children>
+							<a class='c-responsive-header__option c-responsive-header__option--type-mobile' data-test='header-main-game-info' href='https://www.runescape.com/game-info'>Game Info</a>
+								<a class='c-responsive-header__option c-responsive-header__option--type-external' data-test='header-main-wiki' href='https://runescape.wiki' target='_blank' rel='noopener'>Wiki</a>
+							<a class='c-responsive-header__option' data-test='header-main-beginners-guide' href='https://www.runescape.com/game-guide/beginners-guide'>Beginners' Guide</a>
+							<a class='c-responsive-header__option' data-test='header-main-skills' href='https://www.runescape.com/game-guide/skills'>Skills</a>
+							<a class='c-responsive-header__option' data-test='header-main-combat' href='https://www.runescape.com/game-guide/combat'>Combat</a>
+						</div>
+					</div>
+					<div class='c-responsive-header__group'>
+						<a class='c-responsive-header__top' data-js-responsive-header-top data-test='header-main-news' href='https://secure.runescape.com/m=news/'>News</a>
+					</div>
+					<div class='c-responsive-header__group'>
+						<a class='c-responsive-header__top c-responsive-header__top--type-parent' data-js-responsive-header-top data-test='header-main-community' href='https://www.runescape.com/community'>Community</a>
+						<div class='c-responsive-header__children' data-js-responsive-header-children>
+							<a class='c-responsive-header__option c-responsive-header__option--type-mobile' data-test='header-main-community-home' href='https://www.runescape.com/community'>Home</a>
+							<a class='c-responsive-header__option c-responsive-header__option--type-external' data-test='header-main-forums' href='https://rs.game/Farewell-Forums' target='_blank' rel='noopener'>Forums</a>
+							<a class='c-responsive-header__option' data-test='header-main-hiscores' href='https://secure.runescape.com/m=hiscore/'>HiScores</a>
+							<a class='c-responsive-header__option' data-test='header-main-leagues-hiscores' href='https://rs.runescape.com/en-GB/hiscores/leagues'>Leagues HiScores</a>
+							<a class='c-responsive-header__option' data-test='header-main-grand-exchange' href='https://secure.runescape.com/m=itemdb_rs/'>Grand Exchange</a>
+							<a class='c-responsive-header__option' data-test='header-main-clans' href='https://secure.runescape.com/m=clan-home/'>Clans</a>
+						</div>
+					</div>
+					<div class='c-responsive-header__group'>
+						<a class='c-responsive-header__top c-responsive-header__top--type-parent' data-js-responsive-header-top data-test='header-main-shop' href='https://rs.runescape.com/en-GB/membership'>Shop</a>
+						<div class='c-responsive-header__children' data-js-responsive-header-children>
+							<a class='c-responsive-header__option c-responsive-header__option--type-icon c-responsive-header__option--type-membership' data-test='header-main-membership' href='https://rs.runescape.com/en-GB/membership'><span>Membership</span></a>
+							<a class='c-responsive-header__option c-responsive-header__option--type-icon c-responsive-header__option--type-bonds' data-test='header-main-bonds' href='https://www.runescape.com/bonds'><span>Bonds</span></a>
+							<a class='c-responsive-header__option c-responsive-header__option--type-icon c-responsive-header__option--type-cards' data-test='header-main-pre-paid-cards' href='https://www.runescape.com/store_locator'><span>Pre-paid Cards</span></a>
+							<a class='c-responsive-header__option c-responsive-header__option--type-icon c-responsive-header__option--type-external c-responsive-header__option--type-merchandise' data-test='header-main-merchandise' href='http://runescape.backstreetmerch.com' target='_blank'><span>Merchandise</span></a>
+							<a class='c-responsive-header__option c-responsive-header__option--type-icon c-responsive-header__option--type-codes' data-test='header-main-codes' href='https://secure.runescape.com/m=billing_core/voucherform.ws'><span>Redeem Code</span></a>
+						</div>
+					</div>
+					<div class='c-responsive-header__group c-responsive-header__group--type-gap'>
+						<a class='c-responsive-header__top c-responsive-header__top--type-download' data-js-responsive-header-top data-test='header-main-download' href='https://www.runescape.com/launcher'>Download</a>
+					</div>
+						<div class='c-responsive-header__group'>
+							<a class='c-responsive-header__top' data-test='header-main-login' href='https://secure.runescape.com/m=weblogin/loginform?theme=runescape&amp;mod=itemdb_rs&amp;ssl=1&amp;dest=Restore+potion+%284%29%2Fviewitem%3Fobj%3D2430'>Log in</a>
+						</div>
+						<div class='c-responsive-header__group c-responsive-header__group--mobile-only'>
+							<a class='c-responsive-header__top' data-js-responsive-header-top data-test='header-main-account-settings' href='https://account.jagex.com/en-GB/manage/profile'>My Account</a>
+						</div>
+						<div class='c-responsive-header__group'>
+							<a id='subscribe' class='c-responsive-header__top' data-test='header-main-subscribe' href='https://rs.runescape.com/en-GB/membership'>Subscribe</a>
+						</div>
+						<div class='c-responsive-header__group'>
+							<a id='try' class='c-responsive-header__top c-responsive-header__top--type-wide c-responsive-header__top--type-primary' data-test='header-main-try-free' href='https://www.runescape.com/launcher'>Try Free</a>
+						</div>
+					<div class='c-responsive-header__group c-responsive-header__group--mobile-only'>
+						<a class='c-responsive-header__top c-responsive-header__top--type-external' data-js-responsive-header-top data-test='header-main-support' href='https://support.runescape.com'>Support</a>
+						<a class='c-responsive-header__top c-responsive-header__top--type-external' data-js-responsive-header-top data-test='header-main-old-school' href='https://oldschool.runescape.com/'>Old School</a>
+					</div>
+				</nav>
+				<a class='c-responsive-header__hamburger' id='responsive-header-hamburger' href='#responsive-header-nav' aria-label="Open the menu" data-test='header-main-menu'>Menu</a>
+			</div>
+		</div>
+	</header>
+	<div class="banner">
+		<div class="inner">
+			<img src="https://www.runescape.com/img/rs3/banners/generic.jpg?1" alt='RuneScape Landscape' />
+		</div>
+	</div>
+<div class='contents'>
+	<main class='main'>
+	<h1 class="title"><span>Grand Exchange</span></h1>
+	<ul class="breadcrumb" itemprop="breadcrumb">
+	<li><a href='https://www.runescape.com/' itemprop='url'>Home</a></li>
+			<li><a href="https://secure.runescape.com/m=itemdb_rs/" itemprop="url">Grand Exchange</a></li>
+			<li>Catalogue</li>
+	</ul>
+	<div class='secondary-wrap decoration'>
+		<nav class='secondary'>
+			<ul>
+				<li><a href='https://secure.runescape.com/m=itemdb_rs/'><span>Overview</span></a></li>
+				<li><a href='https://secure.runescape.com/m=itemdb_rs/results'><span>Search</span></a></li>
+				<li><a href='https://secure.runescape.com/m=itemdb_rs/top100'><span>Market Movers</span></a></li>
+				<li class=active><a href='https://secure.runescape.com/m=itemdb_rs/catalogue'><span>Catalogue</span></a></li>
+			</ul>
+		</nav>
+	</div>
+		<div class='content roughTop'>
+			<div class='item-description member'>
+				<h2>Restore potion (4)</h2>
+				<p>4 doses of restore potion.</p>
+				<img alt='Restore potion (4)' src='https://secure.runescape.com/m=itemdb_rs/1777979597642_obj_big.gif?id=2430' style='height: 75px; width: 75px;' />
+			</div>
+			<div class='stats'>
+				<h3>Current Guide Price <span title='617'>617</span></h3>
+				<ul>
+					<li>Today's Change 	<span class='stats__change '><span title=' 0' class='stats__gp-change'>0</span> <span class='stats__pc-change'>+ 0%</span></span>
+</li>
+					<li>1 Month Change 	<span class='stats__change stats__change--negative'><span title='- 27' class='stats__gp-change'>- 27</span> <span class='stats__pc-change'>- 4%</span></span>
+</li>
+					<li>3 Month Change 	<span class='stats__change stats__change--negative'><span title='- 48' class='stats__gp-change'>- 48</span> <span class='stats__pc-change'>- 7%</span></span>
+</li>
+					<li>6 Month Change 	<span class='stats__change stats__change--negative'><span title='- 120' class='stats__gp-change'>- 120</span> <span class='stats__pc-change'>- 16%</span></span>
+</li>
+				</ul>
+			</div>
+			<script>
+                function scaleLabelFilter(number) {
+                    const decPlaces = Math.pow(10,1), abbrev = ["k", "m", "b", "t", "q", "Q"];
+                    for (let i = abbrev.length-1; i >= 0; i--) {
+                        const size = Math.pow(10, (i + 1) * 3);
+                        if(size <= number) {
+                            number = Math.round(number*decPlaces/size)/decPlaces;
+                            if((number === 1000) && (i < abbrev.length - 1)) {
+                                number = 1;
+                                i++;
+                            }
+                            number += abbrev[i];
+                            break;
+                        }
+                    }
+
+                    return number;
+                }
+				var average30 = [['Date','Daily','Average']], average90 = [['Date','Daily','Average']], average180 = [['Date','Daily','Average']], trade30 =[['Date','Total']], trade90 =[['Date','Total']], trade180 =[['Date','Total']];
+					average30.push([new Date('2026/04/11'), 644, 651]);
+					trade30.push([new Date('2026/04/11'), 226]);
+					average30.push([new Date('2026/04/12'), 644, 650]);
+					trade30.push([new Date('2026/04/12'), 28]);
+					average30.push([new Date('2026/04/13'), 644, 650]);
+					trade30.push([new Date('2026/04/13'), 224]);
+					average30.push([new Date('2026/04/14'), 644, 650]);
+					trade30.push([new Date('2026/04/14'), 23]);
+					average30.push([new Date('2026/04/15'), 644, 649]);
+					trade30.push([new Date('2026/04/15'), 252]);
+					average30.push([new Date('2026/04/16'), 644, 649]);
+					trade30.push([new Date('2026/04/16'), 17]);
+					average30.push([new Date('2026/04/17'), 644, 648]);
+					trade30.push([new Date('2026/04/17'), 275]);
+					average30.push([new Date('2026/04/18'), 644, 648]);
+					trade30.push([new Date('2026/04/18'), 207]);
+					average30.push([new Date('2026/04/19'), 644, 647]);
+					trade30.push([new Date('2026/04/19'), 49]);
+					average30.push([new Date('2026/04/20'), 644, 647]);
+					trade30.push([new Date('2026/04/20'), 915]);
+					average30.push([new Date('2026/04/21'), 644, 647]);
+					trade30.push([new Date('2026/04/21'), 69]);
+					average30.push([new Date('2026/04/22'), 617, 645]);
+					trade30.push([new Date('2026/04/22'), 7]);
+					average30.push([new Date('2026/04/23'), 617, 644]);
+					trade30.push([new Date('2026/04/23'), 10]);
+					average30.push([new Date('2026/04/24'), 617, 643]);
+					trade30.push([new Date('2026/04/24'), 1214]);
+					average30.push([new Date('2026/04/25'), 617, 641]);
+					trade30.push([new Date('2026/04/25'), 2673]);
+					average30.push([new Date('2026/04/26'), 617, 640]);
+					trade30.push([new Date('2026/04/26'), 1005]);
+					average30.push([new Date('2026/04/27'), 617, 639]);
+					trade30.push([new Date('2026/04/27'), 76]);
+					average30.push([new Date('2026/04/28'), 617, 637]);
+					trade30.push([new Date('2026/04/28'), 1011]);
+					average30.push([new Date('2026/04/29'), 617, 636]);
+					trade30.push([new Date('2026/04/29'), 1238]);
+					average30.push([new Date('2026/04/30'), 617, 635]);
+					trade30.push([new Date('2026/04/30'), 21]);
+					average30.push([new Date('2026/05/01'), 617, 635]);
+					trade30.push([new Date('2026/05/01'), 1019]);
+					average30.push([new Date('2026/05/02'), 617, 634]);
+					trade30.push([new Date('2026/05/02'), 33]);
+					average30.push([new Date('2026/05/03'), 617, 633]);
+					trade30.push([new Date('2026/05/03'), 841]);
+					average30.push([new Date('2026/05/04'), 617, 632]);
+					trade30.push([new Date('2026/05/04'), 601]);
+					average30.push([new Date('2026/05/05'), 617, 631]);
+					trade30.push([new Date('2026/05/05'), 126]);
+					average30.push([new Date('2026/05/06'), 617, 630]);
+					trade30.push([new Date('2026/05/06'), 450]);
+					average30.push([new Date('2026/05/07'), 617, 629]);
+					trade30.push([new Date('2026/05/07'), 49]);
+					average30.push([new Date('2026/05/08'), 617, 628]);
+					trade30.push([new Date('2026/05/08'), 133]);
+					average30.push([new Date('2026/05/09'), 617, 627]);
+					trade30.push([new Date('2026/05/09'), 1891]);
+                	average90.push([new Date('2026/02/10'), 665, 690]);
+					trade90.push([new Date('2026/02/10'), 402]);
+                	average90.push([new Date('2026/02/11'), 665, 688]);
+					trade90.push([new Date('2026/02/11'), 581]);
+                	average90.push([new Date('2026/02/12'), 665, 687]);
+					trade90.push([new Date('2026/02/12'), 156]);
+                	average90.push([new Date('2026/02/13'), 665, 685]);
+					trade90.push([new Date('2026/02/13'), 239]);
+                	average90.push([new Date('2026/02/14'), 665, 683]);
+					trade90.push([new Date('2026/02/14'), 26]);
+                	average90.push([new Date('2026/02/15'), 665, 682]);
+					trade90.push([new Date('2026/02/15'), 563]);
+                	average90.push([new Date('2026/02/16'), 665, 680]);
+					trade90.push([new Date('2026/02/16'), 341]);
+                	average90.push([new Date('2026/02/17'), 665, 679]);
+					trade90.push([new Date('2026/02/17'), 753]);
+                	average90.push([new Date('2026/02/18'), 665, 678]);
+					trade90.push([new Date('2026/02/18'), 330]);
+                	average90.push([new Date('2026/02/19'), 665, 677]);
+					trade90.push([new Date('2026/02/19'), 228]);
+                	average90.push([new Date('2026/02/20'), 662, 676]);
+					trade90.push([new Date('2026/02/20'), 633]);
+                	average90.push([new Date('2026/02/21'), 662, 675]);
+					trade90.push([new Date('2026/02/21'), 108]);
+                	average90.push([new Date('2026/02/22'), 662, 674]);
+					trade90.push([new Date('2026/02/22'), 0]);
+                	average90.push([new Date('2026/02/23'), 662, 673]);
+					trade90.push([new Date('2026/02/23'), 88]);
+                	average90.push([new Date('2026/02/24'), 662, 672]);
+					trade90.push([new Date('2026/02/24'), 127]);
+                	average90.push([new Date('2026/02/25'), 662, 671]);
+					trade90.push([new Date('2026/02/25'), 80]);
+                	average90.push([new Date('2026/02/26'), 662, 670]);
+					trade90.push([new Date('2026/02/26'), 29]);
+                	average90.push([new Date('2026/02/27'), 662, 669]);
+					trade90.push([new Date('2026/02/27'), 211]);
+                	average90.push([new Date('2026/02/28'), 662, 667]);
+					trade90.push([new Date('2026/02/28'), 7]);
+                	average90.push([new Date('2026/03/01'), 662, 666]);
+					trade90.push([new Date('2026/03/01'), 0]);
+                	average90.push([new Date('2026/03/02'), 662, 665]);
+					trade90.push([new Date('2026/03/02'), 1]);
+                	average90.push([new Date('2026/03/03'), 662, 664]);
+					trade90.push([new Date('2026/03/03'), 25]);
+                	average90.push([new Date('2026/03/04'), 662, 663]);
+					trade90.push([new Date('2026/03/04'), 600]);
+                	average90.push([new Date('2026/03/05'), 662, 663]);
+					trade90.push([new Date('2026/03/05'), 166]);
+                	average90.push([new Date('2026/03/06'), 662, 663]);
+					trade90.push([new Date('2026/03/06'), 591]);
+                	average90.push([new Date('2026/03/07'), 662, 663]);
+					trade90.push([new Date('2026/03/07'), 155]);
+                	average90.push([new Date('2026/03/08'), 662, 663]);
+					trade90.push([new Date('2026/03/08'), 583]);
+                	average90.push([new Date('2026/03/09'), 662, 663]);
+					trade90.push([new Date('2026/03/09'), 16]);
+                	average90.push([new Date('2026/03/10'), 657, 662]);
+					trade90.push([new Date('2026/03/10'), 91]);
+                	average90.push([new Date('2026/03/11'), 657, 662]);
+					trade90.push([new Date('2026/03/11'), 911]);
+                	average90.push([new Date('2026/03/12'), 657, 662]);
+					trade90.push([new Date('2026/03/12'), 298]);
+                	average90.push([new Date('2026/03/13'), 657, 662]);
+					trade90.push([new Date('2026/03/13'), 110]);
+                	average90.push([new Date('2026/03/14'), 657, 661]);
+					trade90.push([new Date('2026/03/14'), 587]);
+                	average90.push([new Date('2026/03/15'), 657, 661]);
+					trade90.push([new Date('2026/03/15'), 249]);
+                	average90.push([new Date('2026/03/16'), 657, 661]);
+					trade90.push([new Date('2026/03/16'), 35]);
+                	average90.push([new Date('2026/03/17'), 657, 661]);
+					trade90.push([new Date('2026/03/17'), 150]);
+                	average90.push([new Date('2026/03/18'), 657, 660]);
+					trade90.push([new Date('2026/03/18'), 305]);
+                	average90.push([new Date('2026/03/19'), 657, 660]);
+					trade90.push([new Date('2026/03/19'), 35]);
+                	average90.push([new Date('2026/03/20'), 657, 660]);
+					trade90.push([new Date('2026/03/20'), 189]);
+                	average90.push([new Date('2026/03/21'), 657, 660]);
+					trade90.push([new Date('2026/03/21'), 193]);
+                	average90.push([new Date('2026/03/22'), 657, 659]);
+					trade90.push([new Date('2026/03/22'), 43]);
+                	average90.push([new Date('2026/03/23'), 657, 659]);
+					trade90.push([new Date('2026/03/23'), 96]);
+                	average90.push([new Date('2026/03/24'), 657, 659]);
+					trade90.push([new Date('2026/03/24'), 11]);
+                	average90.push([new Date('2026/03/25'), 657, 659]);
+					trade90.push([new Date('2026/03/25'), 27]);
+                	average90.push([new Date('2026/03/26'), 657, 659]);
+					trade90.push([new Date('2026/03/26'), 209]);
+                	average90.push([new Date('2026/03/27'), 657, 659]);
+					trade90.push([new Date('2026/03/27'), 25]);
+                	average90.push([new Date('2026/03/28'), 657, 658]);
+					trade90.push([new Date('2026/03/28'), 103]);
+                	average90.push([new Date('2026/03/29'), 657, 658]);
+					trade90.push([new Date('2026/03/29'), 6]);
+                	average90.push([new Date('2026/03/30'), 644, 658]);
+					trade90.push([new Date('2026/03/30'), 40]);
+                	average90.push([new Date('2026/03/31'), 644, 657]);
+					trade90.push([new Date('2026/03/31'), 309]);
+                	average90.push([new Date('2026/04/01'), 644, 656]);
+					trade90.push([new Date('2026/04/01'), 99]);
+                	average90.push([new Date('2026/04/02'), 644, 656]);
+					trade90.push([new Date('2026/04/02'), 127]);
+                	average90.push([new Date('2026/04/03'), 644, 655]);
+					trade90.push([new Date('2026/04/03'), 88]);
+                	average90.push([new Date('2026/04/04'), 644, 655]);
+					trade90.push([new Date('2026/04/04'), 246]);
+                	average90.push([new Date('2026/04/05'), 644, 654]);
+					trade90.push([new Date('2026/04/05'), 831]);
+                	average90.push([new Date('2026/04/06'), 644, 653]);
+					trade90.push([new Date('2026/04/06'), 67]);
+                	average90.push([new Date('2026/04/07'), 644, 653]);
+					trade90.push([new Date('2026/04/07'), 1127]);
+                	average90.push([new Date('2026/04/08'), 644, 652]);
+					trade90.push([new Date('2026/04/08'), 329]);
+                	average90.push([new Date('2026/04/09'), 644, 652]);
+					trade90.push([new Date('2026/04/09'), 514]);
+                	average90.push([new Date('2026/04/10'), 644, 651]);
+					trade90.push([new Date('2026/04/10'), 736]);
+                	average90.push([new Date('2026/04/11'), 644, 651]);
+					trade90.push([new Date('2026/04/11'), 226]);
+                	average90.push([new Date('2026/04/12'), 644, 650]);
+					trade90.push([new Date('2026/04/12'), 28]);
+                	average90.push([new Date('2026/04/13'), 644, 650]);
+					trade90.push([new Date('2026/04/13'), 224]);
+                	average90.push([new Date('2026/04/14'), 644, 650]);
+					trade90.push([new Date('2026/04/14'), 23]);
+                	average90.push([new Date('2026/04/15'), 644, 649]);
+					trade90.push([new Date('2026/04/15'), 252]);
+                	average90.push([new Date('2026/04/16'), 644, 649]);
+					trade90.push([new Date('2026/04/16'), 17]);
+                	average90.push([new Date('2026/04/17'), 644, 648]);
+					trade90.push([new Date('2026/04/17'), 275]);
+                	average90.push([new Date('2026/04/18'), 644, 648]);
+					trade90.push([new Date('2026/04/18'), 207]);
+                	average90.push([new Date('2026/04/19'), 644, 647]);
+					trade90.push([new Date('2026/04/19'), 49]);
+                	average90.push([new Date('2026/04/20'), 644, 647]);
+					trade90.push([new Date('2026/04/20'), 915]);
+                	average90.push([new Date('2026/04/21'), 644, 647]);
+					trade90.push([new Date('2026/04/21'), 69]);
+                	average90.push([new Date('2026/04/22'), 617, 645]);
+					trade90.push([new Date('2026/04/22'), 7]);
+                	average90.push([new Date('2026/04/23'), 617, 644]);
+					trade90.push([new Date('2026/04/23'), 10]);
+                	average90.push([new Date('2026/04/24'), 617, 643]);
+					trade90.push([new Date('2026/04/24'), 1214]);
+                	average90.push([new Date('2026/04/25'), 617, 641]);
+					trade90.push([new Date('2026/04/25'), 2673]);
+                	average90.push([new Date('2026/04/26'), 617, 640]);
+					trade90.push([new Date('2026/04/26'), 1005]);
+                	average90.push([new Date('2026/04/27'), 617, 639]);
+					trade90.push([new Date('2026/04/27'), 76]);
+                	average90.push([new Date('2026/04/28'), 617, 637]);
+					trade90.push([new Date('2026/04/28'), 1011]);
+                	average90.push([new Date('2026/04/29'), 617, 636]);
+					trade90.push([new Date('2026/04/29'), 1238]);
+                	average90.push([new Date('2026/04/30'), 617, 635]);
+					trade90.push([new Date('2026/04/30'), 21]);
+                	average90.push([new Date('2026/05/01'), 617, 635]);
+					trade90.push([new Date('2026/05/01'), 1019]);
+                	average90.push([new Date('2026/05/02'), 617, 634]);
+					trade90.push([new Date('2026/05/02'), 33]);
+                	average90.push([new Date('2026/05/03'), 617, 633]);
+					trade90.push([new Date('2026/05/03'), 841]);
+                	average90.push([new Date('2026/05/04'), 617, 632]);
+					trade90.push([new Date('2026/05/04'), 601]);
+                	average90.push([new Date('2026/05/05'), 617, 631]);
+					trade90.push([new Date('2026/05/05'), 126]);
+                	average90.push([new Date('2026/05/06'), 617, 630]);
+					trade90.push([new Date('2026/05/06'), 450]);
+                	average90.push([new Date('2026/05/07'), 617, 629]);
+					trade90.push([new Date('2026/05/07'), 49]);
+                	average90.push([new Date('2026/05/08'), 617, 628]);
+					trade90.push([new Date('2026/05/08'), 133]);
+                	average90.push([new Date('2026/05/09'), 617, 627]);
+					trade90.push([new Date('2026/05/09'), 1891]);
+                	average180.push([new Date('2025/11/12'), 737, 727]);
+					trade180.push([new Date('2025/11/12'), 628]);
+                	average180.push([new Date('2025/11/13'), 737, 727]);
+					trade180.push([new Date('2025/11/13'), 43]);
+                	average180.push([new Date('2025/11/14'), 737, 728]);
+					trade180.push([new Date('2025/11/14'), 142]);
+                	average180.push([new Date('2025/11/15'), 737, 729]);
+					trade180.push([new Date('2025/11/15'), 158]);
+                	average180.push([new Date('2025/11/16'), 737, 730]);
+					trade180.push([new Date('2025/11/16'), 73]);
+                	average180.push([new Date('2025/11/17'), 737, 730]);
+					trade180.push([new Date('2025/11/17'), 32]);
+                	average180.push([new Date('2025/11/18'), 737, 731]);
+					trade180.push([new Date('2025/11/18'), 45]);
+                	average180.push([new Date('2025/11/19'), 737, 732]);
+					trade180.push([new Date('2025/11/19'), 73]);
+                	average180.push([new Date('2025/11/20'), 737, 733]);
+					trade180.push([new Date('2025/11/20'), 205]);
+                	average180.push([new Date('2025/11/21'), 737, 733]);
+					trade180.push([new Date('2025/11/21'), 284]);
+                	average180.push([new Date('2025/11/22'), 737, 734]);
+					trade180.push([new Date('2025/11/22'), 202]);
+                	average180.push([new Date('2025/11/23'), 737, 735]);
+					trade180.push([new Date('2025/11/23'), 148]);
+                	average180.push([new Date('2025/11/24'), 737, 736]);
+					trade180.push([new Date('2025/11/24'), 2746]);
+                	average180.push([new Date('2025/11/25'), 737, 737]);
+					trade180.push([new Date('2025/11/25'), 0]);
+                	average180.push([new Date('2025/11/26'), 737, 737]);
+					trade180.push([new Date('2025/11/26'), 0]);
+                	average180.push([new Date('2025/11/27'), 737, 737]);
+					trade180.push([new Date('2025/11/27'), 0]);
+                	average180.push([new Date('2025/11/28'), 737, 737]);
+					trade180.push([new Date('2025/11/28'), 0]);
+                	average180.push([new Date('2025/11/29'), 737, 737]);
+					trade180.push([new Date('2025/11/29'), 0]);
+                	average180.push([new Date('2025/11/30'), 737, 737]);
+					trade180.push([new Date('2025/11/30'), 0]);
+                	average180.push([new Date('2025/12/01'), 743, 737]);
+					trade180.push([new Date('2025/12/01'), 1008]);
+                	average180.push([new Date('2025/12/02'), 743, 737]);
+					trade180.push([new Date('2025/12/02'), 0]);
+                	average180.push([new Date('2025/12/03'), 743, 737]);
+					trade180.push([new Date('2025/12/03'), 1479]);
+                	average180.push([new Date('2025/12/04'), 743, 737]);
+					trade180.push([new Date('2025/12/04'), 0]);
+                	average180.push([new Date('2025/12/05'), 743, 738]);
+					trade180.push([new Date('2025/12/05'), 0]);
+                	average180.push([new Date('2025/12/06'), 743, 738]);
+					trade180.push([new Date('2025/12/06'), 0]);
+                	average180.push([new Date('2025/12/07'), 743, 738]);
+					trade180.push([new Date('2025/12/07'), 0]);
+                	average180.push([new Date('2025/12/08'), 743, 738]);
+					trade180.push([new Date('2025/12/08'), 1562]);
+                	average180.push([new Date('2025/12/09'), 743, 738]);
+					trade180.push([new Date('2025/12/09'), 0]);
+                	average180.push([new Date('2025/12/10'), 743, 739]);
+					trade180.push([new Date('2025/12/10'), 0]);
+                	average180.push([new Date('2025/12/11'), 743, 739]);
+					trade180.push([new Date('2025/12/11'), 0]);
+                	average180.push([new Date('2025/12/12'), 743, 739]);
+					trade180.push([new Date('2025/12/12'), 0]);
+                	average180.push([new Date('2025/12/13'), 743, 739]);
+					trade180.push([new Date('2025/12/13'), 0]);
+                	average180.push([new Date('2025/12/14'), 743, 739]);
+					trade180.push([new Date('2025/12/14'), 0]);
+                	average180.push([new Date('2025/12/15'), 734, 739]);
+					trade180.push([new Date('2025/12/15'), 798]);
+                	average180.push([new Date('2025/12/16'), 734, 739]);
+					trade180.push([new Date('2025/12/16'), 0]);
+                	average180.push([new Date('2025/12/17'), 734, 739]);
+					trade180.push([new Date('2025/12/17'), 0]);
+                	average180.push([new Date('2025/12/18'), 734, 739]);
+					trade180.push([new Date('2025/12/18'), 7]);
+                	average180.push([new Date('2025/12/19'), 734, 739]);
+					trade180.push([new Date('2025/12/19'), 1070]);
+                	average180.push([new Date('2025/12/20'), 734, 739]);
+					trade180.push([new Date('2025/12/20'), 200]);
+                	average180.push([new Date('2025/12/21'), 734, 739]);
+					trade180.push([new Date('2025/12/21'), 82]);
+                	average180.push([new Date('2025/12/22'), 734, 739]);
+					trade180.push([new Date('2025/12/22'), 1077]);
+                	average180.push([new Date('2025/12/23'), 734, 738]);
+					trade180.push([new Date('2025/12/23'), 126]);
+                	average180.push([new Date('2025/12/24'), 734, 738]);
+					trade180.push([new Date('2025/12/24'), 503]);
+                	average180.push([new Date('2025/12/25'), 734, 738]);
+					trade180.push([new Date('2025/12/25'), 239]);
+                	average180.push([new Date('2025/12/26'), 734, 738]);
+					trade180.push([new Date('2025/12/26'), 1437]);
+                	average180.push([new Date('2025/12/27'), 734, 738]);
+					trade180.push([new Date('2025/12/27'), 259]);
+                	average180.push([new Date('2025/12/28'), 734, 738]);
+					trade180.push([new Date('2025/12/28'), 1132]);
+                	average180.push([new Date('2025/12/29'), 734, 738]);
+					trade180.push([new Date('2025/12/29'), 456]);
+                	average180.push([new Date('2025/12/30'), 734, 738]);
+					trade180.push([new Date('2025/12/30'), 1213]);
+                	average180.push([new Date('2025/12/31'), 714, 737]);
+					trade180.push([new Date('2025/12/31'), 418]);
+                	average180.push([new Date('2026/01/01'), 714, 736]);
+					trade180.push([new Date('2026/01/01'), 66]);
+                	average180.push([new Date('2026/01/02'), 714, 735]);
+					trade180.push([new Date('2026/01/02'), 207]);
+                	average180.push([new Date('2026/01/03'), 714, 734]);
+					trade180.push([new Date('2026/01/03'), 593]);
+                	average180.push([new Date('2026/01/04'), 714, 733]);
+					trade180.push([new Date('2026/01/04'), 706]);
+                	average180.push([new Date('2026/01/05'), 714, 732]);
+					trade180.push([new Date('2026/01/05'), 31]);
+                	average180.push([new Date('2026/01/06'), 714, 731]);
+					trade180.push([new Date('2026/01/06'), 179]);
+                	average180.push([new Date('2026/01/07'), 714, 730]);
+					trade180.push([new Date('2026/01/07'), 112]);
+                	average180.push([new Date('2026/01/08'), 714, 729]);
+					trade180.push([new Date('2026/01/08'), 176]);
+                	average180.push([new Date('2026/01/09'), 714, 728]);
+					trade180.push([new Date('2026/01/09'), 121]);
+                	average180.push([new Date('2026/01/10'), 714, 727]);
+					trade180.push([new Date('2026/01/10'), 322]);
+                	average180.push([new Date('2026/01/11'), 714, 726]);
+					trade180.push([new Date('2026/01/11'), 0]);
+                	average180.push([new Date('2026/01/12'), 714, 725]);
+					trade180.push([new Date('2026/01/12'), 344]);
+                	average180.push([new Date('2026/01/13'), 714, 724]);
+					trade180.push([new Date('2026/01/13'), 234]);
+                	average180.push([new Date('2026/01/14'), 714, 724]);
+					trade180.push([new Date('2026/01/14'), 3162]);
+                	average180.push([new Date('2026/01/15'), 714, 723]);
+					trade180.push([new Date('2026/01/15'), 121]);
+                	average180.push([new Date('2026/01/16'), 714, 722]);
+					trade180.push([new Date('2026/01/16'), 1570]);
+                	average180.push([new Date('2026/01/17'), 714, 722]);
+					trade180.push([new Date('2026/01/17'), 228]);
+                	average180.push([new Date('2026/01/18'), 694, 720]);
+					trade180.push([new Date('2026/01/18'), 1175]);
+                	average180.push([new Date('2026/01/19'), 694, 719]);
+					trade180.push([new Date('2026/01/19'), 10]);
+                	average180.push([new Date('2026/01/20'), 694, 718]);
+					trade180.push([new Date('2026/01/20'), 34]);
+                	average180.push([new Date('2026/01/21'), 694, 716]);
+					trade180.push([new Date('2026/01/21'), 1017]);
+                	average180.push([new Date('2026/01/22'), 694, 715]);
+					trade180.push([new Date('2026/01/22'), 1141]);
+                	average180.push([new Date('2026/01/23'), 694, 714]);
+					trade180.push([new Date('2026/01/23'), 1835]);
+                	average180.push([new Date('2026/01/24'), 694, 712]);
+					trade180.push([new Date('2026/01/24'), 1538]);
+                	average180.push([new Date('2026/01/25'), 694, 711]);
+					trade180.push([new Date('2026/01/25'), 10]);
+                	average180.push([new Date('2026/01/26'), 694, 710]);
+					trade180.push([new Date('2026/01/26'), 2096]);
+                	average180.push([new Date('2026/01/27'), 694, 708]);
+					trade180.push([new Date('2026/01/27'), 268]);
+                	average180.push([new Date('2026/01/28'), 694, 707]);
+					trade180.push([new Date('2026/01/28'), 123]);
+                	average180.push([new Date('2026/01/29'), 694, 706]);
+					trade180.push([new Date('2026/01/29'), 5]);
+                	average180.push([new Date('2026/01/30'), 694, 705]);
+					trade180.push([new Date('2026/01/30'), 1140]);
+                	average180.push([new Date('2026/01/31'), 694, 704]);
+					trade180.push([new Date('2026/01/31'), 284]);
+                	average180.push([new Date('2026/02/01'), 694, 704]);
+					trade180.push([new Date('2026/02/01'), 1212]);
+                	average180.push([new Date('2026/02/02'), 694, 703]);
+					trade180.push([new Date('2026/02/02'), 254]);
+                	average180.push([new Date('2026/02/03'), 665, 701]);
+					trade180.push([new Date('2026/02/03'), 454]);
+                	average180.push([new Date('2026/02/04'), 665, 700]);
+					trade180.push([new Date('2026/02/04'), 526]);
+                	average180.push([new Date('2026/02/05'), 665, 698]);
+					trade180.push([new Date('2026/02/05'), 228]);
+                	average180.push([new Date('2026/02/06'), 665, 696]);
+					trade180.push([new Date('2026/02/06'), 192]);
+                	average180.push([new Date('2026/02/07'), 665, 695]);
+					trade180.push([new Date('2026/02/07'), 209]);
+                	average180.push([new Date('2026/02/08'), 665, 693]);
+					trade180.push([new Date('2026/02/08'), 215]);
+                	average180.push([new Date('2026/02/09'), 665, 691]);
+					trade180.push([new Date('2026/02/09'), 357]);
+                	average180.push([new Date('2026/02/10'), 665, 690]);
+					trade180.push([new Date('2026/02/10'), 402]);
+                	average180.push([new Date('2026/02/11'), 665, 688]);
+					trade180.push([new Date('2026/02/11'), 581]);
+                	average180.push([new Date('2026/02/12'), 665, 687]);
+					trade180.push([new Date('2026/02/12'), 156]);
+                	average180.push([new Date('2026/02/13'), 665, 685]);
+					trade180.push([new Date('2026/02/13'), 239]);
+                	average180.push([new Date('2026/02/14'), 665, 683]);
+					trade180.push([new Date('2026/02/14'), 26]);
+                	average180.push([new Date('2026/02/15'), 665, 682]);
+					trade180.push([new Date('2026/02/15'), 563]);
+                	average180.push([new Date('2026/02/16'), 665, 680]);
+					trade180.push([new Date('2026/02/16'), 341]);
+                	average180.push([new Date('2026/02/17'), 665, 679]);
+					trade180.push([new Date('2026/02/17'), 753]);
+                	average180.push([new Date('2026/02/18'), 665, 678]);
+					trade180.push([new Date('2026/02/18'), 330]);
+                	average180.push([new Date('2026/02/19'), 665, 677]);
+					trade180.push([new Date('2026/02/19'), 228]);
+                	average180.push([new Date('2026/02/20'), 662, 676]);
+					trade180.push([new Date('2026/02/20'), 633]);
+                	average180.push([new Date('2026/02/21'), 662, 675]);
+					trade180.push([new Date('2026/02/21'), 108]);
+                	average180.push([new Date('2026/02/22'), 662, 674]);
+					trade180.push([new Date('2026/02/22'), 0]);
+                	average180.push([new Date('2026/02/23'), 662, 673]);
+					trade180.push([new Date('2026/02/23'), 88]);
+                	average180.push([new Date('2026/02/24'), 662, 672]);
+					trade180.push([new Date('2026/02/24'), 127]);
+                	average180.push([new Date('2026/02/25'), 662, 671]);
+					trade180.push([new Date('2026/02/25'), 80]);
+                	average180.push([new Date('2026/02/26'), 662, 670]);
+					trade180.push([new Date('2026/02/26'), 29]);
+                	average180.push([new Date('2026/02/27'), 662, 669]);
+					trade180.push([new Date('2026/02/27'), 211]);
+                	average180.push([new Date('2026/02/28'), 662, 667]);
+					trade180.push([new Date('2026/02/28'), 7]);
+                	average180.push([new Date('2026/03/01'), 662, 666]);
+					trade180.push([new Date('2026/03/01'), 0]);
+                	average180.push([new Date('2026/03/02'), 662, 665]);
+					trade180.push([new Date('2026/03/02'), 1]);
+                	average180.push([new Date('2026/03/03'), 662, 664]);
+					trade180.push([new Date('2026/03/03'), 25]);
+                	average180.push([new Date('2026/03/04'), 662, 663]);
+					trade180.push([new Date('2026/03/04'), 600]);
+                	average180.push([new Date('2026/03/05'), 662, 663]);
+					trade180.push([new Date('2026/03/05'), 166]);
+                	average180.push([new Date('2026/03/06'), 662, 663]);
+					trade180.push([new Date('2026/03/06'), 591]);
+                	average180.push([new Date('2026/03/07'), 662, 663]);
+					trade180.push([new Date('2026/03/07'), 155]);
+                	average180.push([new Date('2026/03/08'), 662, 663]);
+					trade180.push([new Date('2026/03/08'), 583]);
+                	average180.push([new Date('2026/03/09'), 662, 663]);
+					trade180.push([new Date('2026/03/09'), 16]);
+                	average180.push([new Date('2026/03/10'), 657, 662]);
+					trade180.push([new Date('2026/03/10'), 91]);
+                	average180.push([new Date('2026/03/11'), 657, 662]);
+					trade180.push([new Date('2026/03/11'), 911]);
+                	average180.push([new Date('2026/03/12'), 657, 662]);
+					trade180.push([new Date('2026/03/12'), 298]);
+                	average180.push([new Date('2026/03/13'), 657, 662]);
+					trade180.push([new Date('2026/03/13'), 110]);
+                	average180.push([new Date('2026/03/14'), 657, 661]);
+					trade180.push([new Date('2026/03/14'), 587]);
+                	average180.push([new Date('2026/03/15'), 657, 661]);
+					trade180.push([new Date('2026/03/15'), 249]);
+                	average180.push([new Date('2026/03/16'), 657, 661]);
+					trade180.push([new Date('2026/03/16'), 35]);
+                	average180.push([new Date('2026/03/17'), 657, 661]);
+					trade180.push([new Date('2026/03/17'), 150]);
+                	average180.push([new Date('2026/03/18'), 657, 660]);
+					trade180.push([new Date('2026/03/18'), 305]);
+                	average180.push([new Date('2026/03/19'), 657, 660]);
+					trade180.push([new Date('2026/03/19'), 35]);
+                	average180.push([new Date('2026/03/20'), 657, 660]);
+					trade180.push([new Date('2026/03/20'), 189]);
+                	average180.push([new Date('2026/03/21'), 657, 660]);
+					trade180.push([new Date('2026/03/21'), 193]);
+                	average180.push([new Date('2026/03/22'), 657, 659]);
+					trade180.push([new Date('2026/03/22'), 43]);
+                	average180.push([new Date('2026/03/23'), 657, 659]);
+					trade180.push([new Date('2026/03/23'), 96]);
+                	average180.push([new Date('2026/03/24'), 657, 659]);
+					trade180.push([new Date('2026/03/24'), 11]);
+                	average180.push([new Date('2026/03/25'), 657, 659]);
+					trade180.push([new Date('2026/03/25'), 27]);
+                	average180.push([new Date('2026/03/26'), 657, 659]);
+					trade180.push([new Date('2026/03/26'), 209]);
+                	average180.push([new Date('2026/03/27'), 657, 659]);
+					trade180.push([new Date('2026/03/27'), 25]);
+                	average180.push([new Date('2026/03/28'), 657, 658]);
+					trade180.push([new Date('2026/03/28'), 103]);
+                	average180.push([new Date('2026/03/29'), 657, 658]);
+					trade180.push([new Date('2026/03/29'), 6]);
+                	average180.push([new Date('2026/03/30'), 644, 658]);
+					trade180.push([new Date('2026/03/30'), 40]);
+                	average180.push([new Date('2026/03/31'), 644, 657]);
+					trade180.push([new Date('2026/03/31'), 309]);
+                	average180.push([new Date('2026/04/01'), 644, 656]);
+					trade180.push([new Date('2026/04/01'), 99]);
+                	average180.push([new Date('2026/04/02'), 644, 656]);
+					trade180.push([new Date('2026/04/02'), 127]);
+                	average180.push([new Date('2026/04/03'), 644, 655]);
+					trade180.push([new Date('2026/04/03'), 88]);
+                	average180.push([new Date('2026/04/04'), 644, 655]);
+					trade180.push([new Date('2026/04/04'), 246]);
+                	average180.push([new Date('2026/04/05'), 644, 654]);
+					trade180.push([new Date('2026/04/05'), 831]);
+                	average180.push([new Date('2026/04/06'), 644, 653]);
+					trade180.push([new Date('2026/04/06'), 67]);
+                	average180.push([new Date('2026/04/07'), 644, 653]);
+					trade180.push([new Date('2026/04/07'), 1127]);
+                	average180.push([new Date('2026/04/08'), 644, 652]);
+					trade180.push([new Date('2026/04/08'), 329]);
+                	average180.push([new Date('2026/04/09'), 644, 652]);
+					trade180.push([new Date('2026/04/09'), 514]);
+                	average180.push([new Date('2026/04/10'), 644, 651]);
+					trade180.push([new Date('2026/04/10'), 736]);
+                	average180.push([new Date('2026/04/11'), 644, 651]);
+					trade180.push([new Date('2026/04/11'), 226]);
+                	average180.push([new Date('2026/04/12'), 644, 650]);
+					trade180.push([new Date('2026/04/12'), 28]);
+                	average180.push([new Date('2026/04/13'), 644, 650]);
+					trade180.push([new Date('2026/04/13'), 224]);
+                	average180.push([new Date('2026/04/14'), 644, 650]);
+					trade180.push([new Date('2026/04/14'), 23]);
+                	average180.push([new Date('2026/04/15'), 644, 649]);
+					trade180.push([new Date('2026/04/15'), 252]);
+                	average180.push([new Date('2026/04/16'), 644, 649]);
+					trade180.push([new Date('2026/04/16'), 17]);
+                	average180.push([new Date('2026/04/17'), 644, 648]);
+					trade180.push([new Date('2026/04/17'), 275]);
+                	average180.push([new Date('2026/04/18'), 644, 648]);
+					trade180.push([new Date('2026/04/18'), 207]);
+                	average180.push([new Date('2026/04/19'), 644, 647]);
+					trade180.push([new Date('2026/04/19'), 49]);
+                	average180.push([new Date('2026/04/20'), 644, 647]);
+					trade180.push([new Date('2026/04/20'), 915]);
+                	average180.push([new Date('2026/04/21'), 644, 647]);
+					trade180.push([new Date('2026/04/21'), 69]);
+                	average180.push([new Date('2026/04/22'), 617, 645]);
+					trade180.push([new Date('2026/04/22'), 7]);
+                	average180.push([new Date('2026/04/23'), 617, 644]);
+					trade180.push([new Date('2026/04/23'), 10]);
+                	average180.push([new Date('2026/04/24'), 617, 643]);
+					trade180.push([new Date('2026/04/24'), 1214]);
+                	average180.push([new Date('2026/04/25'), 617, 641]);
+					trade180.push([new Date('2026/04/25'), 2673]);
+                	average180.push([new Date('2026/04/26'), 617, 640]);
+					trade180.push([new Date('2026/04/26'), 1005]);
+                	average180.push([new Date('2026/04/27'), 617, 639]);
+					trade180.push([new Date('2026/04/27'), 76]);
+                	average180.push([new Date('2026/04/28'), 617, 637]);
+					trade180.push([new Date('2026/04/28'), 1011]);
+                	average180.push([new Date('2026/04/29'), 617, 636]);
+					trade180.push([new Date('2026/04/29'), 1238]);
+                	average180.push([new Date('2026/04/30'), 617, 635]);
+					trade180.push([new Date('2026/04/30'), 21]);
+                	average180.push([new Date('2026/05/01'), 617, 635]);
+					trade180.push([new Date('2026/05/01'), 1019]);
+                	average180.push([new Date('2026/05/02'), 617, 634]);
+					trade180.push([new Date('2026/05/02'), 33]);
+                	average180.push([new Date('2026/05/03'), 617, 633]);
+					trade180.push([new Date('2026/05/03'), 841]);
+                	average180.push([new Date('2026/05/04'), 617, 632]);
+					trade180.push([new Date('2026/05/04'), 601]);
+                	average180.push([new Date('2026/05/05'), 617, 631]);
+					trade180.push([new Date('2026/05/05'), 126]);
+                	average180.push([new Date('2026/05/06'), 617, 630]);
+					trade180.push([new Date('2026/05/06'), 450]);
+                	average180.push([new Date('2026/05/07'), 617, 629]);
+					trade180.push([new Date('2026/05/07'), 49]);
+                	average180.push([new Date('2026/05/08'), 617, 628]);
+					trade180.push([new Date('2026/05/08'), 133]);
+                	average180.push([new Date('2026/05/09'), 617, 627]);
+					trade180.push([new Date('2026/05/09'), 1891]);
+			</script>
+			<div class='chart'>
+				<section class='chart__set'>
+                    <h2 class='chart__main-title'>Price</h2>
+					<ul class='key'>
+						<li class='daily'><span>Daily Average</span></li>
+						<li><span id='monthAverage' title="The average price of the item from the past thirty days of the given point">Trend</span><input type='checkbox' class='toggle-trend' id='toggleTrend' title="Toggle monthly trend" /></li>
+					</ul>
+	<ul class='switch' id='filter'>
+		<li class='active'><a href='#30'>1 Month</a></li>
+		<li><a href='#90'>3 Months</a></li>
+		<li><a href='#180'>6 Months</a></li>
+	</ul>
+					<div id='itemchart' class='item-chart' style='height: 500px'></div>
+                </section>
+                	<section class='chart__set chart__set--count'>
+						<h2 class='chart__main-title'>Amount Traded</h2>
+						<div id='countchart' class='chart__count-chart' style='height: 500px;'></div>
+					</section>
+			</div>
+		</div>
+	<aside role='complementary' class='sidebar'>
+			<section class='geSideTab search'>
+				<form action='https://secure.runescape.com/m=itemdb_rs/results#main-search' method='post'>
+					<h4>Search</h4>
+					<label class="side-label" for="sideSearch">Search:</label>
+					<input class='text' type='search' name='query' id='sideSearch' required />
+					<input type='submit' />
+				</form>
+			</section>
+		<section class='geSideTab itemWeek member'>
+			<a href="https://secure.runescape.com/m=itemdb_rs/Terrasaur+maul/viewitem?obj=48007">
+				<h4>Featured Item</h4>
+				<p>Terrasaur maul</p>
+				<img alt='Terrasaur maul' src='https://secure.runescape.com/m=itemdb_rs/1777979597642_obj_big.gif?id=48007' />
+			</a>
+		</section>
+		<section class='geSideTab grafTitle priceRises'>
+			<h4><a href='https://secure.runescape.com/m=itemdb_rs/top100?list=2'>Price Rises</a></h4>
+		</section>
+		<section class='geSideTab grafTitle priceFalls'>
+			<h4><a href='https://secure.runescape.com/m=itemdb_rs/top100?list=3'>Price Falls</a></h4>
+		</section>
+		<section class='geSideTab grafTitle valuableTrades'>
+			<h4><a href='https://secure.runescape.com/m=itemdb_rs/top100?list=1'>Valuable Trades</a></h4>
+		</section>
+		<section class='geSideTab grafTitle mostTraded'>
+			<h4><a href='https://secure.runescape.com/m=itemdb_rs/top100?list=0'>Most Traded</a></h4>
+		</section>
+	</aside>
+	</main>
+</div>
+<script>const imgRoot='https://www.runescape.com/img/rs3/', showTradeVolumes=true;</script>
+<script src="https://www.gstatic.com/charts/loader.js"></script>
+		</div>
+		<footer class='footer'>
+			<div class='footer__inner'>
+				<a href='https://www.jagex.com/en-GB/' class='footer__jagex ext' data-title="footer_jagex">Jagex</a>
+				<div class='footer__paragraph'>
+					<p>This website and its contents are copyright &copy; 1999 - 2026 Jagex Ltd.</p>
+					<p>220 Science Park, Cambridge, CB4 0WA, United Kingdom</p>
+					<p>Use of this website is subject to our <a id='footerTermsLink' href='https://legal.jagex.com/docs/terms' class='ext footer__paragraph__link' data-title='footer_terms'>Terms &amp; Conditions</a> and <a id='footerPrivacyLink' href='https://legal.jagex.com/docs/policies' class='ext footer__paragraph__link' data-title='footer_privacy'>Privacy Policy</a>.</p>
+					<p><a id='footerRulesLink' href='https://legal.jagex.com/docs/rules' class='ext footer__paragraph__link footer__paragraph__link--rules'>Rules of RuneScape</a><a id='footerCookiesLink' href='https://play.runescape.com/cookies' class='ext footer__paragraph__link footer__paragraph__link--rules' data-title='footer_changecookie'>Cookie Policy</a><a class='footer__paragraph__link' data-title='footer_managecookie' id='footer-manage-cookies' href=''>Manage Cookies</a>
+					<a id='footerRightsLink' href="https://legal.jagex.com/docs/policies/privacy/exercising-your-rights" class='ext footer__paragraph__link' title="Jagex does not sell personal information as the term 'sell' is commonly understood. We do allow service providers to use your personal information for advertising, marketing, and analytics. Please click this link for more information on how to opt out in our Privacy Policy.">Do Not Sell Or Share My Personal Information</a></p>
+                    <script>
+                        const manageCookieLink = document.querySelector("#footer-manage-cookies");
+                        manageCookieLink.addEventListener("click", function onclick(event) {
+                            event.preventDefault();
+                            window.athena("consent", "triggerBanner");
+                        });
+                    </script>
+				</div>
+					<div class='language' id='footerSelectLanguage'>
+						<div class='language__inner'>
+							<ul class='language__list'>
+								<li class='language__list__item--en language__list__item'><span class='language__item__span'>English</span></li>
+										<li class='language__list__item--de language__list__item'><a class='language__item__link' href='https://secure.runescape.com/m=itemdb_rs/l=1/Restore+potion+%284%29/viewitem?obj=2430&amp;set_lang=1'>Deutsch</a></li>
+										<li class='language__list__item--fr language__list__item'><a class='language__item__link' href='https://secure.runescape.com/m=itemdb_rs/l=2/Restore+potion+%284%29/viewitem?obj=2430&amp;set_lang=2'>FranÃ§ais</a></li>
+										<li class='language__list__item--pt language__list__item'><a class='language__item__link' href='https://secure.runescape.com/m=itemdb_rs/l=3/Restore+potion+%284%29/viewitem?obj=2430&amp;set_lang=3'>PortuguÃªs (BR)</a></li>
+							</ul>
+						</div>
+					</div>
+			</div>
+		</footer>
+
+
+	<script>
+		var isMemb, loggedIn, savePromoBoxes, pageLocation;
+			isMemb = -1;
+			loggedIn = -1;
+		savePromoBoxes = 'https://secure.runescape.com/m=website-data/updatePromoBoxes.json';
+		pageLocation = 'https://secure.runescape.com/m=itemdb_rs/Restore+potion+%284%29%2Fviewitem%3Fobj%3D2430';
+		document.domain = 'runescape.com';
+		var baseURL = 'https://www.runescape.com',
+			currentLangId = 0,
+			RS3 = RS3 || {};
+			RS3.imgRoot = 'https://www.runescape.com/img/rs3',
+			RS3.websiteDataUrl = 'https://secure.runescape.com/m=website-data',
+			RS3.newsUrl= 'https://secure.runescape.com/m=news',
+			RS3.webloginUrl= 'https://secure.runescape.com/m=weblogin', RS3.TRACKING_PLAY_BUTTON_CLICKED = 9200,
+			RS3.TRACKING_HOME_PAGE_LOADED = 9000;
+		var JXGLOBAL = {};
+		JXGLOBAL.client = [{
+    		'platform': 'Windows_x86',
+    		'filename': 'runescape.msi',
+    		'version': '1.4.3',
+    		'size': '23'
+    	},{
+    		'platform': 'OSX_x86',
+    		'filename': 'runescape.dmg',
+    		'version': '1.4.3',
+    		'size': '1'
+	    }];
+
+		var RESPONSIVE = RESPONSIVE || {};
+		RESPONSIVE.constant = RESPONSIVE.constant || {};
+			RESPONSIVE.constant.user = {
+				language: 0,
+				isLoggedIn: 0
+			};
+	</script>
+		<script src='https://www.runescape.com/js/c/responsive/vendor-168.js'></script>
+	<script src='https://www.runescape.com/js/rs3/plugins-169.js'></script>
+	<script src='https://www.runescape.com/js/jagex_global-101.js'></script>
+	<script src='https://www.runescape.com/js/rs3/gtm-169.js' data-ot-ignore></script>
+	<script src='https://www.runescape.com/js/c/rs3/functions-169.js' async defer></script>
+<script>
+	function drawChart() {
+		RS3.grandExchange.chart();
+	}
+	google.charts.load('current', {'packages':['corechart']});
+	google.charts.setOnLoadCallback(drawChart);
+</script>
+		<script>var bStyle = document.getElementById('bConHide'); if (bStyle) bStyle.parentNode.removeChild(bStyle);</script>
+		<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9f99c1270a6faa96',t:'MTc3ODQyNDYwNw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+	</html>

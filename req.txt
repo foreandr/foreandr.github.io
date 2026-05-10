@@ -91,3 +91,12 @@ beautifulsoup4
 cloudscraper
 ujson
 tqdm
+
+PyAutoGUI
+PyGetWindow
+pywin32
+requests
+beautifulsoup4
+selenium
+webdriver-manager
+Flask

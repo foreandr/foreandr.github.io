@@ -1,6 +1,6 @@
 {
-  "last_scanned": "2026-05-08 20:00:10",
-  "total_arbs": 26,
+  "last_scanned": "2026-05-09 20:00:12",
+  "total_arbs": 27,
   "min_net": 0.0,
   "scan_history": [
     {
@@ -234,6 +234,14 @@
       "api_requests": 14,
       "new_arbs": 0,
       "total_arbs": 26
+    },
+    {
+      "scanned_at": "2026-05-09 20:00:12",
+      "scan_seconds": 7.25,
+      "n_events": 257,
+      "api_requests": 14,
+      "new_arbs": 1,
+      "total_arbs": 27
     }
   ],
   "arbs": [
@@ -1109,6 +1117,44 @@
           "book_key": "draftkings",
           "book_type": "soft",
           "odds": 3.4,
+          "can_ban": true
+        }
+      }
+    },
+    {
+      "event": "FC Cincinnati vs Inter Miami CF",
+      "home": "FC Cincinnati",
+      "away": "Inter Miami CF",
+      "sport": "MLS",
+      "sport_key": "soccer_usa_mls",
+      "commence": "2026-05-13",
+      "days_until": 3.979,
+      "net_pct": 0.004856,
+      "apr": 0.5595,
+      "has_safe_leg": true,
+      "all_safe": false,
+      "n_outcomes": 3,
+      "found_at": "2026-05-09 20:00:12",
+      "legs": {
+        "FC Cincinnati": {
+          "book": "Pinnacle",
+          "book_key": "pinnacle",
+          "book_type": "sharp",
+          "odds": 3.07,
+          "can_ban": false
+        },
+        "Inter Miami CF": {
+          "book": "LeoVegas",
+          "book_key": "leovegas",
+          "book_type": "soft",
+          "odds": 2.35,
+          "can_ban": true
+        },
+        "Draw": {
+          "book": "FanDuel",
+          "book_key": "fanduel",
+          "book_type": "soft",
+          "odds": 4.1,
           "can_ban": true
         }
       }

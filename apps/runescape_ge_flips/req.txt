@@ -1,0 +1,8 @@
+PyAutoGUI
+PyGetWindow
+pywin32
+requests
+beautifulsoup4
+selenium
+webdriver-manager
+Flask

@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GE Flip Viewer</title>
+  <style>
+    :root {
+      --bg: #0e1511;
+      --panel: #16201b;
+      --panel-2: #1b2821;
+      --line: #2a3b31;
+      --text: #ecf3ed;
+      --muted: #a1b2a7;
+      --accent: #c8a86b;
+      --accent-2: #83d0a4;
+      --danger: #d97a7a;
+      --shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(200, 168, 107, 0.18), transparent 28%),
+        radial-gradient(circle at top right, rgba(131, 208, 164, 0.12), transparent 22%),
+        linear-gradient(180deg, #122019 0%, #0c120f 100%);
+      min-height: 100vh;
+    }
+
+    .shell {
+      width: calc(100vw - 28px);
+      max-width: 1800px;
+      margin: 14px auto;
+    }
+
+    .hero {
+      padding: 24px 28px;
+      border: 1px solid rgba(200, 168, 107, 0.26);
+      background: linear-gradient(180deg, rgba(22, 32, 27, 0.94), rgba(14, 21, 17, 0.98));
+      box-shadow: var(--shadow);
+      border-radius: 22px;
+    }
+
+    .eyebrow {
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      font-size: 12px;
+      margin-bottom: 10px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(32px, 4vw, 54px);
+      line-height: 0.95;
+      font-weight: 700;
+    }
+
+    .sub {
+      margin: 14px 0 0;
+      max-width: 840px;
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.5;
+    }
+
+    .controls {
+      margin-top: 18px;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .control,
+    .stat {
+      padding: 14px 16px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: rgba(27, 40, 33, 0.92);
+    }
+
+    .control label,
+    .stat-label {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .control input[type="number"],
+    .control input[type="text"] {
+      width: 100%;
+      border: 1px solid var(--line);
+      background: #0f1713;
+      color: var(--text);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font: inherit;
+    }
+
+    .control input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
+    }
+
+    .range-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .range-value {
+      min-width: 88px;
+      text-align: right;
+      color: var(--accent-2);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .stats {
+      margin-top: 14px;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .stat-value {
+      font-size: 30px;
+      line-height: 1;
+      font-weight: 700;
+    }
+
+    .stat-file {
+      display: inline-block;
+      max-width: 100%;
+      font-size: 14px;
+      line-height: 1.45;
+      font-family: "Consolas", "SFMono-Regular", monospace;
+      color: var(--accent-2);
+      overflow-wrap: anywhere;
+      white-space: normal;
+    }
+
+    .meta-note {
+      margin-top: 8px;
+      font-size: 13px;
+      line-height: 1.45;
+      color: var(--muted);
+    }
+
+    .table-card {
+      margin-top: 18px;
+      border: 1px solid rgba(200, 168, 107, 0.22);
+      background: rgba(18, 28, 23, 0.94);
+      box-shadow: var(--shadow);
+      border-radius: 22px;
+      overflow: hidden;
+    }
+
+    .table-wrap {
+      overflow: auto;
+    }
+
+    .pager {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 16px;
+      border-top: 1px solid rgba(42, 59, 49, 0.65);
+      background: rgba(13, 20, 16, 0.9);
+    }
+
+    .pager-info {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .pager-buttons {
+      display: inline-flex;
+      gap: 8px;
+    }
+
+    .pager-button {
+      border: 1px solid rgba(200, 168, 107, 0.24);
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 9px 14px;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .pager-button:hover:not(:disabled) {
+      border-color: rgba(200, 168, 107, 0.55);
+    }
+
+    .pager-button:disabled {
+      opacity: 0.45;
+      cursor: default;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: rgba(13, 20, 16, 0.98);
+      border-bottom: 1px solid var(--line);
+      color: var(--accent);
+      text-align: left;
+      padding: 14px 16px;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .sort-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .sort-buttons {
+      display: inline-flex;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+
+    .sort-button {
+      border: 1px solid rgba(200, 168, 107, 0.2);
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--muted);
+      border-radius: 8px;
+      padding: 3px 7px;
+      font: inherit;
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    .sort-button:hover {
+      color: var(--text);
+      border-color: rgba(200, 168, 107, 0.5);
+    }
+
+    .sort-button.active {
+      color: #0c120f;
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+
+    tbody tr:nth-child(odd) {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    tbody tr:hover {
+      background: rgba(131, 208, 164, 0.08);
+    }
+
+    td {
+      padding: 13px 16px;
+      border-bottom: 1px solid rgba(42, 59, 49, 0.65);
+      vertical-align: middle;
+    }
+
+    .item-name {
+      font-weight: 700;
+    }
+
+    .num {
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .error {
+      color: var(--danger);
+      max-width: 360px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    a {
+      color: var(--accent-2);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .loading,
+    .empty {
+      padding: 24px 28px;
+      color: var(--muted);
+    }
+
+    @media (max-width: 980px) {
+      .controls,
+      .stats {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .shell {
+        width: min(100vw - 20px, 100%);
+        margin: 10px auto 18px;
+      }
+
+      .hero,
+      .table-card {
+        border-radius: 18px;
+      }
+
+      .controls,
+      .stats {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        font-size: 34px;
+      }
+
+      td,
+      thead th {
+        padding: 11px 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <section class="hero">
+      <div class="eyebrow">RuneScape Grand Exchange</div>
+      <h1>GE Items With Trade Volume</h1>
+      <p class="sub">
+        This view shows the actual fields worth scanning for flips: item name, current price,
+        amount possible to trade, deployable gold at the buy limit, and the latest official trade volume scraped from the RuneScape GE page.
+      </p>
+
+      <div class="controls">
+        <div class="control">
+          <label for="search-input">Search</label>
+          <input id="search-input" type="text" placeholder="partyhat, masterwork, rune..." />
+        </div>
+        <div class="control">
+          <label for="top-n-input">Max Rows Optional</label>
+          <input id="top-n-input" type="number" min="1" step="1" placeholder="All filtered rows" />
+        </div>
+        <div class="control">
+          <label for="rows-per-page-input">Rows Per Page</label>
+          <input id="rows-per-page-input" type="number" min="1" step="1" value="50" />
+        </div>
+        <div class="control">
+          <label for="min-price-input">Min Price</label>
+          <input id="min-price-input" type="number" min="0" step="1" placeholder="0" />
+        </div>
+        <div class="control">
+          <label for="max-price-input">Max Price</label>
+          <input id="max-price-input" type="number" min="0" step="1" placeholder="No cap" />
+        </div>
+        <div class="control">
+          <label for="hide-error-checkbox">Row Cleanup</label>
+          <div class="range-row">
+            <input id="hide-error-checkbox" type="checkbox" checked />
+            <span>Hide rows with scrape errors</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-label">Visible Items</div>
+          <div id="visible-count" class="stat-value">0</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Highest Deployable Gold</div>
+          <div id="top-max-spend" class="stat-value">-</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Highest Price</div>
+          <div id="top-price" class="stat-value">-</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Data File</div>
+          <div class="stat-file">ge_buy_limits_enriched_with_trade_volume.json</div>
+          <div id="last-crawl" class="meta-note">Last crawl: -</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="table-card">
+      <div id="status" class="loading">Loading JSON...</div>
+      <div id="table-wrap" class="table-wrap" hidden>
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Item</th>
+              <th>Price</th>
+              <th>Amount Possible To Trade</th>
+              <th>Price x Amount</th>
+              <th>Trade Volume</th>
+            </tr>
+          </thead>
+          <tbody id="table-body"></tbody>
+        </table>
+      </div>
+      <div id="pager" class="pager" hidden>
+        <div id="pager-info" class="pager-info">Page 1 of 1</div>
+        <div class="pager-buttons">
+          <button id="prev-page-button" class="pager-button" type="button">Previous</button>
+          <button id="next-page-button" class="pager-button" type="button">Next</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const state = {
+      rows: [],
+      maxPriceInData: 0,
+      sortKey: "max_spend",
+      sortDir: "desc",
+      currentPage: 1,
+      lastCrawlAt: "",
+    };
+
+    const els = {
+      status: document.getElementById("status"),
+      tableWrap: document.getElementById("table-wrap"),
+      tableBody: document.getElementById("table-body"),
+      searchInput: document.getElementById("search-input"),
+      topNInput: document.getElementById("top-n-input"),
+      rowsPerPageInput: document.getElementById("rows-per-page-input"),
+      minPriceInput: document.getElementById("min-price-input"),
+      maxPriceInput: document.getElementById("max-price-input"),
+      hideErrorCheckbox: document.getElementById("hide-error-checkbox"),
+      visibleCount: document.getElementById("visible-count"),
+      topMaxSpend: document.getElementById("top-max-spend"),
+      topPrice: document.getElementById("top-price"),
+      lastCrawl: document.getElementById("last-crawl"),
+      pager: document.getElementById("pager"),
+      pagerInfo: document.getElementById("pager-info"),
+      prevPageButton: document.getElementById("prev-page-button"),
+      nextPageButton: document.getElementById("next-page-button"),
+    };
+
+    function formatCompact(value) {
+      if (value === null || value === undefined || Number.isNaN(Number(value))) {
+        return "-";
+      }
+
+      return new Intl.NumberFormat("en-CA", {
+        notation: "compact",
+        maximumFractionDigits: 2,
+      }).format(Number(value));
+    }
+
+    function formatInteger(value) {
+      if (value === null || value === undefined || Number.isNaN(Number(value))) {
+        return "-";
+      }
+      return new Intl.NumberFormat("en-CA").format(Number(value));
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+
+    function sortButtonClass(key, dir) {
+      return state.sortKey === key && state.sortDir === dir ? "sort-button active" : "sort-button";
+    }
+
+    function renderSortHeader(label, key) {
+      return `
+        <div class="sort-head">
+          <span>${label}</span>
+          <span class="sort-buttons">
+            <button class="${sortButtonClass(key, "asc")}" type="button" data-sort-key="${key}" data-sort-dir="asc" aria-label="Sort ${label} ascending">&uarr;</button>
+            <button class="${sortButtonClass(key, "desc")}" type="button" data-sort-key="${key}" data-sort-dir="desc" aria-label="Sort ${label} descending">&darr;</button>
+          </span>
+        </div>
+      `;
+    }
+
+    function currentPriceBounds() {
+      const minPrice = Math.max(0, Number(els.minPriceInput.value) || 0);
+      const rawMaxPrice = Number(els.maxPriceInput.value);
+      const maxPrice = rawMaxPrice > 0 ? rawMaxPrice : Number.POSITIVE_INFINITY;
+      return { minPrice, maxPrice };
+    }
+
+    function currentRowsPerPage() {
+      return Math.max(1, Number(els.rowsPerPageInput.value) || 50);
+    }
+
+    function filteredRows() {
+      const searchTerm = els.searchInput.value.trim().toLowerCase();
+      const rawTopN = Number(els.topNInput.value);
+      const hasTopNCap = Number.isFinite(rawTopN) && rawTopN > 0;
+      const { minPrice, maxPrice } = currentPriceBounds();
+      const hideErrors = els.hideErrorCheckbox.checked;
+
+      const rows = state.rows
+        .filter((row) => !hideErrors || !row.error)
+        .filter((row) => !searchTerm || row.item.toLowerCase().includes(searchTerm))
+        .filter((row) => {
+          const price = Number(row.price || 0);
+          return price >= minPrice && price <= maxPrice;
+        })
+        .sort((a, b) => compareRows(a, b, state.sortKey, state.sortDir));
+
+      return hasTopNCap ? rows.slice(0, rawTopN) : rows;
+    }
+
+    function paginatedRows(rows) {
+      const rowsPerPage = currentRowsPerPage();
+      const pageCount = Math.max(1, Math.ceil(rows.length / rowsPerPage));
+      const currentPage = Math.min(state.currentPage, pageCount);
+      state.currentPage = currentPage;
+
+      const start = (currentPage - 1) * rowsPerPage;
+      const end = start + rowsPerPage;
+      return {
+        rows: rows.slice(start, end),
+        pageCount,
+        currentPage,
+        start,
+      };
+    }
+
+    function formatLastCrawl(value) {
+      if (!value) {
+        return "Last crawl: -";
+      }
+
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) {
+        return `Last crawl: ${value}`;
+      }
+
+      return `Last crawl: ${date.toLocaleString()}`;
+    }
+
+    function compareRows(a, b, key, dir) {
+      const left = Number(a[key] || 0);
+      const right = Number(b[key] || 0);
+
+      if (left === right) {
+        return String(a.item || "").localeCompare(String(b.item || ""));
+      }
+
+      return dir === "asc" ? left - right : right - left;
+    }
+
+    function render() {
+      const rows = filteredRows();
+      const pageData = paginatedRows(rows);
+      const visibleRows = pageData.rows;
+
+      els.visibleCount.textContent = formatInteger(rows.length);
+      els.topMaxSpend.textContent = rows.length
+        ? formatCompact(rows.reduce((max, row) => Math.max(max, Number(row.max_spend || 0)), 0))
+        : "-";
+      els.topPrice.textContent = rows.length
+        ? formatCompact(rows.reduce((max, row) => Math.max(max, Number(row.price || 0)), 0))
+        : "-";
+
+      els.lastCrawl.textContent = formatLastCrawl(state.lastCrawlAt);
+
+      if (!rows.length) {
+        els.tableWrap.hidden = true;
+        els.pager.hidden = true;
+        els.status.hidden = false;
+        els.status.className = "empty";
+        els.status.textContent = "No rows matched the current filters.";
+        return;
+      }
+
+      const theadRow = document.querySelector("thead tr");
+      theadRow.innerHTML = `
+        <th>#</th>
+        <th>Item</th>
+        <th>${renderSortHeader("Price", "price")}</th>
+        <th>${renderSortHeader("Amount Possible To Trade", "amount")}</th>
+        <th>${renderSortHeader("Price x Amount", "max_spend")}</th>
+        <th>${renderSortHeader("Trade Volume", "trade_volume")}</th>
+      `;
+
+      els.status.hidden = true;
+      els.tableWrap.hidden = false;
+      els.pager.hidden = false;
+      els.pagerInfo.textContent = `Page ${pageData.currentPage} of ${pageData.pageCount} · Showing ${formatInteger(pageData.start + 1)}-${formatInteger(pageData.start + visibleRows.length)} of ${formatInteger(rows.length)}`;
+      els.prevPageButton.disabled = pageData.currentPage <= 1;
+      els.nextPageButton.disabled = pageData.currentPage >= pageData.pageCount;
+      els.tableBody.innerHTML = visibleRows.map((row, index) => `
+        <tr>
+          <td class="num">${pageData.start + index + 1}</td>
+          <td class="item-name">${escapeHtml(row.item)}</td>
+          <td class="num">${formatCompact(row.price)}<br><span style="color: var(--muted)">${formatInteger(row.price)}</span></td>
+          <td class="num">${formatInteger(row.amount)}</td>
+          <td class="num">${formatCompact(row.max_spend)}<br><span style="color: var(--muted)">${formatInteger(row.max_spend)}</span></td>
+          <td class="num">${formatCompact(row.trade_volume)}<br><span style="color: var(--muted)">${formatInteger(row.trade_volume)}</span></td>
+        </tr>
+      `).join("");
+    }
+
+    async function loadData() {
+      try {
+        const [dataResponse, metaResponse] = await Promise.all([
+          fetch("./ge_buy_limits_enriched_with_trade_volume.json"),
+          fetch("./crawl_metadata.json"),
+        ]);
+        if (!dataResponse.ok) {
+          throw new Error(`HTTP ${dataResponse.status}`);
+        }
+
+        const rows = await dataResponse.json();
+        let metadata = {};
+        if (metaResponse.ok) {
+          metadata = await metaResponse.json();
+        }
+
+        state.rows = rows;
+        state.maxPriceInData = rows.reduce((max, row) => Math.max(max, Number(row.price || 0)), 0);
+        state.lastCrawlAt = metadata.last_crawl_at || "";
+        render();
+      } catch (error) {
+        els.status.hidden = false;
+        els.status.className = "empty";
+        els.status.textContent = `Failed to load ge_buy_limits_enriched_with_trade_volume.json: ${error}`;
+      }
+    }
+
+    function resetPageAndRender() {
+      state.currentPage = 1;
+      render();
+    }
+
+    els.searchInput.addEventListener("input", resetPageAndRender);
+    els.topNInput.addEventListener("input", resetPageAndRender);
+    els.rowsPerPageInput.addEventListener("input", resetPageAndRender);
+    els.minPriceInput.addEventListener("input", resetPageAndRender);
+    els.maxPriceInput.addEventListener("input", resetPageAndRender);
+    els.hideErrorCheckbox.addEventListener("change", resetPageAndRender);
+    els.prevPageButton.addEventListener("click", () => {
+      state.currentPage = Math.max(1, state.currentPage - 1);
+      render();
+    });
+    els.nextPageButton.addEventListener("click", () => {
+      state.currentPage += 1;
+      render();
+    });
+    document.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-sort-key]");
+      if (!button) {
+        return;
+      }
+
+      state.sortKey = button.dataset.sortKey;
+      state.sortDir = button.dataset.sortDir;
+      state.currentPage = 1;
+      render();
+    });
+
+    loadData();
+  </script>
+</body>
+</html>
