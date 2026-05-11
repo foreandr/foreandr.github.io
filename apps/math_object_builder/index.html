@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Math Object Builder</title>
+  <link rel="icon" type="image/x-icon" href="../../images.ico">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="page">
+    <section class="hero">
+      <a class="back-link" href="../index.html">Back to archive</a>
+      <div>
+        <h1>Math Object Builder</h1>
+        <p class="hero-copy">Choose a base. Seed an object. Keep stacking structures and maps.</p>
+      </div>
+      <div class="summary-row">
+        <div class="summary-pill">Base <span id="summary-base"></span></div>
+        <div class="summary-pill">Tail <span id="summary-tail"></span></div>
+        <div class="summary-pill">Length <span id="summary-length"></span></div>
+      </div>
+    </section>
+
+    <section class="workspace">
+      <article class="panel sidebar">
+        <div class="panel-head">
+          <div class="panel-kicker">Catalog</div>
+          <h2>Start</h2>
+        </div>
+
+        <label class="search-field">
+          <span>Base search</span>
+          <input id="base-search" type="text" placeholder="real, complex, integer...">
+        </label>
+        <div class="compact-grid" id="base-grid"></div>
+
+        <label class="search-field">
+          <span>Object search</span>
+          <input id="family-search" type="text" placeholder="vector, module, field, manifold...">
+        </label>
+        <div class="compact-grid" id="family-grid"></div>
+
+        <button class="primary-btn" id="seed-object" type="button">Add selected object</button>
+      </article>
+
+      <article class="panel chain-panel">
+        <div class="panel-head">
+          <div class="panel-kicker">Chain</div>
+          <h2>Construction</h2>
+        </div>
+        <div class="chain-strip" id="chain-strip"></div>
+        <div class="proof-strip" id="proof-strip"></div>
+      </article>
+
+      <article class="panel move-panel">
+        <div class="panel-head">
+          <div class="panel-kicker">Moves</div>
+          <h2>Next Step</h2>
+        </div>
+
+        <div class="control-block">
+          <label class="search-field">
+            <span>Dimension</span>
+            <input id="dimension-input" type="range" min="1" max="8" step="1" value="3">
+          </label>
+          <div class="mini-readout" id="dimension-readout"></div>
+        </div>
+
+        <div class="control-block">
+          <label class="search-field">
+            <span>Map property</span>
+            <select id="map-property">
+              <option value="free">free</option>
+              <option value="injective">injective</option>
+              <option value="surjective">surjective</option>
+              <option value="isomorphism">isomorphism</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="move-grid" id="move-grid"></div>
+      </article>
+    </section>
+  </div>
+
+  <script src="./logic.js"></script>
+  <script src="./script.js"></script>
+</body>
+</html>

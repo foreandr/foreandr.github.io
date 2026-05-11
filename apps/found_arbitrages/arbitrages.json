@@ -1,6 +1,6 @@
 {
-  "last_scanned": "2026-05-09 20:00:12",
-  "total_arbs": 27,
+  "last_scanned": "2026-05-10 20:00:10",
+  "total_arbs": 30,
   "min_net": 0.0,
   "scan_history": [
     {
@@ -242,6 +242,14 @@
       "api_requests": 14,
       "new_arbs": 1,
       "total_arbs": 27
+    },
+    {
+      "scanned_at": "2026-05-10 20:00:10",
+      "scan_seconds": 5.04,
+      "n_events": 209,
+      "api_requests": 14,
+      "new_arbs": 3,
+      "total_arbs": 30
     }
   ],
   "arbs": [
@@ -1155,6 +1163,113 @@
           "book_key": "fanduel",
           "book_type": "soft",
           "odds": 4.1,
+          "can_ban": true
+        }
+      }
+    },
+    {
+      "event": "Sevilla vs Real Madrid",
+      "home": "Sevilla",
+      "away": "Real Madrid",
+      "sport": "LALIGA",
+      "sport_key": "soccer_spain_la_liga",
+      "commence": "2026-05-17",
+      "days_until": 6.7082,
+      "net_pct": 0.017751,
+      "apr": 1.6049,
+      "has_safe_leg": false,
+      "all_safe": false,
+      "n_outcomes": 3,
+      "found_at": "2026-05-10 20:00:10",
+      "legs": {
+        "Real Madrid": {
+          "book": "FanDuel",
+          "book_key": "fanduel",
+          "book_type": "soft",
+          "odds": 2.0,
+          "can_ban": true
+        },
+        "Sevilla": {
+          "book": "Betway",
+          "book_key": "betway",
+          "book_type": "soft",
+          "odds": 4.0,
+          "can_ban": true
+        },
+        "Draw": {
+          "book": "DraftKings",
+          "book_key": "draftkings",
+          "book_type": "soft",
+          "odds": 4.3,
+          "can_ban": true
+        }
+      }
+    },
+    {
+      "event": "Tuco Tokkos vs Ivan Erslan",
+      "home": "Tuco Tokkos",
+      "away": "Ivan Erslan",
+      "sport": "MMA",
+      "sport_key": "mma_mixed_martial_arts",
+      "commence": "2026-05-17",
+      "days_until": 5.9999,
+      "net_pct": 0.008585,
+      "apr": 0.6821,
+      "has_safe_leg": false,
+      "all_safe": false,
+      "n_outcomes": 2,
+      "found_at": "2026-05-10 20:00:10",
+      "legs": {
+        "Ivan Erslan": {
+          "book": "Betway",
+          "book_key": "betway",
+          "book_type": "soft",
+          "odds": 1.61,
+          "can_ban": true
+        },
+        "Tuco Tokkos": {
+          "book": "DraftKings",
+          "book_key": "draftkings",
+          "book_type": "soft",
+          "odds": 2.7,
+          "can_ban": true
+        }
+      }
+    },
+    {
+      "event": "San Diego FC vs FC Cincinnati",
+      "home": "San Diego FC",
+      "away": "FC Cincinnati",
+      "sport": "MLS",
+      "sport_key": "soccer_usa_mls",
+      "commence": "2026-05-17",
+      "days_until": 6.0624,
+      "net_pct": 0.001889,
+      "apr": 0.1203,
+      "has_safe_leg": false,
+      "all_safe": false,
+      "n_outcomes": 3,
+      "found_at": "2026-05-10 20:00:10",
+      "legs": {
+        "FC Cincinnati": {
+          "book": "LeoVegas",
+          "book_key": "leovegas",
+          "book_type": "soft",
+          "odds": 4.0,
+          "can_ban": true
+        },
+        "San Diego FC": {
+          "book": "BetMGM",
+          "book_key": "betmgm",
+          "book_type": "soft",
+          "odds": 1.95,
+          "can_ban": true
+        },
+        "Draw": {
+          "book": "LeoVegas",
+          "book_key": "leovegas",
+          "book_type": "soft",
+          "odds": 4.25,
           "can_ban": true
         }
       }
