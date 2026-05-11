@@ -173,17 +173,6 @@
         "HTML": 368
       }
     },
-    "math_tree": {
-      "name": "math_tree",
-      "files": 9,
-      "total_lines": 2881,
-      "code_lines": 2492,
-      "by_lang": {
-        "JavaScript": 1633,
-        "CSS": 517,
-        "HTML": 731
-      }
-    },
     "special_functions": {
       "name": "special_functions",
       "files": 4,
@@ -419,17 +408,6 @@
       "code_lines": 867,
       "by_lang": {
         "HTML": 1058
-      }
-    },
-    "peano_compiler": {
-      "name": "peano_compiler",
-      "files": 3,
-      "total_lines": 1021,
-      "code_lines": 852,
-      "by_lang": {
-        "JavaScript": 586,
-        "HTML": 75,
-        "CSS": 360
       }
     },
     "meta_analyzer": {
