@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Binary Machine</title>
+  <link rel="icon" type="image/x-icon" href="../../images.ico">
+  <style>
+    :root {
+      --bg: #0a0f14;
+      --bg-2: #111923;
+      --panel: rgba(17, 25, 35, 0.92);
+      --panel-2: rgba(24, 35, 48, 0.94);
+      --panel-3: rgba(10, 15, 21, 0.92);
+      --line: #2d4156;
+      --line-soft: rgba(78, 100, 124, 0.38);
+      --text: #eef3f9;
+      --muted: #95a8bf;
+      --accent: #6ee7d8;
+      --accent-2: #f5b044;
+      --danger: #f97390;
+      --good: #7adea1;
+      --shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background:
+        radial-gradient(circle at top left, rgba(110, 231, 216, 0.12), transparent 34%),
+        radial-gradient(circle at top right, rgba(245, 176, 68, 0.10), transparent 30%),
+        linear-gradient(180deg, #081017 0%, #0c131b 100%);
+      color: var(--text);
+      font-family: "Segoe UI", "Trebuchet MS", sans-serif;
+    }
+
+    body { padding: 12px; font-size: 17px; }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    button, input, select, textarea {
+      font: inherit;
+    }
+
+    button {
+      appearance: none;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--panel-2);
+      color: var(--text);
+      padding: 11px 14px;
+      min-height: 44px;
+      cursor: pointer;
+      transition: transform 0.14s ease, border-color 0.14s ease, background 0.14s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      border-color: rgba(110, 231, 216, 0.55);
+    }
+
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(7, 11, 16, 0.94);
+      color: var(--text);
+      padding: 12px 13px;
+      font-size: 0.96rem;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 280px;
+      line-height: 1.6;
+      font-size: 0.95rem;
+      font-family: Consolas, "Courier New", monospace;
+    }
+
+    .shell {
+      width: min(100%, 1920px);
+      margin: 0;
+      display: grid;
+      gap: 16px;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      width: fit-content;
+      padding: 10px 14px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(9, 13, 19, 0.74);
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 0.8rem;
+    }
+
+    .hero,
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background: linear-gradient(180deg, rgba(17, 25, 35, 0.96), rgba(12, 18, 25, 0.97));
+      box-shadow: var(--shadow);
+    }
+
+    .hero {
+      padding: 22px;
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .eyebrow {
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      font-size: 0.72rem;
+      margin-bottom: 10px;
+    }
+
+    h1, h2, h3, p { margin: 0; }
+
+    h1 {
+      font-size: clamp(2.2rem, 4vw, 4rem);
+      line-height: 0.93;
+      letter-spacing: -0.05em;
+      margin-bottom: 12px;
+      max-width: 12ch;
+    }
+
+    .hero-copy {
+      color: #d9e3ee;
+      line-height: 1.58;
+      max-width: 72ch;
+    }
+
+    .hero-metrics {
+      margin-top: 18px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .metric,
+    .status-box,
+    .card,
+    .subpanel {
+      border: 1px solid var(--line-soft);
+      border-radius: 18px;
+      background: rgba(10, 15, 22, 0.78);
+    }
+
+    .metric {
+      padding: 14px;
+    }
+
+    .metric strong {
+      display: block;
+      font-size: 1rem;
+      margin-bottom: 6px;
+    }
+
+    .metric span {
+      color: var(--muted);
+      line-height: 1.4;
+      font-size: 0.92rem;
+    }
+
+    .status-stack {
+      display: grid;
+      gap: 12px;
+      align-content: start;
+    }
+
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .status-box {
+      padding: 14px;
+    }
+
+    .status-box label,
+    .small-label,
+    .field label {
+      display: block;
+      color: var(--muted);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: 7px;
+    }
+
+    .status-box strong {
+      display: block;
+      font-size: 1.5rem;
+      margin-bottom: 4px;
+    }
+
+    .status-box small {
+      color: var(--muted);
+      line-height: 1.45;
+      display: block;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(520px, 1fr) minmax(760px, 1.42fr);
+      gap: 16px;
+    }
+
+    .panel {
+      padding: 16px;
+      display: grid;
+      gap: 14px;
+      align-content: start;
+    }
+
+    .panel-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 14px;
+    }
+
+    .panel-head p {
+      color: var(--muted);
+      line-height: 1.45;
+      max-width: 46ch;
+      font-size: 0.93rem;
+    }
+
+    .section-title {
+      font-size: 1.32rem;
+      letter-spacing: -0.02em;
+    }
+
+    .button-row,
+    .field-grid,
+    .builder-grid,
+    .meta-grid,
+    .status-inline {
+      display: grid;
+      gap: 10px;
+    }
+
+    .button-row {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .field-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .meta-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .builder-grid {
+      grid-template-columns: 1.15fr 0.85fr;
+    }
+
+    .subpanel {
+      padding: 14px;
+    }
+
+    .subpanel h3 {
+      font-size: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .card {
+      padding: 12px;
+    }
+
+    .card strong,
+    .register-card strong,
+    .flag-card strong,
+    .mini-card strong {
+      display: block;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 1rem;
+    }
+
+    .card span,
+    .register-card span,
+    .flag-card span,
+    .mini-card span {
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .sample-note {
+      display: block;
+      color: var(--muted);
+      line-height: 1.38;
+      font-size: 0.9rem;
+      margin: 8px 0 12px;
+    }
+
+    .code-stack {
+      display: grid;
+      gap: 12px;
+    }
+
+    .code-panel {
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .code-panel > summary {
+      list-style: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 16px 18px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .code-panel > summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .code-panel > summary::after {
+      content: "▸";
+      color: var(--accent);
+      font-size: 1rem;
+      transition: transform 0.16s ease;
+    }
+
+    .code-panel[open] > summary::after {
+      transform: rotate(90deg);
+    }
+
+    .code-summary-copy {
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.45;
+      margin-top: 6px;
+    }
+
+    .code-panel-body {
+      padding: 0 18px 18px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .primary {
+      background: linear-gradient(135deg, rgba(110, 231, 216, 0.18), rgba(110, 231, 216, 0.05));
+      border-color: rgba(110, 231, 216, 0.48);
+    }
+
+    .warn {
+      background: linear-gradient(135deg, rgba(245, 176, 68, 0.17), rgba(245, 176, 68, 0.05));
+      border-color: rgba(245, 176, 68, 0.45);
+    }
+
+    .danger {
+      background: linear-gradient(135deg, rgba(249, 115, 144, 0.16), rgba(249, 115, 144, 0.05));
+      border-color: rgba(249, 115, 144, 0.42);
+    }
+
+    .register-grid,
+    .flag-grid {
+      display: grid;
+      gap: 8px;
+    }
+
+    .register-grid {
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+    }
+
+    .flag-grid {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+
+    .register-card,
+    .flag-card,
+    .mini-card {
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(24, 35, 48, 0.9);
+    }
+
+    .register-card label,
+    .flag-card label,
+    .mini-card label {
+      display: block;
+      color: var(--muted);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: 7px;
+    }
+
+    .screen-wrap {
+      display: grid;
+      grid-template-columns: minmax(0, 1.7fr) minmax(180px, 0.3fr);
+      gap: 14px;
+      align-items: stretch;
+    }
+
+    .screen-grid {
+      display: grid;
+      grid-template-columns: repeat(8, minmax(0, 1fr));
+      gap: 8px;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 14px;
+      background: rgba(4, 7, 11, 0.95);
+      aspect-ratio: 1;
+      min-height: min(72vh, 920px);
+    }
+
+    .pixel {
+      aspect-ratio: 1;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+    }
+
+    .palette-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 6px;
+    }
+
+    .palette-row {
+      display: grid;
+      grid-template-columns: 16px auto 1fr;
+      gap: 6px;
+      align-items: center;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 0.74rem;
+      color: var(--muted);
+      padding: 6px 7px;
+      border: 1px solid var(--line-soft);
+      border-radius: 12px;
+      background: rgba(8, 12, 17, 0.72);
+    }
+
+    .palette-chip {
+      width: 18px;
+      height: 18px;
+      border-radius: 5px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+    }
+
+    .trace-log,
+    .assembly-listing,
+    .memory-grid-wrap,
+    .isa-wrap {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(8, 12, 17, 0.86);
+    }
+
+    .trace-log,
+    .assembly-listing {
+      max-height: 260px;
+      overflow: auto;
+      padding: 10px;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 0.84rem;
+      line-height: 1.5;
+    }
+
+    .trace-row,
+    .listing-row {
+      padding: 7px 8px;
+      border-radius: 10px;
+    }
+
+    .trace-row:nth-child(odd),
+    .listing-row:nth-child(odd) {
+      background: rgba(19, 28, 38, 0.7);
+    }
+
+    .trace-cycle,
+    .listing-address {
+      color: var(--accent-2);
+      margin-right: 10px;
+    }
+
+    .assembly-output {
+      display: grid;
+      gap: 10px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      width: fit-content;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(20, 29, 40, 0.9);
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .pill.good { color: var(--good); border-color: rgba(122, 222, 161, 0.3); }
+    .pill.bad { color: var(--danger); border-color: rgba(249, 115, 144, 0.3); }
+
+    .machine-columns {
+      display: grid;
+      gap: 14px;
+    }
+
+    .machine-secondary {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(320px, 0.9fr);
+      gap: 14px;
+      align-items: start;
+    }
+
+    .tab-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tab-btn.active {
+      background: linear-gradient(135deg, rgba(110, 231, 216, 0.18), rgba(110, 231, 216, 0.05));
+      border-color: rgba(110, 231, 216, 0.52);
+      color: var(--accent);
+    }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: grid; gap: 14px; }
+
+    .memory-grid-wrap {
+      max-height: 760px;
+      overflow: auto;
+      padding: 12px;
+    }
+
+    .memory-grid {
+      display: grid;
+      grid-template-columns: repeat(16, minmax(0, 1fr));
+      gap: 6px;
+    }
+
+    .memory-cell {
+      min-height: 58px;
+      padding: 6px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: rgba(18, 24, 33, 0.92);
+      text-align: left;
+      font-family: Consolas, "Courier New", monospace;
+    }
+
+    .memory-cell.selected { border-color: var(--accent); box-shadow: 0 0 0 1px rgba(110, 231, 216, 0.48); }
+    .memory-cell.pc { border-color: rgba(245, 176, 68, 0.72); }
+    .memory-cell.mar { border-color: rgba(85, 150, 255, 0.72); }
+    .memory-cell.read { background: rgba(15, 52, 47, 0.95); }
+    .memory-cell.write { background: rgba(67, 45, 12, 0.95); }
+    .memory-cell.screen { box-shadow: inset 0 0 0 1px rgba(245, 176, 68, 0.14); }
+
+    .cell-addr {
+      display: block;
+      color: var(--muted);
+      font-size: 0.68rem;
+      margin-bottom: 7px;
+    }
+
+    .cell-hex {
+      display: block;
+      font-weight: 700;
+      font-size: 0.96rem;
+      margin-bottom: 4px;
+    }
+
+    .cell-bin {
+      display: block;
+      color: #bfd0e3;
+      font-size: 0.7rem;
+      letter-spacing: 0.05em;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .legend-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(18, 24, 33, 0.9);
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .legend-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+    }
+
+    .bit-strip {
+      display: grid;
+      grid-template-columns: repeat(8, 42px);
+      gap: 8px;
+    }
+
+    .bit-btn {
+      width: 42px;
+      height: 42px;
+      padding: 0;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 1rem;
+    }
+
+    .bit-btn.on {
+      background: linear-gradient(135deg, rgba(110, 231, 216, 0.2), rgba(110, 231, 216, 0.05));
+      border-color: rgba(110, 231, 216, 0.5);
+      color: var(--accent);
+    }
+
+    .emit-box {
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(8, 12, 17, 0.86);
+      font-family: Consolas, "Courier New", monospace;
+    }
+
+    .emit-bytes {
+      color: var(--accent);
+      font-size: 1.03rem;
+      word-break: break-word;
+      letter-spacing: 0.06em;
+    }
+
+    .emit-help {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 0.86rem;
+      line-height: 1.42;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+    }
+
+    th, td {
+      padding: 11px 12px;
+      border-bottom: 1px solid rgba(45, 65, 86, 0.8);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      color: var(--muted);
+      font-size: 0.74rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      background: rgba(20, 29, 40, 0.95);
+    }
+
+    td code {
+      color: var(--accent);
+      font-family: Consolas, "Courier New", monospace;
+    }
+
+    .isa-wrap {
+      overflow: hidden;
+    }
+
+    .footnote {
+      color: var(--muted);
+      line-height: 1.55;
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 1240px) {
+      .hero,
+      .workspace,
+      .builder-grid,
+      .screen-wrap,
+      .machine-secondary {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-metrics,
+      .button-row,
+      .field-grid,
+      .meta-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .register-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 760px) {
+      body { padding: 10px; font-size: 16px; }
+
+      .status-grid,
+      .flag-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .register-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .memory-grid {
+        grid-template-columns: repeat(8, minmax(0, 1fr));
+      }
+
+      .bit-strip {
+        grid-template-columns: repeat(4, 42px);
+      }
+
+      .palette-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .screen-grid {
+        min-height: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <a class="back-link" href="../index.html"><span>&lt;-</span> Back to apps archive</a>
+
+    <section class="hero">
+      <div>
+        <div class="eyebrow">Inspectable 8-bit machine</div>
+        <h1>Binary Machine</h1>
+        <p class="hero-copy">
+          The machine you already had stays intact. This pass adds a real assembler on top of the same bytecode and fixes the layout so the workbench shows up first: write assembly, compile it, run it, then inspect registers, flags, RAM, and the memory-mapped screen.
+        </p>
+        <div class="hero-metrics">
+          <div class="metric">
+            <strong>Assembly -> bytes</strong>
+            <span>Mnemonics compile into the exact opcodes already used by the byte editor and machine core.</span>
+          </div>
+          <div class="metric">
+            <strong>Workbench first</strong>
+            <span>The assembly editor, screen, trace, and registers are visible immediately instead of buried under the RAM wall.</span>
+          </div>
+          <div class="metric">
+            <strong>Language layers later</strong>
+            <span>This assembler is now a clean base for labels, constants, and higher-level languages on top.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="status-stack">
+        <div class="status-grid">
+          <div class="status-box">
+            <label>Status</label>
+            <strong id="statusText">Ready</strong>
+            <small id="faultText">No fault</small>
+          </div>
+          <div class="status-box">
+            <label>Last bus event</label>
+            <strong id="busText">None</strong>
+            <small id="cycleText">0 cycles, 0 retired</small>
+          </div>
+        </div>
+        <div class="status-box">
+          <label>Language pipeline status</label>
+          <strong id="assemblyStatusHeadline">Idle</strong>
+          <small id="assemblyStatusText">Write assembly, then compile or compile-and-load.</small>
+        </div>
+      </div>
+    </section>
+
+    <section class="workspace">
+      <section class="panel">
+        <div class="panel-head">
+          <div>
+            <div class="eyebrow">Workbench</div>
+            <h2 class="section-title">Python-like, C-like, assembly, and binary</h2>
+          </div>
+          <p>Write a tiny Python-like program, inspect the generated C-like code, then inspect the generated assembly and the exact binary bytes that hit RAM.</p>
+        </div>
+
+        <div class="code-stack">
+          <details class="subpanel code-panel" open>
+            <summary>
+              <div>
+                <h3>Python-like source</h3>
+                <div class="code-summary-copy">Write or load a sample here first.</div>
+              </div>
+            </summary>
+            <div class="code-panel-body">
+              <div class="field-grid">
+                <div class="field">
+                  <label for="pythonSamplePicker">Program library</label>
+                  <select id="pythonSamplePicker"></select>
+                </div>
+              </div>
+              <div id="pythonSampleDescription" class="sample-note">Pick a built-in Python sample to load it here.</div>
+              <textarea id="pyInput" spellcheck="false"></textarea>
+              <div class="button-row">
+                <button id="compilePyBtn" class="primary">Compile Python-like</button>
+                <button id="compilePyLoadBtn">Compile Python-like + load</button>
+                <button id="compilePyRunBtn" class="warn">Compile Python-like + run</button>
+              </div>
+            </div>
+          </details>
+
+          <details class="subpanel code-panel">
+            <summary>
+              <div>
+                <h3>C-like source</h3>
+                <div class="code-summary-copy">Open this to inspect the C-like layer generated from Python.</div>
+              </div>
+            </summary>
+            <div class="code-panel-body">
+              <textarea id="cInput" spellcheck="false"></textarea>
+              <div class="button-row">
+                <button id="compileCBtn" class="primary">Compile C-like</button>
+                <button id="compileCLoadBtn">Compile C-like + load</button>
+                <button id="compileCRunBtn" class="warn">Compile C-like + run</button>
+              </div>
+            </div>
+          </details>
+
+          <details class="subpanel code-panel">
+            <summary>
+              <div>
+                <h3>Assembly source</h3>
+                <div class="code-summary-copy">Open this to inspect or edit the assembly that drives the machine.</div>
+              </div>
+            </summary>
+            <div class="code-panel-body">
+              <div class="small-label">Generated from the C-like layer or edited by hand</div>
+              <textarea id="assemblyInput" spellcheck="false"></textarea>
+              <div class="button-row">
+                <button id="assembleBtn" class="primary">Assemble</button>
+                <button id="assembleLoadBtn">Assemble + load</button>
+                <button id="assembleRunBtn" class="warn">Assemble + load + run</button>
+              </div>
+            </div>
+          </details>
+
+          <details class="subpanel code-panel">
+            <summary>
+              <div>
+                <h3>Binary byte stream</h3>
+                <div class="code-summary-copy">Open this to inspect the exact bytes that will land in RAM.</div>
+              </div>
+            </summary>
+            <div class="code-panel-body">
+              <div class="builder-grid">
+                <div class="subpanel">
+                  <h3>Compiled bytes</h3>
+                  <div class="assembly-output">
+                    <div id="assemblyStatusPill" class="pill">No compile yet</div>
+                    <div class="emit-box">
+                      <div class="small-label">Binary / byte stream</div>
+                      <div id="assemblyBytes" class="emit-bytes">--</div>
+                      <div id="assemblyMeta" class="emit-help">The assembler output will appear here.</div>
+                    </div>
+                    <div class="meta-grid">
+                      <div class="mini-card">
+                        <label>Symbol table</label>
+                        <strong id="symbolSummary">--</strong>
+                        <span>Labels and constants resolved during compile.</span>
+                      </div>
+                      <div class="mini-card">
+                        <label>Selected RAM cell</label>
+                        <strong id="selectedCellInfo">0x00 = 0x00</strong>
+                        <span>Still fully editable as raw bytes.</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="subpanel">
+                  <h3>Assembly listing</h3>
+                  <div id="assemblyListing" class="assembly-listing"></div>
+                </div>
+              </div>
+            </div>
+          </details>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <div>
+            <div class="eyebrow">Machine state</div>
+            <h2 class="section-title">Clock, registers, screen, and trace</h2>
+          </div>
+          <p>The core machine is unchanged. This side is only the live view into the existing fetch/decode/execute engine.</p>
+        </div>
+
+        <div class="button-row">
+          <button id="microStepBtn" class="primary">Micro step</button>
+          <button id="instructionStepBtn">Instruction step</button>
+          <button id="runBtn" class="warn">Run</button>
+          <button id="stopBtn">Stop</button>
+          <button id="resetBtn">Reset machine</button>
+          <button id="clearScreenBtn" class="danger">Clear screen RAM</button>
+        </div>
+
+        <div class="subpanel">
+          <h3>Clock controls</h3>
+          <div class="field-grid">
+            <div class="field">
+              <label for="runMode">Run mode</label>
+              <select id="runMode">
+                <option value="micro">Continuous micro-steps</option>
+                <option value="instruction">Continuous instructions</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="speedRange">Tick delay (seconds)</label>
+              <input id="speedRange" type="range" min="0.001" max="2" step="0.001" value="0.140">
+            </div>
+            <div class="field">
+              <label for="speedLabel">Current delay</label>
+              <input id="speedLabel" type="text" value="140 ms" readonly>
+            </div>
+          </div>
+        </div>
+
+        <div class="machine-columns">
+          <div class="subpanel">
+            <h3>Screen memory at 0x80-0xBF</h3>
+            <div class="screen-wrap">
+              <div id="screenGrid" class="screen-grid"></div>
+              <div id="paletteLegend" class="palette-grid"></div>
+            </div>
+          </div>
+
+          <div class="machine-secondary">
+            <div class="subpanel">
+              <h3>Trace log</h3>
+              <div id="traceLog" class="trace-log"></div>
+            </div>
+
+            <div style="display:grid; gap:14px;">
+              <div class="subpanel">
+                <h3>Registers</h3>
+                <div id="registerGrid" class="register-grid"></div>
+              </div>
+
+              <div class="subpanel">
+                <h3>Flags and micro-state</h3>
+                <div id="flagGrid" class="flag-grid"></div>
+                <div class="meta-grid" style="margin-top:10px;">
+                  <div class="mini-card">
+                    <label>Instruction</label>
+                    <strong id="irDecode">IR: 0x00</strong>
+                    <span>Current decoded opcode.</span>
+                  </div>
+                  <div class="mini-card">
+                    <label>Pending operands</label>
+                    <strong id="operandState">[]</strong>
+                    <span>Bytes already fetched for the current instruction.</span>
+                  </div>
+                  <div class="mini-card">
+                    <label>Queue depth</label>
+                    <strong id="queueDepth">0</strong>
+                    <span>Micro-ops waiting to execute.</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <div>
+          <div class="eyebrow">Deep inspection</div>
+          <h2 class="section-title">Raw RAM, byte tools, encoder, and ISA reference</h2>
+        </div>
+        <p>The old low-level controls are still here. They are just no longer the first thing punching you in the face.</p>
+      </div>
+
+      <div class="tab-row">
+        <button class="tab-btn active" data-tab-target="memoryPanel">Memory map</button>
+        <button class="tab-btn" data-tab-target="bytePanel">Selected byte</button>
+        <button class="tab-btn" data-tab-target="builderPanel">Opcode builder</button>
+        <button class="tab-btn" data-tab-target="isaPanel">Instruction set</button>
+      </div>
+
+      <div id="memoryPanel" class="tab-panel active">
+        <div class="legend">
+          <div class="legend-chip"><span class="legend-dot" style="background: rgba(110, 231, 216, 0.28);"></span>Selected</div>
+          <div class="legend-chip"><span class="legend-dot" style="background: rgba(245, 176, 68, 0.28);"></span>PC</div>
+          <div class="legend-chip"><span class="legend-dot" style="background: rgba(85, 150, 255, 0.28);"></span>MAR</div>
+          <div class="legend-chip"><span class="legend-dot" style="background: rgba(15, 52, 47, 0.72);"></span>Last read</div>
+          <div class="legend-chip"><span class="legend-dot" style="background: rgba(67, 45, 12, 0.95);"></span>Last write</div>
+          <div class="legend-chip"><span class="legend-dot" style="background: rgba(245, 176, 68, 0.18);"></span>Screen page</div>
+        </div>
+        <div class="memory-grid-wrap">
+          <div id="memoryGrid" class="memory-grid"></div>
+        </div>
+      </div>
+
+      <div id="bytePanel" class="tab-panel">
+        <div class="subpanel">
+          <h3>Selected byte editor</h3>
+          <div class="field-grid">
+            <div class="field">
+              <label for="hexInput">Hex</label>
+              <input id="hexInput" type="text" value="00">
+            </div>
+            <div class="field">
+              <label for="decInput">Decimal</label>
+              <input id="decInput" type="number" min="0" max="255" value="0">
+            </div>
+            <div class="field">
+              <label for="binInput">Binary</label>
+              <input id="binInput" type="text" value="00000000">
+            </div>
+          </div>
+          <div class="button-row">
+            <button id="applyByteBtn" class="primary">Write selected byte</button>
+            <button id="zeroByteBtn">Zero selected byte</button>
+            <button id="fillScreenBtn">Flood screen page</button>
+          </div>
+          <div>
+            <div class="small-label" style="margin-bottom:8px;">Flip individual bits</div>
+            <div id="bitStrip" class="bit-strip"></div>
+          </div>
+        </div>
+
+        <div class="subpanel">
+          <h3>Paste raw bytes</h3>
+          <textarea id="byteStreamInput" spellcheck="false" placeholder="Example: 0x10 0x00 0x05 0x12 0x00 0x80 0x01"></textarea>
+          <div class="button-row">
+            <button id="loadBytesBtn" class="primary">Load at selected address</button>
+            <button id="replaceProgramBtn">Reset and load at 0x00</button>
+            <button id="wipeRamBtn" class="danger">Wipe full RAM</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="builderPanel" class="tab-panel">
+        <div class="builder-grid">
+          <div class="subpanel">
+            <h3>Instruction encoder</h3>
+            <div class="field">
+              <label for="opcodeSelect">Instruction</label>
+              <select id="opcodeSelect"></select>
+            </div>
+            <div id="operandFields" class="field-grid" style="margin-top:10px;"></div>
+            <div class="button-row" style="margin-top:10px;">
+              <button id="writeInstructionBtn" class="primary">Write at selected address</button>
+              <button id="appendInstructionBtn">Write after selected byte</button>
+              <button id="copyEmitBtn">Copy emitted bytes</button>
+            </div>
+          </div>
+          <div class="emit-box">
+            <div class="small-label">Emitted byte sequence</div>
+            <div id="emitBytes" class="emit-bytes">00</div>
+            <div id="emitHelp" class="emit-help">Choose an opcode and operands. The encoder shows the exact bytes written into RAM.</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="isaPanel" class="tab-panel">
+        <div class="isa-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Opcode</th>
+                <th>Mnemonic</th>
+                <th>Format</th>
+                <th>Meaning</th>
+              </tr>
+            </thead>
+            <tbody id="isaBody"></tbody>
+          </table>
+        </div>
+        <p class="footnote">
+          Registers: <code>A=0</code>, <code>B=1</code>, <code>C=2</code>, <code>D=3</code>, <code>X=4</code>, <code>Y=5</code>.
+          Assembly supports labels like <code>loop:</code>, constants like <code>SCREEN = 0x80</code>, and raw byte directives with <code>DB</code>.
+        </p>
+      </div>
+    </section>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

@@ -1,6 +1,6 @@
 {
-  "last_scanned": "2026-05-10 20:00:10",
-  "total_arbs": 30,
+  "last_scanned": "2026-05-17 20:00:08",
+  "total_arbs": 48,
   "min_net": 0.0,
   "scan_history": [
     {
@@ -250,6 +250,54 @@
       "api_requests": 14,
       "new_arbs": 3,
       "total_arbs": 30
+    },
+    {
+      "scanned_at": "2026-05-11 20:00:08",
+      "scan_seconds": 3.74,
+      "n_events": 215,
+      "api_requests": 14,
+      "new_arbs": 3,
+      "total_arbs": 33
+    },
+    {
+      "scanned_at": "2026-05-13 20:00:09",
+      "scan_seconds": 5.18,
+      "n_events": 258,
+      "api_requests": 14,
+      "new_arbs": 3,
+      "total_arbs": 36
+    },
+    {
+      "scanned_at": "2026-05-14 20:00:08",
+      "scan_seconds": 4.72,
+      "n_events": 281,
+      "api_requests": 14,
+      "new_arbs": 5,
+      "total_arbs": 41
+    },
+    {
+      "scanned_at": "2026-05-15 20:00:09",
+      "scan_seconds": 5.07,
+      "n_events": 334,
+      "api_requests": 14,
+      "new_arbs": 4,
+      "total_arbs": 45
+    },
+    {
+      "scanned_at": "2026-05-16 20:00:08",
+      "scan_seconds": 3.77,
+      "n_events": 285,
+      "api_requests": 13,
+      "new_arbs": 0,
+      "total_arbs": 45
+    },
+    {
+      "scanned_at": "2026-05-17 20:00:08",
+      "scan_seconds": 3.66,
+      "n_events": 246,
+      "api_requests": 11,
+      "new_arbs": 3,
+      "total_arbs": 48
     }
   ],
   "arbs": [
@@ -1270,6 +1318,585 @@
           "book_key": "leovegas",
           "book_type": "soft",
           "odds": 4.25,
+          "can_ban": true
+        }
+      }
+    },
+    {
+      "event": "Cleveland Cavaliers vs Detroit Pistons",
+      "home": "Cleveland Cavaliers",
+      "away": "Detroit Pistons",
+      "sport": "NBA",
+      "sport_key": "basketball_nba",
+      "commence": "in 9m",
+      "days_until": 0.0417,
+      "net_pct": 0.008819,
+      "apr": 2.5418048198902684e+33,
+      "has_safe_leg": true,
+      "all_safe": false,
+      "n_outcomes": 2,
+      "found_at": "2026-05-11 20:00:08",
+      "legs": {
+        "Cleveland Cavaliers": {
+          "book": "888sport",
+          "book_key": "sport888",
+          "book_type": "soft",
+          "odds": 1.73,
+          "can_ban": true
+        },
+        "Detroit Pistons": {
+          "book": "Pinnacle",
+          "book_key": "pinnacle",
+          "book_type": "sharp",
+          "odds": 2.42,
+          "can_ban": false
+        }
+      }
+    },
+    {
+      "event": "Dooho Choi vs Daniel Santos",
+      "home": "Dooho Choi",
+      "away": "Daniel Santos",
+      "sport": "MMA",
+      "sport_key": "mma_mixed_martial_arts",
+      "commence": "2026-05-17",
+      "days_until": 4.9999,
+      "net_pct": 0.015704,
+      "apr": 2.119,
+      "has_safe_leg": true,
+      "all_safe": false,
+      "n_outcomes": 2,
+      "found_at": "2026-05-11 20:00:08",
+      "legs": {
+        "Daniel Santos": {
+          "book": "Betway",
+          "book_key": "betway",
+          "book_type": "soft",
+          "odds": 1.73,
+          "can_ban": true
+        },
+        "Dooho Choi": {
+          "book": "Pinnacle",
+          "book_key": "pinnacle",
+          "book_type": "sharp",
+          "odds": 2.46,
+          "can_ban": false
+        }
+      }
+    },
+    {
+      "event": "Tuco Tokkos vs Ivan Erslan",
+      "home": "Tuco Tokkos",
+      "away": "Ivan Erslan",
+      "sport": "MMA",
+      "sport_key": "mma_mixed_martial_arts",
+      "commence": "2026-05-17",
+      "days_until": 4.9999,
+      "net_pct": 0.008585,
+      "apr": 0.8664,
+      "has_safe_leg": false,
+      "all_safe": false,
+      "n_outcomes": 2,
+      "found_at": "2026-05-11 20:00:08",
+      "legs": {
+        "Ivan Erslan": {
+          "book": "Betway",
+          "book_key": "betway",
+          "book_type": "soft",
+          "odds": 1.61,
+          "can_ban": true
+        },
+        "Tuco Tokkos": {
+          "book": "BetMGM",
+          "book_key": "betmgm",
+          "book_type": "soft",
+          "odds": 2.7,
+          "can_ban": true
+        }
+      }
+    },
+    {
+      "event": "Daniel Barez vs Luis Gurule",
+      "home": "Daniel Barez",
+      "away": "Luis Gurule",
+      "sport": "MMA",
+      "sport_key": "mma_mixed_martial_arts",
+      "commence": "2026-05-17",
+      "days_until": 2.9999,
+      "net_pct": 0.022384,
+      "apr": 13.7833,
+      "has_safe_leg": false,
+      "all_safe": false,
+      "n_outcomes": 2,
+      "found_at": "2026-05-13 20:00:09",
+      "legs": {
+        "Daniel Barez": {
+          "book": "DraftKings",
+          "book_key": "draftkings",
+          "book_type": "soft",
+          "odds": 2.2,
+          "can_ban": true
+        },
+        "Luis Gurule": {
+          "book": "Betway",
+          "book_key": "betway",
+          "book_type": "soft",
+          "odds": 1.91,
+          "can_ban": true
+        }
+      }
+    },
+    {
+      "event": "Philadelphia Union vs Columbus Crew SC",
+      "home": "Philadelphia Union",
+      "away": "Columbus Crew SC",
+      "sport": "MLS",
+      "sport_key": "soccer_usa_mls",
+      "commence": "2026-05-16",
+      "days_until": 2.9791,
+      "net_pct": 0.01173,
+      "apr": 3.1738,
+      "has_safe_leg": true,
+      "all_safe": false,
+      "n_outcomes": 3,
+      "found_at": "2026-05-13 20:00:09",
+      "legs": {
+        "Columbus Crew SC": {
+          "book": "Pinnacle",
+          "book_key": "pinnacle",
+          "book_type": "sharp",
+          "odds": 3.14,
+          "can_ban": false
+        },
+        "Philadelphia Union": {
+          "book": "LeoVegas",
+          "book_key": "leovegas",
+          "book_type": "soft",
+          "odds": 2.55,
+          "can_ban": true
+        },
+        "Draw": {
+          "book": "LeoVegas",
+          "book_key": "leovegas",
+          "book_type": "soft",
+          "odds": 3.6,
+          "can_ban": true
+        }
+      }
+    },
+    {
+      "event": "New York Giants vs Dallas Cowboys",
+      "home": "New York Giants",
+      "away": "Dallas Cowboys",
+      "sport": "NFL",
+      "sport_key": "americanfootball_nfl",
+      "commence": "2026-09-14",
+      "days_until": 123.0138,
+      "net_pct": 0.000246,
+      "apr": 0.0007,
+      "has_safe_leg": false,
+      "all_safe": false,
+      "n_outcomes": 2,
+      "found_at": "2026-05-13 20:00:09",
+      "legs": {
+        "Dallas Cowboys": {
+          "book": "DraftKings",
+          "book_key": "draftkings",
+          "book_type": "soft",
+          "odds": 1.77,
+          "can_ban": true
+        },
+        "New York Giants": {
+          "book": "FanDuel",
+          "book_key": "fanduel",
+          "book_type": "soft",
+          "odds": 2.3,
+          "can_ban": true
+        }
+      }
+    },
+    {
+      "event": "Tennessee Titans vs New York Jets",
+      "home": "Tennessee Titans",
+      "away": "New York Jets",
+      "sport": "NFL",
+      "sport_key": "americanfootball_nfl",
+      "commence": "2026-09-13",
+      "days_until": 121.7082,
+      "net_pct": 0.042024,
+      "apr": 0.1314,
+      "has_safe_leg": false,
+      "all_safe": false,
+      "n_outcomes": 2,
+      "found_at": "2026-05-14 20:00:08",
+      "legs": {
+        "New York Jets": {
+          "book": "DraftKings",
+          "book_key": "draftkings",
+          "book_type": "soft",
+          "odds": 2.42,
+          "can_ban": true
+        },
+        "Tennessee Titans": {
+          "book": "LeoVegas",
+          "book_key": "leovegas",
+          "book_type": "soft",
+          "odds": 1.83,
+          "can_ban": true
+        }
+      }
+    },
+    {
+      "event": "Pittsburgh Steelers vs Atlanta Falcons",
+      "home": "Pittsburgh Steelers",
+      "away": "Atlanta Falcons",
+      "sport": "NFL",
+      "sport_key": "americanfootball_nfl",
+      "commence": "2026-09-13",
+      "days_until": 121.7082,
+      "net_pct": 0.034316,
+      "apr": 0.1065,
+      "has_safe_leg": false,
+      "all_safe": false,
+      "n_outcomes": 2,
+      "found_at": "2026-05-14 20:00:08",
+      "legs": {
+        "Atlanta Falcons": {
+          "book": "DraftKings",
+          "book_key": "draftkings",
+          "book_type": "soft",
+          "odds": 2.45,
+          "can_ban": true
+        },
+        "Pittsburgh Steelers": {
+          "book": "FanDuel",
+          "book_key": "fanduel",
+          "book_type": "soft",
+          "odds": 1.79,
+          "can_ban": true
+        }
+      }
+    },
+    {
+      "event": "Jacksonville Jaguars vs Cleveland Browns",
+      "home": "Jacksonville Jaguars",
+      "away": "Cleveland Browns",
+      "sport": "NFL",
+      "sport_key": "americanfootball_nfl",
+      "commence": "2026-09-13",
+      "days_until": 121.7082,
+      "net_pct": 0.000567,
+      "apr": 0.0017,
+      "has_safe_leg": false,
+      "all_safe": false,
+      "n_outcomes": 2,
+      "found_at": "2026-05-14 20:00:08",
+      "legs": {
+        "Cleveland Browns": {
+          "book": "FanDuel",
+          "book_key": "fanduel",
+          "book_type": "soft",
+          "odds": 3.95,
+          "can_ban": true
+        },
+        "Jacksonville Jaguars": {
+          "book": "DraftKings",
+          "book_key": "draftkings",
+          "book_type": "soft",
+          "odds": 1.34,
+          "can_ban": true
+        }
+      }
+    },
+    {
+      "event": "Los Angeles Rams vs San Francisco 49ers",
+      "home": "Los Angeles Rams",
+      "away": "San Francisco 49ers",
+      "sport": "NFL",
+      "sport_key": "americanfootball_nfl",
+      "commence": "2026-09-11",
+      "days_until": 119.0242,
+      "net_pct": 0.000246,
+      "apr": 0.0008,
+      "has_safe_leg": false,
+      "all_safe": false,
+      "n_outcomes": 2,
+      "found_at": "2026-05-14 20:00:08",
+      "legs": {
+        "Los Angeles Rams": {
+          "book": "FanDuel",
+          "book_key": "fanduel",
+          "book_type": "soft",
+          "odds": 1.77,
+          "can_ban": true
+        },
+        "San Francisco 49ers": {
+          "book": "DraftKings",
+          "book_key": "draftkings",
+          "book_type": "soft",
+          "odds": 2.3,
+          "can_ban": true
+        }
+      }
+    },
+    {
+      "event": "Los Angeles Chargers vs Arizona Cardinals",
+      "home": "Los Angeles Chargers",
+      "away": "Arizona Cardinals",
+      "sport": "NFL",
+      "sport_key": "americanfootball_nfl",
+      "commence": "2026-09-13",
+      "days_until": 121.8506,
+      "net_pct": 0.000148,
+      "apr": 0.0004,
+      "has_safe_leg": false,
+      "all_safe": false,
+      "n_outcomes": 2,
+      "found_at": "2026-05-14 20:00:08",
+      "legs": {
+        "Arizona Cardinals": {
+          "book": "DraftKings",
+          "book_key": "draftkings",
+          "book_type": "soft",
+          "odds": 5.55,
+          "can_ban": true
+        },
+        "Los Angeles Chargers": {
+          "book": "LeoVegas",
+          "book_key": "leovegas",
+          "book_type": "soft",
+          "odds": 1.22,
+          "can_ban": true
+        }
+      }
+    },
+    {
+      "event": "Melvin Jerusalem vs Siyakholwa Kuse",
+      "home": "Melvin Jerusalem",
+      "away": "Siyakholwa Kuse",
+      "sport": "BOXING",
+      "sport_key": "boxing_boxing",
+      "commence": "in 17.0h",
+      "days_until": 0.7082,
+      "net_pct": 0.004748,
+      "apr": 10.4847,
+      "has_safe_leg": true,
+      "all_safe": false,
+      "n_outcomes": 3,
+      "found_at": "2026-05-15 20:00:09",
+      "legs": {
+        "Melvin Jerusalem": {
+          "book": "Pinnacle",
+          "book_key": "pinnacle",
+          "book_type": "sharp",
+          "odds": 1.77,
+          "can_ban": false
+        },
+        "Siyakholwa Kuse": {
+          "book": "Betway",
+          "book_key": "betway",
+          "book_type": "soft",
+          "odds": 2.75,
+          "can_ban": true
+        },
+        "Draw": {
+          "book": "Betway",
+          "book_key": "betway",
+          "book_type": "soft",
+          "odds": 15.0,
+          "can_ban": true
+        }
+      }
+    },
+    {
+      "event": "Pittsburgh Steelers vs Atlanta Falcons",
+      "home": "Pittsburgh Steelers",
+      "away": "Atlanta Falcons",
+      "sport": "NFL",
+      "sport_key": "americanfootball_nfl",
+      "commence": "2026-09-13",
+      "days_until": 120.7082,
+      "net_pct": 0.020833,
+      "apr": 0.0643,
+      "has_safe_leg": false,
+      "all_safe": false,
+      "n_outcomes": 2,
+      "found_at": "2026-05-15 20:00:09",
+      "legs": {
+        "Atlanta Falcons": {
+          "book": "DraftKings",
+          "book_key": "draftkings",
+          "book_type": "soft",
+          "odds": 2.45,
+          "can_ban": true
+        },
+        "Pittsburgh Steelers": {
+          "book": "BetRivers",
+          "book_key": "betrivers",
+          "book_type": "soft",
+          "odds": 1.75,
+          "can_ban": true
+        }
+      }
+    },
+    {
+      "event": "Tennessee Titans vs New York Jets",
+      "home": "Tennessee Titans",
+      "away": "New York Jets",
+      "sport": "NFL",
+      "sport_key": "americanfootball_nfl",
+      "commence": "2026-09-13",
+      "days_until": 120.7082,
+      "net_pct": 0.012212,
+      "apr": 0.0374,
+      "has_safe_leg": false,
+      "all_safe": false,
+      "n_outcomes": 2,
+      "found_at": "2026-05-15 20:00:09",
+      "legs": {
+        "New York Jets": {
+          "book": "DraftKings",
+          "book_key": "draftkings",
+          "book_type": "soft",
+          "odds": 2.42,
+          "can_ban": true
+        },
+        "Tennessee Titans": {
+          "book": "BetRivers",
+          "book_key": "betrivers",
+          "book_type": "soft",
+          "odds": 1.74,
+          "can_ban": true
+        }
+      }
+    },
+    {
+      "event": "Los Angeles Chargers vs Arizona Cardinals",
+      "home": "Los Angeles Chargers",
+      "away": "Arizona Cardinals",
+      "sport": "NFL",
+      "sport_key": "americanfootball_nfl",
+      "commence": "2026-09-13",
+      "days_until": 120.8506,
+      "net_pct": 0.006456,
+      "apr": 0.0196,
+      "has_safe_leg": false,
+      "all_safe": false,
+      "n_outcomes": 2,
+      "found_at": "2026-05-15 20:00:09",
+      "legs": {
+        "Arizona Cardinals": {
+          "book": "BetMGM",
+          "book_key": "betmgm",
+          "book_type": "soft",
+          "odds": 5.75,
+          "can_ban": true
+        },
+        "Los Angeles Chargers": {
+          "book": "LeoVegas",
+          "book_key": "leovegas",
+          "book_type": "soft",
+          "odds": 1.22,
+          "can_ban": true
+        }
+      }
+    },
+    {
+      "event": "Loma Lookboonmee vs Jaqueline Amorim",
+      "home": "Loma Lookboonmee",
+      "away": "Jaqueline Amorim",
+      "sport": "MMA",
+      "sport_key": "mma_mixed_martial_arts",
+      "commence": "2026-05-30",
+      "days_until": 12.3332,
+      "net_pct": 0.037349,
+      "apr": 1.9601,
+      "has_safe_leg": false,
+      "all_safe": false,
+      "n_outcomes": 2,
+      "found_at": "2026-05-17 20:00:08",
+      "legs": {
+        "Jaqueline Amorim": {
+          "book": "DraftKings",
+          "book_key": "draftkings",
+          "book_type": "soft",
+          "odds": 2.05,
+          "can_ban": true
+        },
+        "Loma Lookboonmee": {
+          "book": "Betway",
+          "book_key": "betway",
+          "book_type": "soft",
+          "odds": 2.1,
+          "can_ban": true
+        }
+      }
+    },
+    {
+      "event": "Portland Timbers vs San Jose Earthquakes",
+      "home": "Portland Timbers",
+      "away": "San Jose Earthquakes",
+      "sport": "MLS",
+      "sport_key": "soccer_usa_mls",
+      "commence": "2026-05-24",
+      "days_until": 6.0624,
+      "net_pct": 0.002603,
+      "apr": 0.1694,
+      "has_safe_leg": false,
+      "all_safe": false,
+      "n_outcomes": 3,
+      "found_at": "2026-05-17 20:00:08",
+      "legs": {
+        "Portland Timbers": {
+          "book": "LeoVegas",
+          "book_key": "leovegas",
+          "book_type": "soft",
+          "odds": 2.38,
+          "can_ban": true
+        },
+        "San Jose Earthquakes": {
+          "book": "FanDuel",
+          "book_key": "fanduel",
+          "book_type": "soft",
+          "odds": 3.0,
+          "can_ban": true
+        },
+        "Draw": {
+          "book": "FanDuel",
+          "book_key": "fanduel",
+          "book_type": "soft",
+          "odds": 4.1,
+          "can_ban": true
+        }
+      }
+    },
+    {
+      "event": "Song Yadong vs Deiveson Figueiredo",
+      "home": "Song Yadong",
+      "away": "Deiveson Figueiredo",
+      "sport": "MMA",
+      "sport_key": "mma_mixed_martial_arts",
+      "commence": "2026-05-30",
+      "days_until": 12.4582,
+      "net_pct": 0.003937,
+      "apr": 0.122,
+      "has_safe_leg": false,
+      "all_safe": false,
+      "n_outcomes": 2,
+      "found_at": "2026-05-17 20:00:08",
+      "legs": {
+        "Deiveson Figueiredo": {
+          "book": "DraftKings",
+          "book_key": "draftkings",
+          "book_type": "soft",
+          "odds": 5.1,
+          "can_ban": true
+        },
+        "Song Yadong": {
+          "book": "Betway",
+          "book_key": "betway",
+          "book_type": "soft",
+          "odds": 1.25,
           "can_ban": true
         }
       }
