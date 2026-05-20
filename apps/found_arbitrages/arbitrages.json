@@ -1,6 +1,6 @@
 {
-  "last_scanned": "2026-05-17 20:00:08",
-  "total_arbs": 48,
+  "last_scanned": "2026-05-19 20:00:18",
+  "total_arbs": 55,
   "min_net": 0.0,
   "scan_history": [
     {
@@ -298,6 +298,22 @@
       "api_requests": 11,
       "new_arbs": 3,
       "total_arbs": 48
+    },
+    {
+      "scanned_at": "2026-05-18 20:00:08",
+      "scan_seconds": 4.85,
+      "n_events": 291,
+      "api_requests": 15,
+      "new_arbs": 6,
+      "total_arbs": 54
+    },
+    {
+      "scanned_at": "2026-05-19 20:00:18",
+      "scan_seconds": 9.17,
+      "n_events": 270,
+      "api_requests": 15,
+      "new_arbs": 1,
+      "total_arbs": 55
     }
   ],
   "arbs": [
@@ -1897,6 +1913,230 @@
           "book_key": "betway",
           "book_type": "soft",
           "odds": 1.25,
+          "can_ban": true
+        }
+      }
+    },
+    {
+      "event": "Seattle Mariners vs Chicago White Sox",
+      "home": "Seattle Mariners",
+      "away": "Chicago White Sox",
+      "sport": "MLB",
+      "sport_key": "baseball_mlb",
+      "commence": "in 1.7h",
+      "days_until": 0.07,
+      "net_pct": 0.001199,
+      "apr": 514.1833,
+      "has_safe_leg": true,
+      "all_safe": false,
+      "n_outcomes": 2,
+      "found_at": "2026-05-18 20:00:08",
+      "legs": {
+        "Chicago White Sox": {
+          "book": "BetVictor",
+          "book_key": "betvictor",
+          "book_type": "soft",
+          "odds": 2.5,
+          "can_ban": true
+        },
+        "Seattle Mariners": {
+          "book": "Pinnacle",
+          "book_key": "pinnacle",
+          "book_type": "sharp",
+          "odds": 1.67,
+          "can_ban": false
+        }
+      }
+    },
+    {
+      "event": "Song Yadong vs Deiveson Figueiredo",
+      "home": "Song Yadong",
+      "away": "Deiveson Figueiredo",
+      "sport": "MMA",
+      "sport_key": "mma_mixed_martial_arts",
+      "commence": "2026-05-30",
+      "days_until": 11.4582,
+      "net_pct": 0.003937,
+      "apr": 0.1333,
+      "has_safe_leg": false,
+      "all_safe": false,
+      "n_outcomes": 2,
+      "found_at": "2026-05-18 20:00:08",
+      "legs": {
+        "Deiveson Figueiredo": {
+          "book": "LeoVegas",
+          "book_key": "leovegas",
+          "book_type": "soft",
+          "odds": 5.1,
+          "can_ban": true
+        },
+        "Song Yadong": {
+          "book": "Betway",
+          "book_key": "betway",
+          "book_type": "soft",
+          "odds": 1.25,
+          "can_ban": true
+        }
+      }
+    },
+    {
+      "event": "Los Angeles FC vs Seattle Sounders FC",
+      "home": "Los Angeles FC",
+      "away": "Seattle Sounders FC",
+      "sport": "MLS",
+      "sport_key": "soccer_usa_mls",
+      "commence": "2026-05-25",
+      "days_until": 6.0416,
+      "net_pct": 0.001041,
+      "apr": 0.0649,
+      "has_safe_leg": true,
+      "all_safe": false,
+      "n_outcomes": 3,
+      "found_at": "2026-05-18 20:00:08",
+      "legs": {
+        "Los Angeles FC": {
+          "book": "LeoVegas",
+          "book_key": "leovegas",
+          "book_type": "soft",
+          "odds": 2.08,
+          "can_ban": true
+        },
+        "Seattle Sounders FC": {
+          "book": "Pinnacle",
+          "book_key": "pinnacle",
+          "book_type": "sharp",
+          "odds": 3.9,
+          "can_ban": false
+        },
+        "Draw": {
+          "book": "Pinnacle",
+          "book_key": "pinnacle",
+          "book_type": "sharp",
+          "odds": 3.82,
+          "can_ban": false
+        }
+      }
+    },
+    {
+      "event": "Pittsburgh Steelers vs Atlanta Falcons",
+      "home": "Pittsburgh Steelers",
+      "away": "Atlanta Falcons",
+      "sport": "NFL",
+      "sport_key": "americanfootball_nfl",
+      "commence": "2026-09-13",
+      "days_until": 117.7082,
+      "net_pct": 0.017422,
+      "apr": 0.055,
+      "has_safe_leg": false,
+      "all_safe": false,
+      "n_outcomes": 2,
+      "found_at": "2026-05-18 20:00:08",
+      "legs": {
+        "Atlanta Falcons": {
+          "book": "DraftKings",
+          "book_key": "draftkings",
+          "book_type": "soft",
+          "odds": 2.45,
+          "can_ban": true
+        },
+        "Pittsburgh Steelers": {
+          "book": "BetMGM",
+          "book_key": "betmgm",
+          "book_type": "soft",
+          "odds": 1.74,
+          "can_ban": true
+        }
+      }
+    },
+    {
+      "event": "Los Angeles Rams vs San Francisco 49ers",
+      "home": "Los Angeles Rams",
+      "away": "San Francisco 49ers",
+      "sport": "NFL",
+      "sport_key": "americanfootball_nfl",
+      "commence": "2026-09-11",
+      "days_until": 115.0242,
+      "net_pct": 0.003696,
+      "apr": 0.0118,
+      "has_safe_leg": true,
+      "all_safe": false,
+      "n_outcomes": 2,
+      "found_at": "2026-05-18 20:00:08",
+      "legs": {
+        "Los Angeles Rams": {
+          "book": "BetMGM",
+          "book_key": "betmgm",
+          "book_type": "soft",
+          "odds": 1.71,
+          "can_ban": true
+        },
+        "San Francisco 49ers": {
+          "book": "Pinnacle",
+          "book_key": "pinnacle",
+          "book_type": "sharp",
+          "odds": 2.43,
+          "can_ban": false
+        }
+      }
+    },
+    {
+      "event": "Las Vegas Raiders vs Miami Dolphins",
+      "home": "Las Vegas Raiders",
+      "away": "Miami Dolphins",
+      "sport": "NFL",
+      "sport_key": "americanfootball_nfl",
+      "commence": "2026-09-13",
+      "days_until": 117.8506,
+      "net_pct": 0.000739,
+      "apr": 0.0023,
+      "has_safe_leg": false,
+      "all_safe": false,
+      "n_outcomes": 2,
+      "found_at": "2026-05-18 20:00:08",
+      "legs": {
+        "Las Vegas Raiders": {
+          "book": "LeoVegas",
+          "book_key": "leovegas",
+          "book_type": "soft",
+          "odds": 1.57,
+          "can_ban": true
+        },
+        "Miami Dolphins": {
+          "book": "FanDuel",
+          "book_key": "fanduel",
+          "book_type": "soft",
+          "odds": 2.76,
+          "can_ban": true
+        }
+      }
+    },
+    {
+      "event": "Tennessee Titans vs New York Jets",
+      "home": "Tennessee Titans",
+      "away": "New York Jets",
+      "sport": "NFL",
+      "sport_key": "americanfootball_nfl",
+      "commence": "2026-09-13",
+      "days_until": 116.7081,
+      "net_pct": 0.005411,
+      "apr": 0.017,
+      "has_safe_leg": false,
+      "all_safe": false,
+      "n_outcomes": 2,
+      "found_at": "2026-05-19 20:00:18",
+      "legs": {
+        "New York Jets": {
+          "book": "DraftKings",
+          "book_key": "draftkings",
+          "book_type": "soft",
+          "odds": 2.42,
+          "can_ban": true
+        },
+        "Tennessee Titans": {
+          "book": "FanDuel",
+          "book_key": "fanduel",
+          "book_type": "soft",
+          "odds": 1.72,
           "can_ban": true
         }
       }
