@@ -1,6 +1,6 @@
 {
-  "last_scanned": "2026-05-19 20:00:18",
-  "total_arbs": 55,
+  "last_scanned": "2026-05-21 20:00:10",
+  "total_arbs": 59,
   "min_net": 0.0,
   "scan_history": [
     {
@@ -314,6 +314,22 @@
       "api_requests": 15,
       "new_arbs": 1,
       "total_arbs": 55
+    },
+    {
+      "scanned_at": "2026-05-20 20:00:08",
+      "scan_seconds": 4.59,
+      "n_events": 280,
+      "api_requests": 15,
+      "new_arbs": 2,
+      "total_arbs": 57
+    },
+    {
+      "scanned_at": "2026-05-21 20:00:10",
+      "scan_seconds": 5.4,
+      "n_events": 375,
+      "api_requests": 15,
+      "new_arbs": 2,
+      "total_arbs": 59
     }
   ],
   "arbs": [
@@ -2137,6 +2153,137 @@
           "book_key": "fanduel",
           "book_type": "soft",
           "odds": 1.72,
+          "can_ban": true
+        }
+      }
+    },
+    {
+      "event": "New York Yankees vs Toronto Blue Jays",
+      "home": "New York Yankees",
+      "away": "Toronto Blue Jays",
+      "sport": "MLB",
+      "sport_key": "baseball_mlb",
+      "commence": "in 35m",
+      "days_until": 0.0417,
+      "net_pct": 0.01109,
+      "apr": 9.133003130970304e+41,
+      "has_safe_leg": true,
+      "all_safe": false,
+      "n_outcomes": 2,
+      "found_at": "2026-05-20 20:00:08",
+      "legs": {
+        "New York Yankees": {
+          "book": "Pinnacle",
+          "book_key": "pinnacle",
+          "book_type": "sharp",
+          "odds": 1.62,
+          "can_ban": false
+        },
+        "Toronto Blue Jays": {
+          "book": "DraftKings",
+          "book_key": "draftkings",
+          "book_type": "soft",
+          "odds": 2.69,
+          "can_ban": true
+        }
+      }
+    },
+    {
+      "event": "Jack Catterall vs Shakhram Giyasov",
+      "home": "Jack Catterall",
+      "away": "Shakhram Giyasov",
+      "sport": "BOXING",
+      "sport_key": "boxing_boxing",
+      "commence": "2026-05-23",
+      "days_until": 2.8332,
+      "net_pct": 0.018909,
+      "apr": 10.1704,
+      "has_safe_leg": true,
+      "all_safe": false,
+      "n_outcomes": 3,
+      "found_at": "2026-05-20 20:00:08",
+      "legs": {
+        "Jack Catterall": {
+          "book": "Pinnacle",
+          "book_key": "pinnacle",
+          "book_type": "sharp",
+          "odds": 1.61,
+          "can_ban": false
+        },
+        "Shakhram Giyasov": {
+          "book": "Betway",
+          "book_key": "betway",
+          "book_type": "soft",
+          "odds": 3.25,
+          "can_ban": true
+        },
+        "Draw": {
+          "book": "LeoVegas",
+          "book_key": "leovegas",
+          "book_type": "soft",
+          "odds": 19.0,
+          "can_ban": true
+        }
+      }
+    },
+    {
+      "event": "Rei Tsuruya vs Jesus Santos Aguilar",
+      "home": "Rei Tsuruya",
+      "away": "Jesus Santos Aguilar",
+      "sport": "MMA",
+      "sport_key": "mma_mixed_martial_arts",
+      "commence": "2026-05-30",
+      "days_until": 8.3332,
+      "net_pct": 0.014105,
+      "apr": 0.8469,
+      "has_safe_leg": true,
+      "all_safe": false,
+      "n_outcomes": 2,
+      "found_at": "2026-05-21 20:00:10",
+      "legs": {
+        "Jesus Santos Aguilar": {
+          "book": "LeoVegas",
+          "book_key": "leovegas",
+          "book_type": "soft",
+          "odds": 3.75,
+          "can_ban": true
+        },
+        "Rei Tsuruya": {
+          "book": "Pinnacle",
+          "book_key": "pinnacle",
+          "book_type": "sharp",
+          "odds": 1.39,
+          "can_ban": false
+        }
+      }
+    },
+    {
+      "event": "Las Vegas Raiders vs Miami Dolphins",
+      "home": "Las Vegas Raiders",
+      "away": "Miami Dolphins",
+      "sport": "NFL",
+      "sport_key": "americanfootball_nfl",
+      "commence": "2026-09-13",
+      "days_until": 114.8506,
+      "net_pct": 0.000739,
+      "apr": 0.0024,
+      "has_safe_leg": false,
+      "all_safe": false,
+      "n_outcomes": 2,
+      "found_at": "2026-05-21 20:00:10",
+      "legs": {
+        "Las Vegas Raiders": {
+          "book": "DraftKings",
+          "book_key": "draftkings",
+          "book_type": "soft",
+          "odds": 1.57,
+          "can_ban": true
+        },
+        "Miami Dolphins": {
+          "book": "FanDuel",
+          "book_key": "fanduel",
+          "book_type": "soft",
+          "odds": 2.76,
           "can_ban": true
         }
       }
