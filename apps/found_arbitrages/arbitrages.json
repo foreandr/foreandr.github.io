@@ -1,6 +1,6 @@
 {
-  "last_scanned": "2026-05-21 20:00:10",
-  "total_arbs": 59,
+  "last_scanned": "2026-05-23 20:00:07",
+  "total_arbs": 60,
   "min_net": 0.0,
   "scan_history": [
     {
@@ -330,6 +330,22 @@
       "api_requests": 15,
       "new_arbs": 2,
       "total_arbs": 59
+    },
+    {
+      "scanned_at": "2026-05-22 20:00:18",
+      "scan_seconds": 11.3,
+      "n_events": 389,
+      "api_requests": 16,
+      "new_arbs": 1,
+      "total_arbs": 60
+    },
+    {
+      "scanned_at": "2026-05-23 20:00:07",
+      "scan_seconds": 4.0,
+      "n_events": 356,
+      "api_requests": 15,
+      "new_arbs": 0,
+      "total_arbs": 60
     }
   ],
   "arbs": [
@@ -2284,6 +2300,37 @@
           "book_key": "fanduel",
           "book_type": "soft",
           "odds": 2.76,
+          "can_ban": true
+        }
+      }
+    },
+    {
+      "event": "Asael Adjoudj vs Keisuke Sasu",
+      "home": "Asael Adjoudj",
+      "away": "Keisuke Sasu",
+      "sport": "MMA",
+      "sport_key": "mma_mixed_martial_arts",
+      "commence": "in 19.0h",
+      "days_until": 0.7915,
+      "net_pct": 0.00176,
+      "apr": 1.2496,
+      "has_safe_leg": false,
+      "all_safe": false,
+      "n_outcomes": 2,
+      "found_at": "2026-05-22 20:00:18",
+      "legs": {
+        "Asael Adjoudj": {
+          "book": "LeoVegas",
+          "book_key": "leovegas",
+          "book_type": "soft",
+          "odds": 1.22,
+          "can_ban": true
+        },
+        "Keisuke Sasu": {
+          "book": "FanDuel",
+          "book_key": "fanduel",
+          "book_type": "soft",
+          "odds": 5.6,
           "can_ban": true
         }
       }
