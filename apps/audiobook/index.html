@@ -6,6 +6,7 @@
 <title>Audiobook Studio</title>
 <link rel="icon" type="image/x-icon" href="../../images.ico">
 <script src="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+<script type="module" src="./extraction-core.js"></script>
 <style>
 :root {
   --bg: #0d0d0f;
@@ -349,6 +350,9 @@ body {
 .text-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 .text-area.empty { display: flex; align-items: center; justify-content: center; }
 .text-empty-msg { color: var(--muted); font-size: 13px; letter-spacing: 1px; text-transform: uppercase; }
+.text-area p { margin: 0 0 1.15em; }
+.text-area p:last-child { margin-bottom: 0; }
+.text-area p.list-item { padding-left: 1.25em; text-indent: -1.25em; }
 
 .word {
   display: inline;
@@ -681,6 +685,7 @@ renderLibrary();
 const pages = [];        // {text, words, status:'pending'|'extracted'|'ready'}
 let curPage  = 0;
 let totalPages = 0;
+let originalPdfPageCount = 0;
 let ocrWorker = null;
 let pdfDoc = null;  // module-level pdf reference for re-rendering
 let hlRAF    = null;
@@ -742,6 +747,12 @@ dropZone.addEventListener('drop', e => {
 fileInput.addEventListener('change', () => { if (fileInput.files[0]) startBook(fileInput.files[0]); });
 
 let currentFileName = '';
+const {
+  cleanOcrText: cleanOcrTextCore,
+  extractStructuredPdfText: extractStructuredPdfTextCore,
+  isLikelyBlankPage: isLikelyBlankPageCore,
+  qualityScoreText: qualityScoreTextCore
+} = window.AudiobookExtractionCore || {};
 
 /* ── Init browser TTS ── */
 modelStatus.className = 'model-status ready';
@@ -778,7 +789,9 @@ function resetApp() {
   pages.length = 0;
   curPage = 0;
   totalPages = 0;
+  originalPdfPageCount = 0;
   currentFileName = '';
+  pdfDoc = null;
   pageDots.innerHTML = '';
   totalPageDisp.textContent = '-';
   curPageDisp.textContent = '-';
@@ -808,21 +821,53 @@ function startBook(file, resumePage = 0) {
 }
 
 /* ── Shared: split raw text into synthetic pages ── */
+function buildWordList(text) {
+  return text.replace(/\s+/g, ' ').trim().split(' ').filter(Boolean);
+}
+
+function buildDisplayParagraphs(text) {
+  return text
+    .split(/\n{2,}/)
+    .map(p => p.replace(/\s+/g, ' ').trim())
+    .filter(Boolean)
+    .map(p => p.split(' ').filter(Boolean));
+}
+
+function makePageRecord(text, sourcePage = null) {
+  const cleaned = cleanOcrTextCore ? cleanOcrTextCore(text) : text;
+  const words = buildWordList(cleaned);
+  return {
+    text: cleaned,
+    words,
+    status: 'ready',
+    sourcePage,
+    paragraphs: buildDisplayParagraphs(cleaned)
+  };
+}
+
+function appendPageRecord(pageRecord) {
+  const idx = pages.length;
+  pages.push(pageRecord);
+  totalPages = pages.length;
+  totalPageDisp.textContent = totalPages;
+
+  const dot = document.createElement('div');
+  dot.className = 'dot ready';
+  dot.id = 'dot-' + idx;
+  dot.textContent = idx + 1;
+  dot.title = pageRecord.sourcePage ? 'PDF page ' + pageRecord.sourcePage : 'Page ' + (idx + 1);
+  dot.addEventListener('click', () => goToPage(idx));
+  pageDots.appendChild(dot);
+}
+
 function buildSyntheticPages(text) {
-  const words = text.replace(/\s+/g, ' ').trim().split(' ').filter(Boolean);
+  const words = buildWordList(text);
   const PAGE_SIZE = 500;
   totalPages = Math.max(1, Math.ceil(words.length / PAGE_SIZE));
   totalPageDisp.textContent = totalPages;
   for (let i = 0; i < totalPages; i++) {
     const pw = words.slice(i * PAGE_SIZE, (i + 1) * PAGE_SIZE);
-    pages.push({ text: pw.join(' '), words: pw, status: 'ready' });
-    const dot = document.createElement('div');
-    dot.className = 'dot ready';
-    dot.id = 'dot-' + i;
-    dot.textContent = i + 1;
-    dot.title = 'Page ' + (i + 1);
-    dot.addEventListener('click', () => goToPage(i));
-    pageDots.appendChild(dot);
+    appendPageRecord(makePageRecord(pw.join(' ')));
   }
 }
 
@@ -964,87 +1009,68 @@ async function startPdf(file, resumePage = 0) {
 
   const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
   pdfDoc = pdf;
-  totalPages = pdf.numPages;
-  totalPageDisp.textContent = totalPages;
-
-  // Init pages array + dots
-  for (let i = 0; i < totalPages; i++) {
-    pages.push({ text: '', words: [], status: 'pending' });
-    const dot = document.createElement('div');
-    dot.className = 'dot';
-    dot.id = 'dot-' + i;
-    dot.textContent = i + 1;
-    dot.title = 'Page ' + (i + 1);
-    dot.addEventListener('click', () => goToPage(i));
-    pageDots.appendChild(dot);
-  }
-
-  goToPage(resumePage);
+  originalPdfPageCount = pdf.numPages;
+  totalPages = 0;
+  totalPageDisp.textContent = '0';
 
   // Extract pages one by one
-  for (let i = 0; i < totalPages; i++) {
-    extractStatus.textContent = 'Extracting ' + (i+1) + '/' + totalPages;
+  for (let i = 0; i < originalPdfPageCount; i++) {
+    extractStatus.textContent = 'Extracting ' + (i+1) + '/' + originalPdfPageCount;
     scanLine.classList.add('active');
 
     const page = await pdf.getPage(i + 1);
 
     // Render to off-screen extractCanvas (never shared with display canvases)
-    const vp = page.getViewport({ scale: 1.5 });
+    const vp = page.getViewport({ scale: 2.4 });
     extractCanvas.width = vp.width;
     extractCanvas.height = vp.height;
     await page.render({ canvasContext: extractCtx, viewport: vp }).promise;
 
-    // Try text layer, fall back to OCR using extractCanvas
-    let text = await extractPdfTextLayer(page);
-    if (text) {
-      text = cleanOcrText(text);
-    } else {
+    const textLayerText = await extractPdfTextLayer(page);
+    const layerScore = textLayerText ? qualityScoreTextCore(textLayerText) : 0;
+
+    let ocrText = '';
+    let ocrScore = 0;
+    if (!textLayerText || layerScore < 140) {
       if (!ocrWorker) {
         await loadScript('https://unpkg.com/tesseract.js@5.1.1/dist/tesseract.min.js');
         ocrWorker = await Tesseract.createWorker('eng', 1, { logger: () => {} });
+        await ocrWorker.setParameters({
+          tessedit_pageseg_mode: Tesseract.PSM.AUTO,
+          preserve_interword_spaces: '1'
+        });
       }
       const result = await ocrWorker.recognize(extractCanvas);
-      text = cleanOcrText(result.data.text || '');
+      ocrText = extractOcrStructuredText(result.data || {});
+      ocrScore = ocrText ? qualityScoreTextCore(ocrText) : 0;
     }
 
     scanLine.classList.remove('active');
 
-    // Skip garbage pages (images, blanks) - require at least 20 real words
-    const rawWords = text.split(/\s+/).filter(Boolean);
-    if (rawWords.length < 5) {
-      pages[i].text = '';
-      pages[i].words = [];
-      pages[i].status = 'ready'; // mark ready but empty so navigation doesn't block
-      updateDot(i);
-      if (i === curPage) { renderText(i); updateAudioStatusTag(); }
-      prevBtn.disabled = curPage === 0;
-      nextBtn.disabled = false;
-      prevPageBtn.disabled = curPage === 0;
-      nextPageBtn.disabled = false;
+    let finalText = textLayerText || '';
+    if (ocrScore > layerScore + 12 || (!finalText && ocrText)) {
+      finalText = ocrText;
+    }
+
+    if (isLikelyBlankPageCore(finalText)) {
       continue;
     }
 
-    pages[i].text = text;
-    pages[i].words = rawWords;
-    pages[i].status = 'ready';
-    updateDot(i);
-
-    if (i === curPage) {
-      renderText(i);
-      updateAudioStatusTag();
-      playBtn.disabled = false; // enable as soon as current page is ready
+    appendPageRecord(makePageRecord(finalText, i + 1));
+    if (pages.length === 1) {
+      goToPage(0);
+      playBtn.disabled = false;
     }
-    // Also enable if user is still on page 0 and this is page 0
-    if (curPage === i) playBtn.disabled = false;
-
-    prevBtn.disabled = curPage === 0;
-    nextBtn.disabled = false;
-    prevPageBtn.disabled = curPage === 0;
-    nextPageBtn.disabled = false;
   }
 
   if (ocrWorker) { await ocrWorker.terminate(); ocrWorker = null; }
   extractStatus.textContent = 'Done';
+  if (!pages.length) {
+    textArea.innerHTML = '<span class="text-empty-msg">No readable text found</span>';
+    playBtn.disabled = true;
+  } else {
+    goToPage(Math.min(resumePage, pages.length - 1));
+  }
   libSaveProgress(currentFileName, curPage, totalPages);
   renderLibrary();
 }
@@ -1157,7 +1183,8 @@ function goToPage(idx) {
   curPage = idx;
   if (currentFileName) libSaveProgress(currentFileName, idx, totalPages);
   curPageDisp.textContent = idx + 1;
-  readerPageTag.textContent = 'Page ' + (idx + 1) + ' of ' + totalPages;
+  const sourcePage = pages[idx]?.sourcePage;
+  readerPageTag.textContent = 'Page ' + (idx + 1) + ' of ' + totalPages + (sourcePage ? ' · PDF ' + sourcePage : '');
   prevBtn.disabled = idx === 0;
   nextBtn.disabled = idx >= totalPages - 1;
   prevPageBtn.disabled = idx === 0;
@@ -1189,7 +1216,8 @@ async function renderThumb(idx) {
   // Bump sequence — any older in-flight call will bail when it checks seq
   const seq = ++thumbRenderSeq;
   try {
-    const page = await pdfDoc.getPage(idx + 1);
+    const sourcePage = pages[idx]?.sourcePage || idx + 1;
+    const page = await pdfDoc.getPage(sourcePage);
     if (seq !== thumbRenderSeq) return; // superseded by a newer call
 
     // Thumb (small, for sidebar)
@@ -1211,7 +1239,7 @@ async function renderThumb(idx) {
     await pageTask.promise;
     if (seq !== thumbRenderSeq) return;
 
-    pvPageTag.textContent = 'Page ' + (idx + 1) + ' of ' + totalPages;
+    pvPageTag.textContent = 'Page ' + (idx + 1) + ' of ' + totalPages + ' · PDF ' + sourcePage;
   } catch(e) {
     if (!e.message?.includes('cancel')) console.warn('renderThumb:', e.message);
   }
@@ -1225,14 +1253,22 @@ function renderText(idx) {
     return;
   }
   pg.sentences = buildSentences(pg.words);
+  pg.paragraphs ||= buildDisplayParagraphs(pg.text);
   textArea.innerHTML = '';
-  pg.words.forEach((w, i) => {
-    const span = document.createElement('span');
-    span.className = 'word';
-    span.dataset.i = i;
-    span.textContent = w + ' ';
-    span.addEventListener('click', () => seekToWord(i));
-    textArea.appendChild(span);
+  let wordIndex = 0;
+  pg.paragraphs.forEach(words => {
+    const para = document.createElement('p');
+    if (/^\d+\./.test(words[0] || '')) para.className = 'list-item';
+    words.forEach(word => {
+      const span = document.createElement('span');
+      span.className = 'word';
+      span.dataset.i = wordIndex;
+      span.textContent = word + ' ';
+      span.addEventListener('click', () => seekToWord(wordIndex));
+      para.appendChild(span);
+      wordIndex++;
+    });
+    textArea.appendChild(para);
   });
 }
 
@@ -1345,31 +1381,32 @@ function loadScript(src) {
   });
 }
 
+function extractOcrStructuredText(data) {
+  const blocks = [];
+  for (const block of data.blocks || []) {
+    const lines = [];
+    for (const paragraph of block.paragraphs || []) {
+      for (const line of paragraph.lines || []) {
+        const words = (line.words || []).map(word => word.text).filter(Boolean);
+        if (words.length) lines.push(words.join(' '));
+      }
+    }
+    if (!lines.length && block.text) lines.push(block.text);
+    if (lines.length) blocks.push(lines.join('\n'));
+  }
+  return cleanOcrTextCore(blocks.length ? blocks.join('\n\n') : (data.text || ''));
+}
+
 /* ── Text layer extraction (column-aware) ── */
 async function extractPdfTextLayer(page) {
   try {
     const tc = await page.getTextContent();
     const items = tc.items.filter(it => it.str?.trim());
     if (items.length < 10) return null;
-    const midX = page.getViewport({ scale: 1 }).width / 2;
-    const left  = items.filter(it => it.transform[4] <  midX);
-    const right = items.filter(it => it.transform[4] >= midX);
-    function colText(g) {
-      if (!g.length) return '';
-      g.sort((a,b) => { const dy=b.transform[5]-a.transform[5]; return Math.abs(dy)>3?dy:a.transform[4]-b.transform[4]; });
-      const lines=[]; let cur=[g[0].str], ly=g[0].transform[5];
-      for (let k=1;k<g.length;k++) {
-        const it=g[k];
-        if (Math.abs(it.transform[5]-ly)>3){lines.push(cur.join(''));cur=[];ly=it.transform[5];}
-        cur.push(it.str);
-      }
-      if (cur.length) lines.push(cur.join(''));
-      return lines.join('\n');
-    }
-    const l=colText(left), r=right.length>15?colText(right):'';
-    const combined = r ? l+'\n\n'+r : l;
-    if ((combined.match(/\b[a-zA-Z]{3,}\b/g)||[]).length < 20) return null;
-    return combined.trim();
+    const viewportWidth = page.getViewport({ scale: 1 }).width;
+    const structured = extractStructuredPdfTextCore(items, viewportWidth);
+    if (!structured || isLikelyBlankPageCore(structured)) return null;
+    return structured;
   } catch(e) { return null; }
 }
 

@@ -1,5 +1,5 @@
 {
-  "last_scanned": "2026-05-23 20:00:07",
+  "last_scanned": "2026-05-29 20:00:22",
   "total_arbs": 60,
   "min_net": 0.0,
   "scan_history": [
@@ -344,6 +344,38 @@
       "scan_seconds": 4.0,
       "n_events": 356,
       "api_requests": 15,
+      "new_arbs": 0,
+      "total_arbs": 60
+    },
+    {
+      "scanned_at": "2026-05-24 20:00:09",
+      "scan_seconds": 5.45,
+      "n_events": 310,
+      "api_requests": 12,
+      "new_arbs": 0,
+      "total_arbs": 60
+    },
+    {
+      "scanned_at": "2026-05-26 20:00:19",
+      "scan_seconds": 6.77,
+      "n_events": 303,
+      "api_requests": 9,
+      "new_arbs": 0,
+      "total_arbs": 60
+    },
+    {
+      "scanned_at": "2026-05-28 20:00:27",
+      "scan_seconds": 13.29,
+      "n_events": 296,
+      "api_requests": 11,
+      "new_arbs": 0,
+      "total_arbs": 60
+    },
+    {
+      "scanned_at": "2026-05-29 20:00:22",
+      "scan_seconds": 8.28,
+      "n_events": 306,
+      "api_requests": 10,
       "new_arbs": 0,
       "total_arbs": 60
     }
