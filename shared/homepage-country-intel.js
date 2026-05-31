@@ -71,6 +71,10 @@
     }
   ];
 
+  function getCurrentYear() {
+    return new Date().getFullYear();
+  }
+
   function normalizeCountryName(name) {
     return String(name || '')
       .normalize('NFKD')
@@ -195,7 +199,8 @@
   }
 
   function createSeriesRow(config) {
-    const years = getSeriesYears(config.series);
+    const currentYear = Number.isFinite(Number(config.currentYear)) ? Number(config.currentYear) : getCurrentYear();
+    const years = getSeriesYears(config.series).filter(year => year <= currentYear);
     const valuesByYear = {};
     const history = [];
 
@@ -241,7 +246,8 @@
         unit: indicator.unit || '',
         source: group.source,
         category: group.title,
-        series: countryData && countryData[metricId]
+        series: countryData && countryData[metricId],
+        currentYear: group.currentYear
       });
     }).filter(Boolean);
   }
@@ -263,7 +269,8 @@
         unit: meta.unitShort || meta.unit || '',
         source: 'Resources',
         category: meta.category || 'Resources',
-        series
+        series,
+        currentYear: getCurrentYear()
       });
       if (!row || row.value <= 0) return;
       const groupId = 'resources-' + String(meta.category || 'resources').toLowerCase().replace(/[^a-z0-9]+/g, '-');
@@ -298,6 +305,7 @@
     const iso3 = options.iso3 || (geo && geo.iso3) || null;
     const resolvedGeo = (iso3 && geoIndex.byIso3.get(iso3)) || geo || null;
     const displayName = (resolvedGeo && resolvedGeo.name) || fallbackName;
+    const currentYear = Number.isFinite(Number(options.currentYear)) ? Number(options.currentYear) : getCurrentYear();
 
     const imfDataset = findDataset(datasets, 'imf_data');
     const wbDataset = findDataset(datasets, 'world_bank_data');
@@ -308,12 +316,12 @@
     const sections = [];
 
     IMF_GROUPS.forEach(group => {
-      const rows = collectMetricGroupRows(imfCountry && imfCountry.value, group, imfIndicatorMap);
+      const rows = collectMetricGroupRows(imfCountry && imfCountry.value, { ...group, currentYear }, imfIndicatorMap);
       if (rows.length) sections.push({ id: group.id, title: group.title, source: group.source, rows });
     });
 
     WB_GROUPS.forEach(group => {
-      const rows = collectMetricGroupRows(wbCountry && wbCountry.value, group, wbIndicatorMap);
+      const rows = collectMetricGroupRows(wbCountry && wbCountry.value, { ...group, currentYear }, wbIndicatorMap);
       if (rows.length) sections.push({ id: group.id, title: group.title, source: group.source, rows });
     });
 
@@ -332,12 +340,33 @@
     };
   }
 
+  function resolveCountrySurfaceState(options) {
+    const homeCountry = options && options.homeCountry || null;
+    const selectedCountry = options && options.selectedCountry || null;
+    const hoveredCountry = options && options.hoveredCountry || null;
+    const lockedCountry = selectedCountry || homeCountry || null;
+
+    return {
+      lockedCountry,
+      highlightedCountry: lockedCountry,
+      panelCountry: selectedCountry || hoveredCountry || homeCountry || null,
+      panelLabel: selectedCountry
+        ? 'Selected country'
+        : hoveredCountry
+          ? 'Hover country'
+          : homeCountry
+            ? 'Visitor country'
+            : 'Country intelligence'
+    };
+  }
+
   return {
     normalizeCountryName: normalizeWithAliases,
     pickLatestSeriesValue,
     createSeriesRow,
     formatMetricValue,
     buildGeoIndex,
-    buildCountryProfile
+    buildCountryProfile,
+    resolveCountrySurfaceState
   };
 });

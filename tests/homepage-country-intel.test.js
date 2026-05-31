@@ -6,7 +6,8 @@ const {
   pickLatestSeriesValue,
   buildGeoIndex,
   buildCountryProfile,
-  createSeriesRow
+  createSeriesRow,
+  resolveCountrySurfaceState
 } = require('../shared/homepage-country-intel.js');
 
 test('normalizeCountryName resolves common aliases', () => {
@@ -37,6 +38,22 @@ test('createSeriesRow keeps selectable year history', () => {
   assert.deepEqual(row.years.slice(0, 3), [2024, 2023, 2022]);
   assert.equal(row.valuesByYear[2023], 2075.5);
   assert.equal(row.history[1].year, 2023);
+});
+
+test('createSeriesRow drops years after the current year cutoff', () => {
+  const row = createSeriesRow({
+    id: 'BCA',
+    label: 'Current account balance',
+    unit: 'B USD',
+    source: 'IMF',
+    category: 'Trade',
+    currentYear: 2026,
+    series: { 2030: 40.9, 2028: 38.2, 2026: 31.5, 2025: 29.8 }
+  });
+
+  assert.deepEqual(row.years, [2026, 2025]);
+  assert.equal(row.year, 2026);
+  assert.equal(row.valuesByYear[2030], undefined);
 });
 
 test('buildCountryProfile combines geo, economy, and resources', () => {
@@ -115,4 +132,30 @@ test('buildCountryProfile combines geo, economy, and resources', () => {
   const resources = profile.sections.find(section => section.id === 'resources-energy');
   assert.equal(resources.rows[0].label, 'Oil Production');
   assert.equal(resources.rows[0].value, 120);
+});
+
+test('resolveCountrySurfaceState prefers click selection over visitor default', () => {
+  const visitorOnly = resolveCountrySurfaceState({
+    homeCountry: { name: 'Canada', iso3: 'CAN' }
+  });
+  assert.equal(visitorOnly.highlightedCountry.name, 'Canada');
+  assert.equal(visitorOnly.panelCountry.name, 'Canada');
+  assert.equal(visitorOnly.panelLabel, 'Visitor country');
+
+  const hoverWithoutSelection = resolveCountrySurfaceState({
+    homeCountry: { name: 'Canada', iso3: 'CAN' },
+    hoveredCountry: { name: 'Mexico', iso3: 'MEX' }
+  });
+  assert.equal(hoverWithoutSelection.highlightedCountry.name, 'Canada');
+  assert.equal(hoverWithoutSelection.panelCountry.name, 'Mexico');
+  assert.equal(hoverWithoutSelection.panelLabel, 'Hover country');
+
+  const clickedCountry = resolveCountrySurfaceState({
+    homeCountry: { name: 'Canada', iso3: 'CAN' },
+    hoveredCountry: { name: 'Mexico', iso3: 'MEX' },
+    selectedCountry: { name: 'Brazil', iso3: 'BRA' }
+  });
+  assert.equal(clickedCountry.highlightedCountry.name, 'Brazil');
+  assert.equal(clickedCountry.panelCountry.name, 'Brazil');
+  assert.equal(clickedCountry.panelLabel, 'Selected country');
 });
