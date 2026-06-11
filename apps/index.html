@@ -303,6 +303,211 @@
       line-height: 1.7;
       font-weight: 400;
     }
+    .home-switcher {
+      display: grid;
+      grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+      gap: 24px;
+      margin-bottom: 40px;
+      align-items: stretch;
+    }
+    .home-switch-card {
+      width: 100%;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: inherit;
+      border-radius: 28px;
+      box-shadow: var(--shadow-md);
+      padding: 30px 32px;
+      text-align: left;
+      cursor: pointer;
+      transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .home-switch-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at top right, rgba(99, 102, 241, 0.14), transparent 38%),
+        linear-gradient(140deg, rgba(255,255,255,0.2), transparent 60%);
+      pointer-events: none;
+    }
+    .home-switch-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-xl);
+      border-color: var(--accent);
+    }
+    .home-switch-card.active {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.18), var(--shadow-xl);
+    }
+    .home-switch-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 18px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+    .home-switch-title {
+      font-size: clamp(1.8rem, 3vw, 2.9rem);
+      line-height: 1.02;
+      letter-spacing: -0.04em;
+      font-weight: 700;
+      font-family: var(--font-display);
+      margin-bottom: 10px;
+      position: relative;
+    }
+    .home-switch-desc {
+      color: var(--text-secondary);
+      font-size: 1rem;
+      line-height: 1.65;
+      max-width: 46ch;
+      position: relative;
+    }
+    .home-switch-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 22px;
+      position: relative;
+    }
+    .home-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.72);
+      color: var(--text-secondary);
+      font-size: 0.84rem;
+      font-weight: 600;
+    }
+    .home-pill strong {
+      color: var(--text-primary);
+      font-size: 0.95rem;
+    }
+    .top-view-panel[hidden],
+    .freelance-subpanel[hidden] {
+      display: none !important;
+    }
+    .freelance-shell {
+      border: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(248,250,252,0.94));
+      border-radius: 28px;
+      box-shadow: var(--shadow-md);
+      padding: 30px 30px 34px;
+    }
+    .freelance-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .freelance-header h2 {
+      font-size: clamp(1.8rem, 2.6vw, 2.5rem);
+      line-height: 1.04;
+      letter-spacing: -0.04em;
+      font-family: var(--font-display);
+      margin-bottom: 8px;
+    }
+    .freelance-header p {
+      color: var(--text-secondary);
+      max-width: 58ch;
+    }
+    .freelance-header-note {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .freelance-subtabs {
+      display: inline-flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 22px;
+    }
+    .freelance-subtab-btn {
+      font-family: var(--font-primary);
+      font-size: 0.86rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      padding: 10px 18px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: var(--shadow-sm);
+    }
+    .freelance-subtab-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    .freelance-subtab-btn.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+      box-shadow: var(--shadow-md);
+    }
+    .freelance-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 18px;
+    }
+    .freelance-card {
+      display: block;
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      background: var(--bg-card);
+      padding: 26px 24px;
+      box-shadow: var(--shadow-sm);
+      color: inherit;
+      text-decoration: none;
+      transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+    }
+    .freelance-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+      border-color: var(--accent);
+    }
+    .freelance-card-kicker {
+      font-size: 0.74rem;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .freelance-card h3 {
+      font-size: 1.2rem;
+      letter-spacing: -0.02em;
+      margin-bottom: 10px;
+    }
+    .freelance-card p {
+      color: var(--text-secondary);
+      line-height: 1.65;
+    }
+    .freelance-card-meta {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 16px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
     /* Category Sections */
     .category-section {
       margin-bottom: 80px;
@@ -453,6 +658,11 @@
       .category-section { margin-bottom: 60px; }
       .category-header h2 { font-size: 1.5rem; }
       .card-content { padding: 24px; }
+      .home-switcher { grid-template-columns: 1fr; gap: 16px; }
+      .home-switch-card { padding: 24px; border-radius: 24px; }
+      .freelance-shell { padding: 24px 20px 26px; border-radius: 24px; }
+      .freelance-header { flex-direction: column; align-items: flex-start; }
+      .freelance-header-note { white-space: normal; }
       .contact-email-card {
         flex-direction: column;
         align-items: flex-start;
@@ -1159,6 +1369,30 @@
     
 
     <!-- ── Tab bar ── -->
+    <section class="home-switcher" aria-label="Homepage sections">
+      <button class="home-switch-card active" type="button" data-top-view-btn="creative" aria-controls="creativeAppsView" aria-pressed="true">
+        <span class="home-switch-eyebrow">Main Collection</span>
+        <div class="home-switch-title">Creative Apps</div>
+        <div class="home-switch-desc">Browse the featured archive, jump through every category, and open the full app page you already use.</div>
+        <div class="home-switch-meta">
+          <span class="home-pill"><strong id="creativeAppsCount">0</strong> total made</span>
+          <span class="home-pill">Featured + categories</span>
+        </div>
+      </button>
+
+      <button class="home-switch-card" type="button" data-top-view-btn="freelancing" aria-controls="freelancingView" aria-pressed="false">
+        <span class="home-switch-eyebrow">Client Work</span>
+        <div class="home-switch-title">Freelancing Work</div>
+        <div class="home-switch-desc">Separate space for client-facing builds, split cleanly into clickable demos and live work.</div>
+        <div class="home-switch-meta">
+          <span class="home-pill"><strong>2</strong> tabs ready</span>
+          <span class="home-pill">Demo's + Live</span>
+        </div>
+      </button>
+    </section>
+
+    <section class="top-view-panel" id="creativeAppsView" data-top-view="creative">
+
     <div class="tab-bar" id="tab-bar">
       <button class="tab-btn active" data-tab="featured">⭐ Featured</button>
       <button class="tab-btn" data-tab="recommended" disabled aria-disabled="true" title="Unavailable">✦ Recommendations</button>
@@ -3545,6 +3779,107 @@
 </div>
     </section>
 
+    </section>
+
+    <section class="top-view-panel" id="freelancingView" data-top-view="freelancing" hidden>
+      <div class="freelance-shell">
+        <div class="freelance-header">
+          <div>
+            <h2>Freelancing Work</h2>
+            <p>Use the tabs below to split prototype work from production work. Each tab is clickable and lives as its own panel.</p>
+          </div>
+          <div class="freelance-header-note">Click a tab below</div>
+        </div>
+
+        <div class="freelance-subtabs" aria-label="Freelancing work tabs">
+          <button class="freelance-subtab-btn active" type="button" data-freelance-tab-btn="demos" aria-controls="freelanceDemos" aria-pressed="true">Demo's</button>
+          <button class="freelance-subtab-btn" type="button" data-freelance-tab-btn="live" aria-controls="freelanceLive" aria-pressed="false">Live</button>
+        </div>
+
+        <div class="freelance-subpanel" id="freelanceDemos" data-freelance-tab="demos">
+          <div class="freelance-grid">
+            <a href="invoice_gen/index.html" class="freelance-card">
+              <div class="freelance-card-kicker">Demo's</div>
+              <h3>Invoice Generator</h3>
+              <p>A polished browser workflow for quotes and invoices. Good for saying, "Do you want something like this for your business flow?"</p>
+              <div class="freelance-card-meta">Pitch demo · office workflow</div>
+            </a>
+            <a href="pdf_editor/index.html" class="freelance-card">
+              <div class="freelance-card-kicker">Demo's</div>
+              <h3>PDF Editor</h3>
+              <p>Shows client-side document editing, signatures, and whiteout tools without needing a backend.</p>
+              <div class="freelance-card-meta">Pitch demo · document tools</div>
+            </a>
+            <a href="image_masking/index.html" class="freelance-card">
+              <div class="freelance-card-kicker">Demo's</div>
+              <h3>Image Masking Editor</h3>
+              <p>A strong visual demo for selection tools, export flows, and image handling in the browser.</p>
+              <div class="freelance-card-meta">Pitch demo · creative tooling</div>
+            </a>
+            <a href="csv_viewer/index.html" class="freelance-card">
+              <div class="freelance-card-kicker">Demo's</div>
+              <h3>CSV Viewer</h3>
+              <p>Useful when a prospect wants sortable tables, data cleanup, quick imports, or exportable business dashboards.</p>
+              <div class="freelance-card-meta">Pitch demo · data workflow</div>
+            </a>
+            <a href="screen_recorder/index.html" class="freelance-card">
+              <div class="freelance-card-kicker">Demo's</div>
+              <h3>Screen Recorder</h3>
+              <p>A fast example of browser APIs, media capture, and a lightweight utility product that feels immediately useful.</p>
+              <div class="freelance-card-meta">Pitch demo · browser APIs</div>
+            </a>
+            <a href="video_essay_editor/index.html" class="freelance-card">
+              <div class="freelance-card-kicker">Demo's</div>
+              <h3>Video Essay Editor</h3>
+              <p>Shows a bigger creative interface with timelines, editing flow, and richer multi-step UX for client conversations.</p>
+              <div class="freelance-card-meta">Pitch demo · rich interface</div>
+            </a>
+          </div>
+        </div>
+
+        <div class="freelance-subpanel" id="freelanceLive" data-freelance-tab="live" hidden>
+          <div class="freelance-grid">
+            <a href="job_functionality/index.html" class="freelance-card">
+              <div class="freelance-card-kicker">Live</div>
+              <h3>Jobs Dashboard</h3>
+              <p>A real running dashboard with filters, tracking, and analytics views around scraped job data.</p>
+              <div class="freelance-card-meta">Live now · analytics app</div>
+            </a>
+            <a href="github_tracker/index.html" class="freelance-card">
+              <div class="freelance-card-kicker">Live</div>
+              <h3>GitHub Tracker</h3>
+              <p>A working live tool for repository and issue tracking that shows production-grade data presentation.</p>
+              <div class="freelance-card-meta">Live now · external data</div>
+            </a>
+            <a href="runescape_ge_flips/index.html" class="freelance-card">
+              <div class="freelance-card-kicker">Live</div>
+              <h3>RuneScape GE Flip Viewer</h3>
+              <p>A deployed browser dashboard for browsing enriched market data with an opinionated data-heavy UI.</p>
+              <div class="freelance-card-meta">Live now · dashboard</div>
+            </a>
+            <a href="pdf_merger/index.html" class="freelance-card">
+              <div class="freelance-card-kicker">Live</div>
+              <h3>PDF Merger</h3>
+              <p>A straightforward public utility already running live for people who need practical document handling.</p>
+              <div class="freelance-card-meta">Live now · utility</div>
+            </a>
+            <a href="what_is_my_ip/index.html" class="freelance-card">
+              <div class="freelance-card-kicker">Live</div>
+              <h3>What Is My IP</h3>
+              <p>A public-facing live utility with location and network info, useful as an example of small shippable tools.</p>
+              <div class="freelance-card-meta">Live now · public tool</div>
+            </a>
+            <a href="soundcloud/index.html" class="freelance-card">
+              <div class="freelance-card-kicker">Live</div>
+              <h3>SoundCloud Tools</h3>
+              <p>A live music-focused interface showing another direction beyond dashboards and office-style products.</p>
+              <div class="freelance-card-meta">Live now · niche workflow</div>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <div class="foot">
       <p>Andre · © 2026</p>
     </div>
@@ -3658,6 +3993,32 @@
       const tabBar   = document.getElementById('tab-bar');
       const sections = Array.from(document.querySelectorAll('.category-section[data-section]'));
       const tabBtns  = Array.from(tabBar.querySelectorAll('.tab-btn'));
+      const topViewBtns = Array.from(document.querySelectorAll('[data-top-view-btn]'));
+      const topViews = Array.from(document.querySelectorAll('[data-top-view]'));
+      const freelanceTabBtns = Array.from(document.querySelectorAll('[data-freelance-tab-btn]'));
+      const freelancePanels = Array.from(document.querySelectorAll('[data-freelance-tab]'));
+
+      function setTopView(view) {
+        topViewBtns.forEach(btn => {
+          const active = btn.dataset.topViewBtn === view;
+          btn.classList.toggle('active', active);
+          btn.setAttribute('aria-pressed', String(active));
+        });
+        topViews.forEach(panel => {
+          panel.hidden = panel.dataset.topView === view ? false : true;
+        });
+      }
+
+      function setFreelanceTab(tab) {
+        freelanceTabBtns.forEach(btn => {
+          const active = btn.dataset.freelanceTabBtn === tab;
+          btn.classList.toggle('active', active);
+          btn.setAttribute('aria-pressed', String(active));
+        });
+        freelancePanels.forEach(panel => {
+          panel.hidden = panel.dataset.freelanceTab === tab ? false : true;
+        });
+      }
 
       /* Inject count badges into section headers */
       sections.forEach(sec => {
@@ -3705,7 +4066,22 @@
         btn.addEventListener('click', () => showTab(btn.dataset.tab));
       });
 
+      topViewBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          setTopView(btn.dataset.topViewBtn);
+          if (btn.dataset.topViewBtn === 'creative') {
+            showTab('featured');
+          }
+        });
+      });
+
+      freelanceTabBtns.forEach(btn => {
+        btn.addEventListener('click', () => setFreelanceTab(btn.dataset.freelanceTabBtn));
+      });
+
       /* Always start on Featured - never restore last tab */
+      setTopView('creative');
+      setFreelanceTab('demos');
       showTab('featured');
 
       /* App counter:count unique top-level app directories from all card links */
@@ -3716,6 +4092,7 @@
           if (parts[0]) seen.add(parts[0]);
         });
         document.getElementById('appCount').textContent = seen.size;
+        document.getElementById('creativeAppsCount').textContent = seen.size;
       })();
 
       /* ── Donate modal ── */
@@ -3786,11 +4163,13 @@
             document.querySelectorAll('.category-section').forEach(s => s.style.display = '');
             document.querySelector('.tab-bar').style.display = '';
             noResults.classList.remove('visible');
+            setTopView('creative');
             showTab('featured');
             return;
           }
 
           // Switch to all-sections view (hide tab bar, show every section)
+          setTopView('creative');
           document.querySelector('.tab-bar').style.display = 'none';
           document.querySelectorAll('.category-section').forEach(s => s.style.display = 'block');
 
