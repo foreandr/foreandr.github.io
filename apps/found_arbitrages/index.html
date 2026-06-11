@@ -175,6 +175,22 @@ body { background: var(--bg); color: var(--text); font-family: var(--sans); min-
 .expand-icon { font-size: 13px; color: var(--muted); transition: transform .2s; margin-top: 4px; }
 .arb-card.open .expand-icon { transform: rotate(180deg); }
 
+.arb-metrics {
+  display: grid; grid-template-columns: repeat(4, minmax(110px, 1fr));
+  gap: 10px; margin-top: 12px;
+}
+.arb-metric {
+  background: var(--panel2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 10px 12px;
+}
+.arb-metric-label {
+  color: var(--muted); font-size: 11px; text-transform: uppercase;
+  letter-spacing: .06em; margin-bottom: 4px; font-weight: 700;
+}
+.arb-metric-value {
+  color: var(--text); font-size: 16px; font-family: var(--mono); font-weight: 700;
+}
+
 /* expanded body */
 .arb-body { display: none; border-top: 1px solid var(--border); padding: 20px; background: var(--panel2); }
 .arb-card.open .arb-body { display: block; }
@@ -233,6 +249,17 @@ body { background: var(--bg); color: var(--text); font-family: var(--sans); min-
 .calc-result-profit { font-size: 30px; font-weight: 700; color: var(--green); font-family: var(--mono); }
 .calc-result-sub { font-size: 13px; color: var(--muted); margin-top: 5px; }
 
+@media (max-width: 900px) {
+  .arb-metrics { grid-template-columns: repeat(2, minmax(120px, 1fr)); }
+}
+
+@media (max-width: 640px) {
+  .arb-head { grid-template-columns: 1fr; }
+  .arb-right { align-items: flex-start; }
+  .expand-icon { display: none; }
+  .arb-metrics { grid-template-columns: 1fr; }
+}
+
 /* empty */
 .empty-msg { color: var(--muted); font-size: 15px; text-align: center; padding: 60px; }
 </style>
@@ -279,6 +306,7 @@ body { background: var(--bg); color: var(--text); font-family: var(--sans); min-
   </div>
 </div>
 
+<script src="./metrics.js"></script>
 <script>
 let allArbs = [], scanData = null, filterSport = 'all';
 
@@ -311,6 +339,13 @@ function toAmerican(dec) {
 }
 
 function fmtPct(v) { return (v * 100).toFixed(1) + '%'; }
+function fmtSignedPct(v, digits = 2) { return `${v >= 0 ? '+' : ''}${(v * 100).toFixed(digits)}%`; }
+function fmtDays(days) {
+  if (!Number.isFinite(days)) return '—';
+  if (days >= 10) return `${days.toFixed(0)}d`;
+  if (days >= 1) return `${days.toFixed(1)}d`;
+  return `${(days * 24).toFixed(1)}h`;
+}
 
 // ── File loading ──────────────────────────────────────────────────────────────
 function loadJson(text) {
@@ -406,6 +441,9 @@ function buildCard(a) {
   const impArr    = oddsArr.map(o => 1 / o);
   const impSum    = impArr.reduce((s, v) => s + v, 0);
   const profitPct = (a.net_pct * 100).toFixed(2);
+  const lockedDays = ArbMetrics.calcLockedDays(a.days_until);
+  const dailyReturnPct = ArbMetrics.calcDailyReturnPct(a.net_pct, a.days_until);
+  const annualizedReturnPct = ArbMetrics.calcAnnualizedReturnPct(a.net_pct, a.days_until);
 
   // Bookie pills — shown without clicking
   const bookiePillsHtml = outcomes.map((o, i) => {
@@ -443,6 +481,24 @@ function buildCard(a) {
           <span class="arb-date">📅 ${a.commence}</span>
         </div>
         <div class="bookie-row">${bookiesHtml}</div>
+        <div class="arb-metrics">
+          <div class="arb-metric">
+            <div class="arb-metric-label">Margin</div>
+            <div class="arb-metric-value">${fmtSignedPct(a.net_pct)}</div>
+          </div>
+          <div class="arb-metric">
+            <div class="arb-metric-label">Locked</div>
+            <div class="arb-metric-value">${fmtDays(lockedDays)}</div>
+          </div>
+          <div class="arb-metric">
+            <div class="arb-metric-label">Daily</div>
+            <div class="arb-metric-value">${fmtSignedPct(dailyReturnPct, 3)}</div>
+          </div>
+          <div class="arb-metric">
+            <div class="arb-metric-label">Annualized</div>
+            <div class="arb-metric-value">${fmtSignedPct(annualizedReturnPct)}</div>
+          </div>
+        </div>
       </div>
       <div class="arb-right">
         <div class="profit-pill">✅ +${profitPct}%</div>
@@ -481,6 +537,7 @@ function buildCard(a) {
     const returns   = stakes.map((s, i) => s * oddsArr[i]);
     const guaranteed = returns.reduce((a, b) => a + b) / returns.length;
     const profit    = guaranteed - total;
+    const profitPerDay = profit / lockedDays;
     calcLegs.innerHTML = outcomes.map((o, i) =>
       `<div class="calc-leg-row">
         <span class="calc-leg-label">Bet "${o}" @ ${a.legs[o].book}</span>
@@ -490,7 +547,8 @@ function buildCard(a) {
     calcRes.innerHTML = `
       <div class="calc-result-label">No matter who wins, your guaranteed profit is:</div>
       <div class="calc-result-profit">+$${profit.toFixed(2)}</div>
-      <div class="calc-result-sub">You put in $${total.toFixed(2)} → you get back $${guaranteed.toFixed(2)}</div>`;
+      <div class="calc-result-sub">You put in $${total.toFixed(2)} → you get back $${guaranteed.toFixed(2)}</div>
+      <div class="calc-result-sub">$${profitPerDay.toFixed(2)}/day across ${fmtDays(lockedDays)} locked</div>`;
   }
 
   input.addEventListener('input', calc);
