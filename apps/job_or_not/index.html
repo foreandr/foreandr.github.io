@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Job or Not</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar">
+      <a class="back-link" href="../index.html">All apps</a>
+      <div class="title-block">
+        <p class="eyebrow">Career Elo sorter</p>
+        <h1>Job or Not</h1>
+      </div>
+      <div class="stat-strip" aria-label="Voting stats">
+        <span><strong id="totalVotes">0</strong> votes</span>
+        <span><strong id="jobsRated">0</strong> rated</span>
+        <span><strong id="jobCount">0</strong> jobs</span>
+      </div>
+    </header>
+
+    <section class="arena" aria-label="Choose between two jobs">
+      <button class="job-card" id="leftCard" type="button">
+        <span class="choice-key">Left arrow</span>
+        <strong id="leftTitle">Loading</strong>
+        <span id="leftMeta"></span>
+      </button>
+
+      <div class="versus" aria-hidden="true">VS</div>
+
+      <button class="job-card" id="rightCard" type="button">
+        <span class="choice-key">Right arrow</span>
+        <strong id="rightTitle">Loading</strong>
+        <span id="rightMeta"></span>
+      </button>
+    </section>
+
+    <section class="toolbar" aria-label="Controls">
+      <label>
+        Matchmaking
+        <select id="matchMode">
+          <option value="balanced">Balanced Elo + under-voted</option>
+          <option value="underVoted">Least-rated jobs first</option>
+          <option value="random">Pure random</option>
+        </select>
+      </label>
+      <label>
+        Leaderboard
+        <select id="leaderboardMode">
+          <option value="all">All jobs</option>
+          <option value="rated">Rated only</option>
+          <option value="unrated">Unrated only</option>
+        </select>
+      </label>
+      <label class="search-field">
+        Search
+        <input id="searchInput" type="search" placeholder="lawyer, sports, math, AI...">
+      </label>
+      <button id="undoBtn" type="button">Undo</button>
+      <button id="exportBtn" type="button">Export CSV</button>
+      <button id="resetBtn" class="danger" type="button">Reset</button>
+    </section>
+
+    <section class="dashboard">
+      <div class="panel progress-panel">
+        <h2>Progress</h2>
+        <div class="progress-row">
+          <span>Dataset coverage</span>
+          <strong id="coverageLabel">0%</strong>
+        </div>
+        <div class="progress-track"><div id="coverageBar"></div></div>
+        <dl class="mini-stats">
+          <div><dt>Top Elo</dt><dd id="topElo">1000</dd></div>
+          <div><dt>Average seen</dt><dd id="averageSeen">0.0</dd></div>
+          <div><dt>Stored locally</dt><dd id="storageStatus">Ready</dd></div>
+        </dl>
+      </div>
+
+      <div class="panel leaderboard-panel">
+        <div class="leaderboard-head">
+          <h2>Leaderboard</h2>
+          <span id="visibleRows">0 shown</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Job</th>
+                <th>Category</th>
+                <th>Elo</th>
+                <th>Seen</th>
+                <th>Wins</th>
+                <th>Losses</th>
+                <th>Win %</th>
+              </tr>
+            </thead>
+            <tbody id="leaderboardBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="jobs.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

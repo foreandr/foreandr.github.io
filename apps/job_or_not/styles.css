@@ -1,0 +1,363 @@
+:root {
+  color-scheme: dark;
+  --bg: #0a0b0d;
+  --panel: #14171b;
+  --panel-strong: #1f252c;
+  --line: #2d343d;
+  --text: #f4f7f5;
+  --muted: #9ea8a7;
+  --green: #85d99b;
+  --blue: #7db7ff;
+  --red: #d76666;
+  --shadow: 0 20px 70px rgba(0, 0, 0, 0.35);
+  --radius: 8px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background:
+    linear-gradient(120deg, rgba(125, 183, 255, 0.10), transparent 34%),
+    linear-gradient(240deg, rgba(133, 217, 155, 0.10), transparent 36%),
+    var(--bg);
+  color: var(--text);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.app-shell {
+  width: min(1440px, calc(100vw - 32px));
+  margin: 0 auto;
+  padding: 24px 0 48px;
+}
+
+.topbar {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 20px;
+  align-items: center;
+  margin-bottom: 22px;
+}
+
+.back-link {
+  color: var(--muted);
+  text-decoration: none;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  background: rgba(20, 23, 27, 0.8);
+}
+
+.title-block {
+  min-width: 0;
+}
+
+.eyebrow {
+  margin: 0 0 4px;
+  color: var(--green);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+h1,
+h2 {
+  margin: 0;
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+h1 {
+  font-size: clamp(2.2rem, 6vw, 5.6rem);
+  font-weight: 900;
+}
+
+h2 {
+  font-size: 1.1rem;
+}
+
+.stat-strip {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.stat-strip span {
+  display: inline-flex;
+  gap: 6px;
+  align-items: baseline;
+  border: 1px solid var(--line);
+  background: rgba(20, 23, 27, 0.86);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  color: var(--muted);
+}
+
+.stat-strip strong {
+  color: var(--text);
+}
+
+.arena {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 14px;
+  align-items: stretch;
+}
+
+.job-card {
+  min-height: 300px;
+  display: grid;
+  align-content: space-between;
+  gap: 26px;
+  text-align: left;
+  color: var(--text);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035), transparent),
+    var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: clamp(20px, 4vw, 38px);
+  box-shadow: var(--shadow);
+  transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease;
+}
+
+.job-card:hover,
+.job-card:focus-visible {
+  transform: translateY(-2px);
+  border-color: rgba(133, 217, 155, 0.85);
+  outline: none;
+}
+
+.choice-key {
+  color: var(--blue);
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.job-card strong {
+  overflow-wrap: anywhere;
+  font-size: clamp(2rem, 5vw, 5.2rem);
+  line-height: 0.96;
+  letter-spacing: 0;
+}
+
+.job-card span:last-child {
+  color: var(--muted);
+}
+
+.versus {
+  align-self: center;
+  color: var(--muted);
+  font-weight: 900;
+  letter-spacing: 0.14em;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: end;
+  margin: 16px 0 20px;
+}
+
+label {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.search-field {
+  flex: 1 1 260px;
+}
+
+select,
+input,
+.toolbar button {
+  min-height: 42px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+  color: var(--text);
+  padding: 10px 12px;
+}
+
+.toolbar button {
+  background: var(--panel-strong);
+}
+
+.toolbar button:hover {
+  border-color: var(--blue);
+}
+
+.toolbar .danger {
+  border-color: rgba(215, 102, 102, 0.45);
+  color: #ffd5d5;
+}
+
+.dashboard {
+  display: grid;
+  grid-template-columns: 330px minmax(0, 1fr);
+  gap: 14px;
+}
+
+.panel {
+  border: 1px solid var(--line);
+  background: rgba(20, 23, 27, 0.9);
+  border-radius: var(--radius);
+}
+
+.progress-panel {
+  padding: 18px;
+}
+
+.progress-row,
+.leaderboard-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+
+.progress-row {
+  margin-top: 24px;
+  color: var(--muted);
+}
+
+.progress-track {
+  height: 10px;
+  overflow: hidden;
+  margin: 10px 0 18px;
+  border-radius: 999px;
+  background: #070809;
+  border: 1px solid var(--line);
+}
+
+.progress-track div {
+  width: 0;
+  height: 100%;
+  background: linear-gradient(90deg, var(--blue), var(--green));
+}
+
+.mini-stats {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+}
+
+.mini-stats div {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+}
+
+.mini-stats dt {
+  color: var(--muted);
+}
+
+.mini-stats dd {
+  margin: 0;
+  font-weight: 800;
+}
+
+.leaderboard-panel {
+  overflow: hidden;
+}
+
+.leaderboard-head {
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--line);
+}
+
+.leaderboard-head span {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.table-wrap {
+  overflow: auto;
+  max-height: 58vh;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  white-space: nowrap;
+}
+
+td:nth-child(2),
+td:nth-child(3) {
+  white-space: normal;
+}
+
+th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #101317;
+  color: var(--muted);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+tbody tr:hover {
+  background: rgba(125, 183, 255, 0.06);
+}
+
+@media (max-width: 900px) {
+  .topbar,
+  .arena,
+  .dashboard {
+    grid-template-columns: 1fr;
+  }
+
+  .stat-strip {
+    justify-content: flex-start;
+  }
+
+  .job-card {
+    min-height: 190px;
+  }
+
+  .versus {
+    justify-self: center;
+  }
+
+  .table-wrap {
+    max-height: none;
+  }
+
+  th:nth-child(3),
+  td:nth-child(3),
+  th:nth-child(7),
+  td:nth-child(7) {
+    display: none;
+  }
+}

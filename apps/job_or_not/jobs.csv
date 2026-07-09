@@ -1,0 +1,421 @@
+id,title,category,subcategory,keywords
+J0001,Software Engineer,Software & Data,Core role,software & data
+J0002,Backend Developer,Software & Data,Core role,software & data
+J0003,Frontend Developer,Software & Data,Core role,software & data
+J0004,Full Stack Developer,Software & Data,Core role,software & data
+J0005,Mobile App Developer,Software & Data,Core role,software & data
+J0006,iOS Developer,Software & Data,Core role,software & data
+J0007,Android Developer,Software & Data,Core role,software & data
+J0008,Game Developer,Software & Data,Core role,software & data
+J0009,Gameplay Programmer,Software & Data,Core role,software & data
+J0010,Graphics Programmer,Software & Data,Core role,software & data
+J0011,Systems Programmer,Software & Data,Core role,software & data
+J0012,Embedded Software Engineer,Software & Data,Core role,software & data
+J0013,Firmware Engineer,Software & Data,Core role,software & data
+J0014,DevOps Engineer,Software & Data,Core role,software & data
+J0015,Site Reliability Engineer,Software & Data,Core role,software & data
+J0016,Cloud Engineer,Software & Data,Core role,software & data
+J0017,Platform Engineer,Software & Data,Core role,software & data
+J0018,Machine Learning Engineer,Software & Data,Core role,software & data
+J0019,AI Engineer,Software & Data,Core role,software & data
+J0020,Data Scientist,Software & Data,Core role,software & data
+J0021,Data Analyst,Software & Data,Core role,software & data
+J0022,Business Intelligence Analyst,Software & Data,Core role,software & data
+J0023,Data Engineer,Software & Data,Core role,software & data
+J0024,Analytics Engineer,Software & Data,Core role,software & data
+J0025,Database Administrator,Software & Data,Core role,software & data
+J0026,Cybersecurity Analyst,Software & Data,Core role,software & data
+J0027,Security Engineer,Software & Data,Core role,software & data
+J0028,Penetration Tester,Software & Data,Core role,software & data
+J0029,Network Engineer,Software & Data,Core role,software & data
+J0030,Solutions Architect,Software & Data,Core role,software & data
+J0031,Technical Product Manager,Software & Data,Core role,software & data
+J0032,QA Engineer,Software & Data,Core role,software & data
+J0033,Automation Tester,Software & Data,Core role,software & data
+J0034,Robotics Software Engineer,Software & Data,Core role,software & data
+J0035,Computer Vision Engineer,Software & Data,Core role,software & data
+J0036,NLP Engineer,Software & Data,Core role,software & data
+J0037,MLOps Engineer,Software & Data,Core role,software & data
+J0038,Quant Developer,Software & Data,Core role,software & data
+J0039,UX Engineer,Software & Data,Core role,software & data
+J0040,Developer Advocate,Software & Data,Core role,software & data
+J0041,Mathematician,"Mathematics, Science & Research",Core role,"mathematics, science & research"
+J0042,Applied Mathematician,"Mathematics, Science & Research",Core role,"mathematics, science & research"
+J0043,Statistician,"Mathematics, Science & Research",Core role,"mathematics, science & research"
+J0044,Biostatistician,"Mathematics, Science & Research",Core role,"mathematics, science & research"
+J0045,Actuary,"Mathematics, Science & Research",Core role,"mathematics, science & research"
+J0046,Operations Research Analyst,"Mathematics, Science & Research",Core role,"mathematics, science & research"
+J0047,Physics Researcher,"Mathematics, Science & Research",Core role,"mathematics, science & research"
+J0048,Mathematical Physicist,"Mathematics, Science & Research",Core role,"mathematics, science & research"
+J0049,Computational Physicist,"Mathematics, Science & Research",Core role,"mathematics, science & research"
+J0050,Theoretical Physicist,"Mathematics, Science & Research",Core role,"mathematics, science & research"
+J0051,Astronomer,"Mathematics, Science & Research",Core role,"mathematics, science & research"
+J0052,Chemist,"Mathematics, Science & Research",Core role,"mathematics, science & research"
+J0053,Materials Scientist,"Mathematics, Science & Research",Core role,"mathematics, science & research"
+J0054,Biologist,"Mathematics, Science & Research",Core role,"mathematics, science & research"
+J0055,Geneticist,"Mathematics, Science & Research",Core role,"mathematics, science & research"
+J0056,Neuroscientist,"Mathematics, Science & Research",Core role,"mathematics, science & research"
+J0057,Climate Scientist,"Mathematics, Science & Research",Core role,"mathematics, science & research"
+J0058,Geologist,"Mathematics, Science & Research",Core role,"mathematics, science & research"
+J0059,Hydrologist,"Mathematics, Science & Research",Core role,"mathematics, science & research"
+J0060,Oceanographer,"Mathematics, Science & Research",Core role,"mathematics, science & research"
+J0061,Research Scientist,"Mathematics, Science & Research",Core role,"mathematics, science & research"
+J0062,Lab Technician,"Mathematics, Science & Research",Core role,"mathematics, science & research"
+J0063,Research Assistant,"Mathematics, Science & Research",Core role,"mathematics, science & research"
+J0064,Scientific Programmer,"Mathematics, Science & Research",Core role,"mathematics, science & research"
+J0065,Experimental Physicist,"Mathematics, Science & Research",Core role,"mathematics, science & research"
+J0066,Particle Physicist,"Mathematics, Science & Research",Core role,"mathematics, science & research"
+J0067,Quantum Information Researcher,"Mathematics, Science & Research",Core role,"mathematics, science & research"
+J0068,Epidemiologist,"Mathematics, Science & Research",Core role,"mathematics, science & research"
+J0069,Bioinformatics Scientist,"Mathematics, Science & Research",Core role,"mathematics, science & research"
+J0070,Cognitive Scientist,"Mathematics, Science & Research",Core role,"mathematics, science & research"
+J0071,Elementary School Teacher,Education,Core role,education
+J0072,Middle School Teacher,Education,Core role,education
+J0073,High School Math Teacher,Education,Core role,education
+J0074,High School Physics Teacher,Education,Core role,education
+J0075,High School Computer Science Teacher,Education,Core role,education
+J0076,High School English Teacher,Education,Core role,education
+J0077,High School History Teacher,Education,Core role,education
+J0078,Special Education Teacher,Education,Core role,education
+J0079,ESL Teacher,Education,Core role,education
+J0080,College Instructor,Education,Core role,education
+J0081,University Professor,Education,Core role,education
+J0082,Math Tutor,Education,Core role,education
+J0083,Coding Tutor,Education,Core role,education
+J0084,Physics Tutor,Education,Core role,education
+J0085,Curriculum Developer,Education,Core role,education
+J0086,Instructional Designer,Education,Core role,education
+J0087,Academic Advisor,Education,Core role,education
+J0088,School Principal,Education,Core role,education
+J0089,Education Consultant,Education,Core role,education
+J0090,Corporate Trainer,Education,Core role,education
+J0091,Lawyer,"Law, Government & Public Policy",Core role,"law, government & public policy"
+J0092,Criminal Defense Lawyer,"Law, Government & Public Policy",Core role,"law, government & public policy"
+J0093,Prosecutor,"Law, Government & Public Policy",Core role,"law, government & public policy"
+J0094,Corporate Lawyer,"Law, Government & Public Policy",Core role,"law, government & public policy"
+J0095,Civil Litigation Lawyer,"Law, Government & Public Policy",Core role,"law, government & public policy"
+J0096,Family Lawyer,"Law, Government & Public Policy",Core role,"law, government & public policy"
+J0097,Immigration Lawyer,"Law, Government & Public Policy",Core role,"law, government & public policy"
+J0098,Tax Lawyer,"Law, Government & Public Policy",Core role,"law, government & public policy"
+J0099,Intellectual Property Lawyer,"Law, Government & Public Policy",Core role,"law, government & public policy"
+J0100,Privacy Lawyer,"Law, Government & Public Policy",Core role,"law, government & public policy"
+J0101,Human Rights Lawyer,"Law, Government & Public Policy",Core role,"law, government & public policy"
+J0102,Employment Lawyer,"Law, Government & Public Policy",Core role,"law, government & public policy"
+J0103,Environmental Lawyer,"Law, Government & Public Policy",Core role,"law, government & public policy"
+J0104,Real Estate Lawyer,"Law, Government & Public Policy",Core role,"law, government & public policy"
+J0105,Paralegal,"Law, Government & Public Policy",Core role,"law, government & public policy"
+J0106,Legal Assistant,"Law, Government & Public Policy",Core role,"law, government & public policy"
+J0107,Judge,"Law, Government & Public Policy",Core role,"law, government & public policy"
+J0108,Mediator,"Law, Government & Public Policy",Core role,"law, government & public policy"
+J0109,Policy Analyst,"Law, Government & Public Policy",Core role,"law, government & public policy"
+J0110,Legislative Assistant,"Law, Government & Public Policy",Core role,"law, government & public policy"
+J0111,Diplomat,"Law, Government & Public Policy",Core role,"law, government & public policy"
+J0112,Foreign Service Officer,"Law, Government & Public Policy",Core role,"law, government & public policy"
+J0113,City Planner,"Law, Government & Public Policy",Core role,"law, government & public policy"
+J0114,Urban Planner,"Law, Government & Public Policy",Core role,"law, government & public policy"
+J0115,Public Administrator,"Law, Government & Public Policy",Core role,"law, government & public policy"
+J0116,Compliance Officer,"Law, Government & Public Policy",Core role,"law, government & public policy"
+J0117,Regulatory Affairs Specialist,"Law, Government & Public Policy",Core role,"law, government & public policy"
+J0118,Lobbyist,"Law, Government & Public Policy",Core role,"law, government & public policy"
+J0119,Political Strategist,"Law, Government & Public Policy",Core role,"law, government & public policy"
+J0120,Campaign Manager,"Law, Government & Public Policy",Core role,"law, government & public policy"
+J0121,Entrepreneur,"Business, Finance & Operations",Core role,"business, finance & operations"
+J0122,Startup Founder,"Business, Finance & Operations",Core role,"business, finance & operations"
+J0123,Product Manager,"Business, Finance & Operations",Core role,"business, finance & operations"
+J0124,Project Manager,"Business, Finance & Operations",Core role,"business, finance & operations"
+J0125,Program Manager,"Business, Finance & Operations",Core role,"business, finance & operations"
+J0126,Operations Manager,"Business, Finance & Operations",Core role,"business, finance & operations"
+J0127,Business Analyst,"Business, Finance & Operations",Core role,"business, finance & operations"
+J0128,Management Consultant,"Business, Finance & Operations",Core role,"business, finance & operations"
+J0129,Strategy Consultant,"Business, Finance & Operations",Core role,"business, finance & operations"
+J0130,Accountant,"Business, Finance & Operations",Core role,"business, finance & operations"
+J0131,Auditor,"Business, Finance & Operations",Core role,"business, finance & operations"
+J0132,Financial Analyst,"Business, Finance & Operations",Core role,"business, finance & operations"
+J0133,Investment Analyst,"Business, Finance & Operations",Core role,"business, finance & operations"
+J0134,Portfolio Manager,"Business, Finance & Operations",Core role,"business, finance & operations"
+J0135,Equity Research Analyst,"Business, Finance & Operations",Core role,"business, finance & operations"
+J0136,Risk Analyst,"Business, Finance & Operations",Core role,"business, finance & operations"
+J0137,Quantitative Analyst,"Business, Finance & Operations",Core role,"business, finance & operations"
+J0138,Trader,"Business, Finance & Operations",Core role,"business, finance & operations"
+J0139,Investment Banker,"Business, Finance & Operations",Core role,"business, finance & operations"
+J0140,Venture Capital Analyst,"Business, Finance & Operations",Core role,"business, finance & operations"
+J0141,Private Equity Associate,"Business, Finance & Operations",Core role,"business, finance & operations"
+J0142,Insurance Underwriter,"Business, Finance & Operations",Core role,"business, finance & operations"
+J0143,Claims Adjuster,"Business, Finance & Operations",Core role,"business, finance & operations"
+J0144,Supply Chain Analyst,"Business, Finance & Operations",Core role,"business, finance & operations"
+J0145,Logistics Manager,"Business, Finance & Operations",Core role,"business, finance & operations"
+J0146,Procurement Specialist,"Business, Finance & Operations",Core role,"business, finance & operations"
+J0147,Sales Manager,"Business, Finance & Operations",Core role,"business, finance & operations"
+J0148,Account Executive,"Business, Finance & Operations",Core role,"business, finance & operations"
+J0149,Customer Success Manager,"Business, Finance & Operations",Core role,"business, finance & operations"
+J0150,Human Resources Manager,"Business, Finance & Operations",Core role,"business, finance & operations"
+J0151,Doctor,Healthcare & Wellness,Core role,healthcare & wellness
+J0152,Family Physician,Healthcare & Wellness,Core role,healthcare & wellness
+J0153,Emergency Physician,Healthcare & Wellness,Core role,healthcare & wellness
+J0154,Surgeon,Healthcare & Wellness,Core role,healthcare & wellness
+J0155,Psychiatrist,Healthcare & Wellness,Core role,healthcare & wellness
+J0156,Psychologist,Healthcare & Wellness,Core role,healthcare & wellness
+J0157,Clinical Therapist,Healthcare & Wellness,Core role,healthcare & wellness
+J0158,Registered Nurse,Healthcare & Wellness,Core role,healthcare & wellness
+J0159,Nurse Practitioner,Healthcare & Wellness,Core role,healthcare & wellness
+J0160,Paramedic,Healthcare & Wellness,Core role,healthcare & wellness
+J0161,Pharmacist,Healthcare & Wellness,Core role,healthcare & wellness
+J0162,Dentist,Healthcare & Wellness,Core role,healthcare & wellness
+J0163,Dental Hygienist,Healthcare & Wellness,Core role,healthcare & wellness
+J0164,Optometrist,Healthcare & Wellness,Core role,healthcare & wellness
+J0165,Physiotherapist,Healthcare & Wellness,Core role,healthcare & wellness
+J0166,Occupational Therapist,Healthcare & Wellness,Core role,healthcare & wellness
+J0167,Chiropractor,Healthcare & Wellness,Core role,healthcare & wellness
+J0168,Dietitian,Healthcare & Wellness,Core role,healthcare & wellness
+J0169,Speech Language Pathologist,Healthcare & Wellness,Core role,healthcare & wellness
+J0170,Medical Laboratory Technologist,Healthcare & Wellness,Core role,healthcare & wellness
+J0171,Radiology Technologist,Healthcare & Wellness,Core role,healthcare & wellness
+J0172,Respiratory Therapist,Healthcare & Wellness,Core role,healthcare & wellness
+J0173,Veterinarian,Healthcare & Wellness,Core role,healthcare & wellness
+J0174,Veterinary Technician,Healthcare & Wellness,Core role,healthcare & wellness
+J0175,Personal Trainer,Healthcare & Wellness,Core role,healthcare & wellness
+J0176,Strength and Conditioning Coach,Healthcare & Wellness,Core role,healthcare & wellness
+J0177,Massage Therapist,Healthcare & Wellness,Core role,healthcare & wellness
+J0178,Public Health Officer,Healthcare & Wellness,Core role,healthcare & wellness
+J0179,Health Data Analyst,Healthcare & Wellness,Core role,healthcare & wellness
+J0180,Clinical Research Coordinator,Healthcare & Wellness,Core role,healthcare & wellness
+J0181,Writer,"Creative, Media & Entertainment",Core role,"creative, media & entertainment"
+J0182,Novelist,"Creative, Media & Entertainment",Core role,"creative, media & entertainment"
+J0183,Screenwriter,"Creative, Media & Entertainment",Core role,"creative, media & entertainment"
+J0184,Copywriter,"Creative, Media & Entertainment",Core role,"creative, media & entertainment"
+J0185,Technical Writer,"Creative, Media & Entertainment",Core role,"creative, media & entertainment"
+J0186,Journalist,"Creative, Media & Entertainment",Core role,"creative, media & entertainment"
+J0187,Investigative Journalist,"Creative, Media & Entertainment",Core role,"creative, media & entertainment"
+J0188,Editor,"Creative, Media & Entertainment",Core role,"creative, media & entertainment"
+J0189,Content Strategist,"Creative, Media & Entertainment",Core role,"creative, media & entertainment"
+J0190,YouTuber,"Creative, Media & Entertainment",Core role,"creative, media & entertainment"
+J0191,Podcaster,"Creative, Media & Entertainment",Core role,"creative, media & entertainment"
+J0192,Video Producer,"Creative, Media & Entertainment",Core role,"creative, media & entertainment"
+J0193,Film Director,"Creative, Media & Entertainment",Core role,"creative, media & entertainment"
+J0194,Film Editor,"Creative, Media & Entertainment",Core role,"creative, media & entertainment"
+J0195,Cinematographer,"Creative, Media & Entertainment",Core role,"creative, media & entertainment"
+J0196,Photographer,"Creative, Media & Entertainment",Core role,"creative, media & entertainment"
+J0197,Graphic Designer,"Creative, Media & Entertainment",Core role,"creative, media & entertainment"
+J0198,UX Designer,"Creative, Media & Entertainment",Core role,"creative, media & entertainment"
+J0199,UI Designer,"Creative, Media & Entertainment",Core role,"creative, media & entertainment"
+J0200,Product Designer,"Creative, Media & Entertainment",Core role,"creative, media & entertainment"
+J0201,Animator,"Creative, Media & Entertainment",Core role,"creative, media & entertainment"
+J0202,3D Artist,"Creative, Media & Entertainment",Core role,"creative, media & entertainment"
+J0203,Concept Artist,"Creative, Media & Entertainment",Core role,"creative, media & entertainment"
+J0204,Illustrator,"Creative, Media & Entertainment",Core role,"creative, media & entertainment"
+J0205,Music Producer,"Creative, Media & Entertainment",Core role,"creative, media & entertainment"
+J0206,Composer,"Creative, Media & Entertainment",Core role,"creative, media & entertainment"
+J0207,Singer,"Creative, Media & Entertainment",Core role,"creative, media & entertainment"
+J0208,Actor,"Creative, Media & Entertainment",Core role,"creative, media & entertainment"
+J0209,Voice Actor,"Creative, Media & Entertainment",Core role,"creative, media & entertainment"
+J0210,Stand-up Comedian,"Creative, Media & Entertainment",Core role,"creative, media & entertainment"
+J0211,Game Designer,"Creative, Media & Entertainment",Core role,"creative, media & entertainment"
+J0212,Level Designer,"Creative, Media & Entertainment",Core role,"creative, media & entertainment"
+J0213,Narrative Designer,"Creative, Media & Entertainment",Core role,"creative, media & entertainment"
+J0214,Professional Volleyball Player,"Sports, Coaching & Recreation",Core role,"sports, coaching & recreation"
+J0215,Professional Basketball Player,"Sports, Coaching & Recreation",Core role,"sports, coaching & recreation"
+J0216,Professional Baseball Player,"Sports, Coaching & Recreation",Core role,"sports, coaching & recreation"
+J0217,Professional Soccer Player,"Sports, Coaching & Recreation",Core role,"sports, coaching & recreation"
+J0218,Professional Hockey Player,"Sports, Coaching & Recreation",Core role,"sports, coaching & recreation"
+J0219,MMA Fighter,"Sports, Coaching & Recreation",Core role,"sports, coaching & recreation"
+J0220,Boxer,"Sports, Coaching & Recreation",Core role,"sports, coaching & recreation"
+J0221,Track Athlete,"Sports, Coaching & Recreation",Core role,"sports, coaching & recreation"
+J0222,Marathon Runner,"Sports, Coaching & Recreation",Core role,"sports, coaching & recreation"
+J0223,Tennis Player,"Sports, Coaching & Recreation",Core role,"sports, coaching & recreation"
+J0224,Golf Professional,"Sports, Coaching & Recreation",Core role,"sports, coaching & recreation"
+J0225,Esports Player,"Sports, Coaching & Recreation",Core role,"sports, coaching & recreation"
+J0226,Volleyball Coach,"Sports, Coaching & Recreation",Core role,"sports, coaching & recreation"
+J0227,Basketball Coach,"Sports, Coaching & Recreation",Core role,"sports, coaching & recreation"
+J0228,Baseball Coach,"Sports, Coaching & Recreation",Core role,"sports, coaching & recreation"
+J0229,Soccer Coach,"Sports, Coaching & Recreation",Core role,"sports, coaching & recreation"
+J0230,Hockey Coach,"Sports, Coaching & Recreation",Core role,"sports, coaching & recreation"
+J0231,Athletic Director,"Sports, Coaching & Recreation",Core role,"sports, coaching & recreation"
+J0232,Sports Agent,"Sports, Coaching & Recreation",Core role,"sports, coaching & recreation"
+J0233,Sports Analyst,"Sports, Coaching & Recreation",Core role,"sports, coaching & recreation"
+J0234,Sports Data Analyst,"Sports, Coaching & Recreation",Core role,"sports, coaching & recreation"
+J0235,Scout,"Sports, Coaching & Recreation",Core role,"sports, coaching & recreation"
+J0236,Referee,"Sports, Coaching & Recreation",Core role,"sports, coaching & recreation"
+J0237,Fitness Coach,"Sports, Coaching & Recreation",Core role,"sports, coaching & recreation"
+J0238,Outdoor Guide,"Sports, Coaching & Recreation",Core role,"sports, coaching & recreation"
+J0239,Park Ranger,"Sports, Coaching & Recreation",Core role,"sports, coaching & recreation"
+J0240,Recreation Coordinator,"Sports, Coaching & Recreation",Core role,"sports, coaching & recreation"
+J0241,Ski Instructor,"Sports, Coaching & Recreation",Core role,"sports, coaching & recreation"
+J0242,Martial Arts Instructor,"Sports, Coaching & Recreation",Core role,"sports, coaching & recreation"
+J0243,Swim Coach,"Sports, Coaching & Recreation",Core role,"sports, coaching & recreation"
+J0244,Electrician,"Trades, Construction & Manufacturing",Core role,"trades, construction & manufacturing"
+J0245,Plumber,"Trades, Construction & Manufacturing",Core role,"trades, construction & manufacturing"
+J0246,Carpenter,"Trades, Construction & Manufacturing",Core role,"trades, construction & manufacturing"
+J0247,Welder,"Trades, Construction & Manufacturing",Core role,"trades, construction & manufacturing"
+J0248,HVAC Technician,"Trades, Construction & Manufacturing",Core role,"trades, construction & manufacturing"
+J0249,Mechanic,"Trades, Construction & Manufacturing",Core role,"trades, construction & manufacturing"
+J0250,Automotive Technician,"Trades, Construction & Manufacturing",Core role,"trades, construction & manufacturing"
+J0251,Millwright,"Trades, Construction & Manufacturing",Core role,"trades, construction & manufacturing"
+J0252,Machinist,"Trades, Construction & Manufacturing",Core role,"trades, construction & manufacturing"
+J0253,CNC Operator,"Trades, Construction & Manufacturing",Core role,"trades, construction & manufacturing"
+J0254,Construction Manager,"Trades, Construction & Manufacturing",Core role,"trades, construction & manufacturing"
+J0255,General Contractor,"Trades, Construction & Manufacturing",Core role,"trades, construction & manufacturing"
+J0256,Heavy Equipment Operator,"Trades, Construction & Manufacturing",Core role,"trades, construction & manufacturing"
+J0257,Crane Operator,"Trades, Construction & Manufacturing",Core role,"trades, construction & manufacturing"
+J0258,Roofer,"Trades, Construction & Manufacturing",Core role,"trades, construction & manufacturing"
+J0259,Mason,"Trades, Construction & Manufacturing",Core role,"trades, construction & manufacturing"
+J0260,Painter,"Trades, Construction & Manufacturing",Core role,"trades, construction & manufacturing"
+J0261,Drywall Installer,"Trades, Construction & Manufacturing",Core role,"trades, construction & manufacturing"
+J0262,Cabinetmaker,"Trades, Construction & Manufacturing",Core role,"trades, construction & manufacturing"
+J0263,Industrial Designer,"Trades, Construction & Manufacturing",Core role,"trades, construction & manufacturing"
+J0264,Manufacturing Engineer,"Trades, Construction & Manufacturing",Core role,"trades, construction & manufacturing"
+J0265,Quality Control Inspector,"Trades, Construction & Manufacturing",Core role,"trades, construction & manufacturing"
+J0266,Production Supervisor,"Trades, Construction & Manufacturing",Core role,"trades, construction & manufacturing"
+J0267,Tool and Die Maker,"Trades, Construction & Manufacturing",Core role,"trades, construction & manufacturing"
+J0268,Aircraft Mechanic,"Trades, Construction & Manufacturing",Core role,"trades, construction & manufacturing"
+J0269,Elevator Technician,"Trades, Construction & Manufacturing",Core role,"trades, construction & manufacturing"
+J0270,Lineworker,"Trades, Construction & Manufacturing",Core role,"trades, construction & manufacturing"
+J0271,Surveyor,"Trades, Construction & Manufacturing",Core role,"trades, construction & manufacturing"
+J0272,Architectural Technologist,"Trades, Construction & Manufacturing",Core role,"trades, construction & manufacturing"
+J0273,Building Inspector,"Trades, Construction & Manufacturing",Core role,"trades, construction & manufacturing"
+J0274,Police Officer,"Security, Military & Emergency",Core role,"security, military & emergency"
+J0275,Detective,"Security, Military & Emergency",Core role,"security, military & emergency"
+J0276,Private Investigator,"Security, Military & Emergency",Core role,"security, military & emergency"
+J0277,Security Guard,"Security, Military & Emergency",Core role,"security, military & emergency"
+J0278,Correctional Officer,"Security, Military & Emergency",Core role,"security, military & emergency"
+J0279,Border Services Officer,"Security, Military & Emergency",Core role,"security, military & emergency"
+J0280,Firefighter,"Security, Military & Emergency",Core role,"security, military & emergency"
+J0281,Emergency Manager,"Security, Military & Emergency",Core role,"security, military & emergency"
+J0282,Military Officer,"Security, Military & Emergency",Core role,"security, military & emergency"
+J0283,Infantry Soldier,"Security, Military & Emergency",Core role,"security, military & emergency"
+J0284,Intelligence Analyst,"Security, Military & Emergency",Core role,"security, military & emergency"
+J0285,Cyber Intelligence Analyst,"Security, Military & Emergency",Core role,"security, military & emergency"
+J0286,Search and Rescue Technician,"Security, Military & Emergency",Core role,"security, military & emergency"
+J0287,Disaster Response Coordinator,"Security, Military & Emergency",Core role,"security, military & emergency"
+J0288,Bodyguard,"Security, Military & Emergency",Core role,"security, military & emergency"
+J0289,Fraud Investigator,"Security, Military & Emergency",Core role,"security, military & emergency"
+J0290,Loss Prevention Specialist,"Security, Military & Emergency",Core role,"security, military & emergency"
+J0291,Emergency Dispatcher,"Security, Military & Emergency",Core role,"security, military & emergency"
+J0292,Public Safety Analyst,"Security, Military & Emergency",Core role,"security, military & emergency"
+J0293,Chef,"Food, Hospitality & Tourism",Core role,"food, hospitality & tourism"
+J0294,Sous Chef,"Food, Hospitality & Tourism",Core role,"food, hospitality & tourism"
+J0295,Baker,"Food, Hospitality & Tourism",Core role,"food, hospitality & tourism"
+J0296,Pastry Chef,"Food, Hospitality & Tourism",Core role,"food, hospitality & tourism"
+J0297,Restaurant Manager,"Food, Hospitality & Tourism",Core role,"food, hospitality & tourism"
+J0298,Bartender,"Food, Hospitality & Tourism",Core role,"food, hospitality & tourism"
+J0299,Bar Manager,"Food, Hospitality & Tourism",Core role,"food, hospitality & tourism"
+J0300,Sommelier,"Food, Hospitality & Tourism",Core role,"food, hospitality & tourism"
+J0301,Barista,"Food, Hospitality & Tourism",Core role,"food, hospitality & tourism"
+J0302,Hotel Manager,"Food, Hospitality & Tourism",Core role,"food, hospitality & tourism"
+J0303,Concierge,"Food, Hospitality & Tourism",Core role,"food, hospitality & tourism"
+J0304,Event Planner,"Food, Hospitality & Tourism",Core role,"food, hospitality & tourism"
+J0305,Travel Agent,"Food, Hospitality & Tourism",Core role,"food, hospitality & tourism"
+J0306,Tour Guide,"Food, Hospitality & Tourism",Core role,"food, hospitality & tourism"
+J0307,Flight Attendant,"Food, Hospitality & Tourism",Core role,"food, hospitality & tourism"
+J0308,Airline Pilot,"Food, Hospitality & Tourism",Core role,"food, hospitality & tourism"
+J0309,Cruise Director,"Food, Hospitality & Tourism",Core role,"food, hospitality & tourism"
+J0310,Caterer,"Food, Hospitality & Tourism",Core role,"food, hospitality & tourism"
+J0311,Food Scientist,"Food, Hospitality & Tourism",Core role,"food, hospitality & tourism"
+J0312,Food Safety Inspector,"Food, Hospitality & Tourism",Core role,"food, hospitality & tourism"
+J0313,Farmer,"Agriculture, Environment & Animals",Core role,"agriculture, environment & animals"
+J0314,Agronomist,"Agriculture, Environment & Animals",Core role,"agriculture, environment & animals"
+J0315,Horticulturist,"Agriculture, Environment & Animals",Core role,"agriculture, environment & animals"
+J0316,Arborist,"Agriculture, Environment & Animals",Core role,"agriculture, environment & animals"
+J0317,Forester,"Agriculture, Environment & Animals",Core role,"agriculture, environment & animals"
+J0318,Wildlife Biologist,"Agriculture, Environment & Animals",Core role,"agriculture, environment & animals"
+J0319,Conservation Officer,"Agriculture, Environment & Animals",Core role,"agriculture, environment & animals"
+J0320,Environmental Consultant,"Agriculture, Environment & Animals",Core role,"agriculture, environment & animals"
+J0321,Sustainability Manager,"Agriculture, Environment & Animals",Core role,"agriculture, environment & animals"
+J0322,Renewable Energy Analyst,"Agriculture, Environment & Animals",Core role,"agriculture, environment & animals"
+J0323,Solar Installer,"Agriculture, Environment & Animals",Core role,"agriculture, environment & animals"
+J0324,Wind Turbine Technician,"Agriculture, Environment & Animals",Core role,"agriculture, environment & animals"
+J0325,Animal Trainer,"Agriculture, Environment & Animals",Core role,"agriculture, environment & animals"
+J0326,Zookeeper,"Agriculture, Environment & Animals",Core role,"agriculture, environment & animals"
+J0327,Marine Biologist,"Agriculture, Environment & Animals",Core role,"agriculture, environment & animals"
+J0328,Fisheries Officer,"Agriculture, Environment & Animals",Core role,"agriculture, environment & animals"
+J0329,Landscape Architect,"Agriculture, Environment & Animals",Core role,"agriculture, environment & animals"
+J0330,Waste Management Coordinator,"Agriculture, Environment & Animals",Core role,"agriculture, environment & animals"
+J0331,Water Treatment Operator,"Agriculture, Environment & Animals",Core role,"agriculture, environment & animals"
+J0332,Ecologist,"Agriculture, Environment & Animals",Core role,"agriculture, environment & animals"
+J0333,Marketing Manager,"Sales, Marketing & Customer",Core role,"sales, marketing & customer"
+J0334,Digital Marketing Specialist,"Sales, Marketing & Customer",Core role,"sales, marketing & customer"
+J0335,SEO Specialist,"Sales, Marketing & Customer",Core role,"sales, marketing & customer"
+J0336,Growth Marketer,"Sales, Marketing & Customer",Core role,"sales, marketing & customer"
+J0337,Brand Manager,"Sales, Marketing & Customer",Core role,"sales, marketing & customer"
+J0338,Market Research Analyst,"Sales, Marketing & Customer",Core role,"sales, marketing & customer"
+J0339,Public Relations Specialist,"Sales, Marketing & Customer",Core role,"sales, marketing & customer"
+J0340,Communications Manager,"Sales, Marketing & Customer",Core role,"sales, marketing & customer"
+J0341,Sales Representative,"Sales, Marketing & Customer",Core role,"sales, marketing & customer"
+J0342,Real Estate Agent,"Sales, Marketing & Customer",Core role,"sales, marketing & customer"
+J0343,Insurance Broker,"Sales, Marketing & Customer",Core role,"sales, marketing & customer"
+J0344,Mortgage Broker,"Sales, Marketing & Customer",Core role,"sales, marketing & customer"
+J0345,Retail Manager,"Sales, Marketing & Customer",Core role,"sales, marketing & customer"
+J0346,E-commerce Manager,"Sales, Marketing & Customer",Core role,"sales, marketing & customer"
+J0347,Merchandiser,"Sales, Marketing & Customer",Core role,"sales, marketing & customer"
+J0348,Fundraiser,"Sales, Marketing & Customer",Core role,"sales, marketing & customer"
+J0349,Community Manager,"Sales, Marketing & Customer",Core role,"sales, marketing & customer"
+J0350,Partnerships Manager,"Sales, Marketing & Customer",Core role,"sales, marketing & customer"
+J0351,Advertising Account Manager,"Sales, Marketing & Customer",Core role,"sales, marketing & customer"
+J0352,Customer Support Specialist,"Sales, Marketing & Customer",Core role,"sales, marketing & customer"
+J0353,Truck Driver,Transportation & Logistics,Core role,transportation & logistics
+J0354,Delivery Driver,Transportation & Logistics,Core role,transportation & logistics
+J0355,Courier,Transportation & Logistics,Core role,transportation & logistics
+J0356,Bus Driver,Transportation & Logistics,Core role,transportation & logistics
+J0357,Train Conductor,Transportation & Logistics,Core role,transportation & logistics
+J0358,Subway Operator,Transportation & Logistics,Core role,transportation & logistics
+J0359,Air Traffic Controller,Transportation & Logistics,Core role,transportation & logistics
+J0360,Logistics Coordinator,Transportation & Logistics,Core role,transportation & logistics
+J0361,Warehouse Manager,Transportation & Logistics,Core role,transportation & logistics
+J0362,Inventory Analyst,Transportation & Logistics,Core role,transportation & logistics
+J0363,Forklift Operator,Transportation & Logistics,Core role,transportation & logistics
+J0364,Dispatcher,Transportation & Logistics,Core role,transportation & logistics
+J0365,Shipping Coordinator,Transportation & Logistics,Core role,transportation & logistics
+J0366,Fleet Manager,Transportation & Logistics,Core role,transportation & logistics
+J0367,Marine Captain,Transportation & Logistics,Core role,transportation & logistics
+J0368,Ship Engineer,Transportation & Logistics,Core role,transportation & logistics
+J0369,Railway Engineer,Transportation & Logistics,Core role,transportation & logistics
+J0370,Customs Broker,Transportation & Logistics,Core role,transportation & logistics
+J0371,Import Export Specialist,Transportation & Logistics,Core role,transportation & logistics
+J0372,Traffic Engineer,Transportation & Logistics,Core role,transportation & logistics
+J0373,Architect,"Architecture, Engineering & Real Estate",Core role,"architecture, engineering & real estate"
+J0374,Interior Designer,"Architecture, Engineering & Real Estate",Core role,"architecture, engineering & real estate"
+J0375,Urban Designer,"Architecture, Engineering & Real Estate",Core role,"architecture, engineering & real estate"
+J0376,Landscape Designer,"Architecture, Engineering & Real Estate",Core role,"architecture, engineering & real estate"
+J0377,Real Estate Developer,"Architecture, Engineering & Real Estate",Core role,"architecture, engineering & real estate"
+J0378,Property Manager,"Architecture, Engineering & Real Estate",Core role,"architecture, engineering & real estate"
+J0379,Appraiser,"Architecture, Engineering & Real Estate",Core role,"architecture, engineering & real estate"
+J0380,Home Inspector,"Architecture, Engineering & Real Estate",Core role,"architecture, engineering & real estate"
+J0381,Civil Engineer,"Architecture, Engineering & Real Estate",Core role,"architecture, engineering & real estate"
+J0382,Structural Engineer,"Architecture, Engineering & Real Estate",Core role,"architecture, engineering & real estate"
+J0383,Mechanical Engineer,"Architecture, Engineering & Real Estate",Core role,"architecture, engineering & real estate"
+J0384,Electrical Engineer,"Architecture, Engineering & Real Estate",Core role,"architecture, engineering & real estate"
+J0385,Environmental Engineer,"Architecture, Engineering & Real Estate",Core role,"architecture, engineering & real estate"
+J0386,Chemical Engineer,"Architecture, Engineering & Real Estate",Core role,"architecture, engineering & real estate"
+J0387,Biomedical Engineer,"Architecture, Engineering & Real Estate",Core role,"architecture, engineering & real estate"
+J0388,Aerospace Engineer,"Architecture, Engineering & Real Estate",Core role,"architecture, engineering & real estate"
+J0389,Mining Engineer,"Architecture, Engineering & Real Estate",Core role,"architecture, engineering & real estate"
+J0390,Petroleum Engineer,"Architecture, Engineering & Real Estate",Core role,"architecture, engineering & real estate"
+J0391,Industrial Engineer,"Architecture, Engineering & Real Estate",Core role,"architecture, engineering & real estate"
+J0392,Process Engineer,"Architecture, Engineering & Real Estate",Core role,"architecture, engineering & real estate"
+J0393,Social Worker,"Social Services, Religion & Nonprofit",Core role,"social services, religion & nonprofit"
+J0394,Youth Worker,"Social Services, Religion & Nonprofit",Core role,"social services, religion & nonprofit"
+J0395,Case Manager,"Social Services, Religion & Nonprofit",Core role,"social services, religion & nonprofit"
+J0396,Community Organizer,"Social Services, Religion & Nonprofit",Core role,"social services, religion & nonprofit"
+J0397,Nonprofit Director,"Social Services, Religion & Nonprofit",Core role,"social services, religion & nonprofit"
+J0398,Grant Writer,"Social Services, Religion & Nonprofit",Core role,"social services, religion & nonprofit"
+J0399,Pastor,"Social Services, Religion & Nonprofit",Core role,"social services, religion & nonprofit"
+J0400,Imam,"Social Services, Religion & Nonprofit",Core role,"social services, religion & nonprofit"
+J0401,Chaplain,"Social Services, Religion & Nonprofit",Core role,"social services, religion & nonprofit"
+J0402,Religious Scholar,"Social Services, Religion & Nonprofit",Core role,"social services, religion & nonprofit"
+J0403,Philosophy Professor,"Social Services, Religion & Nonprofit",Core role,"social services, religion & nonprofit"
+J0404,Ethicist,"Social Services, Religion & Nonprofit",Core role,"social services, religion & nonprofit"
+J0405,Counsellor,"Social Services, Religion & Nonprofit",Core role,"social services, religion & nonprofit"
+J0406,Addictions Worker,"Social Services, Religion & Nonprofit",Core role,"social services, religion & nonprofit"
+J0407,Refugee Settlement Worker,"Social Services, Religion & Nonprofit",Core role,"social services, religion & nonprofit"
+J0408,Charity Program Manager,"Social Services, Religion & Nonprofit",Core role,"social services, religion & nonprofit"
+J0409,Volunteer Coordinator,"Social Services, Religion & Nonprofit",Core role,"social services, religion & nonprofit"
+J0410,Humanitarian Aid Worker,"Social Services, Religion & Nonprofit",Core role,"social services, religion & nonprofit"
+J0411,Peacebuilding Specialist,"Social Services, Religion & Nonprofit",Core role,"social services, religion & nonprofit"
+J0412,Crisis Line Worker,"Social Services, Religion & Nonprofit",Core role,"social services, religion & nonprofit"
+J0413,Backend Infrastructure Engineer,Software & Data,Specific role,software & data
+J0414,Frontend Design Engineer,Software & Data,Specific role,software & data
+J0415,AI Product Engineer,Software & Data,Specific role,software & data
+J0416,Data Visualization Developer,Software & Data,Specific role,software & data
+J0417,Cybersecurity Incident Responder,Software & Data,Specific role,software & data
+J0418,Cloud Security Engineer,Software & Data,Specific role,software & data
+J0419,Game Tools Programmer,Software & Data,Specific role,software & data
+J0420,Simulation Software Engineer,Software & Data,Specific role,software & data
